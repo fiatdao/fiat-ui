@@ -55,7 +55,7 @@ function initOnboard(appChainId: ChainsValues, subscriptions: Subscriptions) {
     networkName: getNetworkConfig(appChainId).name,
     hideBranding: true,
     walletSelect: {
-      heading: 'Select a Wallet to Connect to PowerTrade',
+      heading: 'Select a Wallet to Connect to FIAT App',
       description: '',
       wallets: [
         {
