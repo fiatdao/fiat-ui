@@ -35,7 +35,7 @@ const Wrapper = styled.header`
 `
 
 const Logo = styled.div`
-  background-image: url('images/logo.png');
+  background-image: url('images/logo.svg');
   background-position: 50% 50%;
   background-repeat: no-repeat;
   background-size: contain;
@@ -214,11 +214,7 @@ export const Header: React.FC = (props) => {
           <Link href="/community" passHref>
             <Item>Community</Item>
           </Link>
-          {isWalletConnected && (
-            <>
-              Hello stranger...
-            </>
-          )}
+          {isWalletConnected && <>Hello stranger...</>}
         </Menu>
         <MobileMenuButton>
           <svg height="29" width="36" xmlns="http://www.w3.org/2000/svg">

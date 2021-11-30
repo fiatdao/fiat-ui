@@ -26,7 +26,7 @@ const STORAGE_CONNECTED_WALLET = 'onboard_selectedWallet'
 const ONBOARD_STATE_DELAY = 100
 // Defatul chain id from env var
 const INITAL_APP_CHAIN_ID = Number(
-  process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 42,
+  process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 4,
 ) as ChainsValues
 
 nullthrows(

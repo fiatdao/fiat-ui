@@ -1,4 +1,5 @@
 import { Chains, ChainsValues } from '@/src/constants/chains'
+import erc20 from '@/src/abis/ERC20.json'
 
 type BaseAppContractInfo = {
   abi: any[]
@@ -20,4 +21,15 @@ function constantContracts<T extends { [key in string]: AppContractInfo }>(o: T)
   return o
 }
 
-export const contracts = constantContracts({})
+export const contracts = constantContracts({
+  FIAT: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.rinkeby]: '',
+    },
+    abi: erc20,
+    decimals: 6,
+    symbol: 'FIAT',
+    priceTokenId: 'fiat-coin',
+  },
+})

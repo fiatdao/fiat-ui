@@ -38,7 +38,7 @@ export default class MyDocument extends Document {
           <meta content="https://THE_URL" property="og:url" />
           <meta content="https://THE_URL/shareable/ogImage.jpg" property="og:image" />
           <meta content="website" property="og:type" />
-          <meta content=" property="og:description" />
+          <meta content="" property="og:description" />
           <meta content="summary_large_image" name="twitter:card" />
           <meta content="THE_SITE" name="twitter:site" />
           <meta content="@THE_HANDLE" name="twitter:creator" />
