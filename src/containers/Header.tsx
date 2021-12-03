@@ -11,14 +11,10 @@ import {
 import { DisabledButtonCSS } from '@/src/components/pureStyledComponents/buttons/Button'
 
 const Wrapper = styled.header`
-  align-items: flex-end;
+  grid-area: header;
   background-color: ${({ theme }) => theme.colors.mainBodyBackground};
-  display: flex;
-  flex-shrink: 0;
   height: ${({ theme }) => theme.header.heightMobile};
-  justify-content: space-between;
   margin: 0;
-  position: sticky;
   top: 0;
   z-index: 100;
 
@@ -32,31 +28,6 @@ const Wrapper = styled.header`
     background-color: transparent;
     height: ${({ theme }) => theme.header.height};
   }
-`
-
-const Logo = styled.div`
-  background-image: url('images/logo.svg');
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
-  background-size: contain;
-  cursor: pointer;
-  flex-shrink: 0;
-  height: 62px;
-  text-decoration: none;
-  user-select: none;
-  width: 249px;
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletLandscapeStart}) {
-    margin-bottom: -10px;
-  }
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.desktopStart}) {
-    height: 81px;
-    margin-bottom: -25px;
-    width: 366px;
-  }
-
-  ${ActiveButton}
 `
 
 const EndWrapper = styled.div`
@@ -200,9 +171,6 @@ export const Header: React.FC = (props) => {
 
   return (
     <Wrapper as="header" {...props}>
-      <Link href="/" passHref>
-        <Logo />
-      </Link>
       <EndWrapper>
         <Menu>
           <Link href="/about" passHref>

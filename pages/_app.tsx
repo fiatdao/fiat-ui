@@ -12,30 +12,23 @@ import RedirectToProfile from '@/src/containers/RedirectToProfile'
 import ToastContainer from '@/src/components/toast/Container'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
 import WrongNetwork from '@/src/containers/WrongNetwork'
-import { Footer } from '@/src/components/common/Footer'
 import { GeneralError } from '@/src/components/common/GeneralError'
 import { Header } from '@/src/containers/Header'
-import { ContainerPadding } from '@/src/components/pureStyledComponents/common/Helpers'
 import { Loading } from '@/src/components/common/Loading'
 import AppStatusProvider from '@/src/providers/AppStatusProvider'
+import { Sidebar } from '@/src/components/navigation/Sidebar'
 
-const MainWrapper = styled.main`
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  flex-shrink: 0;
-  height: calc(100vh - ${({ theme }) => theme.header.heightMobile});
-  justify-content: center;
-  padding: 50px 0;
-
-  ${ContainerPadding}
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.desktopStart}) {
-    height: calc(100vh - ${({ theme }) => theme.header.height});
-  }
+const MainWrapper = styled.div`
+  display: grid;
+  grid-template-rows: 75px auto;
+  grid-template-columns: 350px auto;
+  grid-template-areas:
+    'sidebar  header '
+    'sidebar content';
 `
-
+const ContentWrapper = styled.div`
+  grid-area: content;
+`
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
     typeof window !== 'undefined'
@@ -67,11 +60,13 @@ function App({ Component, pageProps }: AppProps) {
           <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
             <Web3ConnectionProvider fallback={<Loading />}>
               <AppStatusProvider fallback={<Loading />}>
-                <Header />
                 <MainWrapper>
-                  <Component {...pageProps} />
+                  <Sidebar />
+                  <Header />
+                  <ContentWrapper>
+                    <Component {...pageProps} />
+                  </ContentWrapper>
                 </MainWrapper>
-                <Footer />
                 <WrongNetwork />
                 <RedirectToProfile />
               </AppStatusProvider>
