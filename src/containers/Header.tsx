@@ -12,6 +12,9 @@ import { DisabledButtonCSS } from '@/src/components/pureStyledComponents/buttons
 
 const Wrapper = styled.header`
   grid-area: header;
+  display: flex;
+  justify-content: end;
+  align-items: center;
   background-color: ${({ theme }) => theme.colors.mainBodyBackground};
   height: ${({ theme }) => theme.header.heightMobile};
   margin: 0;
@@ -50,7 +53,6 @@ const EndWrapper = styled.div`
     flex-direction: row;
     height: ${({ theme }) => theme.buttonHeight};
     left: auto;
-    margin: auto 0 0 0;
     position: relative;
     top: auto;
     width: auto;
@@ -76,48 +78,6 @@ const Menu = styled.nav`
     flex-direction: row;
     height: auto;
     margin: 0 40px 0 0;
-  }
-`
-
-const Item = styled.span`
-  align-items: center;
-  background-color: ${({ theme }) => theme.colors.mainBodyBackground};
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--main-text-color);
-  cursor: pointer;
-  display: flex;
-  flex-shrink: 0;
-  font-size: 1.8rem;
-  font-weight: 500;
-  height: 44px;
-  justify-content: flex-start;
-  line-height: 1.2;
-  padding: 0 ${({ theme }) => theme.layout.horizontalPaddingMobile};
-  text-decoration: none;
-  text-transform: uppercase;
-  user-select: none;
-  width: 100%;
-
-  &:last-child {
-    margin-right: 0;
-  }
-
-  ${ActiveButton}
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletPortraitStart}) {
-    padding: 0 ${({ theme }) => theme.layout.horizontalPaddingTabletPortraitStart};
-  }
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletLandscapeStart}) {
-    align-items: unset;
-    background-color: transparent;
-    border: none;
-    display: unset;
-    height: auto;
-    justify-content: unset;
-    margin-right: 30px;
-    padding: 0;
-    width: auto;
   }
 `
 
@@ -172,18 +132,7 @@ export const Header: React.FC = (props) => {
   return (
     <Wrapper as="header" {...props}>
       <EndWrapper>
-        <Menu>
-          <Link href="/about" passHref>
-            <Item>About</Item>
-          </Link>
-          <Link href="/how-to" passHref>
-            <Item>How To</Item>
-          </Link>
-          <Link href="/community" passHref>
-            <Item>Community</Item>
-          </Link>
-          {isWalletConnected && <>Hello stranger...</>}
-        </Menu>
+        <Menu>{isWalletConnected && <>Hello stranger...</>}</Menu>
         <MobileMenuButton>
           <svg height="29" width="36" xmlns="http://www.w3.org/2000/svg">
             <g fill="none" stroke="#fff" strokeWidth="3">

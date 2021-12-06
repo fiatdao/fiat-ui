@@ -14,13 +14,12 @@ import WrongNetwork from '@/src/containers/WrongNetwork'
 import { GeneralError } from '@/src/components/common/GeneralError'
 import { Header } from '@/src/containers/Header'
 import { Loading } from '@/src/components/common/Loading'
-import AppStatusProvider from '@/src/providers/AppStatusProvider'
 import { Sidebar } from '@/src/components/navigation/Sidebar'
 
 const MainWrapper = styled.div`
   display: grid;
-  grid-template-rows: 75px auto;
-  grid-template-columns: 350px auto;
+  grid-template-rows: 88px auto;
+  grid-template-columns: 256px auto;
   grid-template-areas:
     'sidebar  header '
     'sidebar content';
@@ -58,16 +57,14 @@ function App({ Component, pageProps }: AppProps) {
         <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
           <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
             <Web3ConnectionProvider fallback={<Loading />}>
-              <AppStatusProvider fallback={<Loading />}>
-                <MainWrapper>
-                  <Sidebar />
-                  <Header />
-                  <ContentWrapper>
-                    <Component {...pageProps} />
-                  </ContentWrapper>
-                </MainWrapper>
-                <WrongNetwork />
-              </AppStatusProvider>
+              <MainWrapper>
+                <Sidebar />
+                <Header />
+                <ContentWrapper>
+                  <Component {...pageProps} />
+                </ContentWrapper>
+              </MainWrapper>
+              <WrongNetwork />
             </Web3ConnectionProvider>
           </ErrorBoundary>
         </SWRConfig>

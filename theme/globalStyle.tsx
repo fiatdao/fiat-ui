@@ -6,10 +6,10 @@ type ThemeType = typeof theme
 export const GlobalStyle = createGlobalStyle<{ theme: ThemeType }>`
   @font-face {
     font-display: swap;
-    font-family: "TrashHand";
+    font-family: "Inter";
     font-style: normal;
     font-weight: 400;
-    src: local("TrashHand"), url("/fonts/TrashHand.ttf") format("truetype");
+    src: local("Inter"), url("/fonts/Inter-Regular.ttf") format("truetype");
   }
 
   html {

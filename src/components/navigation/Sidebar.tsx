@@ -8,24 +8,19 @@ type MenuItem = { icon?: string; title: string; to: string | MenuItem[] }
 
 const Logo = styled.div`
   background-image: url('images/logo.svg');
-  background-position: 50% 50%;
   background-repeat: no-repeat;
   background-size: contain;
   cursor: pointer;
   flex-shrink: 0;
-  height: 62px;
+  height: 40px;
   text-decoration: none;
   user-select: none;
-  width: 249px;
+  width: auto;
+  margin-left: 20px;
+  margin-top: 24px;
 
   @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletLandscapeStart}) {
     margin-bottom: -10px;
-  }
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.desktopStart}) {
-    height: 81px;
-    margin-bottom: -25px;
-    width: 366px;
   }
 
   ${ActiveButton}
