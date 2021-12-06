@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import Head from 'next/head'
-import useSignIn from '@/src/hooks/useSignIn'
 import genericSuspense from '@/src/utils/genericSuspense'
-import { ButtonPrimary } from '@/src/components/pureStyledComponents/buttons/Button'
 import { BaseTitle } from '@/src/components/pureStyledComponents/text/BaseTitle'
 import { BaseParagraph } from '@/src/components/pureStyledComponents/text/BaseParagraph'
 import { InnerContainer } from '@/src/components/pureStyledComponents/layout/InnerContainer'
@@ -14,7 +12,6 @@ import { Spinner } from '@/src/components/common/Spinner'
 const Title = styled(BaseTitle)``
 
 function Connect({ ...restProps }) {
-  const { signIn } = useSignIn({ redirectOnUser: '/profile', redirectNotRegistered: '/register' })
   const { isAppConnected } = useWeb3Connection()
   const [loading, setLoading] = useState(true)
 
@@ -51,7 +48,6 @@ function Connect({ ...restProps }) {
             <title>Sign Connection - FIAT</title>
           </Head>
           <Title>Wallet connected, please sign the connection to prove it's you.</Title>
-          {<ButtonPrimary onClick={() => signIn()}>Sign Connection</ButtonPrimary>}
         </>
       )}
     </InnerContainer>

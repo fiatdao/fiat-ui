@@ -8,7 +8,6 @@ import type { AppProps } from 'next/app'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SWRConfig } from 'swr'
 import { ThemeProvider } from 'styled-components'
-import RedirectToProfile from '@/src/containers/RedirectToProfile'
 import ToastContainer from '@/src/components/toast/Container'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
 import WrongNetwork from '@/src/containers/WrongNetwork'
@@ -68,7 +67,6 @@ function App({ Component, pageProps }: AppProps) {
                   </ContentWrapper>
                 </MainWrapper>
                 <WrongNetwork />
-                <RedirectToProfile />
               </AppStatusProvider>
             </Web3ConnectionProvider>
           </ErrorBoundary>
