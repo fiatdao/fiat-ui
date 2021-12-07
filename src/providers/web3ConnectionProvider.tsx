@@ -215,8 +215,8 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
       console.warn('Unable to connect, onboard is not defined')
       return
     }
-    await onboard.walletSelect()
-    await onboard.walletCheck()
+    const walletSelected = await onboard.walletSelect()
+    if (walletSelected) await onboard.walletCheck()
   }
 
   const pushNetwork = async (): Promise<void> => {
