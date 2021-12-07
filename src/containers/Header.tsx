@@ -15,7 +15,8 @@ const Wrapper = styled.header`
   display: flex;
   justify-content: end;
   align-items: center;
-  background-color: ${({ theme }) => theme.colors.mainBodyBackground};
+  background: rgba(32, 32, 32, 0.95);
+  box-shadow: inset 0px -1px 0px #303030;
   height: ${({ theme }) => theme.header.heightMobile};
   margin: 0;
   top: 0;
@@ -28,7 +29,6 @@ const Wrapper = styled.header`
   }
 
   @media (min-width: ${({ theme }) => theme.themeBreakPoints.desktopStart}) {
-    background-color: transparent;
     height: ${({ theme }) => theme.header.height};
   }
 `

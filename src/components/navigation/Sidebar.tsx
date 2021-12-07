@@ -1,10 +1,11 @@
 import { NavLink } from './NavLink'
-import { ActiveButton } from '../pureStyledComponents/common/Helpers'
-import { useCallback, useState } from 'react'
+import { ActiveButton, Text } from '../pureStyledComponents/common/Helpers'
+import { ReactNode, useState } from 'react'
 import styled from 'styled-components'
 import Link from 'next/link'
+import Image from 'next/image'
 
-type MenuItem = { icon?: string; title: string; to: string | MenuItem[] }
+type MenuItem = { icon?: ReactNode; title: string; to: string | { to: string; title: string }[] }
 
 const Logo = styled.div`
   background-image: url('images/logo.svg');
@@ -28,34 +29,70 @@ const Logo = styled.div`
 
 const SidebarWrapper = styled.div`
   grid-area: sidebar;
+  background: #171717;
+  height: 100vh;
 `
 const Nav = styled.nav``
-const Item = styled.li``
+const ButtonItem = styled.button`
+  align-items: center;
+  background-color: transparent;
+  border: 0px;
+  justify-content: center;
+  line-height: 24px;
+  position: relative;
+  text-decoration: none;
+  transition: all 250ms;
+  &:hover,
+  &:focus {
+  }
+  &:active {
+    color: white;
+  }
+  ${Text}
+`
+const Item = styled.li`
+  margin: 0;
+  padding-left: 20px;
+
+  .menu {
+    ${Text}
+  }
+  .active {
+    color: white;
+  }
+
+  ${Text}
+`
 const Wrapper = styled.ul``
-const Icon = styled.div``
 
 const MenuLink = ({ item }: { item: MenuItem }) => {
   const [showSubMenu, setShowSubMenu] = useState(false)
-  const { icon, title, to } = item
+  const { icon = null, title, to } = item
   const isSubMenu = typeof to === 'object'
-  // FIXME Update ts or use guard
 
-  const handleEnterMenu = useCallback(() => {
-    if (isSubMenu) {
-      setShowSubMenu((showMenu) => !showMenu)
-    }
-  }, [isSubMenu])
-
-  // TODO isSubMenu => use button
   return (
     <>
-      <Item onClick={handleEnterMenu}>
-        {icon && <Icon>{icon}</Icon>}
-        {typeof to === 'string' ? <NavLink href={to}>{title}</NavLink> : title}
-        {isSubMenu && '>'}
+      {icon}
+      <Item>
+        {isSubMenu ? (
+          <ButtonItem
+            onClick={() => setShowSubMenu((showMenu) => !showMenu)}
+          >{`${title} >`}</ButtonItem>
+        ) : (
+          <NavLink className="menu" href={to}>
+            {title}
+          </NavLink>
+        )}
       </Item>
-      {typeof to !== 'string' && showSubMenu
-        ? to.map((i) => <MenuLink item={i} key={i.title} />)
+
+      {isSubMenu && showSubMenu
+        ? to.map((target) => (
+            <Item key={target.title}>
+              <NavLink className="menu" href={target.to}>
+                {target.title}
+              </NavLink>
+            </Item>
+          ))
         : null}
     </>
   )
@@ -65,28 +102,26 @@ export const Sidebar = () => {
   const items: MenuItem[] = [
     {
       to: '/dashboard',
-      icon: '😶',
+      icon: <Image alt="dashboard-icon" height="24px" src="/icons/Dashboard.svg" width="24px" />,
       title: 'Dashboard',
     },
     {
       to: '/deposit',
-      icon: '😶',
+      icon: <Image alt="dashboard-icon" height="24px" src="/icons/Dashboard.svg" width="24px" />,
       title: 'Deposit Collateral',
     },
     {
       to: [
         {
           to: '#',
-          icon: '😶',
           title: 'AA',
         },
         {
-          to: '#',
-          icon: '😶',
+          to: '/dashboard',
           title: 'AB',
         },
       ],
-      icon: '😕',
+      icon: <Image alt="dashboard-icon" height="24px" src="/icons/Dashboard.svg" width="24px" />,
       title: 'Your Account',
     },
   ]

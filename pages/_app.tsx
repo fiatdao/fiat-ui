@@ -26,6 +26,8 @@ const MainWrapper = styled.div`
 `
 const ContentWrapper = styled.div`
   grid-area: content;
+  padding: 40px;
+  background: rgba(32, 32, 32, 0.95);
 `
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
