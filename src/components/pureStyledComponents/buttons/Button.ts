@@ -7,8 +7,8 @@ export const DisabledButtonCSS = css`
 
 export const ButtonCSS = css`
   align-items: center;
-  border-radius: calc(${({ theme }) => theme.buttonHeight} / 2);
-  border: none;
+  border-radius: 2px;
+  border: 2px;
   cursor: pointer;
   display: inline-flex;
   flex-grow: 0;
@@ -95,10 +95,11 @@ export const ButtonConnectCSS = css`
   animation-duration: 4s;
   animation-iteration-count: infinite;
   animation-timing-function: ease-in-out;
-  background-image: linear-gradient(286deg, #f60087 27%, #277bff 53%, #00f23f 69%);
   background-position: 50% 50%;
   background-size: 300%;
-  border: none;
+  background: transparent;
+  border: 1px solid #ff9574;
+  border-radius: 4px;
   color: ${({ theme }) => theme.colors.textColor};
   height: ${({ theme }) => theme.buttonHeight};
   letter-spacing: -0.51px;

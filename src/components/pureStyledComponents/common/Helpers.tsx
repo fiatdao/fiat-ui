@@ -1,5 +1,12 @@
 import { css } from 'styled-components'
 
+export const Text = css`
+  font-family: Inter;
+  font-size: 18px;
+  text-decoration: none;
+  color: #686858;
+`
+
 export const ActiveButton = css`
   &:active {
     transition: opacity 0.15s linear;

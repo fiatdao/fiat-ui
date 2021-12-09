@@ -1,7 +1,6 @@
 import { ConnectButton as BaseConnectButton } from './ConnectButton'
 import { DisconnectButton as BaseDisconnectButton } from './DisconnectButton'
 import { useWeb3Connection } from '../providers/web3ConnectionProvider'
-import Link from 'next/link'
 import styled from 'styled-components'
 
 import {
@@ -11,14 +10,14 @@ import {
 import { DisabledButtonCSS } from '@/src/components/pureStyledComponents/buttons/Button'
 
 const Wrapper = styled.header`
-  align-items: flex-end;
-  background-color: ${({ theme }) => theme.colors.mainBodyBackground};
+  grid-area: header;
   display: flex;
-  flex-shrink: 0;
+  justify-content: end;
+  align-items: center;
+  background: rgba(32, 32, 32, 0.95);
+  box-shadow: inset 0px -1px 0px #303030;
   height: ${({ theme }) => theme.header.heightMobile};
-  justify-content: space-between;
   margin: 0;
-  position: sticky;
   top: 0;
   z-index: 100;
 
@@ -29,34 +28,8 @@ const Wrapper = styled.header`
   }
 
   @media (min-width: ${({ theme }) => theme.themeBreakPoints.desktopStart}) {
-    background-color: transparent;
     height: ${({ theme }) => theme.header.height};
   }
-`
-
-const Logo = styled.div`
-  background-image: url('images/logo.svg');
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
-  background-size: contain;
-  cursor: pointer;
-  flex-shrink: 0;
-  height: 62px;
-  text-decoration: none;
-  user-select: none;
-  width: 249px;
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletLandscapeStart}) {
-    margin-bottom: -10px;
-  }
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.desktopStart}) {
-    height: 81px;
-    margin-bottom: -25px;
-    width: 366px;
-  }
-
-  ${ActiveButton}
 `
 
 const EndWrapper = styled.div`
@@ -79,7 +52,6 @@ const EndWrapper = styled.div`
     flex-direction: row;
     height: ${({ theme }) => theme.buttonHeight};
     left: auto;
-    margin: auto 0 0 0;
     position: relative;
     top: auto;
     width: auto;
@@ -105,48 +77,6 @@ const Menu = styled.nav`
     flex-direction: row;
     height: auto;
     margin: 0 40px 0 0;
-  }
-`
-
-const Item = styled.span`
-  align-items: center;
-  background-color: ${({ theme }) => theme.colors.mainBodyBackground};
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--main-text-color);
-  cursor: pointer;
-  display: flex;
-  flex-shrink: 0;
-  font-size: 1.8rem;
-  font-weight: 500;
-  height: 44px;
-  justify-content: flex-start;
-  line-height: 1.2;
-  padding: 0 ${({ theme }) => theme.layout.horizontalPaddingMobile};
-  text-decoration: none;
-  text-transform: uppercase;
-  user-select: none;
-  width: 100%;
-
-  &:last-child {
-    margin-right: 0;
-  }
-
-  ${ActiveButton}
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletPortraitStart}) {
-    padding: 0 ${({ theme }) => theme.layout.horizontalPaddingTabletPortraitStart};
-  }
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletLandscapeStart}) {
-    align-items: unset;
-    background-color: transparent;
-    border: none;
-    display: unset;
-    height: auto;
-    justify-content: unset;
-    margin-right: 30px;
-    padding: 0;
-    width: auto;
   }
 `
 
@@ -200,22 +130,8 @@ export const Header: React.FC = (props) => {
 
   return (
     <Wrapper as="header" {...props}>
-      <Link href="/" passHref>
-        <Logo />
-      </Link>
       <EndWrapper>
-        <Menu>
-          <Link href="/about" passHref>
-            <Item>About</Item>
-          </Link>
-          <Link href="/how-to" passHref>
-            <Item>How To</Item>
-          </Link>
-          <Link href="/community" passHref>
-            <Item>Community</Item>
-          </Link>
-          {isWalletConnected && <>Hello stranger...</>}
-        </Menu>
+        <Menu>{isWalletConnected && <>Hello stranger...</>}</Menu>
         <MobileMenuButton>
           <svg height="29" width="36" xmlns="http://www.w3.org/2000/svg">
             <g fill="none" stroke="#fff" strokeWidth="3">

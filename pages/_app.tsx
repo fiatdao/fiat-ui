@@ -8,34 +8,27 @@ import type { AppProps } from 'next/app'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SWRConfig } from 'swr'
 import { ThemeProvider } from 'styled-components'
-import RedirectToProfile from '@/src/containers/RedirectToProfile'
 import ToastContainer from '@/src/components/toast/Container'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
 import WrongNetwork from '@/src/containers/WrongNetwork'
-import { Footer } from '@/src/components/common/Footer'
 import { GeneralError } from '@/src/components/common/GeneralError'
 import { Header } from '@/src/containers/Header'
-import { ContainerPadding } from '@/src/components/pureStyledComponents/common/Helpers'
 import { Loading } from '@/src/components/common/Loading'
-import AppStatusProvider from '@/src/providers/AppStatusProvider'
+import { Sidebar } from '@/src/components/navigation/Sidebar'
 
-const MainWrapper = styled.main`
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  flex-shrink: 0;
-  height: calc(100vh - ${({ theme }) => theme.header.heightMobile});
-  justify-content: center;
-  padding: 50px 0;
-
-  ${ContainerPadding}
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.desktopStart}) {
-    height: calc(100vh - ${({ theme }) => theme.header.height});
-  }
+const MainWrapper = styled.div`
+  display: grid;
+  grid-template-rows: 88px auto;
+  grid-template-columns: 256px auto;
+  grid-template-areas:
+    'sidebar  header '
+    'sidebar content';
 `
-
+const ContentWrapper = styled.div`
+  grid-area: content;
+  padding: 40px;
+  background: rgba(32, 32, 32, 0.95);
+`
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
     typeof window !== 'undefined'
@@ -66,15 +59,14 @@ function App({ Component, pageProps }: AppProps) {
         <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
           <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
             <Web3ConnectionProvider fallback={<Loading />}>
-              <AppStatusProvider fallback={<Loading />}>
+              <MainWrapper>
+                <Sidebar />
                 <Header />
-                <MainWrapper>
+                <ContentWrapper>
                   <Component {...pageProps} />
-                </MainWrapper>
-                <Footer />
-                <WrongNetwork />
-                <RedirectToProfile />
-              </AppStatusProvider>
+                </ContentWrapper>
+              </MainWrapper>
+              <WrongNetwork />
             </Web3ConnectionProvider>
           </ErrorBoundary>
         </SWRConfig>
