@@ -19,8 +19,6 @@ import nullthrows from 'nullthrows'
 import { Chains, ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/chains'
 import isServer from '@/src/utils/isServer'
 
-import { Loading } from '@/src/components/common/Loading'
-
 const STORAGE_CONNECTED_WALLET = 'onboard_selectedWallet'
 // give onboard a window to update its internal state after certain actions
 const ONBOARD_STATE_DELAY = 100
@@ -215,8 +213,9 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
       console.warn('Unable to connect, onboard is not defined')
       return
     }
-    const walletSelected = await onboard.walletSelect()
-    if (walletSelected) await onboard.walletCheck()
+    if (await onboard.walletSelect()) {
+      await onboard.walletCheck()
+    }
   }
 
   const pushNetwork = async (): Promise<void> => {

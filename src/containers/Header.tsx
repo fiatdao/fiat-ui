@@ -1,7 +1,6 @@
 import { ConnectButton as BaseConnectButton } from './ConnectButton'
 import { DisconnectButton as BaseDisconnectButton } from './DisconnectButton'
 import { useWeb3Connection } from '../providers/web3ConnectionProvider'
-import Link from 'next/link'
 import styled from 'styled-components'
 
 import {
