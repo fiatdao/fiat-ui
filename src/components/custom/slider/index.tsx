@@ -1,0 +1,25 @@
+import s from './s.module.scss'
+import React from 'react'
+import cn from 'classnames'
+
+type Props = React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
+
+export const Slider: React.FC<Props> = ({ className, value, ...rest }) => {
+  const max = Number(rest.max) || 0
+  const slicedMax = Math.floor(max * 1e6) / 1e6
+  const slicedValue = Math.floor(Number(value) * 1e6) / 1e6
+  const percent = (slicedValue / slicedMax) * 100 || 0
+  const disabled = slicedMax === 0
+
+  return (
+    <input
+      {...rest}
+      className={cn(s.input, className)}
+      disabled={disabled}
+      max={disabled ? 1 : slicedMax}
+      style={{ '--track-fill': `${!disabled ? percent : 0}%` } as React.CSSProperties}
+      type="range"
+      value={!disabled ? value || '0' : '0'}
+    />
+  )
+}

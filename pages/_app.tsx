@@ -1,5 +1,6 @@
 import 'react-toastify/dist/ReactToastify.css'
 import 'sanitize.css'
+import '@/src/styles/index.scss'
 import { GlobalStyle } from 'theme/globalStyle'
 import { theme } from 'theme'
 import Head from 'next/head'
@@ -8,6 +9,7 @@ import type { AppProps } from 'next/app'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SWRConfig } from 'swr'
 import { ThemeProvider } from 'styled-components'
+import GeneralContextProvider from '@/src/components/providers/general-provider'
 import ToastContainer from '@/src/components/toast/Container'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
 import WrongNetwork from '@/src/containers/WrongNetwork'
@@ -56,20 +58,22 @@ function App({ Component, pageProps }: AppProps) {
       </Head>
       <ThemeProvider theme={theme}>
         <GlobalStyle />
-        <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
-          <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
-            <Web3ConnectionProvider fallback={<Loading />}>
-              <MainWrapper>
-                <Sidebar />
-                <Header />
-                <ContentWrapper>
-                  <Component {...pageProps} />
-                </ContentWrapper>
-              </MainWrapper>
-              <WrongNetwork />
-            </Web3ConnectionProvider>
-          </ErrorBoundary>
-        </SWRConfig>
+        <GeneralContextProvider>
+          <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
+            <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
+              <Web3ConnectionProvider fallback={<Loading />}>
+                <MainWrapper>
+                  <Sidebar />
+                  <Header />
+                  <ContentWrapper>
+                    <Component {...pageProps} />
+                  </ContentWrapper>
+                </MainWrapper>
+                <WrongNetwork />
+              </Web3ConnectionProvider>
+            </ErrorBoundary>
+          </SWRConfig>
+        </GeneralContextProvider>
         <ToastContainer />
       </ThemeProvider>
     </>
