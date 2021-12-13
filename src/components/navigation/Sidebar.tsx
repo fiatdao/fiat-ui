@@ -1,9 +1,12 @@
 import { NavLink } from './NavLink'
-import { ActiveButton, Text } from '../pureStyledComponents/common/Helpers'
-import { ReactNode, useState } from 'react'
+import { ActiveButton } from '../pureStyledComponents/common/Helpers'
+import { ReactNode } from 'react'
 import styled from 'styled-components'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Layout, Menu } from 'antd'
+import SubMenu from 'antd/lib/menu/SubMenu'
+import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons'
 
 type MenuItem = { icon?: ReactNode; title: string; to: string | { to: string; title: string }[] }
 
@@ -27,116 +30,59 @@ const Logo = styled.div`
   ${ActiveButton}
 `
 
-const SidebarWrapper = styled.div`
-  grid-area: sidebar;
-  background: #171717;
-  height: 100vh;
-`
-const Nav = styled.nav``
-const ButtonItem = styled.button`
-  align-items: center;
-  background-color: transparent;
-  border: 0px;
-  justify-content: center;
-  line-height: 24px;
-  position: relative;
-  text-decoration: none;
-  transition: all 250ms;
-  &:hover,
-  &:focus {
-  }
-  &:active {
-    color: white;
-  }
-  ${Text}
-`
-const Item = styled.li`
-  margin: 0;
-  padding-left: 20px;
-
-  .menu {
-    ${Text}
-  }
-  .active {
-    color: white;
-  }
-
-  ${Text}
-`
-const Wrapper = styled.ul``
-
-const MenuLink = ({ item }: { item: MenuItem }) => {
-  const [showSubMenu, setShowSubMenu] = useState(false)
-  const { icon = null, title, to } = item
-  const isSubMenu = typeof to === 'object'
-
-  return (
-    <>
-      {icon}
-      <Item>
-        {isSubMenu ? (
-          <ButtonItem
-            onClick={() => setShowSubMenu((showMenu) => !showMenu)}
-          >{`${title} >`}</ButtonItem>
-        ) : (
-          <NavLink className="menu" href={to}>
-            {title}
-          </NavLink>
-        )}
-      </Item>
-
-      {isSubMenu && showSubMenu
-        ? to.map((target) => (
-            <Item key={target.title}>
-              <NavLink className="menu" href={target.to}>
-                {target.title}
-              </NavLink>
-            </Item>
-          ))
-        : null}
-    </>
-  )
-}
-
 export const Sidebar = () => {
   const items: MenuItem[] = [
     {
       to: '/dashboard',
-      icon: <Image alt="dashboard-icon" height="24px" src="/icons/Dashboard.svg" width="24px" />,
+      icon: <UserOutlined />,
       title: 'Dashboard',
     },
     {
       to: '/deposit',
-      icon: <Image alt="dashboard-icon" height="24px" src="/icons/Dashboard.svg" width="24px" />,
-      title: 'Deposit Collateral',
+      icon: <UserOutlined />,
+      title: 'Open position',
     },
     {
       to: [
         {
           to: '#',
-          title: 'AA',
+          title: 'submenu1',
         },
         {
           to: '/dashboard',
-          title: 'AB',
+          title: 'submenu2',
         },
       ],
-      icon: <Image alt="dashboard-icon" height="24px" src="/icons/Dashboard.svg" width="24px" />,
+      icon: <UserOutlined />,
       title: 'Your Account',
     },
   ]
   return (
-    <SidebarWrapper>
+    <Layout.Sider>
       <Link href="/" passHref>
         <Logo />
       </Link>
-      <Nav>
-        <Wrapper>
-          {items.map((i) => (
-            <MenuLink item={i} key={i.title} />
-          ))}
-        </Wrapper>
-      </Nav>
-    </SidebarWrapper>
+      <Menu
+        defaultOpenKeys={['sub1']}
+        defaultSelectedKeys={['1']}
+        mode="inline"
+        style={{ paddingTop: '30px', height: '100%', background: 'transparent' }}
+      >
+        {items.map((item, index) => {
+          return Array.isArray(item.to) ? (
+            <SubMenu icon={<UserOutlined />} key={index} title={item.title}>
+              {item.to.map((subitem) => {
+                return <Menu.Item key={subitem.title}>{subitem.title}</Menu.Item>
+              })}
+            </SubMenu>
+          ) : (
+            <Menu.Item>
+              <NavLink href={item.to}>{item.title}</NavLink>
+            </Menu.Item>
+          )
+        })}
+        )
+      </Menu>
+    </Layout.Sider>
   )
 }

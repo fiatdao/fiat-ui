@@ -3,34 +3,13 @@ import { DisconnectButton as BaseDisconnectButton } from './DisconnectButton'
 import { useWeb3Connection } from '../providers/web3ConnectionProvider'
 import styled from 'styled-components'
 
+import { Layout } from 'antd'
+
 import {
   ActiveButton,
   ContainerPadding,
 } from '@/src/components/pureStyledComponents/common/Helpers'
 import { DisabledButtonCSS } from '@/src/components/pureStyledComponents/buttons/Button'
-
-const Wrapper = styled.header`
-  grid-area: header;
-  display: flex;
-  justify-content: end;
-  align-items: center;
-  background: rgba(32, 32, 32, 0.95);
-  box-shadow: inset 0px -1px 0px #303030;
-  height: ${({ theme }) => theme.header.heightMobile};
-  margin: 0;
-  top: 0;
-  z-index: 100;
-
-  ${ContainerPadding}
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletLandscapeStart}) {
-    position: relative;
-  }
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.desktopStart}) {
-    height: ${({ theme }) => theme.header.height};
-  }
-`
 
 const EndWrapper = styled.div`
   display: flex;
@@ -125,13 +104,13 @@ const MobileMenuButton = styled.button`
   }
 `
 
-export const Header: React.FC = (props) => {
+export const Header: React.FC = () => {
   const { isWalletConnected } = useWeb3Connection()
 
   return (
-    <Wrapper as="header" {...props}>
+    <Layout.Header style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
       <EndWrapper>
-        <Menu>{isWalletConnected && <>Hello stranger...</>}</Menu>
+        <Menu>{isWalletConnected && <>Connected.</>}</Menu>
         <MobileMenuButton>
           <svg height="29" width="36" xmlns="http://www.w3.org/2000/svg">
             <g fill="none" stroke="#fff" strokeWidth="3">
@@ -144,6 +123,6 @@ export const Header: React.FC = (props) => {
         <ConnectButton />
         <DisconnectButton />
       </EndWrapper>
-    </Wrapper>
+    </Layout.Header>
   )
 }
