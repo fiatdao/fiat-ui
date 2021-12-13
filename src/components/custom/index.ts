@@ -3,7 +3,6 @@ export * from './dropdown'
 export * from './error-boundary'
 export { default as ExpandableCard } from './expandable-card'
 export { default as ExternalLink } from './externalLink'
-export { default as GasFeeList } from './gas-fee-list'
 export { default as Grid } from './grid'
 
 export { default as Icon } from './icon'
