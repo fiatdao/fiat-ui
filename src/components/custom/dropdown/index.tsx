@@ -1,8 +1,9 @@
 import s from './s.module.scss'
-import React, { HTMLProps } from 'react'
+import { NavLink } from '../../navigation/NavLink'
+import React, { HTMLProps, ReactNode } from 'react'
 import ReactDOM from 'react-dom'
 import { Modifier, usePopper } from 'react-popper'
-import Link, { LinkProps } from 'next/link'
+import { LinkProps } from 'next/link'
 import * as PopperJS from '@popperjs/core'
 import { ModifierPhases } from '@popperjs/core'
 import outy from 'outy'
@@ -104,8 +105,9 @@ export const Dropdown: React.FC<DropdownProps> = ({ children, content, options }
   )
 }
 
+type LinkProps2 = LinkProps & { children: ReactNode }
 export type DropdownListProps = {
-  items: (HTMLProps<HTMLButtonElement> | HTMLProps<HTMLLinkElement> | LinkProps)[]
+  items: (HTMLProps<HTMLButtonElement> | HTMLProps<HTMLLinkElement> | LinkProps2)[]
   options?: Partial<PopperJS.Options>
   children: ({
     open,
@@ -123,23 +125,23 @@ export const DropdownList: React.FC<DropdownListProps> = ({ children, items, opt
     <Dropdown
       content={(setOpen) => (
         <ul className={s.tokenSelectList}>
-          {items.map(({ onClick, ...rest }, idx) => {
-            if (rest.href) {
+          {items.map(({ children, href, ...rest }, idx) => {
+            if (href) {
               return (
                 <li key={idx}>
                   {/**
                    @ts-ignore */}
-                  <a
-                    href={rest.href}
+                  <NavLink
+                    href={href.toString()}
                     {...rest}
                     className={s.tokenSelectListButton}
-                    onClick={(e) => {
+                    onClick={() => {
                       // if (onClick) onClick(e);
                       setOpen(false)
                     }}
                   >
-                    {rest.children}
-                  </a>
+                    {children}
+                  </NavLink>
                 </li>
               )
             }
@@ -150,10 +152,10 @@ export const DropdownList: React.FC<DropdownListProps> = ({ children, items, opt
                 <li key={idx}>
                   {/**
                    @ts-ignore */}
-                  <Link
+                  <NavLink
                     {...rest}
                     className={s.tokenSelectListButton}
-                    onClick={(e) => {
+                    onClick={() => {
                       // if (onClick) onClick(e);
                       setOpen(false)
                     }}

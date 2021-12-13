@@ -74,10 +74,10 @@ export const TokenAmount: React.FC<TokenAmountType> = ({
         {max?.isFinite() && (
           <button
             className={cn('button-ghost', s.maxBtn)}
-            disabled={rest.disabled || max?.isEqualTo(BigNumber.ZERO)}
+            disabled={rest.disabled || max.isEqualTo(BigNumber.ZERO)}
             onClick={() =>
               onChange(
-                (max?.toFormat as any)({
+                max.toFormat({
                   groupSeparator: '',
                   decimalSeparator: '.',
                 }),
