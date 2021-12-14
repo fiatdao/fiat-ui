@@ -1,0 +1,11 @@
+.sidebar {
+  :global(.ant-menu-inline .ant-menu-selected),
+  :global(.ant-menu-inline .ant-menu-item-selected) {
+    &::after {
+      left: 0;
+      right: auto;
+      border: 0;
+      border-left: 3px solid rebeccapurple;
+    }
+  }
+}

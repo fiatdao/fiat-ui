@@ -2,33 +2,16 @@ import { NavLink } from './NavLink'
 import { ActiveButton } from '../pureStyledComponents/common/Helpers'
 import { ReactNode } from 'react'
 import styled from 'styled-components'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Layout, Menu } from 'antd'
-import SubMenu from 'antd/lib/menu/SubMenu'
-import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons'
+import { Menu } from 'antd'
+import { UserOutlined } from '@ant-design/icons'
+import { Sidebar as Sider } from '@/src/components/antd'
 
-type MenuItem = { icon?: ReactNode; title: string; to: string | { to: string; title: string }[] }
-
-const Logo = styled.div`
-  background-image: url('images/logo.svg');
-  background-repeat: no-repeat;
-  background-size: contain;
-  cursor: pointer;
-  flex-shrink: 0;
-  height: 40px;
-  text-decoration: none;
-  user-select: none;
-  width: auto;
-  margin-left: 20px;
-  margin-top: 24px;
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletLandscapeStart}) {
-    margin-bottom: -10px;
-  }
-
-  ${ActiveButton}
-`
+type MenuItem = {
+  icon?: ReactNode
+  title: string
+  to: string
+  key: string
+}
 
 export const Sidebar = () => {
   const items: MenuItem[] = [
@@ -36,53 +19,36 @@ export const Sidebar = () => {
       to: '/dashboard',
       icon: <UserOutlined />,
       title: 'Dashboard',
+      key: 'dashboard',
     },
     {
-      to: '/deposit',
+      to: '/open-position',
       icon: <UserOutlined />,
       title: 'Open position',
+      key: 'open-position',
     },
     {
-      to: [
-        {
-          to: '#',
-          title: 'submenu1',
-        },
-        {
-          to: '/dashboard',
-          title: 'submenu2',
-        },
-      ],
+      to: '/your-positions',
       icon: <UserOutlined />,
-      title: 'Your Account',
+      title: 'Your Positions',
+      key: 'your-positions',
+    },
+    {
+      to: '/liquidations',
+      icon: <UserOutlined />,
+      title: 'Liquidations',
+      key: 'liquidations',
     },
   ]
+
   return (
-    <Layout.Sider>
-      <Link href="/" passHref>
-        <Logo />
-      </Link>
-      <Menu
-        defaultOpenKeys={['sub1']}
-        defaultSelectedKeys={['1']}
-        mode="inline"
-        style={{ paddingTop: '30px', height: '100%', background: 'transparent' }}
-      >
-        {items.map((item, index) => {
-          return Array.isArray(item.to) ? (
-            <SubMenu icon={<UserOutlined />} key={index} title={item.title}>
-              {item.to.map((subitem) => {
-                return <Menu.Item key={subitem.title}>{subitem.title}</Menu.Item>
-              })}
-            </SubMenu>
-          ) : (
-            <Menu.Item>
-              <NavLink href={item.to}>{item.title}</NavLink>
-            </Menu.Item>
-          )
-        })}
-        )
-      </Menu>
-    </Layout.Sider>
+    <Sider>
+      {items.map((item) => (
+        <Menu.Item icon={item.icon} key={item.key}>
+          <NavLink href={item.to}>{item.title}</NavLink>
+        </Menu.Item>
+      ))}
+      )
+    </Sider>
   )
 }

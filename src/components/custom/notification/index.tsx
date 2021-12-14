@@ -68,7 +68,7 @@ export {}
 //             have {getStrongText(getRelativeTime(n.metadata.displayDuration))} to stake your{' '}
 //             {FDTToken.symbol}
 //           </Text>
-//           <Link className="button-primary" to="/senatus/wallet/deposit">
+//           <Link className="button-primary" to="/senatus/wallet/open-position">
 //             Deposit now
 //           </Link>
 //         </>,
