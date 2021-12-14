@@ -1,0 +1,8 @@
+$first-color: rgba(255, 80, 139, 0.37) 0%;
+$second-color: rgba(32, 32, 32, 1) 100%;
+
+.wrapperContent {
+  background: radial-gradient(50% 50% at 50% 50%, $first-color, $second-color);
+  padding: 30px;
+  height: 100vh;
+}
