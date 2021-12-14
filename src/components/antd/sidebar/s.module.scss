@@ -1,11 +1,33 @@
 .sidebar {
-  :global(.ant-menu-inline .ant-menu-selected),
-  :global(.ant-menu-inline .ant-menu-item-selected) {
+  background: var(--theme-body-color);
+
+  :global(.ant-menu) {
+    background: var(--theme-card-color);
+    color: var(--theme-primary-color);
+
+    a {
+      color: var(--theme-primary-color);
+    }
+
+    :global(.ant-menu-item) {
+      border: 0;
+      border-bottom: 1px solid;
+      border-image: linear-gradient(90deg, transparent, var(--theme-border-color), transparent) 1;
+    }
+  }
+
+  :global(.ant-menu-selected),
+  :global(.ant-menu-item-selected) {
+    // TODO: get rid of the `!important` keyword
+    background-color: var(---theme-card-color) !important;
+    width: 100%;
+
     &::after {
       left: 0;
       right: auto;
       border: 0;
-      border-left: 3px solid rebeccapurple;
+      border-left: 4px solid;
+      border-image: var(--gradient-secondary-pink) 0 100%;
     }
   }
 }

@@ -32,7 +32,7 @@ const Button: React.FC<ButtonProps> = (props) => {
       type={btnType}
       {...btnProps}
     >
-      {props.children}
+      {children}
     </AntdButton>
   )
 }
