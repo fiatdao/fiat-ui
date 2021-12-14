@@ -2,30 +2,9 @@ import s from './s.module.scss'
 import cn from 'classnames'
 import { SiderProps } from 'antd/lib/layout'
 import React, { useState } from 'react'
-import styled from 'styled-components'
-import Link from 'next/link'
 import { Button, Layout } from 'antd'
-import { LeftOutlined, RightOutlined } from '@ant-design/icons'
-// import { Button } from '@/src/components/antd'
-
-const Logo = styled.div`
-  background-image: url('images/logo.svg');
-  background-repeat: no-repeat;
-  background-size: contain;
-  cursor: pointer;
-  flex-shrink: 0;
-  height: 40px;
-  text-decoration: none;
-  user-select: none;
-  width: 60%;
-  //width: auto;
-  margin-left: 20px;
-  margin-top: 24px;
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletLandscapeStart}) {
-    margin-bottom: -10px;
-  }
-`
+import Chevron from '@/src/components/assets/svg/chevron.svg'
+import FiatDaoLogo from '@/src/components/assets/svg/fiat-dao-logo.svg'
 
 const Sidebar: React.FC<SiderProps> = ({ children, className, ...props }) => {
   const [collapsed, setCollapsed] = useState(false)
@@ -38,14 +17,17 @@ const Sidebar: React.FC<SiderProps> = ({ children, className, ...props }) => {
       collapsed={collapsed}
       onCollapse={setCollapsed}
     >
-      <div style={{ display: 'flex', alignContent: 'space-between', marginBottom: '24px' }}>
-        <Link href="/" passHref>
-          <Logo />
-        </Link>
+      <div className="logo-wrapper">
+        <div className="logo">
+          <FiatDaoLogo />
+          {!collapsed && <p className="app-name">App</p>}
+        </div>
         <div>
-          <Button onClick={() => setCollapsed((prev) => !prev)}>
-            {collapsed ? <RightOutlined /> : <LeftOutlined />}
-          </Button>
+          <Button
+            icon={<Chevron className={cn('chevron', { collapsed })} />}
+            onClick={() => setCollapsed((prev) => !prev)}
+            type="primary"
+          />
         </div>
       </div>
       {children}

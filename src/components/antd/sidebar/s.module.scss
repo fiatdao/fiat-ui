@@ -1,6 +1,49 @@
 .sidebar {
   background: var(--theme-body-color);
 
+  :global(.logo-wrapper) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    margin: 12px 8px;
+
+    :global(.logo) {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      :global(.app-name) {
+        font-weight: 600;
+        font-size: 24px;
+        line-height: 24px;
+      }
+    }
+  }
+
+  &:global(.ant-layout-sider-collapsed) {
+    :global(.logo-wrapper) {
+      flex-direction: column-reverse;
+    }
+  }
+
+
+  :global(.ant-btn.ant-btn-primary) {
+    background-color: #2d2d2d;
+    border-color: #2d2d2d;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+
+    :global(.chevron) {
+      transition: 0.5s ease !important;
+
+      &:global(.collapsed) {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
   :global(.ant-menu) {
     background: var(--theme-card-color);
     color: var(--theme-primary-color);
