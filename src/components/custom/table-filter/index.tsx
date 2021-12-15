@@ -1,7 +1,7 @@
-import Form from '../../../../../fiat-dapp/src/components/antd/form'
-import Popover from '../../../../../fiat-dapp/src/components/antd/popover'
 import React, { useState } from 'react'
 import AntdForm from 'antd/lib/form'
+import Form from '@/src/components/antd/form'
+import Popover from '@/src/components/antd/popover'
 
 import Badge from '@/src/components/custom/badge'
 import Icon from '@/src/components/custom/icon'

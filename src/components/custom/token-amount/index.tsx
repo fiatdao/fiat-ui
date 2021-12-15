@@ -1,9 +1,9 @@
 import s from './s.module.scss'
-import Slider from '../../../../../fiat-dapp/src/components/antd/slider'
 import React from 'react'
 import BigNumber from 'bignumber.js'
 import { isMobile } from 'react-device-detect'
 import cn from 'classnames'
+import Slider from '@/src/components/antd/slider'
 import { MAX_UINT_256, formatBigValue } from '@/src/web3/utils'
 
 import Grid from '@/src/components/custom/grid'

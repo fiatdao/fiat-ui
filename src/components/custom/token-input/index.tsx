@@ -1,9 +1,9 @@
 import s from './s.module.scss'
-import Input from '../../../../../fiat-dapp/src/components/antd/input'
 import React from 'react'
 import { InputProps as AntdInputProps } from 'antd/lib/input/Input'
 import cn from 'classnames'
 import { isAddress } from 'web3-utils'
+import Input from '@/src/components/antd/input'
 
 import Identicon from '@/src/components/custom/identicon'
 
