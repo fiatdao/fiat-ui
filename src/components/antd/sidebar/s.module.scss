@@ -1,3 +1,5 @@
+@import 'src/styles/text';
+
 .sidebar {
   background: var(--theme-body-color);
 
@@ -48,14 +50,35 @@
     background: var(--theme-card-color);
     color: var(--theme-primary-color);
 
-    a {
-      color: var(--theme-primary-color);
-    }
-
     :global(.ant-menu-item) {
       border: 0;
       border-bottom: 1px solid;
       border-image: linear-gradient(90deg, transparent, var(--theme-border-color), transparent) 1;
+
+      a {
+        @include font-p2-semi-500;
+        color: var(--theme-secondary-color);
+
+        &:global(.active) {
+          background: var(--gradient-secondary-pink);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+      }
+
+      &:global(.ant-menu-item-active) {
+        a {
+          color: var(--theme-primary-color);
+        }
+
+        &:not(:global(.ant-menu-item-selected)) {
+          svg {
+            path {
+              stroke: white;
+            }
+          }
+        }
+      }
     }
   }
 

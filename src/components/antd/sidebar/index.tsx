@@ -16,6 +16,7 @@ const Sidebar: React.FC<SiderProps> = ({ children, className, ...props }) => {
       className={cn(s.sidebar, className)}
       collapsed={collapsed}
       onCollapse={setCollapsed}
+      width={256}
     >
       <div className="logo-wrapper">
         <div className="logo">

@@ -59,7 +59,6 @@ export const Sidebar = () => {
         defaultSelectedKeys={['1']}
         mode="inline"
         onSelect={(options) => {
-          console.log({ options })
           setSelectedItem(options.key)
         }}
       >
