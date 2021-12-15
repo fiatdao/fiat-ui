@@ -5,7 +5,9 @@ import { TokenIconNames } from '@/src/components/custom/icon'
 import { formatUSD } from '@/src/web3/utils'
 
 // FixMe: Create a proper config file
-const config: any = {}
+const config: any = {
+  tokens: {},
+}
 
 export enum KnownTokens {
   FDT = 'FDT',
