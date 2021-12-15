@@ -1,8 +1,19 @@
-$first-color: rgba(255, 80, 139, 0.37) 0%;
-$second-color: rgba(32, 32, 32, 1) 100%;
-
-.wrapperContent {
-  background: radial-gradient(50% 50% at 50% 50%, $first-color, $second-color);
-  padding: 30px;
+.bg {
+  background: var(--theme-body-color);
   height: 100vh;
+  display: flex;
+  border: 1px solid var(--theme-border-color);
+  justify-content: center;
+  &__gradient {
+    width: 900px;
+    height: 901px;
+    background: radial-gradient(
+      50% 50% at 50% 50%,
+      rgba(255, 80, 139, 0.17) 0%,
+      rgba(255, 80, 139, 0) 100%
+    );
+  }
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
