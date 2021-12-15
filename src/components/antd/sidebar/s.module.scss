@@ -8,7 +8,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 24px;
-    margin: 12px 8px;
+    margin: 27px 20px 60px 23px;
 
     :global(.logo) {
       display: flex;
@@ -26,6 +26,8 @@
   &:global(.ant-layout-sider-collapsed) {
     :global(.logo-wrapper) {
       flex-direction: column-reverse;
+      gap: 56px;
+      margin-bottom: 50px;
     }
   }
 
@@ -86,10 +88,11 @@
     }
   }
 
-  :global(.ant-menu-selected),
-  :global(.ant-menu-item-selected) {
-    // TODO: get rid of the `!important` keyword
-    background-color: var(---theme-card-color) !important;
+  :global(.ant-menu-vertical .ant-menu-item),
+  :global(.ant-menu-vertical-left .ant-menu-item),
+  :global(.ant-menu-vertical-right .ant-menu-item),
+  :global(.ant-menu-inline .ant-menu-item) {
+    background-color: var(---theme-card-color);
     width: 100%;
 
     &::after {

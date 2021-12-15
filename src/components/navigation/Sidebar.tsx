@@ -1,6 +1,6 @@
 import { NavLink } from './NavLink'
 import { useRouter } from 'next/router'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { Menu } from 'antd'
 import DashboardInactive from '@/src/components/assets/svg/dashboard-inactive.svg'
 import DashboardActive from '@/src/components/assets/svg/dashboard-active.svg'
@@ -53,22 +53,19 @@ const items: MenuItem[] = [
 
 export const Sidebar = () => {
   const { pathname } = useRouter()
-  const basePath = pathname.split('/')[1]
-  const [selectedItem, setSelectedItem] = useState(basePath)
-  const defaultSelectedKeys = items.find(({ key }) => key === basePath)?.key ?? '1'
+  const [selectedItem, setSelectedItem] = useState<MenuItem>()
+
+  useEffect(() => {
+    const currentItem = items.find(({ to }) => to === pathname)
+    setSelectedItem(currentItem ?? undefined)
+  }, [pathname])
 
   return (
     <Sider>
-      <Menu
-        defaultSelectedKeys={[defaultSelectedKeys]}
-        mode="inline"
-        onSelect={(options) => {
-          setSelectedItem(options.key)
-        }}
-      >
+      <Menu mode="inline" selectedKeys={[selectedItem?.key ?? '']}>
         {items.map((item) => (
           <Menu.Item
-            icon={selectedItem === item.key ? item.iconSelected : item.icon}
+            icon={selectedItem?.key === item.key ? item.iconSelected : item.icon}
             key={item.key}
           >
             <NavLink href={item.to}>{item.title}</NavLink>
