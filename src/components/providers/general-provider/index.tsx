@@ -11,7 +11,7 @@ export type GeneralContextType = {
 
 const GeneralContext = React.createContext<GeneralContextType>({} as any)
 
-const defaultTheme = 'light'
+const defaultTheme = 'dark'
 
 type Props = {
   children: React.ReactNode
