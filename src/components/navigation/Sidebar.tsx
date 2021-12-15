@@ -1,4 +1,5 @@
 import { NavLink } from './NavLink'
+import { useRouter } from 'next/router'
 import { ReactNode, useState } from 'react'
 import { Menu } from 'antd'
 import DashboardInactive from '@/src/components/assets/svg/dashboard-inactive.svg'
@@ -19,44 +20,47 @@ type MenuItem = {
   key: string
 }
 
-export const Sidebar = () => {
-  const items: MenuItem[] = [
-    {
-      to: '/dashboard',
-      icon: <DashboardInactive />,
-      iconSelected: <DashboardActive />,
-      title: 'Dashboard',
-      key: 'dashboard',
-    },
-    {
-      to: '/open-position',
-      icon: <OpenPositionInactive />,
-      iconSelected: <OpenPositionActive />,
-      title: 'Open position',
-      key: 'open-position',
-    },
-    {
-      to: '/your-positions',
-      icon: <YourPositionsInactive />,
-      iconSelected: <YourPositionsActive />,
-      title: 'Your Positions',
-      key: 'your-positions',
-    },
-    {
-      to: '/liquidations',
-      icon: <LiquidationsInactive />,
-      iconSelected: <LiquidationsActive />,
-      title: 'Liquidations',
-      key: 'liquidations',
-    },
-  ]
+const items: MenuItem[] = [
+  {
+    to: '/dashboard',
+    icon: <DashboardInactive />,
+    iconSelected: <DashboardActive />,
+    title: 'Dashboard',
+    key: 'dashboard',
+  },
+  {
+    to: '/open-position',
+    icon: <OpenPositionInactive />,
+    iconSelected: <OpenPositionActive />,
+    title: 'Open position',
+    key: 'open-position',
+  },
+  {
+    to: '/your-positions',
+    icon: <YourPositionsInactive />,
+    iconSelected: <YourPositionsActive />,
+    title: 'Your Positions',
+    key: 'your-positions',
+  },
+  {
+    to: '/liquidations',
+    icon: <LiquidationsInactive />,
+    iconSelected: <LiquidationsActive />,
+    title: 'Liquidations',
+    key: 'liquidations',
+  },
+]
 
-  const [selectedItem, setSelectedItem] = useState(items[0].key)
+export const Sidebar = () => {
+  const { pathname } = useRouter()
+  const basePath = pathname.split('/')[1]
+  const [selectedItem, setSelectedItem] = useState(basePath)
+  const defaultSelectedKeys = items.find(({ key }) => key === basePath)?.key ?? '1'
 
   return (
     <Sider>
       <Menu
-        defaultSelectedKeys={['1']}
+        defaultSelectedKeys={[defaultSelectedKeys]}
         mode="inline"
         onSelect={(options) => {
           setSelectedItem(options.key)

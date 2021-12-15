@@ -58,11 +58,15 @@
       a {
         @include font-p2-semi-500;
         color: var(--theme-secondary-color);
+      }
 
-        &:global(.active) {
-          background: var(--gradient-secondary-pink);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+      &:global(.ant-menu-item-selected) {
+        a {
+          &:global(.active) {
+            background: var(--gradient-secondary-pink);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
         }
       }
 
