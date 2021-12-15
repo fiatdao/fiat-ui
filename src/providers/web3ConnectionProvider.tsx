@@ -214,7 +214,11 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
       return
     }
     if (await onboard.walletSelect()) {
-      await onboard.walletCheck()
+      const isWalletCheck = await onboard.walletCheck()
+      if (isWalletCheck) {
+        const { address } = onboard.getState()
+        setAddress(address)
+      }
     }
   }
 

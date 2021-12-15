@@ -1,5 +1,5 @@
 import { ConnectButton as BaseConnectButton } from './ConnectButton'
-import { DisconnectButton as BaseDisconnectButton } from './DisconnectButton'
+import ConnectedWallet from './ConnectedWallet'
 import { useWeb3Connection } from '../providers/web3ConnectionProvider'
 import styled from 'styled-components'
 
@@ -67,14 +67,6 @@ const ConnectButton = styled(BaseConnectButton)`
   }
 `
 
-const DisconnectButton = styled(BaseDisconnectButton)`
-  display: none;
-
-  @media (min-width: ${({ theme }) => theme.themeBreakPoints.tabletLandscapeStart}) {
-    display: flex;
-  }
-`
-
 const MobileMenuButton = styled.button`
   align-items: center;
   background-color: transparent;
@@ -105,12 +97,12 @@ const MobileMenuButton = styled.button`
 `
 
 export const Header: React.FC = () => {
-  const { isWalletConnected } = useWeb3Connection()
+  const { address, isWalletConnected } = useWeb3Connection()
 
   return (
     <Layout.Header style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
       <EndWrapper>
-        <Menu>{isWalletConnected && <>Connected.</>}</Menu>
+        <Menu>{isWalletConnected && address && <>Connected.</>}</Menu>
         <MobileMenuButton>
           <svg height="29" width="36" xmlns="http://www.w3.org/2000/svg">
             <g fill="none" stroke="#fff" strokeWidth="3">
@@ -120,8 +112,7 @@ export const Header: React.FC = () => {
             </g>
           </svg>
         </MobileMenuButton>
-        <ConnectButton />
-        <DisconnectButton />
+        {isWalletConnected && address ? <ConnectedWallet /> : <ConnectButton />}
       </EndWrapper>
     </Layout.Header>
   )
