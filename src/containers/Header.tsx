@@ -1,10 +1,13 @@
 import { ConnectButton as BaseConnectButton } from './ConnectButton'
 import ConnectedWallet from './ConnectedWallet'
 import { useWeb3Connection } from '../providers/web3ConnectionProvider'
+import { Text } from '../components/custom/typography'
+import { routesConfig } from '../components/navigation/config'
 import styled from 'styled-components'
 
 import { Layout } from 'antd'
 
+import { useRouter } from 'next/router'
 import {
   ActiveButton,
   ContainerPadding,
@@ -98,11 +101,15 @@ const MobileMenuButton = styled.button`
 
 export const Header: React.FC = () => {
   const { address, isWalletConnected } = useWeb3Connection()
+  const router = useRouter()
+  const title: string = routesConfig[router.route].title
 
   return (
     <Layout.Header style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+      <Text color="white" style={{ flex: '1' }} type="h2">
+        {title}
+      </Text>
       <EndWrapper>
-        <Menu>{isWalletConnected && address && <>Connected.</>}</Menu>
         <MobileMenuButton>
           <svg height="29" width="36" xmlns="http://www.w3.org/2000/svg">
             <g fill="none" stroke="#fff" strokeWidth="3">
