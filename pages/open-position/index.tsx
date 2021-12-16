@@ -2,8 +2,11 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 
-import { useCallback, useState } from 'react'
+import { ReactNode, useCallback, useState } from 'react'
 import { Button } from 'antd'
+import BarnBridge from '@/src/components/assets/svg/barn-bridge.svg'
+import Element from '@/src/components/assets/svg/element.svg'
+import Notional from '@/src/components/assets/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import { Grid, Tabs } from '@/src/components/custom'
@@ -93,12 +96,12 @@ const Columns: ColumnsType<any> = [
 
 const ALL_ASSETS = ['BarnBridge', 'Notional', 'Element'] as const
 type Assets = typeof ALL_ASSETS[number]
-type FilterData = Record<Assets, { active: boolean; name: string }>
+type FilterData = Record<Assets, { active: boolean; name: string; icon: ReactNode }>
 
 const FILTERS: FilterData = {
-  BarnBridge: { active: false, name: 'BarnBridge' },
-  Notional: { active: false, name: 'Notional' },
-  Element: { active: false, name: 'Element' },
+  BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
+  Notional: { active: false, name: 'Notional', icon: <Notional /> },
+  Element: { active: false, name: 'Element', icon: <Element /> },
 }
 
 const OpenPosition = () => {
@@ -166,6 +169,7 @@ const OpenPosition = () => {
                 className={cn(s.pill, {
                   [s.active]: filters[asset].active,
                 })}
+                icon={filters[asset].icon}
                 key={asset}
                 onClick={() => activateFilter(asset)}
                 shape="round"

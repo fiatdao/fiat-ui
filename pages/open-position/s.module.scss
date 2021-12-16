@@ -1,5 +1,10 @@
 .filterWrapper {
   margin: 2rem 0;
+  :global(.ant-btn-round) {
+    svg {
+      margin-right: 1rem;
+    }
+  }
 }
 
 .pill {
