@@ -11,6 +11,13 @@ const color_8 = '#3b1f4a'
 const color_9 = '#180821'
 const error = '#db3a3d'
 const textColor = '#fff'
+const borderColor = '#303030'
+const cardColor = '#17171799'
+const defaultColor = '#b5b5b5'
+const overlayColor = '#171717'
+const secondaryColor = '#b5b5b5'
+const iconColor = '#606268'
+const primaryColor = '#fff'
 
 export const theme = {
   buttonHeight: '44px',
@@ -41,6 +48,13 @@ export const theme = {
     error: error,
     mainBodyBackground: color_9,
     textColor: textColor,
+    border: borderColor,
+    card: cardColor,
+    default: defaultColor,
+    overlay: overlayColor,
+    secondary: secondaryColor,
+    icon: iconColor,
+    primary: primaryColor,
   },
   dropdown: {
     background: '#fff',

@@ -31,7 +31,8 @@
     "src/**/*",
     "types/**/*",
     "types/global.d.ts",
-    "next-env.d.ts"
+    "next-env.d.ts",
+    "additional-bignumber.d.ts"
   ],
   "exclude": [
     "node_modules"
