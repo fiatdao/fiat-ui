@@ -102,7 +102,7 @@ const MobileMenuButton = styled.button`
 export const Header: React.FC = () => {
   const { address, isWalletConnected } = useWeb3Connection()
   const router = useRouter()
-  const title: string = routesConfig[router.route].title
+  const title: string = routesConfig[router.route]?.title || '-'
 
   return (
     <Layout.Header style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>

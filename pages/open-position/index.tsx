@@ -2,12 +2,17 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 
-import { useCallback, useState } from 'react'
+import { ReactNode, useCallback, useState } from 'react'
 import { Button } from 'antd'
+import Link from 'next/link'
+import BarnBridge from '@/src/components/assets/svg/barn-bridge.svg'
+import Element from '@/src/components/assets/svg/element.svg'
+import Notional from '@/src/components/assets/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import { Grid, Tabs } from '@/src/components/custom'
 import { WrapperContent } from '@/src/components/custom/wrapper-content'
+import ToggleSwitch from '@/src/components/custom/toggle-switch'
 
 const data = [
   {
@@ -16,7 +21,27 @@ const data = [
     maturity: '0',
     faceValue: '0',
     currentValue: '0',
-    action: <Button>Test</Button>,
+    action: <Button>Open position</Button>,
+  },
+  {
+    protocol: 'Element',
+    collateral: 'ePyvUSDC...',
+    maturity: '0',
+    faceValue: '0',
+    currentValue: '0',
+    action: (
+      <Link href="/open-position/test" passHref>
+        <Button>Manage</Button>
+      </Link>
+    ),
+  },
+  {
+    protocol: 'Notional',
+    collateral: 'ffDAI...',
+    maturity: '0',
+    faceValue: '0',
+    currentValue: '0',
+    action: <Text type="p3">No assets</Text>,
   },
 ]
 
@@ -93,17 +118,18 @@ const Columns: ColumnsType<any> = [
 
 const ALL_ASSETS = ['BarnBridge', 'Notional', 'Element'] as const
 type Assets = typeof ALL_ASSETS[number]
-type FilterData = Record<Assets, { active: boolean; name: string }>
+type FilterData = Record<Assets, { active: boolean; name: string; icon: ReactNode }>
 
 const FILTERS: FilterData = {
-  BarnBridge: { active: false, name: 'BarnBridge' },
-  Notional: { active: false, name: 'Notional' },
-  Element: { active: false, name: 'Element' },
+  BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
+  Notional: { active: false, name: 'Notional', icon: <Notional /> },
+  Element: { active: false, name: 'Element', icon: <Element /> },
 }
 
 const OpenPosition = () => {
   const [activeTabKey, setActiveTabKey] = useState('byIssuer')
   const [filters, setFilters] = useState<FilterData>(FILTERS)
+  const [inMyWallet, setInMyWallet] = useState(false)
 
   console.log(filters)
   const activateFilter = useCallback((filterName: Assets | null) => {
@@ -166,6 +192,7 @@ const OpenPosition = () => {
                 className={cn(s.pill, {
                   [s.active]: filters[asset].active,
                 })}
+                icon={filters[asset].icon}
                 key={asset}
                 onClick={() => activateFilter(asset)}
                 shape="round"
@@ -176,6 +203,13 @@ const OpenPosition = () => {
               </Button>
             )
           })}
+          <ToggleSwitch
+            checked={inMyWallet}
+            label="In my wallet"
+            onChange={(e) => {
+              setInMyWallet(e.target.checked)
+            }}
+          />
         </div>
         <div className={cn('card')}>
           <Table
