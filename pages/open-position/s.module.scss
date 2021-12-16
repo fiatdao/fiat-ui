@@ -1,0 +1,12 @@
+.filterWrapper {
+  margin: 2rem 0;
+}
+
+.pill {
+  background-color: transparent;
+  border-color: var(--theme-border-color);
+  margin-right: 1rem;
+  &.active {
+    background: linear-gradient(90deg, rgba(255, 149, 116, 0.1) 0%, rgba(255, 76, 140, 0.1) 100%);
+  }
+}

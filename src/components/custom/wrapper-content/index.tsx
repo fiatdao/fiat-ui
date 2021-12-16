@@ -9,5 +9,9 @@ export type WrapperContent = {
 export const WrapperContent: React.FC<WrapperContent> = (props) => {
   const { children, className } = props
 
-  return <div className={cn(s.wrapperContent, className)}>{children}</div>
+  return (
+    <div className={cn(s.bg, className)}>
+      <div className={cn(s.bg__gradient)}>{children}</div>
+    </div>
+  )
 }

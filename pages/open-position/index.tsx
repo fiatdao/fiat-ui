@@ -1,7 +1,8 @@
+import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Button } from 'antd'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
@@ -90,8 +91,33 @@ const Columns: ColumnsType<any> = [
   },
 ]
 
+const ALL_ASSETS = ['BarnBridge', 'Notional', 'Element'] as const
+type Assets = typeof ALL_ASSETS[number]
+type FilterData = Record<Assets, { active: boolean; name: string }>
+
+const FILTERS: FilterData = {
+  BarnBridge: { active: false, name: 'BarnBridge' },
+  Notional: { active: false, name: 'Notional' },
+  Element: { active: false, name: 'Element' },
+}
+
 const OpenPosition = () => {
   const [activeTabKey, setActiveTabKey] = useState('byIssuer')
+  const [filters, setFilters] = useState<FilterData>(FILTERS)
+
+  console.log(filters)
+  const activateFilter = useCallback((filterName: Assets | null) => {
+    if (filterName === null) {
+      setFilters(FILTERS)
+      return
+    }
+    setFilters((filters) => {
+      const filter = filters[filterName]
+      const active = { ...filter, active: !filter.active }
+      return { ...filters, [filterName]: active }
+    })
+  }, [])
+
   return (
     <WrapperContent>
       <Grid flow="row" rowsTemplate="1fr auto">
@@ -121,6 +147,35 @@ const OpenPosition = () => {
               },
             ]}
           ></Tabs>
+        </div>
+        <div className={cn(s.filterWrapper)}>
+          <Button
+            className={cn(s.pill, {
+              [s.active]: Object.keys(filters).every((s) => filters[s as Assets].active),
+            })}
+            onClick={() => activateFilter(null)}
+            shape="round"
+            size="large"
+            type="primary"
+          >
+            All assets
+          </Button>
+          {ALL_ASSETS.map((asset) => {
+            return (
+              <Button
+                className={cn(s.pill, {
+                  [s.active]: filters[asset].active,
+                })}
+                key={asset}
+                onClick={() => activateFilter(asset)}
+                shape="round"
+                size="large"
+                type="primary"
+              >
+                {asset}
+              </Button>
+            )
+          })}
         </div>
         <div className={cn('card')}>
           <Table
