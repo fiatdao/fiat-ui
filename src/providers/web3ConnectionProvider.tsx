@@ -32,8 +32,20 @@ nullthrows(
   'No default chain ID is defined or is not supported',
 )
 
+// @TODO: Default VALUES to connect to multiple wallets
+const FORTMATIC_KEY = 'Your Fortmatic key here'
+const PORTIS_KEY = 'Your Portis key here'
+const INFURA_KEY = 'Your Infura key here'
+const APP_URL = 'Your app url here'
+const CONTACT_EMAIL = 'Your contact email here'
+const RPC_URL = 'https://<network>.infura.io/v3/<INFURA_KEY>'
+
 export enum WalletType {
   MetaMask = 'metamask',
+  Ledger = 'ledger',
+  Portis = 'portis',
+  Trezor = 'trezor',
+  Coinbase = 'coinbase',
   WalletConnect = 'walletConnect',
 }
 
@@ -52,25 +64,48 @@ function initOnboard(appChainId: ChainsValues, subscriptions: Subscriptions) {
     networkId: appChainId,
     networkName: getNetworkConfig(appChainId).name,
     hideBranding: true,
+    darkMode: true, // @TODO: it is a default value
     walletSelect: {
-      heading: 'Select a Wallet to Connect to FIAT App',
-      description: '',
+      heading: 'Select a Wallet',
+      description: 'Pick a wallet to connect to FIAT DAO',
       wallets: [
         {
           walletName: WalletType.MetaMask,
           preferred: true,
         },
-        // {
-        //   walletName: WalletType.WalletConnect,
-        //   preferred: true,
-        //   rpc: Object.values(chainsConfig).reduce(
-        //     (rpc, val) => ({
-        //       ...rpc,
-        //       [val.chainId]: val.rpcUrl,
-        //     }),
-        //     {},
-        //   ),
-        // },
+        {
+          walletName: WalletType.Ledger,
+          rpcUrl: RPC_URL,
+          preferred: true,
+        },
+        {
+          walletName: WalletType.Portis,
+          apiKey: PORTIS_KEY,
+          preferred: true,
+          // label: 'Login with Email'
+        },
+        {
+          walletName: WalletType.Trezor,
+          appUrl: APP_URL,
+          email: CONTACT_EMAIL,
+          rpcUrl: RPC_URL,
+          preferred: true,
+        },
+        {
+          walletName: WalletType.Coinbase,
+          preferred: true,
+        },
+        {
+          walletName: WalletType.WalletConnect,
+          preferred: true,
+          rpc: Object.values(chainsConfig).reduce(
+            (rpc, val) => ({
+              ...rpc,
+              [val.chainId]: val.rpcUrl,
+            }),
+            {},
+          ),
+        },
       ],
     },
     subscriptions: subscriptions,

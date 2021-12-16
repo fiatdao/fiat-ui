@@ -1,0 +1,22 @@
+
+.bn-onboard-custom {
+  .bn-onboard-modal-content-header-icon {
+    display: none;
+  }
+  .bn-onboard-select-description {
+    font-size: large !important;
+    text-align: center;
+  }
+}
+
+.bn-onboard-modal-content-header-heading {
+  color: white;
+  flex: 1;
+  text-align: center;
+}
+
+.bn-onboard-icon-button {
+  border: 1px solid #ff9574 !important;
+  border-radius: 10px !important;
+  height: 80px;
+}
