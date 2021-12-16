@@ -4,6 +4,7 @@ import cn from 'classnames'
 
 import { ReactNode, useCallback, useState } from 'react'
 import { Button } from 'antd'
+import Link from 'next/link'
 import BarnBridge from '@/src/components/assets/svg/barn-bridge.svg'
 import Element from '@/src/components/assets/svg/element.svg'
 import Notional from '@/src/components/assets/svg/notional.svg'
@@ -11,6 +12,7 @@ import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import { Grid, Tabs } from '@/src/components/custom'
 import { WrapperContent } from '@/src/components/custom/wrapper-content'
+import ToggleSwitch from '@/src/components/custom/toggle-switch'
 
 const data = [
   {
@@ -19,7 +21,27 @@ const data = [
     maturity: '0',
     faceValue: '0',
     currentValue: '0',
-    action: <Button>Test</Button>,
+    action: <Button>Open position</Button>,
+  },
+  {
+    protocol: 'Element',
+    collateral: 'ePyvUSDC...',
+    maturity: '0',
+    faceValue: '0',
+    currentValue: '0',
+    action: (
+      <Link href="/open-position/test" passHref>
+        <Button>Manage</Button>
+      </Link>
+    ),
+  },
+  {
+    protocol: 'Notional',
+    collateral: 'ffDAI...',
+    maturity: '0',
+    faceValue: '0',
+    currentValue: '0',
+    action: <Text type="p3">No assets</Text>,
   },
 ]
 
@@ -107,6 +129,7 @@ const FILTERS: FilterData = {
 const OpenPosition = () => {
   const [activeTabKey, setActiveTabKey] = useState('byIssuer')
   const [filters, setFilters] = useState<FilterData>(FILTERS)
+  const [inMyWallet, setInMyWallet] = useState(false)
 
   console.log(filters)
   const activateFilter = useCallback((filterName: Assets | null) => {
@@ -180,6 +203,13 @@ const OpenPosition = () => {
               </Button>
             )
           })}
+          <ToggleSwitch
+            checked={inMyWallet}
+            label="In my wallet"
+            onChange={(e) => {
+              setInMyWallet(e.target.checked)
+            }}
+          />
         </div>
         <div className={cn('card')}>
           <Table
