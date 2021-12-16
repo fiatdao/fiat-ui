@@ -2,10 +2,12 @@ import { NavLink } from './NavLink'
 import cn from 'classnames'
 import { useRouter } from 'next/router'
 import React, { ReactNode, useEffect, useState } from 'react'
-import { Button, Menu } from 'antd'
+import { Button, Divider, Menu } from 'antd'
 import { ExternalLink as ExternalLinkIcon } from '@/src/components/pureStyledComponents/text/Link'
 import { ExternalLink } from '@/src/components/custom'
 import FiatDaoLogo from '@/src/components/assets/svg/fiat-dao-logo.svg'
+import FiatDaoIcon from '@/src/components/assets/svg/fiat-dao-icon.svg'
+import FiatIcon from '@/src/components/assets/svg/fiat-icon.svg'
 import Chevron from '@/src/components/assets/svg/chevron.svg'
 import DashboardInactive from '@/src/components/assets/svg/dashboard-inactive.svg'
 import DashboardActive from '@/src/components/assets/svg/dashboard-active.svg'
@@ -66,6 +68,10 @@ export const Sidebar = () => {
     setSelectedItem(currentItem ?? undefined)
   }, [pathname])
 
+  const handleAddProjectToken = () => {
+    // TODO: add project token
+  }
+
   return (
     <Sider collapsed={collapsed} onCollapse={setCollapsed}>
       <div className="logo-wrapper">
@@ -92,8 +98,8 @@ export const Sidebar = () => {
         ))}
       </Menu>
       {!collapsed && (
-        <div className="ant-layout-sider-trigger">
-          <div>
+        <div className="side-menu-footer">
+          <div className="links">
             <p>
               <ExternalLink href="https://google.com" title="Buy and sell on Matcha">
                 Buy and sell on Matcha <ExternalLinkIcon />
@@ -110,14 +116,19 @@ export const Sidebar = () => {
               </ExternalLink>
             </p>
           </div>
-          <div>
+          <Divider />
+          <div className="add-to-wallet">
             <p>ADD TO WALLET</p>
-            <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center' }}>
+            <div className="buttons-container">
               <div>
-                <Button type="ghost">FIAT</Button>
+                <Button onClick={handleAddProjectToken} type="primary">
+                  <FiatIcon /> FIAT
+                </Button>
               </div>
               <div>
-                <Button type="ghost">FDT</Button>
+                <Button onClick={handleAddProjectToken} type="primary">
+                  <FiatDaoIcon /> FDT
+                </Button>
               </div>
             </div>
           </div>
