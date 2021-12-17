@@ -1,5 +1,5 @@
-import { useWeb3Connection } from '../providers/web3ConnectionProvider'
-import { Modal } from '../components/common/Modal'
+import { useWeb3Connection } from '../../../providers/web3ConnectionProvider'
+import { Modal } from '../../to-be-deprecated/Modal'
 import { chainsConfig } from '@/src/constants/chains'
 
 export default function WrongNetwork() {

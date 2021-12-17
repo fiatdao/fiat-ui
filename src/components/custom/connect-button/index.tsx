@@ -1,4 +1,4 @@
-import { useWeb3Connection } from '../providers/web3ConnectionProvider'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 export const ConnectButton = ({ ...restProps }) => {
   const { connectWallet } = useWeb3Connection()

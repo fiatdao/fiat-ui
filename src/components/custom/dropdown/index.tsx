@@ -1,5 +1,5 @@
 import s from './s.module.scss'
-import { NavLink } from '../../navigation/NavLink'
+import { NavLink } from '../../to-be-deprecated/NavLink'
 import React, { HTMLProps, ReactNode } from 'react'
 import ReactDOM from 'react-dom'
 import { Modifier, usePopper } from 'react-popper'

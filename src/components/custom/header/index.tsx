@@ -1,10 +1,10 @@
-import ConnectedWallet from './ConnectedWallet'
-import { ConnectButton } from './ConnectButton'
-import { useWeb3Connection } from '../providers/web3ConnectionProvider'
-import { Text } from '../components/custom/typography'
-import { routesConfig } from '../components/navigation/config'
+import { ConnectButton } from '../connect-button'
 import { Layout } from 'antd'
 import { useRouter } from 'next/router'
+import ConnectedWallet from '@/src/components/custom/connected-wallet'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { Text } from '@/src/components/custom/typography'
+import { routesConfig } from '@/src/constants/navigation'
 
 export const Header: React.FC = () => {
   const { address, isWalletConnected } = useWeb3Connection()

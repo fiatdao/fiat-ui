@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import s from './s.module.scss'
-import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
-import Divider from '../components/antd/divider'
-import Popover from '../components/antd/popover'
-import ExternalLink from '../components/custom/externalLink'
-import Grid from '../components/custom/grid'
-import Identicon from '../components/custom/identicon'
-import { Text } from '../components/custom/typography'
-import { useWeb3Connection } from '../providers/web3ConnectionProvider'
 import { ControlOutlined, DownOutlined, SafetyOutlined, WalletOutlined } from '@ant-design/icons'
 import cn from 'classnames'
 import React from 'react'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { getEtherscanAddressUrl, shortenAddr } from '@/src/web3/utils'
+import Divider from '@/src/components/antd/divider'
+import Popover from '@/src/components/antd/popover'
+import ExternalLink from '@/src/components/custom/externalLink'
+import Grid from '@/src/components/custom/grid'
+import Identicon from '@/src/components/custom/identicon'
+import { Text } from '@/src/components/custom/typography'
 
 const ConnectedWallet: React.FC = () => {
   const { address, appChainId, disconnectWallet, wallet } = useWeb3Connection()

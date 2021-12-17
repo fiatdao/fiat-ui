@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import genericSuspense from '@/src/utils/genericSuspense'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import WalletButton from '@/src/containers/ConnectButton'
+import WalletButton from '@/src/components/custom/connect-button'
 
 function Connect({ ...restProps }) {
   const { isAppConnected } = useWeb3Connection()

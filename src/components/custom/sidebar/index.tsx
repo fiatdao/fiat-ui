@@ -1,24 +1,26 @@
-import { NavLink } from './NavLink'
-import { routes } from './config'
-import cn from 'classnames'
+import s from './s.module.scss'
 import { useRouter } from 'next/router'
-import React, { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { Button, Divider, Menu } from 'antd'
-import FiatDaoLogo from '@/src/components/assets/fiat-dao-logo.svg'
-import FiatDaoIcon from '@/src/components/assets/fiat-dao-icon.svg'
-import FiatIcon from '@/src/components/assets/fiat-icon.svg'
-import Chevron from '@/src/components/assets/chevron.svg'
-import { Sidebar as Sider } from '@/src/components/antd'
+import cn from 'classnames'
+import { SiderProps } from 'antd/lib/layout'
+import { Layout } from 'antd'
+import { routes } from '@/src/constants/navigation'
+import { NavLink } from '@/src/components/to-be-deprecated/NavLink'
+import FiatDaoLogo from '@/src/resources/svg/fiat-dao-logo.svg'
+import FiatDaoIcon from '@/src/resources/svg/fiat-dao-icon.svg'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import Chevron from '@/src/resources/svg/chevron.svg'
 
 type MenuItem = {
   icon: ReactNode
   iconSelected: ReactNode
+  key: string
   title: string
   to: string
-  key: string
 }
 
-export const Sidebar = () => {
+export const Sidebar: React.FC<SiderProps> = ({ className, ...props }) => {
   const { pathname } = useRouter()
   const [selectedItem, setSelectedItem] = useState<MenuItem>()
   const [collapsed, setCollapsed] = useState(false)
@@ -33,7 +35,14 @@ export const Sidebar = () => {
   }
 
   return (
-    <Sider collapsed={collapsed} onCollapse={setCollapsed}>
+    <Layout.Sider
+      breakpoint="lg"
+      className={cn(s.sidebar, className)}
+      collapsed={collapsed}
+      onCollapse={setCollapsed}
+      width={256}
+      {...props}
+    >
       <div className="logo-wrapper">
         <div className="logo">
           <FiatDaoLogo />
@@ -94,6 +103,6 @@ export const Sidebar = () => {
           </div>
         </div>
       )}
-    </Sider>
+    </Layout.Sider>
   )
 }
