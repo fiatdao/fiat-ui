@@ -16,7 +16,7 @@ export type PopoverMenuProps = AntdPopoverProps & {
 }
 
 const PopoverMenu: React.FC<PopoverMenuProps> = (props) => {
-  const { children, items, onClick, ...popoverProps } = props
+  const { children, items, ...popoverProps } = props
 
   const popoverRef = React.useRef<any>()
 

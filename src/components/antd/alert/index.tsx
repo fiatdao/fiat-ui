@@ -7,7 +7,7 @@ import cn from 'classnames'
 export type AlertProps = AntdAlertProps
 
 const Alert: React.FC<AlertProps> = (props) => {
-  const { children, className, type = 'info', ...alertProps } = props
+  const { className, type = 'info', ...alertProps } = props
 
   const icon = React.useMemo<React.ReactNode>(() => {
     switch (type) {

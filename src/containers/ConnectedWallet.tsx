@@ -1,22 +1,16 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import s from './s.module.scss'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
-
-import { ButtonConnect } from '../components/pureStyledComponents/buttons/Button'
 import Divider from '../components/antd/divider'
 import Popover from '../components/antd/popover'
 import ExternalLink from '../components/custom/externalLink'
 import Grid from '../components/custom/grid'
-import Icon from '../components/custom/icon'
-import IconNotification from '../components/custom/icon-notification'
 import Identicon from '../components/custom/identicon'
 import { Text } from '../components/custom/typography'
-
 import { useWeb3Connection } from '../providers/web3ConnectionProvider'
 import { ControlOutlined, DownOutlined, SafetyOutlined, WalletOutlined } from '@ant-design/icons'
-
 import cn from 'classnames'
-import { isMobile } from 'react-device-detect'
-import React, { useEffect } from 'react'
+import React from 'react'
 
 const ConnectedWallet: React.FC = () => {
   const { address, appChainId, disconnectWallet, wallet } = useWeb3Connection()
@@ -77,7 +71,7 @@ const ConnectedWallet: React.FC = () => {
       placement="bottomRight"
       trigger="click"
     >
-      <ButtonConnect className={s.accountLink}>
+      <a className={s.accountLink}>
         <Grid align="center" flow="col">
           <Identicon address={address!} className="mr-8" height={24} width={24} />
           <Text className={cn(s.walletAddress, 'mr-4')} color="primary" type="p1">
@@ -85,7 +79,7 @@ const ConnectedWallet: React.FC = () => {
           </Text>
           <DownOutlined />
         </Grid>
-      </ButtonConnect>
+      </a>
     </Popover>
   )
 

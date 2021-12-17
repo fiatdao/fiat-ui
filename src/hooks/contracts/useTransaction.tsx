@@ -3,7 +3,6 @@ import { ReactText, useCallback, useRef } from 'react'
 import { Contract, ContractTransaction } from '@ethersproject/contracts'
 import { toast } from 'react-toastify'
 
-import { ExternalLink, Link } from '@/src/components/pureStyledComponents/text/Link'
 import { ChainAppContractInfo } from '@/src/constants/contracts'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { TransactionError } from '@/src/utils/TransactionError'
@@ -47,9 +46,14 @@ export default function useTransaction<
         toastId.current = toastWorking(
           <>
             Awaiting tx execution,{' '}
-            <Link href={getExplorerUrl(tx.hash)} referrerPolicy="no-referrer" target="_blank">
-              view on explorer <ExternalLink />
-            </Link>
+            <a
+              href={getExplorerUrl(tx.hash)}
+              referrerPolicy="no-referrer"
+              rel="noreferrer"
+              target="_blank"
+            >
+              view on explorer
+            </a>
           </>,
           false,
         )
@@ -76,9 +80,14 @@ export default function useTransaction<
         toastId.current = toastSuccess(
           <>
             Transaccion success,{' '}
-            <Link href={getExplorerUrl(tx.hash)} referrerPolicy="no-referrer" target="_blank">
-              view on explorer <ExternalLink />
-            </Link>
+            <a
+              href={getExplorerUrl(tx.hash)}
+              referrerPolicy="no-referrer"
+              rel="noreferrer"
+              target="_blank"
+            >
+              view on explorer
+            </a>
           </>,
         ) // receipt.transactionHash
         return receipt

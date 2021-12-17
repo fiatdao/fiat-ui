@@ -1,13 +1,13 @@
-import { ButtonConnect } from '../components/pureStyledComponents/buttons/Button'
 import { useWeb3Connection } from '../providers/web3ConnectionProvider'
 
 export const ConnectButton = ({ ...restProps }) => {
   const { connectWallet } = useWeb3Connection()
 
   return (
-    <ButtonConnect {...restProps} className="button-ghost" onClick={connectWallet} type="button">
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+    <div className="button-ghost" onClick={connectWallet} role="button" tabIndex={0} {...restProps}>
       <span>Connect wallet</span>
-    </ButtonConnect>
+    </div>
   )
 }
 

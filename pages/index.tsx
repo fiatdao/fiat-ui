@@ -1,15 +1,8 @@
 import { useEffect, useState } from 'react'
-import styled from 'styled-components'
 import Head from 'next/head'
 import genericSuspense from '@/src/utils/genericSuspense'
-import { BaseTitle } from '@/src/components/pureStyledComponents/text/BaseTitle'
-import { BaseParagraph } from '@/src/components/pureStyledComponents/text/BaseParagraph'
-import { InnerContainer } from '@/src/components/pureStyledComponents/layout/InnerContainer'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import WalletButton from '@/src/containers/ConnectButton'
-import { Spinner } from '@/src/components/common/Spinner'
-
-const Title = styled(BaseTitle)``
 
 function Connect({ ...restProps }) {
   const { isAppConnected } = useWeb3Connection()
@@ -27,19 +20,19 @@ function Connect({ ...restProps }) {
   }, [])
 
   return loading ? (
-    <Spinner />
+    <div>Loading...</div>
   ) : (
-    <InnerContainer {...restProps}>
+    <div {...restProps}>
       {!isAppConnected ? (
         <>
           <Head>
             <title>Connect Your Wallet - FIAT</title>
           </Head>
-          <Title>Connect Your Wallet</Title>
-          <BaseParagraph>
+          <h1>Connect Your Wallet</h1>
+          <p>
             First we need you to connect your crypto wallet and sign the connection so we can trust
             it's you and only you that's connected to the app.
-          </BaseParagraph>
+          </p>
           <WalletButton />
         </>
       ) : (
@@ -47,10 +40,10 @@ function Connect({ ...restProps }) {
           <Head>
             <title>Sign Connection - FIAT</title>
           </Head>
-          <Title>Wallet connected, please sign the connection to prove it's you.</Title>
+          <h1>Wallet connected, please sign the connection to prove it's you.</h1>
         </>
       )}
-    </InnerContainer>
+    </div>
   )
 }
 

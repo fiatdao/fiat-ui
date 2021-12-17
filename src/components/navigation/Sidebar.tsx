@@ -4,12 +4,10 @@ import cn from 'classnames'
 import { useRouter } from 'next/router'
 import React, { ReactNode, useEffect, useState } from 'react'
 import { Button, Divider, Menu } from 'antd'
-import { ExternalLink as ExternalLinkIcon } from '@/src/components/pureStyledComponents/text/Link'
-import { ExternalLink } from '@/src/components/custom'
-import FiatDaoLogo from '@/src/components/assets/svg/fiat-dao-logo.svg'
-import FiatDaoIcon from '@/src/components/assets/svg/fiat-dao-icon.svg'
-import FiatIcon from '@/src/components/assets/svg/fiat-icon.svg'
-import Chevron from '@/src/components/assets/svg/chevron.svg'
+import FiatDaoLogo from '@/src/components/assets/fiat-dao-logo.svg'
+import FiatDaoIcon from '@/src/components/assets/fiat-dao-icon.svg'
+import FiatIcon from '@/src/components/assets/fiat-icon.svg'
+import Chevron from '@/src/components/assets/chevron.svg'
 import { Sidebar as Sider } from '@/src/components/antd'
 
 type MenuItem = {
@@ -63,19 +61,19 @@ export const Sidebar = () => {
         <div className="side-menu-footer">
           <div className="links">
             <p>
-              <ExternalLink href="https://google.com" title="Buy and sell on Matcha">
-                Buy and sell on Matcha <ExternalLinkIcon />
-              </ExternalLink>
+              <a href="https://google.com" title="Buy and sell on Matcha">
+                Buy and sell on Matcha <span>icon</span>
+              </a>
             </p>
             <p>
-              <ExternalLink href="https://google.com" title="Borrow and lend on Rari Fuse">
-                Borrow and lend on Rari Fuse <ExternalLinkIcon />
-              </ExternalLink>
+              <a href="https://google.com" title="Borrow and lend on Rari Fuse">
+                Borrow and lend on Rari Fuse <span>icon</span>
+              </a>
             </p>
             <p>
-              <ExternalLink href="https://google.com" title="FIAT's Dune Dashboard">
-                FIAT's Dune Dashboard <ExternalLinkIcon />
-              </ExternalLink>
+              <a href="https://google.com" title="FIAT's Dune Dashboard">
+                FIAT's Dune Dashboard <span>icon</span>
+              </a>
             </p>
           </div>
           <Divider />

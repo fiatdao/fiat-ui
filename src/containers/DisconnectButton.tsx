@@ -1,4 +1,3 @@
-import { ButtonPrimary } from '../components/pureStyledComponents/buttons/Button'
 import { useWeb3Connection } from '../providers/web3ConnectionProvider'
 
 export const DisconnectButton = ({ ...restProps }) => {
@@ -6,9 +5,9 @@ export const DisconnectButton = ({ ...restProps }) => {
 
   return (
     (isWalletConnected && (
-      <ButtonPrimary {...restProps} onClick={disconnectWallet}>
+      <button {...restProps} onClick={disconnectWallet}>
         Disconnect
-      </ButtonPrimary>
+      </button>
     )) ||
     null
   )

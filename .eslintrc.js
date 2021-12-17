@@ -77,7 +77,9 @@ module.exports = {
       "specialLink": [ "hrefLeft", "hrefRight" ],
       "aspects": [ "invalidHref", "preferButton" ]
     }],
-    "@typescript-eslint/ban-ts-comment": 'off'
+    "@typescript-eslint/ban-ts-comment": 'off',
+    "@typescript-eslint/no-explicit-any": 'off',
+    "@next/next/no-img-element": "off"
   },
   globals: {
     "React": "writable"
