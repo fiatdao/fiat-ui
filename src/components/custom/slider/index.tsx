@@ -11,8 +11,6 @@ export const Slider: React.FC<Props> = ({
   max,
   min,
   onChange,
-  step,
-  type,
   value,
   ...rest
 }) => {
@@ -32,6 +30,7 @@ export const Slider: React.FC<Props> = ({
       style={{ '--track-fill': `${!_disabled ? percent : 0}%` } as React.CSSProperties}
       type="range"
       value={!disabled ? value || '0' : '0'}
+      {...rest}
     />
   )
 }

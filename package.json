@@ -62,7 +62,6 @@
     "react-tooltip": "^4.2.21",
     "react-use-storage": "^0.5.1",
     "sanitize.css": "^12.0.1",
-    "styled-components": "^5.3.1",
     "swr": "^1.1.0-beta.8",
     "ts-enum-util": "^4.0.2"
   },
@@ -74,10 +73,8 @@
     "@types/react": "17.0.17",
     "@types/react-blockies": "^1.4.1",
     "@types/react-select": "^4.0.17",
-    "@types/styled-components": "^5.1.14",
     "@typescript-eslint/eslint-plugin": "^4.31.0",
     "@typescript-eslint/parser": "^4.31.0",
-    "babel-plugin-styled-components": "^2.0.2",
     "eslint": "^7.32.0",
     "eslint-config-next": "^11.1.2",
     "eslint-config-prettier": "^8.3.0",

@@ -1,5 +1,5 @@
 import s from './s.module.scss'
-import React, { CSSProperties, FC, HTMLProps, ReactNode } from 'react'
+import React, { CSSProperties, FC, ReactNode } from 'react'
 import cn from 'classnames'
 import Link from 'next/link'
 import NavLink, { NavLinkProps } from '@/src/components/custom/nav-link'

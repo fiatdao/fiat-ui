@@ -1,22 +1,18 @@
 import 'react-toastify/dist/ReactToastify.css'
 import 'sanitize.css'
 import '@/src/styles/index.scss'
-import { GlobalStyle } from 'theme/globalStyle'
-import { theme } from 'theme'
 import Head from 'next/head'
 import type { AppProps } from 'next/app'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SWRConfig } from 'swr'
-import { ThemeProvider } from 'styled-components'
 import { Layout } from 'antd'
-import GeneralContextProvider from '@/src/components/providers/general-provider'
-import ToastContainer from '@/src/components/toast/Container'
+import GeneralContextProvider from '@/src/providers/generalProvider'
+import ToastContainer from '@/src/components/custom/toast'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
-import WrongNetwork from '@/src/containers/WrongNetwork'
-import { GeneralError } from '@/src/components/common/GeneralError'
-import { Header } from '@/src/containers/Header'
-import { Loading } from '@/src/components/common/Loading'
-import { Sidebar } from '@/src/components/navigation/Sidebar'
+import WrongNetwork from '@/src/components/custom/wrong-network'
+import { GeneralError } from '@/src/components/custom/general-error'
+import { Header } from '@/src/components/custom/header'
+import { Sidebar } from '@/src/components/custom/sidebar'
 
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
@@ -33,38 +29,38 @@ function App({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <title>{title}</title>
-        <meta content={description} name="description" />
-        <meta content={title} property="og:title" />
-        <meta content={siteURL} property="og:url" />
-        <meta content={`${siteURL}/shareable/ogImage.jpg`} property="og:image" />
-        <meta content="website" property="og:type" />
-        <meta content={description} property="og:description" />
         <meta content="summary_large_image" name="twitter:card" />
+        <meta content="website" property="og:type" />
+        <meta content={`${siteURL}/shareable/ogImage.jpg`} property="og:image" />
+        <meta content={description} name="description" />
+        <meta content={description} property="og:description" />
+        <meta content={siteURL} property="og:url" />
         <meta content={title} name="twitter:site" />
+        <meta content={title} property="og:title" />
         <meta content={twitterHandle} name="twitter:creator" />
+        <link color="#5bbad5" href="/favicon/safari-pinned-tab.svg" rel="mask-icon" />
+        <meta content="#da532c" name="msapplication-TileColor" />
+        <meta content="#ffffff" name="theme-color" />
       </Head>
-      <ThemeProvider theme={theme}>
-        <GlobalStyle />
-        <GeneralContextProvider>
-          <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
-            <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
-              <Web3ConnectionProvider fallback={<Loading />}>
+      <GeneralContextProvider>
+        <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
+          <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
+            <Web3ConnectionProvider fallback={<div>Loading...</div>}>
+              <Layout style={{ minHeight: '100vh' }}>
+                <Sidebar />
                 <Layout>
-                  <Sidebar />
-                  <Layout>
-                    <Header />
-                    <Layout.Content>
-                      <Component {...pageProps} />
-                    </Layout.Content>
-                  </Layout>
+                  <Header />
+                  <Layout.Content>
+                    <Component {...pageProps} />
+                  </Layout.Content>
                 </Layout>
-                <WrongNetwork />
-              </Web3ConnectionProvider>
-            </ErrorBoundary>
-          </SWRConfig>
-        </GeneralContextProvider>
-        <ToastContainer />
-      </ThemeProvider>
+              </Layout>
+              <WrongNetwork />
+            </Web3ConnectionProvider>
+          </ErrorBoundary>
+        </SWRConfig>
+      </GeneralContextProvider>
+      <ToastContainer />
     </>
   )
 }

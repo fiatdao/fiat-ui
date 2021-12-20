@@ -7,7 +7,7 @@ import { DropdownList } from '@/src/components/custom/dropdown'
 import Icon, { TokenIconNames } from '@/src/components/custom/icon'
 import { Slider } from '@/src/components/custom/slider'
 import { Text } from '@/src/components/custom/typography'
-import { KnownTokens, getTokenBySymbol } from '@/src/components/providers/known-tokens-provider'
+import { KnownTokens, getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 
 type TokenAmountType = {
   value: string
