@@ -4,7 +4,8 @@ import { ObjectValues } from '@/types/utils'
 
 export const Chains = {
   mainnet: 1,
-  rinkeby: 4,
+  // rinkeby: 4,
+  goerli: 5,
   //kovan: 42,
   //optimismn: 10
   //optimismKovan: 69
@@ -37,16 +38,26 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     //openseaURL: 'https://opensea.io/assets/0x1',
     iconUrls: [],
   },
-  [Chains.rinkeby]: {
-    id: Chains.rinkeby,
-    name: 'Rinkeby',
-    shortName: 'Rinkeby',
-    chainId: Chains.rinkeby,
-    chainIdHex: '0x4',
-    rpcUrl: 'https://rinkeby.infura.io/v3/ecb81cbe2f03436cb39236e4160311fe',
-    blockExplorerUrls: ['https://rinkeby.etherscan.io/'],
+  [Chains.goerli]: {
+    id: Chains.goerli,
+    name: 'Görli Testnet',
+    shortName: 'Goerli',
+    chainId: Chains.goerli,
+    chainIdHex: '0x5',
+    rpcUrl: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    blockExplorerUrls: ['https://goerli.etherscan.io/'],
     iconUrls: [],
   },
+  // [Chains.rinkeby]: {
+  //   id: Chains.rinkeby,
+  //   name: 'Rinkeby',
+  //   shortName: 'Rinkeby',
+  //   chainId: Chains.rinkeby,
+  //   chainIdHex: '0x4',
+  //   rpcUrl: 'https://rinkeby.infura.io/v3/ecb81cbe2f03436cb39236e4160311fe',
+  //   blockExplorerUrls: ['https://rinkeby.etherscan.io/'],
+  //   iconUrls: [],
+  // },
   // [Chains.kovan]: {
   //   id: Chains.kovan,
   //   name: 'Kovan',
