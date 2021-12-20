@@ -1,7 +1,12 @@
 @import 'src/styles/text';
+@import '/src/styles/vars';
 
 .sidebar {
   background: var(--theme-secondary-block);
+
+  @media (max-width: #{$max-width-mobile}) {
+    display: none;
+  }
 
   :global(.logo-wrapper) {
     display: flex;

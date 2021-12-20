@@ -26,3 +26,51 @@
     display: none;
   }
 }
+
+.endWrapper {
+  align-items: center;
+  display: flex;
+  margin-left: auto;
+  gap: 16px;
+}
+
+.logoWrapper {
+  align-items: center;
+  display: none;
+  gap: 10px;
+
+  // @media (max-width: #{$max-width-mobile}) {
+  display: flex;
+  // }
+}
+
+.logo {
+  height: 34px;
+  width: 35px;
+}
+
+.logoText {
+  color: var(--theme-text-color);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.mobileButton {
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  display: none;
+  height: 48px;
+  justify-content: center;
+  padding: 0;
+  width: 32px;
+
+  @media (max-width: #{$max-width-mobile}) {
+    display: flex;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}

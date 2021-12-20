@@ -2,10 +2,13 @@ import s from './s.module.scss'
 import { ConnectButton } from '../connect-button'
 import { Layout } from 'antd'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import cn from 'classnames'
 import ConnectedWallet from '@/src/components/custom/connected-wallet'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { routesConfig } from '@/src/constants/navigation'
+import BurgerMenu from '@/src/resources/svg/burger-menu.svg'
+import FiatDaoLogo from '@/src/resources/svg/fiat-dao-logo-2.svg'
 
 export const Header: React.FC = ({ ...restProps }) => {
   const { address, isWalletConnected } = useWeb3Connection()
@@ -15,17 +18,17 @@ export const Header: React.FC = ({ ...restProps }) => {
   return (
     <Layout.Header className={cn(s.component)} {...restProps}>
       <h1 className={cn(s.title)}>{title}</h1>
-      <div>
-        {/* <button>
-          <svg height="29" width="36" xmlns="http://www.w3.org/2000/svg">
-            <g fill="none" stroke="#fff" strokeWidth="3">
-              <path d="M0 1.5h36" />
-              <path d="M0 14.5h36" />
-              <path d="M0 27.5h36" />
-            </g>
-          </svg>
-        </button> */}
+      <Link href="/" passHref>
+        <a className={cn(s.logoWrapper)}>
+          <FiatDaoLogo className={cn(s.logo)} />
+          <span className={cn(s.logoText)}>App</span>
+        </a>
+      </Link>
+      <div className={cn(s.endWrapper)}>
         {isWalletConnected && address ? <ConnectedWallet /> : <ConnectButton />}
+        <button className={cn(s.mobileButton)}>
+          <BurgerMenu />
+        </button>
       </div>
     </Layout.Header>
   )

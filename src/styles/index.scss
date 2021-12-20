@@ -103,12 +103,6 @@ body.mobile-menu-open {
   }
 }
 
-@media (max-width: #{$max-width-mobile}) {
-  :root {
-    --theme-header-height: 44px;
-  }
-}
-
 :focus:not(:focus-visible) {
   outline: 0;
 }
