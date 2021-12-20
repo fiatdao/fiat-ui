@@ -20,7 +20,7 @@ export const Header: React.FC = ({ ...restProps }) => {
       <h1 className={cn(s.title)}>{title}</h1>
       <Link href="/" passHref>
         <a className={cn(s.logoWrapper)}>
-          <FiatDaoLogo className={cn(s.logo)} />
+          <FiatDaoLogo />
           <span className={cn(s.logoText)}>App</span>
         </a>
       </Link>

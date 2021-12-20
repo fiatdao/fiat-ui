@@ -39,14 +39,9 @@
   display: none;
   gap: 10px;
 
-  // @media (max-width: #{$max-width-mobile}) {
-  display: flex;
-  // }
-}
-
-.logo {
-  height: 34px;
-  width: 35px;
+  @media (max-width: #{$max-width-mobile}) {
+    display: flex;
+  }
 }
 
 .logoText {
