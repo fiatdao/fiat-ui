@@ -1,39 +1,71 @@
-.notificationIcon {
+@mixin text-gradient() {
+  background: var(--gradient-secondary-pink);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.dropdownButton {
+  --padding: 20px;
+
+  padding-left: var(--padding);
+  padding-right: var(--padding);
+}
+
+.dropdownButtonContents {
+  align-items: center;
+  column-gap: 20px;
+  display: grid;
+  grid-template-columns: 14px 1fr 10px;
+  z-index: 5;
+}
+
+.walletAddress {
+  color: var(--textColor);
+  font-size: 16px;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.walletAddress,
+.dropdownArrow {
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.dropdownArrow {
+  :global(.ant-popover-open) & {
+    transform: rotate(-180deg);
+  }
+}
+
+.itemIcon {
   color: var(--theme-icon-color);
-  cursor: pointer;
-
-  &:hover {
-    color: var(--theme-icon-hover-color);
-  }
 }
 
-.addressStr {
-  background: var(--gradient-secondary-pink);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.itemText {
+  color: var(--theme-secondary-color);
+  font-size: 16px;
 }
 
-.popover {
-  :global(.ant-popover-inner) {
-    box-shadow: var(--theme-card-shadow);
-    border-radius: 12px;
-  }
+.itemStatus {
+  color: var(--theme-text-color);
+  font-size: 16px;
+  font-weight: 600;
 }
 
-.accountLink {
-  &:global(.ant-popover-open) {
-    .dropdownArrow {
-      transform: rotate(-180deg);
-    }
-  }
-}
-
-.statusTag {
-  position: relative;
-  background: var(--gradient-secondary-pink);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.itemStatusBadge {
   padding: 4px 12px;
+  position: relative;
+  font-size: 12px;
+  font-weight: 600;
+
+  @include text-gradient();
+
   &:before {
     border-radius: 4px;
     width: 100%;
@@ -46,19 +78,36 @@
   }
 }
 
+.notificationIcon {
+  color: var(--theme-icon-color);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--theme-icon-hover-color);
+  }
+}
+
+.addressStr {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+
+  @include text-gradient();
+}
+
+.popover {
+  :global(.ant-popover-inner) {
+    box-shadow: var(--theme-card-shadow);
+    border-radius: 12px;
+  }
+}
+
 .notifications {
   max-width: 420px;
   width: 100%;
   max-height: 420px;
   display: flex;
   flex-direction: column;
-}
-
-@media (max-width: 768px) {
-  .walletAddress,
-  .dropdownArrow {
-    display: none;
-  }
 }
 
 .icon {
