@@ -1,7 +1,7 @@
 @import 'src/styles/text';
 
 .sidebar {
-  background: var(--theme-body-color);
+  background: var(--theme-secondary-block);
 
   :global(.logo-wrapper) {
     display: flex;
@@ -142,7 +142,7 @@
         align-items: center;
         gap: 8px;
 
-        &>div {
+        & > div {
           border: 1px solid var(--theme-border-color);
           border-radius: 4px;
           box-sizing: border-box;

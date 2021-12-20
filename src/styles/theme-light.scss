@@ -1,0 +1,37 @@
+:root {
+  --theme-body-color: #f8f8f9;
+  --theme-card-color: rgba(255, 255, 255, 0.6);
+  --theme-modal-bg: #ffff;
+  --theme-amount-color: #fff;
+  --theme-overlay-color: #f8f8f9;
+  --theme-mask-color: rgba(0, 0, 0, 0.08);
+  --theme-border-color: #e1e1e1; // grey100
+  --theme-amount-border: #e1e1e1;
+  --theme-icon-color: #aaafb3; // grey300
+  --theme-icon-hover-color: #060a0d; // grey900
+
+  --theme-social-bg-color: #f1f1f1;
+  --theme-social-link-color: #505050;
+  --theme-primary-color: #171717;
+  --theme-secondary-color: #b5b5b5;
+  --theme-default-color: #aaafb3; // grey300
+
+  --theme-card-shadow: 0 0 0.5px rgba(6, 10, 13, 0.4), 0 8px 16px rgba(113, 121, 128, 0.08);
+  --theme-modal-shadow: 0 0 1px rgba(6, 10, 13, 0.4), 0 16px 32px rgba(19, 32, 43, 0.4);
+  --theme-overlay-shadow: 0 0 1px rgba(0, 0, 0, 0.4), 0 32px 64px rgba(113, 121, 128, 0.32);
+
+  --theme-input-background: #fff;
+  --theme-input-placeholder: #aaafb3;
+
+  --theme-tooltip-bg: #fff;
+
+  --theme-secondary-block: #f9f9f9;
+
+  --theme-header-shadow: 0 0 0.5px rgba(6, 10, 13, 0.4), 0 8px 16px rgba(113, 121, 128, 0.08);
+
+  --theme-leaderboard-card-bg: rgba(255, 255, 255, 0.8);
+  --theme-leaderboard-table-item: #f9f9f9;
+  --theme-leaderboard-counter-item: var(--gradient-pink);
+
+  --theme-text-color: #000;
+}
