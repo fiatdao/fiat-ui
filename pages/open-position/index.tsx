@@ -13,6 +13,7 @@ import { Table } from '@/src/components/antd'
 import { Grid, Tabs } from '@/src/components/custom'
 import { WrapperContent } from '@/src/components/custom/wrapper-content'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
+import { Header } from '@/src/components/custom/header'
 
 const data = [
   {
@@ -21,7 +22,11 @@ const data = [
     maturity: '0',
     faceValue: '0',
     currentValue: '0',
-    action: <Button>Open position</Button>,
+    action: (
+      <Link href="/open-position/0xdcf80c068b7ffdf7273d8adae4b076bf384f711a/open" passHref>
+        <Button>Open</Button>
+      </Link>
+    ),
   },
   {
     protocol: 'Element',
@@ -30,7 +35,7 @@ const data = [
     faceValue: '0',
     currentValue: '0',
     action: (
-      <Link href="/open-position/test" passHref>
+      <Link href="/open-position/0xdcf80c068b7ffdf7273d8adae4b076bf384f711a/manage" passHref>
         <Button>Manage</Button>
       </Link>
     ),
@@ -131,7 +136,6 @@ const OpenPosition = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
 
-  console.log(filters)
   const activateFilter = useCallback((filterName: Assets | null) => {
     if (filterName === null) {
       setFilters(FILTERS)
@@ -145,110 +149,113 @@ const OpenPosition = () => {
   }, [])
 
   return (
-    <WrapperContent>
-      <Grid flow="row" rowsTemplate="1fr auto">
-        <div className="card-header">
-          <Text color="secondary" font="secondary" type="p1" weight="semibold">
-            Select a collateral type to add to your FIAT positions
-          </Text>
-          <Tabs
-            activeKey={activeTabKey}
-            onClick={setActiveTabKey}
-            tabs={[
-              {
-                id: 'byIssuer',
-                children: (
-                  <Text color="secondary" type="p1">
-                    By Issuer
-                  </Text>
-                ),
-              },
-              {
-                id: 'byAsset',
-                children: (
-                  <Text color="secondary" type="p1">
-                    By Underlying
-                  </Text>
-                ),
-              },
-            ]}
-          ></Tabs>
-        </div>
-        <div className={cn(s.filterWrapper)}>
-          <Button
-            className={cn(s.pill, {
-              [s.active]: Object.keys(filters).every((s) => filters[s as Assets].active),
+    <>
+      <Header title="Open position" />
+      <WrapperContent>
+        <Grid flow="row" rowsTemplate="1fr auto">
+          <div className="card-header">
+            <Text color="secondary" font="secondary" type="p1" weight="semibold">
+              Select a collateral type to add to your FIAT positions
+            </Text>
+            <Tabs
+              activeKey={activeTabKey}
+              onClick={setActiveTabKey}
+              tabs={[
+                {
+                  id: 'byIssuer',
+                  children: (
+                    <Text color="secondary" type="p1">
+                      By Issuer
+                    </Text>
+                  ),
+                },
+                {
+                  id: 'byAsset',
+                  children: (
+                    <Text color="secondary" type="p1">
+                      By Underlying
+                    </Text>
+                  ),
+                },
+              ]}
+            />
+          </div>
+          <div className={cn(s.filterWrapper)}>
+            <Button
+              className={cn(s.pill, {
+                [s.active]: Object.keys(filters).every((s) => filters[s as Assets].active),
+              })}
+              onClick={() => activateFilter(null)}
+              shape="round"
+              size="large"
+              type="primary"
+            >
+              All assets
+            </Button>
+            {ALL_ASSETS.map((asset) => {
+              return (
+                <Button
+                  className={cn(s.pill, {
+                    [s.active]: filters[asset].active,
+                  })}
+                  icon={filters[asset].icon}
+                  key={asset}
+                  onClick={() => activateFilter(asset)}
+                  shape="round"
+                  size="large"
+                  type="primary"
+                >
+                  {asset}
+                </Button>
+              )
             })}
-            onClick={() => activateFilter(null)}
-            shape="round"
-            size="large"
-            type="primary"
-          >
-            All assets
-          </Button>
-          {ALL_ASSETS.map((asset) => {
-            return (
-              <Button
-                className={cn(s.pill, {
-                  [s.active]: filters[asset].active,
-                })}
-                icon={filters[asset].icon}
-                key={asset}
-                onClick={() => activateFilter(asset)}
-                shape="round"
-                size="large"
-                type="primary"
-              >
-                {asset}
-              </Button>
-            )
-          })}
-          <ToggleSwitch
-            checked={inMyWallet}
-            label="In my wallet"
-            onChange={(e) => {
-              setInMyWallet(e.target.checked)
-            }}
-          />
-        </div>
-        <div className={cn('card')}>
-          <Table
-            columns={Columns}
-            dataSource={data}
-            inCard
-            loading={false}
-            pagination={{
-              total,
-              pageSize: 10,
-              current: 1,
-              position: ['bottomRight'],
-              showTotal: (total: number, [from, to]: [number, number]) => (
-                <>
-                  <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                    Showing {from} to {to} the most recent {total}
-                  </Text>
-                  <Text
-                    className="hidden-tablet hidden-desktop"
-                    color="secondary"
-                    type="p2"
-                    weight="semibold"
-                  >
-                    {from}..{to} of {total}
-                  </Text>
-                </>
-              ),
-              onChange: (page: number, pageSize: number) => {
-                console.log(page, pageSize)
-              },
-            }}
-            rowKey="address"
-            scroll={{
-              x: true,
-            }}
-          />
-        </div>
-      </Grid>
-    </WrapperContent>
+            <ToggleSwitch
+              checked={inMyWallet}
+              label="In my wallet"
+              onChange={(e) => {
+                setInMyWallet(e.target.checked)
+              }}
+            />
+          </div>
+          <div className={cn('card')}>
+            <Table
+              columns={Columns}
+              dataSource={data}
+              inCard
+              loading={false}
+              pagination={{
+                total,
+                pageSize: 10,
+                current: 1,
+                position: ['bottomRight'],
+                showTotal: (total: number, [from, to]: [number, number]) => (
+                  <>
+                    <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
+                      Showing {from} to {to} the most recent {total}
+                    </Text>
+                    <Text
+                      className="hidden-tablet hidden-desktop"
+                      color="secondary"
+                      type="p2"
+                      weight="semibold"
+                    >
+                      {from}..{to} of {total}
+                    </Text>
+                  </>
+                ),
+                onChange: (page: number, pageSize: number) => {
+                  console.log(page, pageSize)
+                },
+              }}
+              rowKey="address"
+              scroll={{
+                x: true,
+              }}
+            />
+          </div>
+        </Grid>
+      </WrapperContent>
+    </>
   )
 }
 

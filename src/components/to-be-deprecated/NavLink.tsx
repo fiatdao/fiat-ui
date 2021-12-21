@@ -7,11 +7,11 @@ interface Props extends HTMLAttributes<HTMLAnchorElement> {
 }
 
 export const NavLink: React.FC<Props> = ({ children, className = '', href, ...restProps }) => {
-  const router = useRouter()
+  const { pathname } = useRouter()
 
   return (
     <Link href={href}>
-      <a className={`${className} ${router.pathname === href ? 'active' : ''}`} {...restProps}>
+      <a className={`${className} ${pathname.includes(href) ? 'active' : ''}`} {...restProps}>
         {children}
       </a>
     </Link>
