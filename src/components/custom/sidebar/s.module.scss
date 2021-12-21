@@ -1,39 +1,46 @@
 @import 'src/styles/text';
 @import '/src/styles/vars';
 
+.topWrapper {
+  align-items: center;
+  display: flex;
+  gap: 24px;
+  height: var(--theme-header-height);
+  justify-content: space-between;
+  padding: 0 20px 0 24px;
+  position: relative;
+  margin-bottom: 45px;
+
+  :global(.ant-layout-sider-collapsed) & {
+    flex-direction: column;
+    gap: 56px;
+    margin-bottom: 35px;
+    padding-top: 28px;
+    height: auto;
+
+    &::before {
+      background-color: var(--theme-border-color);
+      content: '';
+      height: 1px;
+      left: 0;
+      position: absolute;
+      top: var(--theme-header-height);
+      width: 100%;
+    }
+  }
+}
+
+.logo {
+  :global(.ant-layout-sider-collapsed) & {
+    order: 2;
+  }
+}
+
 .sidebar {
   background: var(--theme-secondary-block);
 
   @media (max-width: #{$max-width-mobile}) {
     display: none;
-  }
-
-  :global(.logo-wrapper) {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 24px;
-    margin: 27px 20px 60px 23px;
-
-    :global(.logo) {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      :global(.app-name) {
-        font-weight: 600;
-        font-size: 24px;
-        line-height: 24px;
-      }
-    }
-  }
-
-  &:global(.ant-layout-sider-collapsed) {
-    :global(.logo-wrapper) {
-      flex-direction: column-reverse;
-      gap: 56px;
-      margin-bottom: 50px;
-    }
   }
 
   :global(.ant-btn.ant-btn-primary) {

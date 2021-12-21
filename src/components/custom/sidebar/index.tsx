@@ -7,10 +7,10 @@ import { SiderProps } from 'antd/lib/layout'
 import { Layout } from 'antd'
 import { routes } from '@/src/constants/navigation'
 import { NavLink } from '@/src/components/to-be-deprecated/NavLink'
-import FiatDaoLogo from '@/src/resources/svg/fiat-dao-logo.svg'
 import FiatDaoIcon from '@/src/resources/svg/fiat-dao-icon.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import Chevron from '@/src/resources/svg/chevron.svg'
+import { Logo } from '@/src/components/custom/logo'
 
 type MenuItem = {
   icon: ReactNode
@@ -43,18 +43,13 @@ export const Sidebar: React.FC<SiderProps> = ({ className, ...props }) => {
       width={256}
       {...props}
     >
-      <div className="logo-wrapper">
-        <div className="logo">
-          <FiatDaoLogo />
-          {!collapsed && <p className="app-name">App</p>}
-        </div>
-        <div>
-          <Button
-            icon={<Chevron className={cn('chevron', { collapsed })} />}
-            onClick={() => setCollapsed((prev) => !prev)}
-            type="primary"
-          />
-        </div>
+      <div className={cn(s.topWrapper)}>
+        <Logo className={cn(s.logo)} />
+        <Button
+          icon={<Chevron className={cn('chevron', { collapsed })} />}
+          onClick={() => setCollapsed((prev) => !prev)}
+          type="primary"
+        />
       </div>
       <Menu mode="inline" selectedKeys={[selectedItem?.key ?? '']}>
         {routes.map((item) => (
