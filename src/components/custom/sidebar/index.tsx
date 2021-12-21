@@ -24,9 +24,9 @@ export const Sidebar: React.FC<SiderProps> = ({ className, ...restProps }) => {
       <div className={cn(s.topWrapper)}>
         <Logo className={cn(s.logo)} />
         <Button
-          icon={<Chevron className={cn('chevron', { collapsed })} />}
+          className={cn(s.sidebarCollapseButton)}
+          icon={<Chevron className={cn(s.chevron, { [s.collapsed]: collapsed })} />}
           onClick={() => setCollapsed((prev) => !prev)}
-          type="primary"
         />
       </div>
       <Menu />

@@ -14,6 +14,30 @@
   }
 }
 
+.sidebarCollapseButton {
+  --dimensions: 32px;
+
+  background-color: var(--theme-color-1);
+  border: none;
+  color: var(--theme-text-color);
+  height: var(--dimensions);
+  width: var(--dimensions);
+
+  &:hover,
+  &:focus {
+    background-color: var(--theme-color-1);
+    color: var(--theme-text-color);
+  }
+}
+
+.chevron {
+  transition: transform 0.3s linear;
+
+  &.collapsed {
+    transform: rotate(180deg);
+  }
+}
+
 .topWrapper {
   align-items: center;
   display: flex;
