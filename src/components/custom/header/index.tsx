@@ -1,21 +1,17 @@
 import s from './s.module.scss'
 import { ConnectButton } from '../connect-button'
 import { Layout } from 'antd'
-import { useRouter } from 'next/router'
 import cn from 'classnames'
 import { Drawer } from 'antd'
 import { useState } from 'react'
 import ConnectedWallet from '@/src/components/custom/connected-wallet'
 import { Logo } from '@/src/components/custom/logo'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { routesConfig } from '@/src/constants/navigation'
 import { Menu } from '@/src/components/custom/menu'
 import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
 
-export const Header: React.FC = ({ ...restProps }) => {
+export const Header: React.FC<{ title?: string }> = ({ title = 'FIAT', ...restProps }) => {
   const { address, isWalletConnected } = useWeb3Connection()
-  const router = useRouter()
-  const title: string = routesConfig[router.route]?.title || '-'
   const [drawerVisible, setDrawerVisible] = useState(false)
 
   return (

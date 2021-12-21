@@ -8,7 +8,6 @@ import ToastContainer from '@/src/components/custom/toast'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
 import WrongNetwork from '@/src/components/custom/wrong-network'
 import { GeneralError } from '@/src/components/custom/general-error'
-import { Header } from '@/src/components/custom/header'
 import { Sidebar } from '@/src/components/custom/sidebar'
 import Spin from '@/src/components/antd/spin'
 
@@ -55,7 +54,6 @@ function App({ Component, pageProps }: AppProps) {
               <Layout style={{ minHeight: '100vh' }}>
                 <Sidebar />
                 <Layout>
-                  <Header />
                   <Layout.Content>
                     <Component {...pageProps} />
                   </Layout.Content>

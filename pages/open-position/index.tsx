@@ -13,6 +13,7 @@ import { Grid, Tab, Tabs } from '@/src/components/custom'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { usePositionsData } from '@/src/hooks/usePositionsData'
 import { PROTOCOLS, Protocol } from '@/types'
+import { Header } from '@/src/components/custom/header'
 
 const Columns: ColumnsType<any> = [
   {
@@ -127,90 +128,93 @@ const OpenPosition = () => {
   ]
 
   return (
-    <Grid flow="row" rowsTemplate="1fr auto">
-      <Text color="secondary" font="secondary" type="p1" weight="semibold">
-        Select a collateral type to add to your FIAT positions
-      </Text>
-      <Tabs>
-        {tabs.map(({ children, key }, index) => (
-          <Tab isActive={key === activeTabKey} key={index} onClick={() => setActiveTabKey(key)}>
-            {children}
-          </Tab>
-        ))}
-      </Tabs>
-      <div className={cn(s.filterWrapper)}>
-        <Button
-          className={cn(s.pill, {
-            [s.active]: Object.keys(filters).every((s) => filters[s as Protocol].active),
+    <>
+      <Header title="Open position" />
+      <Grid flow="row" rowsTemplate="1fr auto">
+        <Text color="secondary" font="secondary" type="p1" weight="semibold">
+          Select a collateral type to add to your FIAT positions
+        </Text>
+        <Tabs>
+          {tabs.map(({ children, key }, index) => (
+            <Tab isActive={key === activeTabKey} key={index} onClick={() => setActiveTabKey(key)}>
+              {children}
+            </Tab>
+          ))}
+        </Tabs>
+        <div className={cn(s.filterWrapper)}>
+          <Button
+            className={cn(s.pill, {
+              [s.active]: Object.keys(filters).every((s) => filters[s as Protocol].active),
+            })}
+            onClick={() => activateFilter(null)}
+            shape="round"
+            size="large"
+            type="primary"
+          >
+            All assets
+          </Button>
+          {PROTOCOLS.map((asset) => {
+            return (
+              <Button
+                className={cn(s.pill, {
+                  [s.active]: filters[asset].active,
+                })}
+                icon={filters[asset].icon}
+                key={asset}
+                onClick={() => activateFilter(asset)}
+                shape="round"
+                size="large"
+                type="primary"
+              >
+                {asset}
+              </Button>
+            )
           })}
-          onClick={() => activateFilter(null)}
-          shape="round"
-          size="large"
-          type="primary"
-        >
-          All assets
-        </Button>
-        {PROTOCOLS.map((asset) => {
-          return (
-            <Button
-              className={cn(s.pill, {
-                [s.active]: filters[asset].active,
-              })}
-              icon={filters[asset].icon}
-              key={asset}
-              onClick={() => activateFilter(asset)}
-              shape="round"
-              size="large"
-              type="primary"
-            >
-              {asset}
-            </Button>
-          )
-        })}
-        <ToggleSwitch
-          checked={inMyWallet}
-          label="In my wallet"
-          onChange={(e) => {
-            setInMyWallet(e.target.checked)
+          <ToggleSwitch
+            checked={inMyWallet}
+            label="In my wallet"
+            onChange={(e) => {
+              setInMyWallet(e.target.checked)
+            }}
+          />
+        </div>
+
+        <Table
+          columns={Columns}
+          dataSource={data}
+          inCard
+          loading={false}
+          pagination={{
+            total: data.length,
+            pageSize: 10,
+            current: 1,
+            position: ['bottomRight'],
+            showTotal: (total: number, [from, to]: [number, number]) => (
+              <>
+                <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
+                  Showing {from} to {to} the most recent {total}
+                </Text>
+                <Text
+                  className="hidden-tablet hidden-desktop"
+                  color="secondary"
+                  type="p2"
+                  weight="semibold"
+                >
+                  {from}..{to} of {total}
+                </Text>
+              </>
+            ),
+            onChange: (page: number, pageSize: number) => {
+              console.log(page, pageSize)
+            },
+          }}
+          rowKey="address"
+          scroll={{
+            x: true,
           }}
         />
-      </div>
-
-      <Table
-        columns={Columns}
-        dataSource={data}
-        inCard
-        loading={false}
-        pagination={{
-          total: data.length,
-          pageSize: 10,
-          current: 1,
-          position: ['bottomRight'],
-          showTotal: (total: number, [from, to]: [number, number]) => (
-            <>
-              <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                Showing {from} to {to} the most recent {total}
-              </Text>
-              <Text
-                className="hidden-tablet hidden-desktop"
-                color="secondary"
-                type="p2"
-                weight="semibold"
-              >
-                {from}..{to} of {total}
-              </Text>
-            </>
-          ),
-          onChange: (page: number, pageSize: number) => {
-            console.log(page, pageSize)
-          },
-        }}
-        rowKey="address"
-        scroll={{
-          x: true,
-        }}
-      />
-    </Grid>
+      </Grid>
+    </>
   )
 }
 

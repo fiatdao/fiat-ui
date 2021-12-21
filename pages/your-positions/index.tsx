@@ -7,6 +7,7 @@ import {
   yourPositionPageInformationMockFetch,
 } from '../../src/utils/your-positions-api'
 import { useState } from 'react'
+import { Header } from '@/src/components/custom/header'
 
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
@@ -49,6 +50,7 @@ const YourPositions = () => {
 
   return (
     <>
+      <Header title="Your Positions" />
       {!isLoadingPage && (
         <InfoBlocksGrid>
           <InfoBlock title="Total Debt" value={yourPosition?.totalDebt} />
