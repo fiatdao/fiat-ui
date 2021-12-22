@@ -1,23 +1,14 @@
 import s from './s.module.scss'
 import { useRouter } from 'next/router'
-import { ReactNode, useEffect, useState } from 'react'
-import { Menu as AntdMenu } from 'antd'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import cn from 'classnames'
 import { SiderProps } from 'antd/lib/layout'
-import { routes } from '@/src/constants/navigation'
-import { NavLink } from '@/src/components/to-be-deprecated/NavLink'
-
-type MenuItem = {
-  icon: ReactNode
-  iconSelected: ReactNode
-  key: string
-  title: string
-  to: string
-}
+import { RouteItem, routes } from '@/src/constants/navigation'
 
 export const Menu: React.FC<SiderProps> = ({ className }) => {
   const { pathname } = useRouter()
-  const [selectedItem, setSelectedItem] = useState<MenuItem>()
+  const [selectedItem, setSelectedItem] = useState<RouteItem>()
 
   useEffect(() => {
     const currentItem = routes.find(({ to }) => to === pathname)
@@ -25,19 +16,17 @@ export const Menu: React.FC<SiderProps> = ({ className }) => {
   }, [pathname])
 
   return (
-    <AntdMenu
-      className={cn(s.menu, className)}
-      mode="inline"
-      selectedKeys={[selectedItem?.key ?? '']}
-    >
-      {routes.map((item) => (
-        <AntdMenu.Item
-          icon={selectedItem?.key === item.key ? item.iconSelected : item.icon}
-          key={item.key}
-        >
-          <NavLink href={item.to}>{item.title}</NavLink>
-        </AntdMenu.Item>
+    <div className={cn(s.menu, className)}>
+      {routes.map((item, index) => (
+        <Link href={item.to} key={index} passHref>
+          <a className={cn(s.item, { [s.isActive]: selectedItem?.key === item.key })}>
+            <span className={cn(s.icon)}>
+              {selectedItem?.key === item.key ? item.iconActive : item.icon}
+            </span>
+            <span className={cn(s.title)}>{item.title}</span>
+          </a>
+        </Link>
       ))}
-    </AntdMenu>
+    </div>
   )
 }

@@ -1,3 +1,82 @@
 .menu {
-  display: unset;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  --padding: 20px;
+
+  align-items: center;
+  background-color: transparent;
+  color: var(--theme-color-4);
+  display: flex;
+  gap: 18px;
+  height: 64px;
+  padding: 0 var(--padding);
+  position: relative;
+  user-select: none;
+
+  &:not(.isActive):hover {
+    color: var(--theme-text-color);
+
+    path,
+    rect {
+      stroke: var(--theme-text-color);
+    }
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+
+  &::after {
+    background-color: var(--theme-border-color);
+    border: none;
+    bottom: 0;
+    content: '';
+    height: 1px;
+    left: var(--padding);
+    opacity: 1;
+    position: absolute;
+    right: var(--padding);
+    top: 100%;
+    transform: none;
+    transition: none;
+  }
+
+  &.isActive {
+    background-color: transparent;
+    color: var(--theme-text-color);
+    cursor: default;
+    pointer-events: none;
+
+    &::before {
+      background: linear-gradient(90deg, var(--theme-color-2) 0%, var(--theme-color-3) 100%);
+      bottom: 0;
+      content: '';
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 4px;
+    }
+  }
+}
+
+.title {
+  flex-grow: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.icon {
+  --dimensions: 24px;
+
+  align-items: center;
+  display: flex;
+  height: var(--dimensions);
+  justify-content: center;
+  width: var(--dimensions);
 }

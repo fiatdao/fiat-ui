@@ -1,64 +1,64 @@
 import { ReactNode } from 'react'
 
-import DashboardInactive from '@/src/resources/svg/dashboard-inactive.svg'
+import Dashboard from '@/src/resources/svg/dashboard.svg'
 import DashboardActive from '@/src/resources/svg/dashboard-active.svg'
-import OpenPositionInactive from '@/src/resources/svg/open-position-inactive.svg'
+import OpenPosition from '@/src/resources/svg/open-position.svg'
 import OpenPositionActive from '@/src/resources/svg/open-position-active.svg'
-import YourPositionsInactive from '@/src/resources/svg/your-positions-inactive.svg'
+import YourPositions from '@/src/resources/svg/your-positions.svg'
 import YourPositionsActive from '@/src/resources/svg/your-positions-active.svg'
-import LiquidationsInactive from '@/src/resources/svg/liquidations-inactive.svg'
-import LiquidationsActive from '@/src/resources/svg/liquidations-active.svg'
+import Auctions from '@/src/resources/svg/auctions.svg'
+import AuctionsActive from '@/src/resources/svg/auctions-active.svg'
 
 const DASHBOARD = '/dashboard'
 const OPEN_POSITION = '/open-position'
 const YOUR_POSITIONS = '/your-positions'
-const LIQUIDATIONS = '/liquidations'
+const AUCTIONS = '/auctions'
 
-type RouteItem = {
+export type RouteItem = {
   icon: ReactNode
-  iconSelected: ReactNode
+  iconActive: ReactNode
+  key: string
   title: string
   to: string
-  key: string
 }
 
 const DashboardRoute: RouteItem = {
   to: DASHBOARD,
-  icon: <DashboardInactive />,
-  iconSelected: <DashboardActive />,
+  icon: <Dashboard />,
+  iconActive: <DashboardActive />,
   title: 'Dashboard',
   key: 'dashboard',
 }
 
 const OpenPositionRoute: RouteItem = {
   to: OPEN_POSITION,
-  icon: <OpenPositionInactive />,
-  iconSelected: <OpenPositionActive />,
+  icon: <OpenPosition />,
+  iconActive: <OpenPositionActive />,
   title: 'Open position',
   key: 'open-position',
 }
 
 const YourPositionsRoute: RouteItem = {
   to: YOUR_POSITIONS,
-  icon: <YourPositionsInactive />,
-  iconSelected: <YourPositionsActive />,
+  icon: <YourPositions />,
+  iconActive: <YourPositionsActive />,
   title: 'Your Positions',
   key: 'your-positions',
 }
 
 const LiquidationsRoute: RouteItem = {
-  to: LIQUIDATIONS,
-  icon: <LiquidationsInactive />,
-  iconSelected: <LiquidationsActive />,
-  title: 'Liquidations',
-  key: 'liquidations',
+  to: AUCTIONS,
+  icon: <Auctions />,
+  iconActive: <AuctionsActive />,
+  title: 'Auctions',
+  key: 'auctions',
 }
 
 const routesConfig: Record<string, RouteItem> = {
   [DASHBOARD]: DashboardRoute,
   [OPEN_POSITION]: OpenPositionRoute,
   [YOUR_POSITIONS]: YourPositionsRoute,
-  [LIQUIDATIONS]: LiquidationsRoute,
+  [AUCTIONS]: LiquidationsRoute,
 }
 
 const routes: RouteItem[] = [
