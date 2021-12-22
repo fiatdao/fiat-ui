@@ -6,15 +6,13 @@
 }
 
 .item {
-  --padding: 20px;
-
   align-items: center;
   background-color: transparent;
   color: var(--theme-color-4);
   display: flex;
   gap: 18px;
   height: 64px;
-  padding: 0 var(--padding);
+  padding: 0 var(--sidebar-horizontal-padding);
   position: relative;
   user-select: none;
 
@@ -37,10 +35,10 @@
     bottom: 0;
     content: '';
     height: 1px;
-    left: var(--padding);
+    left: var(--sidebar-horizontal-padding);
     opacity: 1;
     position: absolute;
-    right: var(--padding);
+    right: var(--sidebar-horizontal-padding);
     top: 100%;
     transform: none;
     transition: none;

@@ -2,6 +2,8 @@
 @import '/src/styles/vars';
 
 .sidebar {
+  --sidebar-horizontal-padding: 20px;
+
   background: var(--theme-secondary-block);
 
   @media (max-width: #{$max-width-mobile}) {

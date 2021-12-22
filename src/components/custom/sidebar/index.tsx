@@ -7,7 +7,7 @@ import { Layout } from 'antd'
 import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
 import Chevron from '@/src/resources/svg/chevron.svg'
 import { Logo } from '@/src/components/custom/logo'
-import { Menu } from '@/src/components/antd/menu'
+import { Menu } from '@/src/components/custom/menu'
 
 export const Sidebar: React.FC<SiderProps> = ({ className, ...restProps }) => {
   const [collapsed, setCollapsed] = useState(false)
