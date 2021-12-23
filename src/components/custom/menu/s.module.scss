@@ -16,6 +16,10 @@
   position: relative;
   user-select: none;
 
+  :global(.ant-layout-sider-collapsed) & {
+    justify-content: center;
+  }
+
   &:not(.isActive):hover {
     color: var(--theme-text-color);
 
@@ -42,6 +46,10 @@
     top: 100%;
     transform: none;
     transition: none;
+
+    :global(.ant-layout-sider-collapsed) & {
+      display: none;
+    }
   }
 
   &.isActive {

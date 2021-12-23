@@ -2,8 +2,6 @@ import s from './s.module.scss'
 import cn from 'classnames'
 import { HTMLAttributes } from 'react'
 import ButtonOutline from '@/src/components/antd/button-outline'
-import FiatDaoIcon from '@/src/resources/svg/fiat-dao-icon.svg'
-import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import ExternalLink from '@/src/resources/svg/external-link.svg'
 
 export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({

@@ -14,10 +14,10 @@ export const Sidebar: React.FC<SiderProps> = ({ className, ...restProps }) => {
 
   return (
     <Layout.Sider
-      breakpoint="lg"
+      breakpoint="xl"
       className={cn(s.sidebar, className)}
       collapsed={collapsed}
-      onCollapse={setCollapsed}
+      onCollapse={() => setCollapsed(true)}
       width={256}
       {...restProps}
     >
@@ -30,7 +30,7 @@ export const Sidebar: React.FC<SiderProps> = ({ className, ...restProps }) => {
         />
       </div>
       <Menu />
-      <SideMenuFooter className={cn(s.sideMenuFooter)} />
+      {!collapsed && <SideMenuFooter className={cn(s.sideMenuFooter)} />}
     </Layout.Sider>
   )
 }

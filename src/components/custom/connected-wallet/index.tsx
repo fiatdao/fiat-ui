@@ -14,6 +14,7 @@ import ChevronDown from '@/src/resources/svg/chevron-down.svg'
 import Status from '@/src/resources/svg/node-status.svg'
 import Wallet from '@/src/resources/svg/wallet.svg'
 import Network from '@/src/resources/svg/network.svg'
+import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 
 const ConnectedWallet: React.FC = () => {
   const { address, appChainId, disconnectWallet, wallet } = useWeb3Connection()
@@ -50,9 +51,9 @@ const ConnectedWallet: React.FC = () => {
             </Grid>
             <Divider />
             <Grid padding={24}>
-              <button className="button button-ghost" onClick={disconnectWallet} type="button">
-                <span>Disconnect</span>
-              </button>
+              <ButtonOutlineGradient height="lg" onClick={disconnectWallet}>
+                Disconnect
+              </ButtonOutlineGradient>
             </Grid>
           </div>
         }
@@ -60,13 +61,13 @@ const ConnectedWallet: React.FC = () => {
         placement="bottomRight"
         trigger="click"
       >
-        <button className={cn('button-ghost', s.dropdownButton)}>
+        <ButtonOutlineGradient className={cn(s.dropdownButton)} height="lg">
           <span className={cn(s.dropdownButtonContents)}>
             <AccountImage />
             <span className={cn(s.walletAddress)}>{shortenAddr(address!, 4, 3)}</span>
             <ChevronDown className={cn(s.dropdownArrow)} />
           </span>
-        </button>
+        </ButtonOutlineGradient>
       </Popover>
     </Grid>
   )

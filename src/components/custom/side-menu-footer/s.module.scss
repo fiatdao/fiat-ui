@@ -27,6 +27,7 @@
   font-weight: 500;
   gap: 6px;
   line-height: 1.2;
+  white-space: nowrap;
 
   path {
     fill: var(--theme-color-4);
@@ -48,6 +49,7 @@
   line-height: 1.2;
   margin: 0 0 8px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .buttons {

@@ -8,27 +8,23 @@
 }
 
 .dropdownButton {
-  --padding: 20px;
-
-  padding-left: var(--padding);
-  padding-right: var(--padding);
-
-  @media (max-width: #{$max-width-tablet-portrait}) {
-    height: 48px;
+  @media (max-width: #{$max-width-mobile}) {
     padding: 0;
     width: 56px;
   }
 }
 
 .dropdownButtonContents {
-  align-items: center;
-  column-gap: 20px;
-  display: grid;
-  grid-template-columns: 14px 1fr 10px;
-  z-index: 5;
+  :global(.ant-btn) & {
+    align-items: center;
+    column-gap: 20px;
+    display: grid;
+    grid-template-columns: 14px 1fr 10px;
+    z-index: 5;
 
-  @media (max-width: #{$max-width-tablet-portrait}) {
-    grid-template-columns: 1fr;
+    @media (max-width: #{$max-width-mobile}) {
+      grid-template-columns: 1fr;
+    }
   }
 }
 
@@ -37,14 +33,14 @@
   font-size: 16px;
   line-height: 1.2;
 
-  @media (max-width: #{$max-width-tablet-portrait}) {
+  @media (max-width: #{$max-width-mobile}) {
     display: none;
   }
 }
 
 .walletAddress,
 .dropdownArrow {
-  @media (max-width: #{$max-width-tablet-portrait}) {
+  @media (max-width: #{$max-width-mobile}) {
     display: none;
   }
 }
@@ -90,15 +86,6 @@
   }
 }
 
-.notificationIcon {
-  color: var(--theme-icon-color);
-  cursor: pointer;
-
-  &:hover {
-    color: var(--theme-icon-hover-color);
-  }
-}
-
 .addressStr {
   font-size: 16px;
   font-weight: 600;
@@ -112,19 +99,4 @@
     box-shadow: var(--theme-card-shadow);
     border-radius: 12px;
   }
-}
-
-.notifications {
-  max-width: 420px;
-  width: 100%;
-  max-height: 420px;
-  display: flex;
-  flex-direction: column;
-}
-
-.icon {
-  color: white;
-  justify-content: center;
-  align-items: center;
-  display: flex;
 }

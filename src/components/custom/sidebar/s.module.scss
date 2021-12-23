@@ -5,6 +5,7 @@
   --sidebar-horizontal-padding: 20px;
 
   background: var(--theme-secondary-block);
+  overflow: hidden;
 
   @media (max-width: #{$max-width-mobile}) {
     display: none;
