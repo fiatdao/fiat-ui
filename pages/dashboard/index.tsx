@@ -1,5 +1,7 @@
+import { Header } from '@/src/components/custom/header'
+
 const Dashboard = () => {
-  return <h1>Dashboard</h1>
+  return <Header title="Dashboard" />
 }
 
 export default Dashboard

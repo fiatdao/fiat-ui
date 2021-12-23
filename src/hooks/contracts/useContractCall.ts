@@ -1,3 +1,4 @@
+import { isAddress } from 'ethers/lib/utils'
 import useSWR, { SWRConfiguration } from 'swr'
 import { Contract, ContractInterface } from '@ethersproject/contracts'
 

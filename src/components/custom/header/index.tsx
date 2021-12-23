@@ -1,15 +1,11 @@
 import { ConnectButton } from '../connect-button'
 import { Layout } from 'antd'
-import { useRouter } from 'next/router'
 import ConnectedWallet from '@/src/components/custom/connected-wallet'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Text } from '@/src/components/custom/typography'
-import { routesConfig } from '@/src/constants/navigation'
 
-export const Header: React.FC = () => {
+export const Header: React.FC<{ title?: string }> = ({ title = 'FIAT' }) => {
   const { address, isWalletConnected } = useWeb3Connection()
-  const router = useRouter()
-  const title: string = routesConfig[router.route]?.title || '-'
 
   return (
     <Layout.Header style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>

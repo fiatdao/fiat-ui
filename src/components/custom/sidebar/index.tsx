@@ -26,7 +26,7 @@ export const Sidebar: React.FC<SiderProps> = ({ className, ...props }) => {
   const [collapsed, setCollapsed] = useState(false)
 
   useEffect(() => {
-    const currentItem = routes.find(({ to }) => to === pathname)
+    const currentItem = routes.find(({ to }) => pathname.includes(to))
     setSelectedItem(currentItem ?? undefined)
   }, [pathname])
 
