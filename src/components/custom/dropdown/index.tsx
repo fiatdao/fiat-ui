@@ -134,7 +134,7 @@ export const DropdownList: React.FC<DropdownListProps> = ({ children, items, opt
                 <li key={idx}>
                   {/**
                    @ts-ignore */}
-                  <Link href={href.toString()}>
+                  <Link href={href.toString()} passHref>
                     <span
                       className={s.tokenSelectListButton}
                       onClick={() => {

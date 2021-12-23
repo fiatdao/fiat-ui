@@ -9,7 +9,6 @@ import ConnectedWallet from '@/src/components/custom/connected-wallet'
 import { Logo } from '@/src/components/custom/logo'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { routesConfig } from '@/src/constants/navigation'
-import BurgerMenu from '@/src/resources/svg/burger-menu.svg'
 import { Menu } from '@/src/components/custom/menu'
 import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
 

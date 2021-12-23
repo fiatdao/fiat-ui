@@ -20,11 +20,10 @@ type Action<T> =
 
 type Request<T> = {
   url?: string
-  options?: RequestInit
   customFetch?: any
 }
 
-function useFetch<T = unknown>({ customFetch, options, url }: Request<T>): State<T> {
+function useFetch<T = unknown>({ customFetch, url }: Request<T>): State<T> {
   const cache = useRef<Cache<T>>({})
 
   // Used to prevent state update if the component is unmounted
