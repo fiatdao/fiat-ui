@@ -13,6 +13,7 @@ import WrongNetwork from '@/src/components/custom/wrong-network'
 import { GeneralError } from '@/src/components/custom/general-error'
 import { Header } from '@/src/components/custom/header'
 import { Sidebar } from '@/src/components/custom/sidebar'
+import Spin from '@/src/components/antd/spin'
 
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
@@ -51,7 +52,7 @@ function App({ Component, pageProps }: AppProps) {
       <GeneralContextProvider>
         <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
           <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
-            <Web3ConnectionProvider fallback={<div>Loading...</div>}>
+            <Web3ConnectionProvider fallback={<Spin />}>
               <Layout style={{ minHeight: '100vh' }}>
                 <Sidebar />
                 <Layout>

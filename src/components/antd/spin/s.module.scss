@@ -1,11 +1,7 @@
-button {
-  .spin {
-    margin-right: 8px;
-  }
-}
-
-button:global(.button-primary) {
-  .spin {
-    color: #fff;
+.spin {
+  &:global(.ant-spin) {
+    & :global(.ant-spin-dot .ant-spin-dot-item) {
+      background-color: var(--theme-color-3);
+    }
   }
 }

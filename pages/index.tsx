@@ -3,6 +3,7 @@ import Head from 'next/head'
 import genericSuspense from '@/src/utils/genericSuspense'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import WalletButton from '@/src/components/custom/connect-button'
+import Spin from '@/src/components/antd/spin'
 
 function Connect({ ...restProps }) {
   const { isAppConnected } = useWeb3Connection()
@@ -20,7 +21,7 @@ function Connect({ ...restProps }) {
   }, [])
 
   return loading ? (
-    <div>Loading...</div>
+    <Spin />
   ) : (
     <div {...restProps}>
       {!isAppConnected ? (

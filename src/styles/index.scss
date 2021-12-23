@@ -45,6 +45,12 @@ body[data-fixed='true'] {
   margin: unset;
 }
 
+#__next {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 svg,
 svg * {
   transition: none !important;
