@@ -1,5 +1,7 @@
 import s from './s.module.scss'
 
+import { useState } from 'react'
+import { Col, Row } from 'antd'
 import {
   Inventory,
   Transaction,
@@ -7,9 +9,7 @@ import {
   inventoryMockFetch,
   transactionMockFetch,
   yourPositionPageInformationMockFetch,
-} from './api'
-import { useState } from 'react'
-import { Col, Row } from 'antd'
+} from '@/src/utils/your-positions-api'
 import { Text } from '@/src/components/custom/typography'
 import { Grid, Tabs } from '@/src/components/custom'
 import { WrapperContent } from '@/src/components/custom/wrapper-content'
