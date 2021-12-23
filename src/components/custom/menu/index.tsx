@@ -26,9 +26,13 @@ export const Menu: React.FC<Props> = ({ className, onClick, ...restProps }: Prop
       {routes.map((item, index) => (
         <Link href={item.to} key={index} passHref>
           <a className={cn(s.item, { [s.isActive]: selectedItem?.key === item.key })}>
-            <span className={cn(s.icon)}>
-              {selectedItem?.key === item.key ? item.iconActive : item.icon}
-            </span>
+            <img
+              alt={item.title}
+              className={cn(s.icon)}
+              src={`data:image/svg+xml;base64,${
+                selectedItem?.key === item.key ? item.iconActive : item.icon
+              }`}
+            />
             <span className={cn(s.title)}>{item.title}</span>
           </a>
         </Link>
