@@ -1,39 +1,79 @@
-.notificationIcon {
-  color: var(--theme-icon-color);
-  cursor: pointer;
+@import '/src/styles/vars';
 
-  &:hover {
-    color: var(--theme-icon-hover-color);
-  }
-}
-
-.addressStr {
+@mixin text-gradient() {
   background: var(--gradient-secondary-pink);
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
-.popover {
-  :global(.ant-popover-inner) {
-    box-shadow: var(--theme-card-shadow);
-    border-radius: 12px;
+.dropdownButton {
+  @media (max-width: #{$max-width-mobile}) {
+    padding: 0;
+    width: 56px;
   }
 }
 
-.accountLink {
-  &:global(.ant-popover-open) {
-    .dropdownArrow {
-      transform: rotate(-180deg);
+.dropdownButtonContents {
+  :global(.ant-btn) & {
+    align-items: center;
+    column-gap: 20px;
+    display: grid;
+    grid-template-columns: 14px 1fr 10px;
+    z-index: 5;
+
+    @media (max-width: #{$max-width-mobile}) {
+      grid-template-columns: 1fr;
     }
   }
 }
 
-.statusTag {
-  position: relative;
-  background: var(--gradient-secondary-pink);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.walletAddress {
+  color: var(--textColor);
+  font-size: 16px;
+  line-height: 1.2;
+
+  @media (max-width: #{$max-width-mobile}) {
+    display: none;
+  }
+}
+
+.walletAddress,
+.dropdownArrow {
+  @media (max-width: #{$max-width-mobile}) {
+    display: none;
+  }
+}
+
+.dropdownArrow {
+  :global(.ant-popover-open) & {
+    transform: rotate(-180deg);
+  }
+}
+
+.itemIcon {
+  color: var(--theme-icon-color);
+}
+
+.itemText {
+  color: var(--theme-secondary-color);
+  font-size: 16px;
+}
+
+.itemStatus {
+  color: var(--theme-text-color);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.itemStatusBadge {
   padding: 4px 12px;
+  position: relative;
+  font-size: 12px;
+  font-weight: 600;
+
+  @include text-gradient();
+
   &:before {
     border-radius: 4px;
     width: 100%;
@@ -46,24 +86,17 @@
   }
 }
 
-.notifications {
-  max-width: 420px;
-  width: 100%;
-  max-height: 420px;
-  display: flex;
-  flex-direction: column;
+.addressStr {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+
+  @include text-gradient();
 }
 
-@media (max-width: 768px) {
-  .walletAddress,
-  .dropdownArrow {
-    display: none;
+.popover {
+  :global(.ant-popover-inner) {
+    box-shadow: var(--theme-card-shadow);
+    border-radius: 12px;
   }
-}
-
-.icon {
-  color: white;
-  justify-content: center;
-  align-items: center;
-  display: flex;
 }

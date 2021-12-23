@@ -1,0 +1,124 @@
+@import '/src/styles/vars';
+
+.component {
+  align-items: center;
+  background-color: transparent;
+  box-shadow: inset 0 -1px 0 var(--theme-border-color);
+  display: flex;
+  height: var(--theme-header-height);
+  justify-content: space-between;
+  line-height: var(--theme-header-height);
+  padding: 0 40px;
+
+  @media (max-width: #{$max-width-tablet-portrait}) {
+    padding: 0 20px;
+  }
+
+  :local(.logoWrapper) {
+    display: none;
+
+    @media (max-width: #{$max-width-mobile}) {
+      display: flex;
+    }
+  }
+}
+
+.title {
+  color: var(--theme-text-color);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0;
+
+  @media (max-width: #{$max-width-mobile}) {
+    display: none;
+  }
+}
+
+.endWrapper {
+  align-items: center;
+  display: flex;
+  margin-left: auto;
+  gap: 16px;
+}
+
+.mobileButton {
+  --width: 32px;
+
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  display: none;
+  height: 48px;
+  justify-content: center;
+  padding: 0;
+  width: var(--width);
+
+  @media (max-width: #{$max-width-mobile}) {
+    display: flex;
+  }
+
+  &:active {
+    opacity: 0.5;
+  }
+}
+
+.burguerMenuButton {
+  display: block;
+  height: 100%;
+  position: relative;
+  width: 100%;
+
+  .line {
+    background-color: #fff;
+    display: block;
+    height: 2px;
+    transform-origin: 50%;
+    transition: all 0.3s ease-in-out;
+    width: var(--width);
+    position: absolute;
+    left: 0;
+  }
+
+  .line1 {
+    top: 21px;
+  }
+
+  .line2 {
+    top: 27px;
+  }
+
+  &.isDrawerVisible {
+    .line1 {
+      top: 50%;
+      transform: rotate(45deg);
+    }
+    .line2 {
+      top: 50%;
+      transform: rotate(-45deg);
+    }
+  }
+}
+
+.drawer {
+  --sidebar-horizontal-padding: 20px;
+
+  &:global(.ant-drawer) {
+    height: calc(100vh - var(--theme-header-height));
+    top: var(--theme-header-height);
+  }
+
+  & :global(.ant-drawer-content) {
+    background-color: var(--theme-secondary-block);
+  }
+
+  & :global(.ant-drawer-body) {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sideMenuFooter {
+    margin-top: auto;
+  }
+}

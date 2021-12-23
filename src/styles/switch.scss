@@ -1,0 +1,11 @@
+.ant-switch.ant-switch .ant-switch-handle::before {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.24);
+}
+
+.ant-switch.ant-switch[aria-checked='false'] {
+  background: #43484d;
+}
+
+.ant-switch.ant-switch[aria-checked='true'] {
+  background: var(--gradient-secondary-pink);
+}

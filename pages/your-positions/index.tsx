@@ -7,7 +7,7 @@ import {
   inventoryMockFetch,
   transactionMockFetch,
   yourPositionPageInformationMockFetch,
-} from './api'
+} from '../../src/utils/your-positions-api'
 import { useState } from 'react'
 import { Col, Row } from 'antd'
 import { Text } from '@/src/components/custom/typography'

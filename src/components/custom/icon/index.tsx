@@ -16,7 +16,6 @@ import logoTextDImg from '@/src/resources/png/logo_dark_text.png'
 import logoDarkSrc from '@/src/resources/png/logo_dark.png'
 import logoTextLImg from '@/src/resources/png/logo_light_text.png'
 import logoLightSrc from '@/src/resources/png/logo_light.png'
-// import enterdaoSrc from '@/src/resources/png/enterdao.png';
 import manaSrc from '@/src/resources/png/mana.png'
 import MKRSrc from '@/src/resources/png/MKR.png'
 import plugBgMobileImg from '@/src/resources/png/plug-bg-mobile.png'

@@ -1,33 +1,48 @@
+import s from './s.module.scss'
 import { ConnectButton } from '../connect-button'
 import { Layout } from 'antd'
 import { useRouter } from 'next/router'
+import cn from 'classnames'
+import { Drawer } from 'antd'
+import { useState } from 'react'
 import ConnectedWallet from '@/src/components/custom/connected-wallet'
+import { Logo } from '@/src/components/custom/logo'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { Text } from '@/src/components/custom/typography'
 import { routesConfig } from '@/src/constants/navigation'
+import { Menu } from '@/src/components/custom/menu'
+import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
 
-export const Header: React.FC = () => {
+export const Header: React.FC = ({ ...restProps }) => {
   const { address, isWalletConnected } = useWeb3Connection()
   const router = useRouter()
   const title: string = routesConfig[router.route]?.title || '-'
+  const [drawerVisible, setDrawerVisible] = useState(false)
 
   return (
-    <Layout.Header style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-      <Text color="white" style={{ flex: '1' }} type="h2">
-        {title}
-      </Text>
-      <div>
-        <button>
-          <svg height="29" width="36" xmlns="http://www.w3.org/2000/svg">
-            <g fill="none" stroke="#fff" strokeWidth="3">
-              <path d="M0 1.5h36" />
-              <path d="M0 14.5h36" />
-              <path d="M0 27.5h36" />
-            </g>
-          </svg>
-        </button>
-        {isWalletConnected && address ? <ConnectedWallet /> : <ConnectButton />}
-      </div>
-    </Layout.Header>
+    <>
+      <Layout.Header className={cn(s.component)} {...restProps}>
+        <h1 className={cn(s.title)}>{title}</h1>
+        <Logo className={cn(s.logoWrapper)} />
+        <div className={cn(s.endWrapper)}>
+          {isWalletConnected && address ? <ConnectedWallet /> : <ConnectButton />}
+          <button className={cn(s.mobileButton)} onClick={() => setDrawerVisible((prev) => !prev)}>
+            <span className={cn(s.burguerMenuButton, { [s.isDrawerVisible]: drawerVisible })}>
+              <span className={cn(s.line, s.line1)}></span>
+              <span className={cn(s.line, s.line2)}></span>
+            </span>
+          </button>
+        </div>
+      </Layout.Header>
+      <Drawer
+        className={cn(s.drawer)}
+        closable={false}
+        visible={drawerVisible}
+        width={'100%'}
+        {...restProps}
+      >
+        <Menu onClick={() => setDrawerVisible(false)} />
+        <SideMenuFooter className={cn(s.sideMenuFooter)} />
+      </Drawer>
+    </>
   )
 }

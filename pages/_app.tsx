@@ -13,6 +13,7 @@ import WrongNetwork from '@/src/components/custom/wrong-network'
 import { GeneralError } from '@/src/components/custom/general-error'
 import { Header } from '@/src/components/custom/header'
 import { Sidebar } from '@/src/components/custom/sidebar'
+import Spin from '@/src/components/antd/spin'
 
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
@@ -38,6 +39,12 @@ function App({ Component, pageProps }: AppProps) {
         <meta content={title} name="twitter:site" />
         <meta content={title} property="og:title" />
         <meta content={twitterHandle} name="twitter:creator" />
+        <link href="/favicon/favicon.svg" rel="icon" type="image/svg+xml" />
+        <link href="/favicon/favicon.png" rel="icon" type="image/png"></link>
+        <link href="/favicon/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180" />
+        <link href="/favicon/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png" />
+        <link href="/favicon/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png" />
+        <link href="/favicon/site.webmanifest" rel="manifest" />
         <link color="#5bbad5" href="/favicon/safari-pinned-tab.svg" rel="mask-icon" />
         <meta content="#da532c" name="msapplication-TileColor" />
         <meta content="#ffffff" name="theme-color" />
@@ -45,7 +52,7 @@ function App({ Component, pageProps }: AppProps) {
       <GeneralContextProvider>
         <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
           <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
-            <Web3ConnectionProvider fallback={<div>Loading...</div>}>
+            <Web3ConnectionProvider fallback={<Spin />}>
               <Layout style={{ minHeight: '100vh' }}>
                 <Sidebar />
                 <Layout>

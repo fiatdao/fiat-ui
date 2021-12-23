@@ -1,9 +1,12 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
+/* eslint-disable jsx-a11y/anchor-has-content */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import s from './s.module.scss'
-import { NavLink } from '../../to-be-deprecated/NavLink'
 import React, { HTMLProps, ReactNode } from 'react'
 import ReactDOM from 'react-dom'
 import { Modifier, usePopper } from 'react-popper'
-import { LinkProps } from 'next/link'
+import Link, { LinkProps } from 'next/link'
 import * as PopperJS from '@popperjs/core'
 import { ModifierPhases } from '@popperjs/core'
 import outy from 'outy'
@@ -131,17 +134,18 @@ export const DropdownList: React.FC<DropdownListProps> = ({ children, items, opt
                 <li key={idx}>
                   {/**
                    @ts-ignore */}
-                  <NavLink
-                    href={href.toString()}
-                    {...rest}
-                    className={s.tokenSelectListButton}
-                    onClick={() => {
-                      // if (onClick) onClick(e);
-                      setOpen(false)
-                    }}
-                  >
-                    {children}
-                  </NavLink>
+                  <Link href={href.toString()} passHref>
+                    <span
+                      className={s.tokenSelectListButton}
+                      onClick={() => {
+                        // if (onClick) onClick(e);
+                        setOpen(false)
+                      }}
+                      {...rest}
+                    >
+                      {children}
+                    </span>
+                  </Link>
                 </li>
               )
             }
@@ -152,14 +156,14 @@ export const DropdownList: React.FC<DropdownListProps> = ({ children, items, opt
                 <li key={idx}>
                   {/**
                    @ts-ignore */}
-                  <NavLink
-                    {...rest}
+                  <Link {...rest} />
+                  <a
                     className={s.tokenSelectListButton}
                     onClick={() => {
                       // if (onClick) onClick(e);
                       setOpen(false)
                     }}
-                  />
+                  ></a>
                 </li>
               )
             }

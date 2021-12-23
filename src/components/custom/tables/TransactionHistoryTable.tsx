@@ -1,19 +1,12 @@
 import { parseDate, remainingTime } from './utils'
 import cn from 'classnames'
-
 import { ColumnsType } from 'antd/lib/table/interface'
-
 import { useState } from 'react'
 import { Row } from 'antd'
 import { SelectValue } from 'antd/lib/select'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-
-import { Transaction } from '@/pages/your-positions/api'
-
-import { Dropdown, DropdownList } from '@/src/components/custom/'
-import Button from '@/src/components/antd/button/'
-
+import { Transaction } from '@/src/utils/your-positions-api'
 import Select from '@/src/components/antd/select'
 
 const ColumnText = (obj: any) => {

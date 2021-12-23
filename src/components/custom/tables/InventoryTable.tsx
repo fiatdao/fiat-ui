@@ -6,9 +6,9 @@ import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import Button from '@/src/components/antd/button'
 
-import { Inventory } from '@/pages/your-positions/api'
+import { Inventory } from '@/src/utils/your-positions-api'
 
-const LTVColumn = (ltv: any, row: any, index: any) => {
+const LTVColumn = (ltv: any, row: any) => {
   const isIncreasing = ltv > row.lastLTV
   const diffAmount = isIncreasing ? ltv - row.lastLTV : row.lastLTV - ltv
 
