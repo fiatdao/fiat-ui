@@ -6,7 +6,7 @@ import { Row } from 'antd'
 import { SelectValue } from 'antd/lib/select'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { Transaction } from '@/pages/your-positions/api'
+import { Transaction } from '@/src/utils/your-positions-api'
 import Select from '@/src/components/antd/select'
 
 const ColumnText = (obj: any) => {
