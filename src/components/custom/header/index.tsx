@@ -27,7 +27,10 @@ export const Header: React.FC = ({ ...restProps }) => {
         <div className={cn(s.endWrapper)}>
           {isWalletConnected && address ? <ConnectedWallet /> : <ConnectButton />}
           <button className={cn(s.mobileButton)} onClick={() => setDrawerVisible((prev) => !prev)}>
-            <BurgerMenu />
+            <span className={cn(s.burguerMenuButton, { [s.isDrawerVisible]: drawerVisible })}>
+              <span className={cn(s.line, s.line1)}></span>
+              <span className={cn(s.line, s.line2)}></span>
+            </span>
           </button>
         </div>
       </Layout.Header>

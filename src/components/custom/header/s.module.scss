@@ -43,6 +43,8 @@
 }
 
 .mobileButton {
+  --width: 32px;
+
   align-items: center;
   background-color: transparent;
   border: none;
@@ -50,14 +52,51 @@
   height: 48px;
   justify-content: center;
   padding: 0;
-  width: 32px;
+  width: var(--width);
 
   @media (max-width: #{$max-width-mobile}) {
     display: flex;
   }
 
   &:active {
-    opacity: 0.8;
+    opacity: 0.5;
+  }
+}
+
+.burguerMenuButton {
+  display: block;
+  height: 100%;
+  position: relative;
+  width: 100%;
+
+  .line {
+    background-color: #fff;
+    display: block;
+    height: 2px;
+    transform-origin: 50%;
+    transition: all 0.3s ease-in-out;
+    width: var(--width);
+    position: absolute;
+    left: 0;
+  }
+
+  .line1 {
+    top: 21px;
+  }
+
+  .line2 {
+    top: 27px;
+  }
+
+  &.isDrawerVisible {
+    .line1 {
+      top: 50%;
+      transform: rotate(45deg);
+    }
+    .line2 {
+      top: 50%;
+      transform: rotate(-45deg);
+    }
   }
 }
 
