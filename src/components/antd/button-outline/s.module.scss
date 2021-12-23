@@ -11,7 +11,7 @@
   --transition-time: 0.25s;
 
   align-items: center;
-  background-image: linear-gradient(90deg, var(--theme-color-2) 0%, var(--theme-color-3) 100%);
+  background-color: var(--theme-border-color);
   border-radius: var(--button-border-radius);
   display: flex;
   height: var(--button-height);
@@ -63,6 +63,8 @@
   // states
   &:hover,
   &:focus {
+    background-image: linear-gradient(90deg, var(--theme-color-2) 0%, var(--theme-color-3) 100%);
+
     .border {
       opacity: 0;
     }
