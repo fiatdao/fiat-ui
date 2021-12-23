@@ -60,3 +60,26 @@
     opacity: 0.8;
   }
 }
+
+.drawer {
+  --sidebar-horizontal-padding: 20px;
+
+  &:global(.ant-drawer) {
+    height: calc(100vh - var(--theme-header-height));
+    top: var(--theme-header-height);
+  }
+
+  & :global(.ant-drawer-content) {
+    background-color: var(--theme-secondary-block);
+  }
+
+  & :global(.ant-drawer-body) {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sideMenuFooter {
+    margin-top: auto;
+  }
+}

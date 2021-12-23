@@ -35,7 +35,7 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
       </ul>
       <h5 className={cn(s.title)}>ADD TO WALLET</h5>
       <div className={cn(s.buttons)}>
-        <ButtonOutline disabled height="lg" onClick={handleAddProjectToken}>
+        <ButtonOutline height="lg" onClick={handleAddProjectToken}>
           <FiatIcon /> FIAT
         </ButtonOutline>
         <ButtonOutline height="lg" onClick={handleAddProjectToken}>
