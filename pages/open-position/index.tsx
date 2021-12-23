@@ -13,6 +13,7 @@ import { Grid, Tabs } from '@/src/components/custom'
 import { WrapperContent } from '@/src/components/custom/wrapper-content'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { usePositionsData } from '@/src/hooks/usePositionsData'
+import { PROTOCOLS, Protocol } from '@/types'
 
 const Columns: ColumnsType<any> = [
   {
@@ -44,7 +45,7 @@ const Columns: ColumnsType<any> = [
     align: 'right',
     render: (value: string) => (
       <Text className="ml-auto" color="primary" type="p1">
-        {value}
+        {value.toString()}
       </Text>
     ),
   },
@@ -83,9 +84,7 @@ const Columns: ColumnsType<any> = [
   },
 ]
 
-const ALL_ASSETS = ['BarnBridge', 'Notional', 'Element'] as const
-type Assets = typeof ALL_ASSETS[number]
-type FilterData = Record<Assets, { active: boolean; name: string; icon: ReactNode }>
+type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
 const FILTERS: FilterData = {
   BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
@@ -101,7 +100,7 @@ const OpenPosition = () => {
   const data = usePositionsData()
   console.log({ filters })
 
-  const activateFilter = useCallback((filterName: Assets | null) => {
+  const activateFilter = useCallback((filterName: Protocol | null) => {
     if (filterName === null) {
       setFilters(FILTERS)
       return
@@ -146,7 +145,7 @@ const OpenPosition = () => {
         <div className={cn(s.filterWrapper)}>
           <Button
             className={cn(s.pill, {
-              [s.active]: Object.keys(filters).every((s) => filters[s as Assets].active),
+              [s.active]: Object.keys(filters).every((s) => filters[s as Protocol].active),
             })}
             onClick={() => activateFilter(null)}
             shape="round"
@@ -155,7 +154,7 @@ const OpenPosition = () => {
           >
             All assets
           </Button>
-          {ALL_ASSETS.map((asset) => {
+          {PROTOCOLS.map((asset) => {
             return (
               <Button
                 className={cn(s.pill, {
