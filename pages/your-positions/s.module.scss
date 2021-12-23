@@ -1,0 +1,16 @@
+.pill {
+  background-color: transparent;
+  border-color: var(--theme-border-color);
+}
+
+.card {
+  background: var(--theme-border-color);
+  padding: 1em;
+  margin: 1em;
+  border-radius: 1em;
+  border-width: 2px;
+}
+
+.title {
+  color: grey;
+}
