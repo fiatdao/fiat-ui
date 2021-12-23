@@ -2,9 +2,8 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 
-import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useState } from 'react'
 import { Button } from 'antd'
-import Link from 'next/link'
 import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
@@ -13,40 +12,7 @@ import { Table } from '@/src/components/antd'
 import { Grid, Tabs } from '@/src/components/custom'
 import { WrapperContent } from '@/src/components/custom/wrapper-content'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
-import { useRemoteJSON } from '@/src/hooks/useRemoteJSON'
-
-const data = [
-  {
-    protocol: 'BarnBridge',
-    collateral: 'bb_sBOND...',
-    maturity: '0',
-    faceValue: '0',
-    currentValue: '0',
-    action: <Button>Open position</Button>,
-  },
-  {
-    protocol: 'Element',
-    collateral: 'ePyvUSDC...',
-    maturity: '0',
-    faceValue: '0',
-    currentValue: '0',
-    action: (
-      <Link href="/open-position/test" passHref>
-        <Button>Manage</Button>
-      </Link>
-    ),
-  },
-  {
-    protocol: 'Notional',
-    collateral: 'ffDAI...',
-    maturity: '0',
-    faceValue: '0',
-    currentValue: '0',
-    action: <Text type="p3">No assets</Text>,
-  },
-]
-
-const total = 924
+import { usePositionsData } from '@/src/hooks/usePositionsData'
 
 const Columns: ColumnsType<any> = [
   {
@@ -127,35 +93,13 @@ const FILTERS: FilterData = {
   Element: { active: false, name: 'Element', icon: <Element /> },
 }
 
-type Tranche = {
-  expiration: number
-  address: string
-}
 const OpenPosition = () => {
   const [activeTabKey, setActiveTabKey] = useState('byIssuer')
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
 
-  console.log(filters)
-  const goerliData: any = useRemoteJSON()
-
-  const columnsFiltered = useMemo(() => {
-    if (!goerliData) return {}
-    const tranches: Record<string, Tranche[]> = {}
-    Object.keys(goerliData.tranches).forEach((collateral) => {
-      const now = Date.now() / 1000
-      const filtered = goerliData.tranches[collateral].filter((pos: Tranche) => {
-        return pos.expiration > now
-      })
-
-      if (Object.keys(filtered).length > 0)
-        tranches[collateral] = { ...tranches[collateral], ...filtered }
-    })
-
-    return tranches
-  }, [goerliData])
-
-  console.log({ columnsFiltered })
+  const data = usePositionsData()
+  console.log({ filters })
 
   const activateFilter = useCallback((filterName: Assets | null) => {
     if (filterName === null) {
@@ -243,7 +187,7 @@ const OpenPosition = () => {
             inCard
             loading={false}
             pagination={{
-              total,
+              total: data.length,
               pageSize: 10,
               current: 1,
               position: ['bottomRight'],
