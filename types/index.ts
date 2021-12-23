@@ -16,6 +16,8 @@ type Collateral =
   | 'eurscrv'
 
 type Deposits = 'yearn' | 'yearnv4'
+export const PROTOCOLS = ['BarnBridge', 'Notional', 'Element'] as const
+export type Protocol = typeof PROTOCOLS[number]
 
 export type TrancheData = {
   expiration: number

@@ -1,12 +1,26 @@
 import { useElementTranchesJSON } from './useElementTranchesJSON'
+import { useWeb3Connection } from '../providers/web3ConnectionProvider'
 import { Button } from 'antd'
 import Link from 'next/link'
-import { useMemo } from 'react'
-import { Text } from '@/src/components/custom/typography'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { Contract } from 'ethers'
 import { TrancheData } from '@/types'
+import tranche from '@/src/abis/Tranche.json'
+import { Tranche } from '@/types/typechain'
 
+type PositionData = TrancheData & {
+  name: string
+  collateral: string
+  protocol: string // FIXME use Protocol type
+  maturity: Date
+  faceValue: string
+  currentValue: string
+  action: ReactNode
+}
 export const usePositionsData = () => {
+  const [positionsData, setPositionsData] = useState<PositionData[]>([])
   const elementData = useElementTranchesJSON()
+  const { readOnlyAppProvider } = useWeb3Connection()
 
   const dataFiltered = useMemo(() => {
     if (!elementData) return {}
@@ -26,40 +40,47 @@ export const usePositionsData = () => {
 
   console.log({ dataFiltered })
 
-  const data = [
-    {
-      protocol: 'BarnBridge',
-      collateral: 'bb_sBOND...',
-      maturity: '0',
-      faceValue: '0',
-      currentValue: '0',
-      action: (
-        <Link href="/open-position/0xdcf80c068b7ffdf7273d8adae4b076bf384f711a/open" passHref>
-          <Button>Open</Button>
-        </Link>
-      ),
-    },
-    {
-      protocol: 'Element',
-      collateral: 'ePyvUSDC...',
-      maturity: '0',
-      faceValue: '0',
-      currentValue: '0',
-      action: (
-        <Link href="/open-position/0xdcf80c068b7ffdf7273d8adae4b076bf384f711a/manage" passHref>
-          <Button>Manage</Button>
-        </Link>
-      ),
-    },
-    {
-      protocol: 'Notional',
-      collateral: 'ffDAI...',
-      maturity: '0',
-      faceValue: '0',
-      currentValue: '0',
-      action: <Text type="p3">No assets</Text>,
-    },
-  ]
+  const fetchPositions = useCallback(async () => {
+    const result: PositionData[] = []
 
-  return data
+    for (const symbol in dataFiltered) {
+      const positions = dataFiltered[symbol]
+      console.log(typeof positions, positions)
+      for (const index in positions) {
+        const position = positions[index]
+        const contract = new Contract(position.address, tranche, readOnlyAppProvider) as Tranche
+
+        const name = await contract.name()
+        const collateral = await contract.symbol()
+
+        result.push({
+          ...position,
+          name,
+          collateral,
+          protocol: 'Element',
+          maturity: new Date(position.expiration * 1000),
+          faceValue: '0',
+          currentValue: '0',
+          action: (
+            <Link href={`/open-position/${position.address}/open`} passHref>
+              <Button>Open</Button>
+            </Link>
+            //     <Link href="/open-position/0xdcf80c068b7ffdf7273d8adae4b076bf384f711a/manage" passHref>
+            //     <Button>Manage</Button>
+            //   </Link>
+            // action: <Text type="p3">No assets</Text>,
+          ),
+        })
+      }
+    }
+
+    return result
+  }, [dataFiltered, readOnlyAppProvider])
+
+  useEffect(() => {
+    fetchPositions().then(setPositionsData)
+  }, [fetchPositions])
+
+  console.log({ positionsData })
+  return positionsData
 }
