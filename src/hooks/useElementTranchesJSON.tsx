@@ -1,7 +1,7 @@
 import useContractCall from './contracts/useContractCall'
 import { ZERO_BN } from '../constants/misc'
 import { useWeb3Connection } from '../providers/web3ConnectionProvider'
-import { getNetworkConfig } from '../constants/chains'
+import { ChainsValues, getNetworkConfig } from '../constants/chains'
 import axios from 'axios'
 import { BigNumber } from 'ethers'
 import { useEffect, useState } from 'react'
@@ -22,19 +22,20 @@ export const usePositionBalance = (id: string): BigNumber => {
 
 export const useElementTranchesJSON = () => {
   const [object, setObject] = useState<ElementJSON | null>(null)
-  const { appChainId } = useWeb3Connection()
-  const { shortName: networkName } = getNetworkConfig(appChainId)
+  const { appChainId, walletChainId, ...rest } = useWeb3Connection()
+  const { shortName: networkName } = getNetworkConfig((walletChainId as ChainsValues) || appChainId)
 
   const jsonURL = `https://raw.githubusercontent.com/element-fi/elf-deploy/main/addresses/${networkName.toLowerCase()}.json`
 
+  console.log({ walletChainId, jsonURL })
   useEffect(() => {
     axios
       .get(jsonURL)
       .then(({ data }: { data: ElementJSON }) => setObject(data))
       .catch(() => {
-        throw new Error(`JSON ${jsonURL} not available in ${appChainId}`)
+        throw new Error(`JSON ${jsonURL} not available in ${walletChainId}`)
       })
-  }, [appChainId, jsonURL])
+  }, [walletChainId, jsonURL])
 
   return object
 }
