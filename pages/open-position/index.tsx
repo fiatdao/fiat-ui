@@ -2,7 +2,7 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 
-import { ReactNode, useCallback, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Button } from 'antd'
 import Link from 'next/link'
 import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
@@ -13,6 +13,7 @@ import { Table } from '@/src/components/antd'
 import { Grid, Tabs } from '@/src/components/custom'
 import { WrapperContent } from '@/src/components/custom/wrapper-content'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
+import { useRemoteJSON } from '@/src/hooks/useRemoteJSON'
 
 const data = [
   {
@@ -126,12 +127,36 @@ const FILTERS: FilterData = {
   Element: { active: false, name: 'Element', icon: <Element /> },
 }
 
+type Tranche = {
+  expiration: number
+  address: string
+}
 const OpenPosition = () => {
   const [activeTabKey, setActiveTabKey] = useState('byIssuer')
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
 
   console.log(filters)
+  const goerliData: any = useRemoteJSON()
+
+  const columnsFiltered = useMemo(() => {
+    if (!goerliData) return {}
+    const tranches: Record<string, Tranche[]> = {}
+    Object.keys(goerliData.tranches).forEach((collateral) => {
+      const now = Date.now() / 1000
+      const filtered = goerliData.tranches[collateral].filter((pos: Tranche) => {
+        return pos.expiration > now
+      })
+
+      if (Object.keys(filtered).length > 0)
+        tranches[collateral] = { ...tranches[collateral], ...filtered }
+    })
+
+    return tranches
+  }, [goerliData])
+
+  console.log({ columnsFiltered })
+
   const activateFilter = useCallback((filterName: Assets | null) => {
     if (filterName === null) {
       setFilters(FILTERS)
