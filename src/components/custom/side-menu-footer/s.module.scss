@@ -42,9 +42,17 @@
 }
 
 .title {
+  color: var(--theme-secondary-color);
   font-size: 14px;
   font-weight: normal;
   line-height: 1.2;
   margin: 0 0 8px;
   text-transform: uppercase;
+}
+
+.buttons {
+  display: grid;
+  gap: 8px;
+  padding: 0 0 24px;
+  grid-template-columns: 1fr 1fr;
 }

@@ -82,6 +82,10 @@ body.mobile-menu-open {
   --horizontal-padding: 64px;
 
   --theme-header-height: 88px;
+
+  --button-border-radius: 4px;
+  --button-height: 36px;
+  --button-height-lg: 48px;
 }
 
 @media (max-width: #{$max-width-tablet-landscape}) {

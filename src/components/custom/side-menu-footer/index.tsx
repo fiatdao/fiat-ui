@@ -1,7 +1,7 @@
 import s from './s.module.scss'
 import cn from 'classnames'
-import { Button, Divider } from 'antd'
 import { HTMLAttributes } from 'react'
+import ButtonOutline from '@/src/components/antd/button-outline'
 import FiatDaoIcon from '@/src/resources/svg/fiat-dao-icon.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import ExternalLink from '@/src/resources/svg/external-link.svg'
@@ -34,17 +34,13 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
         </li>
       </ul>
       <h5 className={cn(s.title)}>ADD TO WALLET</h5>
-      <div className="buttons-container">
-        <div>
-          <Button onClick={handleAddProjectToken} type="primary">
-            <FiatIcon /> FIAT
-          </Button>
-        </div>
-        <div>
-          <Button onClick={handleAddProjectToken} type="primary">
-            <FiatDaoIcon /> FDT
-          </Button>
-        </div>
+      <div className={cn(s.buttons)}>
+        <ButtonOutline disabled height="lg" onClick={handleAddProjectToken}>
+          <FiatIcon /> FIAT
+        </ButtonOutline>
+        <ButtonOutline height="lg" onClick={handleAddProjectToken}>
+          <FiatDaoIcon /> FDT
+        </ButtonOutline>
       </div>
     </div>
   )

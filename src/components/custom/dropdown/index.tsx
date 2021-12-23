@@ -3,11 +3,10 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import s from './s.module.scss'
-import Link from 'next/Link'
 import React, { HTMLProps, ReactNode } from 'react'
 import ReactDOM from 'react-dom'
 import { Modifier, usePopper } from 'react-popper'
-import { LinkProps } from 'next/link'
+import Link, { LinkProps } from 'next/link'
 import * as PopperJS from '@popperjs/core'
 import { ModifierPhases } from '@popperjs/core'
 import outy from 'outy'
