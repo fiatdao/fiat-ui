@@ -9,20 +9,21 @@ import tranche from '@/src/abis/Tranche.json'
 import { ElementJSON } from '@/types'
 
 export const useTranchePosition = async (id: string) => {
-  // symbol, name, collateral (para el iconito), maturity as Date, isEnded
+  // TODO symbol, name, collateral (used inside icon), maturity as Date, isEnded
   // faceValue, currentValue
   const symbol = useContractCall(id, tranche, 'symbol', null, {})
 
   return symbol
 }
 
+// TODO Return balance
 export const usePositionBalance = (id: string): BigNumber => {
   return ZERO_BN
 }
 
 export const useElementTranchesJSON = () => {
   const [object, setObject] = useState<ElementJSON | null>(null)
-  const { appChainId, walletChainId, ...rest } = useWeb3Connection()
+  const { appChainId, walletChainId } = useWeb3Connection()
   const { shortName: networkName } = getNetworkConfig((walletChainId as ChainsValues) || appChainId)
 
   const jsonURL = `https://raw.githubusercontent.com/element-fi/elf-deploy/main/addresses/${networkName.toLowerCase()}.json`
