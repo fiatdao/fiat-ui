@@ -43,7 +43,7 @@ const Columns: ColumnsType<any> = [
     dataIndex: 'maturity',
     width: 150,
     align: 'right',
-    render: (value: string) => (
+    render: (value: Date) => (
       <Text className="ml-auto" color="primary" type="p1">
         {value.toString()}
       </Text>
