@@ -1,6 +1,6 @@
 import { Chains, ChainsValues } from '@/src/constants/chains'
 import erc20 from '@/src/abis/ERC20.json'
-import fiat from '@/src/abis/Fiat.json'
+import fiat from '@/src/abis/FIAT.json'
 import codex from '@/src/abis/Codex.json'
 import collybus from '@/src/abis/Collybus.json'
 import limes from '@/src/abis/Limes.json'
