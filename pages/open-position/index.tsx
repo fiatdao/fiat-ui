@@ -4,7 +4,6 @@ import cn from 'classnames'
 
 import { ReactNode, useCallback, useState } from 'react'
 import { Button } from 'antd'
-import Link from 'next/link'
 import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
@@ -13,39 +12,8 @@ import { Table } from '@/src/components/antd'
 import { Grid, Tabs } from '@/src/components/custom'
 import { WrapperContent } from '@/src/components/custom/wrapper-content'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
-
-const data = [
-  {
-    protocol: 'BarnBridge',
-    collateral: 'bb_sBOND...',
-    maturity: '0',
-    faceValue: '0',
-    currentValue: '0',
-    action: <Button>Open position</Button>,
-  },
-  {
-    protocol: 'Element',
-    collateral: 'ePyvUSDC...',
-    maturity: '0',
-    faceValue: '0',
-    currentValue: '0',
-    action: (
-      <Link href="/open-position/test" passHref>
-        <Button>Manage</Button>
-      </Link>
-    ),
-  },
-  {
-    protocol: 'Notional',
-    collateral: 'ffDAI...',
-    maturity: '0',
-    faceValue: '0',
-    currentValue: '0',
-    action: <Text type="p3">No assets</Text>,
-  },
-]
-
-const total = 924
+import { usePositionsData } from '@/src/hooks/usePositionsData'
+import { PROTOCOLS, Protocol } from '@/types'
 
 const Columns: ColumnsType<any> = [
   {
@@ -75,9 +43,9 @@ const Columns: ColumnsType<any> = [
     dataIndex: 'maturity',
     width: 150,
     align: 'right',
-    render: (value: string) => (
+    render: (value: Date) => (
       <Text className="ml-auto" color="primary" type="p1">
-        {value}
+        {value.toString()}
       </Text>
     ),
   },
@@ -116,9 +84,7 @@ const Columns: ColumnsType<any> = [
   },
 ]
 
-const ALL_ASSETS = ['BarnBridge', 'Notional', 'Element'] as const
-type Assets = typeof ALL_ASSETS[number]
-type FilterData = Record<Assets, { active: boolean; name: string; icon: ReactNode }>
+type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
 const FILTERS: FilterData = {
   BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
@@ -131,8 +97,10 @@ const OpenPosition = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
 
-  console.log(filters)
-  const activateFilter = useCallback((filterName: Assets | null) => {
+  const data = usePositionsData()
+  console.log({ filters })
+
+  const activateFilter = useCallback((filterName: Protocol | null) => {
     if (filterName === null) {
       setFilters(FILTERS)
       return
@@ -177,7 +145,7 @@ const OpenPosition = () => {
         <div className={cn(s.filterWrapper)}>
           <Button
             className={cn(s.pill, {
-              [s.active]: Object.keys(filters).every((s) => filters[s as Assets].active),
+              [s.active]: Object.keys(filters).every((s) => filters[s as Protocol].active),
             })}
             onClick={() => activateFilter(null)}
             shape="round"
@@ -186,7 +154,7 @@ const OpenPosition = () => {
           >
             All assets
           </Button>
-          {ALL_ASSETS.map((asset) => {
+          {PROTOCOLS.map((asset) => {
             return (
               <Button
                 className={cn(s.pill, {
@@ -218,7 +186,7 @@ const OpenPosition = () => {
             inCard
             loading={false}
             pagination={{
-              total,
+              total: data.length,
               pageSize: 10,
               current: 1,
               position: ['bottomRight'],
