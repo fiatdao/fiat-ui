@@ -43,7 +43,6 @@ const YourPositions = () => {
           <InfoBlock title="Next Maturity" value={yourPosition?.nextMaturity} />
         </InfoBlocksGrid>
       )}
-
       <div className="card-header">
         <Tabs
           activeKey={activeTabKey}

@@ -1,3 +1,5 @@
+@import '/src/styles/vars';
+
 .component {
   --gap: 24px;
 
@@ -6,4 +8,13 @@
   grid-template-columns: repeat(auto-fill, 258px);
   margin-bottom: 40px;
   row-gap: var(--gap);
+  width: 100%;
+
+  @media (max-width: #{$max-width-tablet-portrait}) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: #{$max-width-mobile}) {
+    grid-template-columns: 1fr;
+  }
 }
