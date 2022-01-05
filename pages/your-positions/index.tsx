@@ -35,77 +35,75 @@ const YourPositions = () => {
   })
 
   return (
-    <WrapperContent>
-      <Grid flow="row" rowsTemplate="1fr auto">
-        <Row>
-          {!isLoadingPage && (
-            <>
-              <Col className={s.card} span={5}>
-                <Text className={s.title} type="small">
-                  Total Debt
-                </Text>
-                <Text type="h3" weight="bold">
-                  {yourPosition?.totalDebt}
-                </Text>
-              </Col>
-              <Col className={s.card} span={5}>
-                <Text className={s.title} type="small">
-                  Current Value
-                </Text>
-                <Text type="h3" weight="bold">
-                  {yourPosition?.currentValue}
-                </Text>
-              </Col>
-              <Col className={s.card} span={5}>
-                <Text className={s.title} type="small">
-                  Lowest Health Factor
-                </Text>
-                <Text type="h3" weight="bold">
-                  {yourPosition?.lowestHealthFactor}
-                </Text>
-              </Col>
-              <Col className={s.card} span={5}>
-                <Text className={s.title} type="small">
-                  Next Maturity
-                </Text>
-                <Text type="h3" weight="bold">
-                  {yourPosition?.nextMaturity}
-                </Text>
-              </Col>
-            </>
-          )}
-        </Row>
-        <div className="card-header">
-          <Tabs
-            activeKey={activeTabKey}
-            onClick={setActiveTabKey}
-            tabs={[
-              {
-                id: 'inventory',
-                children: (
-                  <Text color="secondary" type="p1">
-                    Your Current Inventory
-                  </Text>
-                ),
-              },
-              {
-                id: 'history',
-                children: (
-                  <Text color="secondary" type="p1">
-                    Transaction History
-                  </Text>
-                ),
-              },
-            ]}
-          ></Tabs>
-        </div>
-        {activeTabKey === 'inventory' ? (
-          <InventoryTable inventory={inventory} />
-        ) : (
-          <TransactionHistoryTable transactions={transactions} />
+    <Grid flow="row" rowsTemplate="1fr auto">
+      <Row>
+        {!isLoadingPage && (
+          <>
+            <Col className={s.card} span={5}>
+              <Text className={s.title} type="small">
+                Total Debt
+              </Text>
+              <Text type="h3" weight="bold">
+                {yourPosition?.totalDebt}
+              </Text>
+            </Col>
+            <Col className={s.card} span={5}>
+              <Text className={s.title} type="small">
+                Current Value
+              </Text>
+              <Text type="h3" weight="bold">
+                {yourPosition?.currentValue}
+              </Text>
+            </Col>
+            <Col className={s.card} span={5}>
+              <Text className={s.title} type="small">
+                Lowest Health Factor
+              </Text>
+              <Text type="h3" weight="bold">
+                {yourPosition?.lowestHealthFactor}
+              </Text>
+            </Col>
+            <Col className={s.card} span={5}>
+              <Text className={s.title} type="small">
+                Next Maturity
+              </Text>
+              <Text type="h3" weight="bold">
+                {yourPosition?.nextMaturity}
+              </Text>
+            </Col>
+          </>
         )}
-      </Grid>
-    </WrapperContent>
+      </Row>
+      <div className="card-header">
+        <Tabs
+          activeKey={activeTabKey}
+          onClick={setActiveTabKey}
+          tabs={[
+            {
+              id: 'inventory',
+              children: (
+                <Text color="secondary" type="p1">
+                  Your Current Inventory
+                </Text>
+              ),
+            },
+            {
+              id: 'history',
+              children: (
+                <Text color="secondary" type="p1">
+                  Transaction History
+                </Text>
+              ),
+            },
+          ]}
+        ></Tabs>
+      </div>
+      {activeTabKey === 'inventory' ? (
+        <InventoryTable inventory={inventory} />
+      ) : (
+        <TransactionHistoryTable transactions={transactions} />
+      )}
+    </Grid>
   )
 }
 
