@@ -1,4 +1,12 @@
 [data-theme='dark'] {
+  --theme-color-1: #2d2d2d;
+  --theme-color-2: #ff9574;
+  --theme-color-3: #ff4c8c;
+  --theme-color-4: #686868;
+
+  --theme-text-color: #fff;
+  --theme-light-text-color: #b5b5b5;
+
   --theme-body-color: #202020;
   --theme-card-color: rgba(23, 23, 23, 0.6);
   --theme-modal-bg: #202020;
@@ -31,9 +39,4 @@
   );
   --theme-leaderboard-table-item: rgba(23, 23, 23, 0.6);
   --theme-leaderboard-counter-item: rgba(23, 23, 23, 0.7);
-  --theme-text-color: #fff;
-  --theme-color-1: #2d2d2d;
-  --theme-color-2: #ff9574;
-  --theme-color-3: #ff4c8c;
-  --theme-color-4: #686868;
 }

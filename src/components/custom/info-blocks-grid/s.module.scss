@@ -1,0 +1,9 @@
+.component {
+  --gap: 24px;
+
+  column-gap: var(--gap);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 258px);
+  margin-bottom: 40px;
+  row-gap: var(--gap);
+}
