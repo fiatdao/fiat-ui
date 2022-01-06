@@ -41,12 +41,10 @@ const YourPositions = () => {
   const tabs = [
     {
       children: 'Your Current Inventory',
-      onClick: () => setActiveTabKey(TabState.Inventory),
       key: TabState.Inventory,
     },
     {
       children: 'Transaction History',
-      onClick: () => setActiveTabKey(TabState.Transactions),
       key: TabState.Transactions,
     },
   ]
@@ -62,8 +60,8 @@ const YourPositions = () => {
         </InfoBlocksGrid>
       )}
       <Tabs>
-        {tabs.map(({ children, key, onClick }, index) => (
-          <Tab isActive={key === activeTabKey} key={index} onClick={onClick}>
+        {tabs.map(({ children, key }, index) => (
+          <Tab isActive={key === activeTabKey} key={index} onClick={() => setActiveTabKey(key)}>
             {children}
           </Tab>
         ))}

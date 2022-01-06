@@ -10,10 +10,34 @@
 }
 
 .tab {
+  background-color: transparent;
+  border-bottom: 3px solid transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  color: var(--theme-color-5);
+  cursor: pointer;
   display: flex;
+  font-weight: 500;
   margin-bottom: -1px;
-}
+  padding: 0 0 10px;
+  transition: border-color 0.15s linear;
 
-.active {
-  display: flex;
+  &:hover {
+    color: var(--theme-text-color);
+  }
+
+  &.active {
+    border-bottom-color: var(--theme-color-6);
+    color: var(--theme-text-color);
+  }
+
+  &[disabled] {
+    &,
+    &:hover {
+      cursor: not-allowed;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
 }

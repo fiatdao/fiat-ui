@@ -9,7 +9,7 @@ import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { Grid, Tabs } from '@/src/components/custom'
+import { Grid, Tab, Tabs } from '@/src/components/custom'
 import { WrapperContent } from '@/src/components/custom/wrapper-content'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { usePositionsData } from '@/src/hooks/usePositionsData'
@@ -98,7 +98,6 @@ const OpenPosition = () => {
   const [inMyWallet, setInMyWallet] = useState(false)
 
   const data = usePositionsData()
-  console.log({ filters })
 
   const activateFilter = useCallback((filterName: Protocol | null) => {
     if (filterName === null) {
@@ -112,6 +111,22 @@ const OpenPosition = () => {
     })
   }, [])
 
+  enum TabState {
+    ByIssuer = 'byIssuer',
+    ByAsset = 'byAsset',
+  }
+
+  const tabs = [
+    {
+      key: TabState.ByIssuer,
+      children: 'By Issuer',
+    },
+    {
+      key: TabState.ByAsset,
+      children: 'By Underlying',
+    },
+  ]
+
   return (
     <WrapperContent>
       <Grid flow="row" rowsTemplate="1fr auto">
@@ -119,27 +134,17 @@ const OpenPosition = () => {
           <Text color="secondary" font="secondary" type="p1" weight="semibold">
             Select a collateral type to add to your FIAT positions
           </Text>
+          <Tabs>
+            {tabs.map(({ children, key }, index) => (
+              <Tab isActive={key === activeTabKey} key={index} onClick={() => setActiveTabKey(key)}>
+                {children}
+              </Tab>
+            ))}
+          </Tabs>
           {/* <Tabs
             activeKey={activeTabKey}
             onClick={setActiveTabKey}
-            tabs={[
-              {
-                id: 'byIssuer',
-                children: (
-                  <Text color="secondary" type="p1">
-                    By Issuer
-                  </Text>
-                ),
-              },
-              {
-                id: 'byAsset',
-                children: (
-                  <Text color="secondary" type="p1">
-                    By Underlying
-                  </Text>
-                ),
-              },
-            ]}
+            tabs={}
           ></Tabs> */}
         </div>
         <div className={cn(s.filterWrapper)}>
