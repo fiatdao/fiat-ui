@@ -19,7 +19,7 @@ export const InfoBlock: React.FC<Props> = ({
     <div className={cn(s.component, className)} {...restProps}>
       <h1 className={s.title}>{title}</h1>
       <p className={s.value}>{value}</p>
-      {footer && <p className={s.footer}>{footer}</p>}
+      {footer && <div className={s.footer}>{footer}</div>}
     </div>
   )
 }

@@ -6,7 +6,7 @@ import WalletButton from '@/src/components/custom/connect-button'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
 
-function Connect({ ...restProps }) {
+function Connect() {
   const { isWalletConnected } = useWeb3Connection()
   const mockedInfo = [
     {
@@ -65,6 +65,7 @@ function Connect({ ...restProps }) {
       <Head>
         <title>Dashboard - FIAT</title>
       </Head>
+
       <InfoBlocksGrid>
         {mockedInfo.map((item, index) => (
           <InfoBlock footer={item.footer} key={index} title={item.title} value={item.value} />

@@ -1,9 +1,10 @@
-import { parseDate, remainingTime } from './utils'
+import s from './s.module.scss'
+import { parseDate, remainingTime } from '../tables/utils'
 import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
 import { useState } from 'react'
-import { Row } from 'antd'
 import { SelectValue } from 'antd/lib/select'
+import { Select as Culo } from 'antd'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import { Transaction } from '@/src/utils/your-positions-api'
@@ -96,7 +97,7 @@ const ASSETS_FILTER = [
 const ACTIONS_FILTER = [
   { label: 'All Actions', value: 'all' },
   { label: 'Minted', value: 'Minted' },
-  { label: 'Error', value: 'error' },
+  { label: 'error', value: 'error' },
 ]
 
 type TransactionHistoryProps = {
@@ -104,9 +105,7 @@ type TransactionHistoryProps = {
 }
 
 const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
-  // const [isOpenAssetFilter, setIsOpenAssetFilter] = useState(false)
   const [assetFilter, setAssetFilter] = useState<string>('all')
-  // const [isOpenActionFilter, setIsOpenActionFilter] = useState(false)
   const [actionFilter, setActionFilter] = useState<string>('all')
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(
     transactions || [],
@@ -136,29 +135,50 @@ const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
 
   return (
     <>
-      <Row>
+      <Culo defaultValue={'culo'} disabled={false} onSelect={() => console.log('culo')}>
+        {[
+          {
+            label: 'culo',
+            value: 'culo',
+          },
+          {
+            label: 'teta',
+            value: 'teta',
+          },
+          {
+            label: 'pito',
+            value: 'pito',
+          },
+          {
+            label: 'concha',
+            value: 'concha',
+          },
+        ].map((item, index) => {
+          return (
+            <Culo.Option disabled={false} key={index} value={item.value}>
+              {item.label}
+            </Culo.Option>
+          )
+        })}
+      </Culo>
+      <div className={cn(s.filters)}>
         <Select
-          allowClear={true}
-          defaultOpen
           defaultValue={'all'}
           onSelect={(value: SelectValue) => onAssetFilterChange(value ? value.toString() : '')}
           options={ASSETS_FILTER.map(({ label, value }) => ({
             label,
             value,
-            // isActive: value === assetFilter,
           }))}
         />
         <Select
-          allowClear={true}
           defaultValue={'all'}
           onSelect={(value: SelectValue) => onActionFilterChange(value ? value.toString() : '')}
           options={ACTIONS_FILTER.map(({ label, value }) => ({
             label,
             value,
-            // isActive: value === actionFilter,
           }))}
         />
-      </Row>
+      </div>
       <div className={cn('card')}>
         <Table
           columns={Columns}

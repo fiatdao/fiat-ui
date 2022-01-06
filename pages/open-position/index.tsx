@@ -141,11 +141,6 @@ const OpenPosition = () => {
               </Tab>
             ))}
           </Tabs>
-          {/* <Tabs
-            activeKey={activeTabKey}
-            onClick={setActiveTabKey}
-            tabs={}
-          ></Tabs> */}
         </div>
         <div className={cn(s.filterWrapper)}>
           <Button

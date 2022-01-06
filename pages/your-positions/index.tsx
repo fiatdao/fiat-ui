@@ -15,7 +15,7 @@ import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import useFetch from '@/src/hooks/useFetch'
 import InventoryTable from '@/src/components/custom/tables/InventoryTable'
-import TransactionHistoryTable from '@/src/components/custom/tables/TransactionHistoryTable'
+import TransactionHistoryTable from '@/src/components/custom/transaction-history'
 
 const YourPositions = () => {
   const [activeTabKey, setActiveTabKey] = useState('inventory')

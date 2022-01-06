@@ -1,7 +1,4 @@
 import s from './s.module.scss'
-import Grid from '../../custom/grid'
-import Icon from '../../custom/icon'
-import { Text } from '../../custom/typography'
 import React from 'react'
 import AntdSelect, {
   OptionProps as AntdOptionProps,
@@ -25,37 +22,27 @@ export type SelectProps<T> = AntdSelectProps<T> & {
 const Select: React.FC<SelectProps<AntdSelectValue>> = <T extends AntdSelectValue>(
   props: React.PropsWithChildren<SelectProps<T>>,
 ) => {
-  const { className, fixScroll, label, loading, options, ...selectProps } = props
+  const { className, fixScroll, loading, options, ...selectProps } = props
 
   return (
     <AntdSelect<T>
-      className={cn(s.component, className)}
-      dropdownClassName={s.dropdown}
-      getPopupContainer={fixScroll ? (trigger) => trigger.parentNode : undefined}
-      optionLabelProp="label"
-      suffixIcon={loading ? <AntdSpin size="small" /> : <Icon name="dropdown-arrow" />}
       {...selectProps}
+      className={cn(s.button, className)}
+      dropdownClassName={cn(s.dropdown)}
+      getPopupContainer={fixScroll ? (trigger) => trigger.parentNode : undefined}
+      onChange={() => console.log('onChange')}
+      optionLabelProp="label"
+      virtual={false}
     >
-      {options.map((option) => (
+      {options.map((item, index) => (
         <AntdSelect.Option
-          {...option}
-          className={s.option}
-          key={option.value}
-          label={
-            <Grid flow="col" gap={12}>
-              {label && (
-                <Text color="secondary" type="p2">
-                  {label}
-                </Text>
-              )}
-              <Text color="primary" type="p2" weight="500">
-                {option.label}
-              </Text>
-            </Grid>
-          }
-          value={option.value}
+          {...item}
+          className={cn(s.item)}
+          disabled={false}
+          key={index}
+          value={item.value}
         >
-          {option.label}
+          {item.label}
         </AntdSelect.Option>
       ))}
     </AntdSelect>
