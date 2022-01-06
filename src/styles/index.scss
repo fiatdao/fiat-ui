@@ -92,6 +92,8 @@ body.mobile-menu-open {
   --button-border-radius: 4px;
   --button-height: 36px;
   --button-height-lg: 48px;
+
+  --content-padding: 40px;
 }
 
 @media (max-width: #{$max-width-tablet-landscape}) {
@@ -110,6 +112,12 @@ body.mobile-menu-open {
 @media (max-width: #{$max-width-tablet-portrait}) {
   :root {
     --horizontal-padding: 24px;
+  }
+}
+
+@media (max-width: #{$max-width-mobile}) {
+  :root {
+    --content-padding: 16px;
   }
 }
 

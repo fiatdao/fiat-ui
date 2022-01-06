@@ -9,8 +9,8 @@ import {
   yourPositionPageInformationMockFetch,
 } from '../../src/utils/your-positions-api'
 import { useState } from 'react'
-import { Text } from '@/src/components/custom/typography'
-import { Tabs } from '@/src/components/custom'
+
+import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import useFetch from '@/src/hooks/useFetch'
@@ -33,6 +33,24 @@ const YourPositions = () => {
     customFetch: transactionMockFetch,
   })
 
+  enum TabState {
+    Inventory = 'inventory',
+    Transactions = 'transactions',
+  }
+
+  const tabs = [
+    {
+      children: 'Your Current Inventory',
+      onClick: () => setActiveTabKey(TabState.Inventory),
+      key: TabState.Inventory,
+    },
+    {
+      children: 'Transaction History',
+      onClick: () => setActiveTabKey(TabState.Transactions),
+      key: TabState.Transactions,
+    },
+  ]
+
   return (
     <>
       {!isLoadingPage && (
@@ -43,33 +61,15 @@ const YourPositions = () => {
           <InfoBlock title="Next Maturity" value={yourPosition?.nextMaturity} />
         </InfoBlocksGrid>
       )}
-      <div className="card-header">
-        <Tabs
-          activeKey={activeTabKey}
-          onClick={setActiveTabKey}
-          tabs={[
-            {
-              id: 'inventory',
-              children: (
-                <Text color="secondary" type="p1">
-                  Your Current Inventory
-                </Text>
-              ),
-            },
-            {
-              id: 'history',
-              children: (
-                <Text color="secondary" type="p1">
-                  Transaction History
-                </Text>
-              ),
-            },
-          ]}
-        ></Tabs>
-      </div>
-      {activeTabKey === 'inventory' ? (
-        <InventoryTable inventory={inventory} />
-      ) : (
+      <Tabs>
+        {tabs.map(({ children, key, onClick }, index) => (
+          <Tab isActive={key === activeTabKey} key={index} onClick={onClick}>
+            {children}
+          </Tab>
+        ))}
+      </Tabs>
+      {activeTabKey === TabState.Inventory && <InventoryTable inventory={inventory} />}
+      {activeTabKey === TabState.Transactions && (
         <TransactionHistoryTable transactions={transactions} />
       )}
     </>

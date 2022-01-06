@@ -119,7 +119,7 @@ const OpenPosition = () => {
           <Text color="secondary" font="secondary" type="p1" weight="semibold">
             Select a collateral type to add to your FIAT positions
           </Text>
-          <Tabs
+          {/* <Tabs
             activeKey={activeTabKey}
             onClick={setActiveTabKey}
             tabs={[
@@ -140,7 +140,7 @@ const OpenPosition = () => {
                 ),
               },
             ]}
-          ></Tabs>
+          ></Tabs> */}
         </div>
         <div className={cn(s.filterWrapper)}>
           <Button

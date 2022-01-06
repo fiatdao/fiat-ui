@@ -8,5 +8,5 @@
   flex-grow: 1;
   max-height: calc(100vh - var(--theme-header-height));
   overflow-y: auto;
-  padding: 40px;
+  padding: var(--content-padding);
 }
