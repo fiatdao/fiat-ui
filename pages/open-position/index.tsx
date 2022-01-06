@@ -98,7 +98,6 @@ const OpenPosition = () => {
   const [inMyWallet, setInMyWallet] = useState(false)
 
   const data = usePositionsData()
-  console.log({ filters })
 
   const activateFilter = useCallback((filterName: Protocol | null) => {
     if (filterName === null) {
