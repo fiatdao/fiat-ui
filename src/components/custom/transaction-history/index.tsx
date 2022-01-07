@@ -135,34 +135,9 @@ const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
 
   return (
     <>
-      <Culo defaultValue={'culo'} disabled={false} onSelect={() => console.log('culo')}>
-        {[
-          {
-            label: 'culo',
-            value: 'culo',
-          },
-          {
-            label: 'teta',
-            value: 'teta',
-          },
-          {
-            label: 'pito',
-            value: 'pito',
-          },
-          {
-            label: 'concha',
-            value: 'concha',
-          },
-        ].map((item, index) => {
-          return (
-            <Culo.Option disabled={false} key={index} value={item.value}>
-              {item.label}
-            </Culo.Option>
-          )
-        })}
-      </Culo>
       <div className={cn(s.filters)}>
         <Select
+          className={cn(s.filter)}
           defaultValue={'all'}
           onSelect={(value: SelectValue) => onAssetFilterChange(value ? value.toString() : '')}
           options={ASSETS_FILTER.map(({ label, value }) => ({
@@ -171,6 +146,7 @@ const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
           }))}
         />
         <Select
+          className={cn(s.filter)}
           defaultValue={'all'}
           onSelect={(value: SelectValue) => onActionFilterChange(value ? value.toString() : '')}
           options={ACTIONS_FILTER.map(({ label, value }) => ({
