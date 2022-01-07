@@ -28,7 +28,6 @@ export const useElementTranchesJSON = () => {
 
   const jsonURL = `https://raw.githubusercontent.com/element-fi/elf-deploy/main/addresses/${networkName.toLowerCase()}.json`
 
-  console.log({ walletChainId, jsonURL })
   useEffect(() => {
     axios
       .get(jsonURL)

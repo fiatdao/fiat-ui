@@ -21,10 +21,10 @@ type PositionData = TrancheData & {
 export const usePositionsData = () => {
   const [positionsData, setPositionsData] = useState<PositionData[]>([])
   const elementData = useElementTranchesJSON()
-  const { isAppConnected, readOnlyAppProvider, web3Provider } = useWeb3Connection()
+  const { readOnlyAppProvider, web3Provider } = useWeb3Connection()
   const provider = useMemo(
-    () => (isAppConnected && web3Provider ? web3Provider : readOnlyAppProvider),
-    [isAppConnected, readOnlyAppProvider, web3Provider],
+    () => web3Provider || readOnlyAppProvider,
+    [readOnlyAppProvider, web3Provider],
   )
 
   const dataFiltered = useMemo(() => {
@@ -48,7 +48,7 @@ export const usePositionsData = () => {
       const result: PositionData[] = []
 
       const network = await provider.getNetwork()
-      console.log({ network })
+      console.log(`Fetching positions for ${network.name}`)
       for (const symbol in dataFiltered) {
         const positions = dataFiltered[symbol]
         for (const index in positions) {
@@ -101,6 +101,6 @@ export const usePositionsData = () => {
     }
   }, [fetchPositions, provider])
 
-  console.log({ positionsData })
+  console.log('Fetched', { positionsData })
   return positionsData
 }
