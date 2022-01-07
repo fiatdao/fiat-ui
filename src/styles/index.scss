@@ -55,6 +55,32 @@ body[data-fixed='true'] {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+
+  &::before {
+    --dimensions: 900px;
+    --displacement: 64px;
+
+    background: radial-gradient(
+      50% 50% at 50% 50%,
+      rgba(255, 80, 139, 0.17) 0%,
+      rgba(255, 80, 139, 0) 100%
+    );
+    content: '';
+    height: var(--dimensions);
+    left: calc(50% + var(--displacement));
+    position: absolute;
+    transform: translateX(calc(-50% + var(--displacement)));
+    width: var(--dimensions);
+    z-index: 0;
+
+    @media (max-width: #{$max-width-mobile}) {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
 }
 
 svg,
