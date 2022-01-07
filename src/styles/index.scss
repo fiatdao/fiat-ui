@@ -76,16 +76,11 @@ body[data-fixed='true'] {
     width: var(--dimensions);
     z-index: 0;
 
-    @media (max-width: #{$max-width-mobile}) {
+    @media (max-width: #{$max-width-tablet-landscape}) {
       left: 50%;
       transform: translateX(-50%);
     }
   }
-}
-
-svg,
-svg * {
-  transition: none !important;
 }
 
 h1,
