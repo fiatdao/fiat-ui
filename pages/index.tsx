@@ -65,7 +65,6 @@ function Connect() {
       <Head>
         <title>Dashboard - FIAT</title>
       </Head>
-
       <InfoBlocksGrid>
         {mockedInfo.map((item, index) => (
           <InfoBlock footer={item.footer} key={index} title={item.title} value={item.value} />
