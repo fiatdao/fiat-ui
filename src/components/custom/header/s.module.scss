@@ -1,24 +1,26 @@
 @import '/src/styles/vars';
 
 .component {
-  align-items: center;
-  background-color: transparent;
-  box-shadow: inset 0 -1px 0 var(--theme-border-color);
-  display: flex;
-  height: var(--theme-header-height);
-  justify-content: space-between;
-  line-height: var(--theme-header-height);
-  padding: 0 40px;
+  &:global(.ant-layout-header) {
+    align-items: center;
+    background-color: transparent;
+    box-shadow: inset 0 -1px 0 var(--theme-border-color);
+    display: flex;
+    height: var(--theme-header-height);
+    justify-content: space-between;
+    line-height: var(--theme-header-height);
+    padding: 0 40px;
 
-  @media (max-width: #{$max-width-tablet-portrait}) {
-    padding: 0 20px;
-  }
+    @media (max-width: #{$max-width-tablet-portrait}) {
+      padding: 0 20px;
+    }
 
-  :local(.logoWrapper) {
-    display: none;
+    :local(.logoWrapper) {
+      display: none;
 
-    @media (max-width: #{$max-width-mobile}) {
-      display: flex;
+      @media (max-width: #{$max-width-mobile}) {
+        display: flex;
+      }
     }
   }
 }

@@ -26,29 +26,17 @@
 @import 'utils';
 @import 'walletConnect';
 
-html {
-  block-size: 100%;
-  inline-size: 100%;
-}
-
 body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   background: var(--theme-body-color);
   color: var(--theme-secondary-color);
   font-family: var(--font-family);
-  min-block-size: 100%;
-  min-inline-size: 100%;
 }
 
 body[data-fixed='true'] {
   height: 100vh;
   overflow: hidden;
-}
-
-* {
-  box-sizing: border-box;
-  margin: unset;
 }
 
 #__next {
