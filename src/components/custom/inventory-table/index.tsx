@@ -1,12 +1,11 @@
-import { healthFactor, parseDate, remainingTime } from './utils'
+import { healthFactor, parseDate, remainingTime } from '../tables/utils'
 import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
-
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import Button from '@/src/components/antd/button'
-
 import { Inventory } from '@/src/utils/your-positions-api'
+import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 
 const LTVColumn = (ltv: any, row: any) => {
   const isIncreasing = ltv > row.lastLTV
@@ -55,11 +54,7 @@ const MaturityColumn = (date: any) => {
 }
 
 const ActionColumn = (text: any) => {
-  return (
-    <Button className="ml-auto" type="ghost">
-      {text}
-    </Button>
-  )
+  return <ButtonOutlineGradient>{text}</ButtonOutlineGradient>
 }
 
 const Columns: ColumnsType<any> = [

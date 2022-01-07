@@ -1,5 +1,3 @@
-import s from './s.module.scss'
-
 import {
   Inventory,
   Transaction,
@@ -14,7 +12,7 @@ import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import useFetch from '@/src/hooks/useFetch'
-import InventoryTable from '@/src/components/custom/tables/InventoryTable'
+import InventoryTable from '@/src/components/custom/inventory-table'
 import TransactionHistoryTable from '@/src/components/custom/transaction-history'
 
 const YourPositions = () => {
