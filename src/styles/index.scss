@@ -1,5 +1,11 @@
+/**
+ * Don't mess with the order of these CSS imports or it will break. I mean it.
+ * Also bunnies and baby seals will die and it will be your fault.
+ */
 @import 'vars';
-@import 'antd.css';
+@import 'sanitize.css/sanitize';
+@import 'react-toastify/dist/ReactToastify';
+@import 'antd/dist/antd.dark.min'; // or it could be "@import 'antd/dist/antd.min';" too
 
 @import 'theme-shared';
 @import 'theme-light';
