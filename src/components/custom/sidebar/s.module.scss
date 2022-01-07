@@ -2,18 +2,20 @@
 @import '/src/styles/vars';
 
 .sidebar {
-  --sidebar-horizontal-padding: 20px;
+  &:global(.ant-layout-sider) {
+    --sidebar-horizontal-padding: 20px;
 
-  background: var(--theme-secondary-block);
-  overflow: hidden;
+    background: var(--theme-secondary-block);
+    overflow: hidden;
 
-  @media (max-width: #{$max-width-mobile}) {
-    display: none;
-  }
+    @media (max-width: #{$max-width-mobile}) {
+      display: none;
+    }
 
-  :global(.ant-layout-sider-children) {
-    display: flex;
-    flex-direction: column;
+    :global(.ant-layout-sider-children) {
+      display: flex;
+      flex-direction: column;
+    }
   }
 }
 
