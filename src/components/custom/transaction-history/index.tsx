@@ -95,8 +95,8 @@ const ASSETS_FILTER = [
 ]
 const ACTIONS_FILTER = [
   { label: 'All Actions', value: 'all' },
-  { label: 'Minted', value: 'Minted' },
-  { label: 'error', value: 'error' },
+  { label: 'Minted', value: 'minted' },
+  { label: 'Error', value: 'error' },
 ]
 
 type TransactionHistoryProps = {
@@ -104,6 +104,7 @@ type TransactionHistoryProps = {
 }
 
 const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
+  // TODO: properly use `assetFilter` and `actionFilter` from the state
   const [assetFilter, setAssetFilter] = useState<string>('all')
   const [actionFilter, setActionFilter] = useState<string>('all')
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(
