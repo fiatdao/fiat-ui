@@ -91,7 +91,7 @@ const Columns: ColumnsType<any> = [
 const ASSETS_FILTER = [
   { label: 'All Assets', value: 'all' },
   { label: 'ePyvUSDC', value: 'ePyvUSDC_12_31_21' },
-  { label: 'error', value: 'error' },
+  { label: 'Error', value: 'error' },
 ]
 const ACTIONS_FILTER = [
   { label: 'All Actions', value: 'all' },
