@@ -1,5 +1,11 @@
+/**
+ * Don't mess with the order of these CSS imports or it will break. I mean it.
+ * Also bunnies and baby seals will die and it will be your fault.
+ */
 @import 'vars';
-@import 'antd.css';
+@import 'sanitize.css/sanitize';
+@import 'react-toastify/dist/ReactToastify';
+@import 'antd/dist/antd.dark.min'; // or it could be "@import 'antd/dist/antd.min';" too
 
 @import 'theme-shared';
 @import 'theme-light';
@@ -10,7 +16,7 @@
 @import 'flex';
 @import 'grid';
 @import 'layout';
-@import 'link-gradient';
+@import 'text-gradient';
 @import 'notifications';
 @import 'rechart';
 @import 'slider';
@@ -20,19 +26,12 @@
 @import 'utils';
 @import 'walletConnect';
 
-html {
-  block-size: 100%;
-  inline-size: 100%;
-}
-
 body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   background: var(--theme-body-color);
   color: var(--theme-secondary-color);
   font-family: var(--font-family);
-  min-block-size: 100%;
-  min-inline-size: 100%;
 }
 
 body[data-fixed='true'] {
@@ -40,20 +39,36 @@ body[data-fixed='true'] {
   overflow: hidden;
 }
 
-* {
-  box-sizing: border-box;
-  margin: unset;
-}
-
 #__next {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-}
+  overflow: hidden;
+  position: relative;
+  width: 100%;
 
-svg,
-svg * {
-  transition: none !important;
+  &::before {
+    --dimensions: 900px;
+    --displacement: 64px;
+
+    background: radial-gradient(
+      50% 50% at 50% 50%,
+      rgba(255, 80, 139, 0.17) 0%,
+      rgba(255, 80, 139, 0) 100%
+    );
+    content: '';
+    height: var(--dimensions);
+    left: calc(50% + var(--displacement));
+    position: absolute;
+    transform: translateX(calc(-50% + var(--displacement)));
+    width: var(--dimensions);
+    z-index: 0;
+
+    @media (max-width: #{$max-width-tablet-landscape}) {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
 }
 
 h1,
@@ -92,6 +107,8 @@ body.mobile-menu-open {
   --button-border-radius: 4px;
   --button-height: 36px;
   --button-height-lg: 48px;
+
+  --content-padding: 40px;
 }
 
 @media (max-width: #{$max-width-tablet-landscape}) {
@@ -110,6 +127,12 @@ body.mobile-menu-open {
 @media (max-width: #{$max-width-tablet-portrait}) {
   :root {
     --horizontal-padding: 24px;
+  }
+}
+
+@media (max-width: #{$max-width-mobile}) {
+  :root {
+    --content-padding: 16px;
   }
 }
 

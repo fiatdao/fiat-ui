@@ -1,8 +1,14 @@
 .ant-layout {
   background-color: transparent;
+  position: relative;
+  z-index: 50;
 }
 
 .ant-layout-content {
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
+  max-height: calc(100vh - var(--theme-header-height));
+  overflow-y: auto;
+  padding: var(--content-padding);
 }

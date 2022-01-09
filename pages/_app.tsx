@@ -1,6 +1,3 @@
-import 'react-toastify/dist/ReactToastify.css'
-import 'sanitize.css'
-import '@/src/styles/index.scss'
 import Head from 'next/head'
 import type { AppProps } from 'next/app'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -14,6 +11,8 @@ import { GeneralError } from '@/src/components/custom/general-error'
 import { Header } from '@/src/components/custom/header'
 import { Sidebar } from '@/src/components/custom/sidebar'
 import Spin from '@/src/components/antd/spin'
+
+import '@/src/styles/index.scss'
 
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =

@@ -1,5 +1,3 @@
-import s from './s.module.scss'
-
 import {
   Inventory,
   Transaction,
@@ -9,14 +7,13 @@ import {
   yourPositionPageInformationMockFetch,
 } from '../../src/utils/your-positions-api'
 import { useState } from 'react'
-import { Col, Row } from 'antd'
-import { Text } from '@/src/components/custom/typography'
-import { Grid, Tabs } from '@/src/components/custom'
-import { WrapperContent } from '@/src/components/custom/wrapper-content'
-import useFetch from '@/src/hooks/useFetch'
 
-import InventoryTable from '@/src/components/custom/tables/InventoryTable'
-import TransactionHistoryTable from '@/src/components/custom/tables/TransactionHistoryTable'
+import { Tab, Tabs } from '@/src/components/custom'
+import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
+import { InfoBlock } from '@/src/components/custom/info-block'
+import useFetch from '@/src/hooks/useFetch'
+import InventoryTable from '@/src/components/custom/inventory-table'
+import TransactionHistoryTable from '@/src/components/custom/transaction-history'
 
 const YourPositions = () => {
   const [activeTabKey, setActiveTabKey] = useState('inventory')
@@ -34,78 +31,44 @@ const YourPositions = () => {
     customFetch: transactionMockFetch,
   })
 
+  enum TabState {
+    Inventory = 'inventory',
+    Transactions = 'transactions',
+  }
+
+  const tabs = [
+    {
+      children: 'Your Current Inventory',
+      key: TabState.Inventory,
+    },
+    {
+      children: 'Transaction History',
+      key: TabState.Transactions,
+    },
+  ]
+
   return (
-    <WrapperContent>
-      <Grid flow="row" rowsTemplate="1fr auto">
-        <Row>
-          {!isLoadingPage && (
-            <>
-              <Col className={s.card} span={5}>
-                <Text className={s.title} type="small">
-                  Total Debt
-                </Text>
-                <Text type="h3" weight="bold">
-                  {yourPosition?.totalDebt}
-                </Text>
-              </Col>
-              <Col className={s.card} span={5}>
-                <Text className={s.title} type="small">
-                  Current Value
-                </Text>
-                <Text type="h3" weight="bold">
-                  {yourPosition?.currentValue}
-                </Text>
-              </Col>
-              <Col className={s.card} span={5}>
-                <Text className={s.title} type="small">
-                  Lowest Health Factor
-                </Text>
-                <Text type="h3" weight="bold">
-                  {yourPosition?.lowestHealthFactor}
-                </Text>
-              </Col>
-              <Col className={s.card} span={5}>
-                <Text className={s.title} type="small">
-                  Next Maturity
-                </Text>
-                <Text type="h3" weight="bold">
-                  {yourPosition?.nextMaturity}
-                </Text>
-              </Col>
-            </>
-          )}
-        </Row>
-        <div className="card-header">
-          <Tabs
-            activeKey={activeTabKey}
-            onClick={setActiveTabKey}
-            tabs={[
-              {
-                id: 'inventory',
-                children: (
-                  <Text color="secondary" type="p1">
-                    Your Current Inventory
-                  </Text>
-                ),
-              },
-              {
-                id: 'history',
-                children: (
-                  <Text color="secondary" type="p1">
-                    Transaction History
-                  </Text>
-                ),
-              },
-            ]}
-          ></Tabs>
-        </div>
-        {activeTabKey === 'inventory' ? (
-          <InventoryTable inventory={inventory} />
-        ) : (
-          <TransactionHistoryTable transactions={transactions} />
-        )}
-      </Grid>
-    </WrapperContent>
+    <>
+      {!isLoadingPage && (
+        <InfoBlocksGrid>
+          <InfoBlock title="Total Debt" value={yourPosition?.totalDebt} />
+          <InfoBlock title="Current Value" value={yourPosition?.currentValue} />
+          <InfoBlock title="Lowest Health Factor" value={yourPosition?.lowestHealthFactor} />
+          <InfoBlock title="Next Maturity" value={yourPosition?.nextMaturity} />
+        </InfoBlocksGrid>
+      )}
+      <Tabs>
+        {tabs.map(({ children, key }, index) => (
+          <Tab isActive={key === activeTabKey} key={index} onClick={() => setActiveTabKey(key)}>
+            {children}
+          </Tab>
+        ))}
+      </Tabs>
+      {activeTabKey === TabState.Inventory && <InventoryTable inventory={inventory} />}
+      {activeTabKey === TabState.Transactions && (
+        <TransactionHistoryTable transactions={transactions} />
+      )}
+    </>
   )
 }
 

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-const DASHBOARD = '/dashboard'
+const DASHBOARD = '/'
 const OPEN_POSITION = '/open-position'
 const YOUR_POSITIONS = '/your-positions'
 const AUCTIONS = '/auctions'

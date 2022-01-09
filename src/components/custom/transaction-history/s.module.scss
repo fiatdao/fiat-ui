@@ -1,0 +1,16 @@
+@import '/src/styles/vars';
+
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  @media (max-width: #{$max-width-mobile}) {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+.filter {
+  min-width: 195px;
+}

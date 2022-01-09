@@ -1,50 +1,76 @@
-import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import genericSuspense from '@/src/utils/genericSuspense'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import WalletButton from '@/src/components/custom/connect-button'
-import Spin from '@/src/components/antd/spin'
 
-function Connect({ ...restProps }) {
-  const { isAppConnected } = useWeb3Connection()
-  const [loading, setLoading] = useState(true)
+import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
+import { InfoBlock } from '@/src/components/custom/info-block'
 
-  // placeholder to prevent flicker until useSignIn is ready
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setLoading(false)
-    }, 500)
+function Connect() {
+  const { isWalletConnected } = useWeb3Connection()
+  const mockedInfo = [
+    {
+      title: 'Liquidations',
+      value: '750,000,000 FIAT',
+      footer: '$749,236,165',
+    },
+    {
+      title: 'FIAT Repaid',
+      value: '150,000,000 FIAT',
+      footer: '$749,236,165',
+    },
+    {
+      title: 'Liquidations',
+      value: '50,000,000 FIAT',
+      footer: '$749,236,165',
+    },
+    {
+      title: 'FIAT price',
+      value: '$1.01',
+      footer: (
+        <a className="text-gradient" href="https://google.com" rel="noreferrer" target="_blank">
+          Buy on Matcha
+        </a>
+      ),
+    },
+    {
+      title: 'FIAT Users',
+      value: '1,132',
+      footer: '320 last 30d',
+    },
+    {
+      title: 'Active positions',
+      value: '165',
+    },
+    {
+      title: 'Supported protocols',
+      value: '4',
+    },
+    {
+      title: 'Audits',
+      value: '2',
+    },
+  ]
 
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [])
-
-  return loading ? (
-    <Spin />
+  return !isWalletConnected ? (
+    <>
+      <Head>
+        <title>Connect Your Wallet - FIAT</title>
+      </Head>
+      <h1>Please Connect Your Wallet</h1>
+      <WalletButton />
+    </>
   ) : (
-    <div {...restProps}>
-      {!isAppConnected ? (
-        <>
-          <Head>
-            <title>Connect Your Wallet - FIAT</title>
-          </Head>
-          <h1>Connect Your Wallet</h1>
-          <p>
-            First we need you to connect your crypto wallet and sign the connection so we can trust
-            it's you and only you that's connected to the app.
-          </p>
-          <WalletButton />
-        </>
-      ) : (
-        <>
-          <Head>
-            <title>Sign Connection - FIAT</title>
-          </Head>
-          <h1>Wallet connected, please sign the connection to prove it's you.</h1>
-        </>
-      )}
-    </div>
+    <>
+      <Head>
+        <title>Dashboard - FIAT</title>
+      </Head>
+      <InfoBlocksGrid>
+        {mockedInfo.map((item, index) => (
+          <InfoBlock footer={item.footer} key={index} title={item.title} value={item.value} />
+        ))}
+      </InfoBlocksGrid>
+    </>
   )
 }
 

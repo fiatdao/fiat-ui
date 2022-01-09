@@ -1,9 +1,9 @@
-import { parseDate, remainingTime } from './utils'
+import s from './s.module.scss'
 import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
 import { useState } from 'react'
-import { Row } from 'antd'
 import { SelectValue } from 'antd/lib/select'
+import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import { Transaction } from '@/src/utils/your-positions-api'
@@ -91,11 +91,11 @@ const Columns: ColumnsType<any> = [
 const ASSETS_FILTER = [
   { label: 'All Assets', value: 'all' },
   { label: 'ePyvUSDC', value: 'ePyvUSDC_12_31_21' },
-  { label: 'error', value: 'error' },
+  { label: 'Error', value: 'error' },
 ]
 const ACTIONS_FILTER = [
   { label: 'All Actions', value: 'all' },
-  { label: 'Minted', value: 'Minted' },
+  { label: 'Minted', value: 'minted' },
   { label: 'Error', value: 'error' },
 ]
 
@@ -104,9 +104,8 @@ type TransactionHistoryProps = {
 }
 
 const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
-  // const [isOpenAssetFilter, setIsOpenAssetFilter] = useState(false)
+  // TODO: properly use `assetFilter` and `actionFilter` from the state
   const [assetFilter, setAssetFilter] = useState<string>('all')
-  // const [isOpenActionFilter, setIsOpenActionFilter] = useState(false)
   const [actionFilter, setActionFilter] = useState<string>('all')
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(
     transactions || [],
@@ -136,29 +135,26 @@ const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
 
   return (
     <>
-      <Row>
+      <div className={cn(s.filters)}>
         <Select
-          allowClear={true}
-          defaultOpen
+          className={cn(s.filter)}
           defaultValue={'all'}
           onSelect={(value: SelectValue) => onAssetFilterChange(value ? value.toString() : '')}
           options={ASSETS_FILTER.map(({ label, value }) => ({
             label,
             value,
-            // isActive: value === assetFilter,
           }))}
         />
         <Select
-          allowClear={true}
+          className={cn(s.filter)}
           defaultValue={'all'}
           onSelect={(value: SelectValue) => onActionFilterChange(value ? value.toString() : '')}
           options={ACTIONS_FILTER.map(({ label, value }) => ({
             label,
             value,
-            // isActive: value === actionFilter,
           }))}
         />
-      </Row>
+      </div>
       <div className={cn('card')}>
         <Table
           columns={Columns}
