@@ -51,12 +51,12 @@ const Select: React.FC<SelectProps<AntdSelectValue>> = <T extends AntdSelectValu
       }
       virtual={false}
     >
-      {options.map((item, index) => (
+      {options.map((item) => (
         <AntdSelect.Option
           {...item}
           className={cn(s.option)}
           disabled={false}
-          key={index}
+          key={item.value}
           value={item.value}
         >
           {item.label}
