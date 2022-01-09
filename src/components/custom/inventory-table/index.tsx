@@ -1,9 +1,8 @@
-import { healthFactor, parseDate, remainingTime } from '../tables/utils'
 import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
+import { healthFactor, parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import Button from '@/src/components/antd/button'
 import { Inventory } from '@/src/utils/your-positions-api'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 
