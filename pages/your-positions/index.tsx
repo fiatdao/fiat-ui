@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import {
   Inventory,
   Transaction,
@@ -5,10 +7,7 @@ import {
   inventoryMockFetch,
   transactionMockFetch,
   yourPositionPageInformationMockFetch,
-} from '../../src/utils/your-positions-api'
-import { useState } from 'react'
-import { Header } from '@/src/components/custom/header'
-
+} from '@/src/utils/your-positions-api'
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
@@ -50,7 +49,6 @@ const YourPositions = () => {
 
   return (
     <>
-      <Header title="Your Positions" />
       {!isLoadingPage && (
         <InfoBlocksGrid>
           <InfoBlock title="Total Debt" value={yourPosition?.totalDebt} />

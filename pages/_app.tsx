@@ -12,6 +12,7 @@ import { Sidebar } from '@/src/components/custom/sidebar'
 import Spin from '@/src/components/antd/spin'
 
 import '@/src/styles/index.scss'
+import { Header } from '@/src/components/custom/header'
 
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
@@ -54,6 +55,7 @@ function App({ Component, pageProps }: AppProps) {
               <Layout style={{ minHeight: '100vh' }}>
                 <Sidebar />
                 <Layout>
+                  <Header />
                   <Layout.Content>
                     <Component {...pageProps} />
                   </Layout.Content>
