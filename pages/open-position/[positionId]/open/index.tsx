@@ -132,6 +132,17 @@ const FormERC20: React.FC<{ tokenSymbol: string; value: string }> = ({ tokenSymb
   )
   const [userProxyAddress, setUserProxyAddress] = useState<string>(proxyAddress)
 
+  const setupProxy = async () => {
+    if (isAppConnected && web3Provider) {
+      const prbProxy = new Contract(
+        PRB_PROXY.address[Chains.goerli],
+        PRB_PROXY.abi,
+        web3Provider.getSigner(),
+      )
+      setUserProxyAddress(await (await prbProxy.deploy()).wait())
+    }
+  }
+
   const userProxy = useMemo(() => {
     if (!userProxyAddress || !web3Provider) {
       return null
@@ -195,19 +206,6 @@ const FormERC20: React.FC<{ tokenSymbol: string; value: string }> = ({ tokenSymb
       console.log({ args, receipt })
     }
   }
-
-  const setupProxy = async () => {
-    if (isAppConnected && web3Provider) {
-      const prbProxy = new Contract(
-        PRB_PROXY.address[Chains.goerli],
-        PRB_PROXY.abi,
-        web3Provider.getSigner(),
-      )
-      setUserProxyAddress(await (await prbProxy.deploy()).wait())
-    }
-  }
-
-  console.log(form.getFieldValue('tokenAmount'))
 
   return (
     <>
