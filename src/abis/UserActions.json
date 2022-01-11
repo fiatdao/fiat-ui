@@ -1,0 +1,364 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "codex_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "moneta_",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__addCollateralAndIncreaseDebt_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__addCollateralAndIncreaseDebt_zeroDebtAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__addCollateral_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__decreaseDebtAndRemoveCollateral_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__decreaseDebtAndRemoveCollateral_zeroDebtAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__decreaseDebtAndRemoveCollateral_zeroTokenAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__decreaseDebt_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__increaseDebt_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__removeCollateral_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__vaultEnter_zeroAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__vaultEnter_zeroTokenAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__vaultEnter_zeroVaultAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__vaultExit_zeroAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__vaultExit_zeroTokenId",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserActions__vaultExit_zeroVaultAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "addCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "debtAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "addCollateralAndIncreaseDebt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "codex",
+    "outputs": [
+      {
+        "internalType": "contract ICodex",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "debtAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "decreaseDebt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "debtAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "decreaseDebtAndRemoveCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "debtAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "increaseDebt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "moneta",
+    "outputs": [
+      {
+        "internalType": "contract IMoneta",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "onERC1155BatchReceived",
+    "outputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "onERC1155Received",
+    "outputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "removeCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
