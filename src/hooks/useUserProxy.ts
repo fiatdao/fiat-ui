@@ -1,9 +1,9 @@
-import useContractCall from './contracts/useContractCall'
-import { Chains } from '../constants/chains'
-import { useWeb3Connection } from '../providers/web3ConnectionProvider'
-import { DEFAULT_ADDRESS } from '../web3/utils'
 import { useCallback, useMemo, useState } from 'react'
 import { Contract } from 'ethers'
+import useContractCall from '@/src/hooks/contracts/useContractCall'
+import { Chains } from '@/src/constants/chains'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { DEFAULT_ADDRESS } from '@/src/web3/utils'
 import PRBProxy from '@/src/abis/PRBProxy.json'
 import { PRBProxy as PRBProxyType } from '@/types/typechain'
 

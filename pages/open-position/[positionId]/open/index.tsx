@@ -4,7 +4,7 @@ import AntdForm from 'antd/lib/form'
 import { ethers } from 'ethers'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import BigNumber from 'bignumber.js'
 import { contracts } from '@/src/constants/contracts'
 import { DEFAULT_ADDRESS, ZERO_BIG_NUMBER, getHumanValue, getNonHumanValue } from '@/src/web3/utils'
@@ -17,12 +17,9 @@ import TokenAmount from '@/src/components/custom/token-amount'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import UserActions from '@/src/abis/UserActions.json'
-import ERC20 from '@/src/abis/ERC20.json'
 import useUserProxy from '@/src/hooks/useUserProxy'
-import useERC20UserBalance from '@/src/hooks/contracts/useERC20UserBalance'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { TestERC20 } from '@/types/typechain'
-import { ZERO_BN } from '@/src/constants/misc'
 
 const StepperTitle: React.FC<{
   title: string
@@ -121,13 +118,13 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
   const [form] = AntdForm.useForm<FormProps>()
 
   const { address: currentUserAddress, isAppConnected, web3Provider } = useWeb3Connection()
-  const { isProxyAvailable, setupProxy, userProxy, userProxyAddress } = useUserProxy()
+  const { isProxyAvailable, setupProxy, userProxy } = useUserProxy()
   const [balance, refetch] = useContractCall<
     TestERC20,
     'balanceOf',
     [string],
     Promise<ethers.BigNumber>
-  >(tokenAddress, ERC20, 'balanceOf', [currentUserAddress || DEFAULT_ADDRESS])
+  >(tokenAddress, contracts.TEST_ERC20.abi, 'balanceOf', [currentUserAddress || DEFAULT_ADDRESS])
 
   const [tokenFormAmount, setTokenFormAmount] = useState(ZERO_BIG_NUMBER)
   const [fiatFormAmount, setFiatFormAMount] = useState(ZERO_BIG_NUMBER)
@@ -150,8 +147,6 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
 
       if (userProxy) {
         const allowance = await erc20.allowance(currentUserAddress, userProxy.address)
-
-        console.log({ userProxyAddress, address: userProxy.address })
 
         if (allowance.lt(tokenAmount.toFixed())) {
           const approve = await (
@@ -200,11 +195,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
               <TokenAmount
                 disabled={false}
                 displayDecimals={4}
-                max={
-                  balance
-                    ? getHumanValue(BigNumber.from(balance.toString()) || ZERO_BIG_NUMBER, 6)
-                    : 0
-                }
+                max={balance ? getHumanValue(BigNumber.from(balance.toString()), 6) : 0}
                 maximumFractionDigits={6}
                 onChange={(val) => val && setTokenFormAmount(val)}
                 slider
