@@ -9,17 +9,17 @@ import BigNumber from 'bignumber.js'
 import { contracts } from '@/src/constants/contracts'
 import { DEFAULT_ADDRESS, ZERO_BIG_NUMBER, getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { Chains } from '@/src/constants/chains'
 import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 import genericSuspense from '@/src/utils/genericSuspense'
 import { Form } from '@/src/components/antd'
 import TokenAmount from '@/src/components/custom/token-amount'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import UserActions from '@/src/abis/UserActions.json'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { TestERC20 } from '@/types/typechain'
+import { useUserActions } from '@/src/hooks/useUserActions'
+import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 
 const StepperTitle: React.FC<{
   title: string
@@ -98,14 +98,6 @@ const FormERC721: React.FC<{ tokenSymbol: string; value: string }> = ({ tokenSym
   )
 }
 
-const USER_ACTIONS = {
-  address: {
-    [Chains.mainnet]: '',
-    [Chains.goerli]: '0xBd43980D5632FA81Dd4597820Ce07E94A944C469',
-  },
-  abi: UserActions,
-}
-
 const VAULT_ADDRESS = '0xeCdB7DC331a8b5117eCF548Fa4730b0dAe76077D'
 
 type FormProps = { tokenAmount: BigNumber; fiatAmount: BigNumber }
@@ -119,6 +111,14 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
 
   const { address: currentUserAddress, isAppConnected, web3Provider } = useWeb3Connection()
   const { isProxyAvailable, setupProxy, userProxy } = useUserProxy()
+  const { allowance, approve, hasAllowance, loadingApprove } = useERC20Allowance(
+    tokenAddress,
+    userProxy?.address || '',
+  )
+
+  console.log({ allowance, approve, loadingApprove })
+
+  const userActions = useUserActions()
   const [balance, refetch] = useContractCall<
     TestERC20,
     'balanceOf',
@@ -127,41 +127,21 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
   >(tokenAddress, contracts.TEST_ERC20.abi, 'balanceOf', [currentUserAddress || DEFAULT_ADDRESS])
 
   const [tokenFormAmount, setTokenFormAmount] = useState(ZERO_BIG_NUMBER)
-  const [fiatFormAmount, setFiatFormAMount] = useState(ZERO_BIG_NUMBER)
 
   const handleSubmit = async (args: FormProps) => {
     if (isAppConnected && web3Provider) {
-      const token = args.tokenAmount
-      const fiat = args.fiatAmount
       // TODO Hardcoded decimals
-      const tokenAmount = getNonHumanValue(token, 6)
-      const fiatAmount = getNonHumanValue(fiat, 18)
+      const tokenAmount = getNonHumanValue(args.tokenAmount, contracts.TEST_ERC20.decimals)
+      const fiatAmount = getNonHumanValue(args.fiatAmount, contracts.FIAT.decimals)
 
-      const userActions = new Contract(
-        USER_ACTIONS.address[Chains.goerli],
-        USER_ACTIONS.abi,
-        web3Provider.getSigner(),
-      )
-
-      const erc20 = new Contract(tokenAddress, contracts.TEST_ERC20.abi, web3Provider.getSigner())
-
-      if (userProxy) {
-        const allowance = await erc20.allowance(currentUserAddress, userProxy.address)
-
-        if (allowance.lt(tokenAmount.toFixed())) {
-          const approve = await (
-            await erc20.approve(userProxy.address, ethers.constants.MaxUint256)
-          ).wait()
-
-          if (!approve) {
-            console.log('approve failed')
-          }
-        }
+      if (allowance.lt(tokenAmount.toString())) {
+        await approve()
       }
 
+      // TODO Extract logic to be agnostic of protocol used (vault). addCollateral('element', token, amount, fiat)
       const encodedFunctionData = userActions.interface.encodeFunctionData(
         'addCollateralAndIncreaseDebt',
-        [VAULT_ADDRESS, tokenAddress as string, tokenAmount.toFixed(), fiatAmount.toFixed()],
+        [VAULT_ADDRESS, tokenAddress, tokenAmount.toFixed(), fiatAmount.toFixed()],
       )
 
       const tx = await userProxy?.execute(userActions.address, encodedFunctionData, {
@@ -170,11 +150,15 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
 
       console.log('Creating position...', tx.hash)
       const receipt = await tx.wait()
+      refetch()
       console.log('Position created!')
       console.log({ args, receipt })
     }
   }
 
+  // Setup Proxy :tick
+  // Allowance loading:tick
+  // Deposit :loading
   return (
     <>
       <div className="container">
@@ -185,58 +169,72 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
             title="Configure your position"
             totalSteps={7}
           />
-          <Form
-            form={form}
-            initialValues={{ amount: undefined }}
-            onFinish={handleSubmit}
-            validateTrigger={['onSubmit']}
-          >
-            <Form.Item name="tokenAmount" required>
-              <TokenAmount
-                disabled={false}
-                displayDecimals={4}
-                max={balance ? getHumanValue(BigNumber.from(balance.toString()), 6) : 0}
-                maximumFractionDigits={6}
-                onChange={(val) => val && setTokenFormAmount(val)}
-                slider
-                tokenIcon={<ElementIcon />}
-              />
-            </Form.Item>
-            <Form.Item dependencies={['tokenAmount']} name="fiatAmount" required>
-              <TokenAmount
-                disabled={false}
-                displayDecimals={4}
-                max={tokenFormAmount}
-                maximumFractionDigits={6}
-                slider
-                tokenIcon={<FiatIcon />}
-              />
-            </Form.Item>
-            <div className="content-body">
-              <div className="content-body-item">
-                <div className="content-body-item-title">
-                  <h4>Deposit {tokenSymbol}</h4>
-                  <p>Current value: {value}</p>
-                </div>
+          <div className="content-body">
+            <div className="content-body-item">
+              <div className="content-body-item-title">
+                <h4>Deposit {tokenSymbol}</h4>
+                <p>Current value: {value}</p>
+              </div>
+              <Form
+                form={form}
+                initialValues={{ amount: undefined }}
+                onFinish={handleSubmit}
+                validateTrigger={['onSubmit']}
+              >
+                <Form.Item name="tokenAmount" required>
+                  <TokenAmount
+                    disabled={false}
+                    displayDecimals={4}
+                    max={balance ? getHumanValue(BigNumber.from(balance.toString()), 6) : 0}
+                    maximumFractionDigits={6}
+                    onChange={(val) => val && setTokenFormAmount(val)}
+                    slider
+                    tokenIcon={<ElementIcon />}
+                  />
+                </Form.Item>
                 {!isProxyAvailable && (
                   <div className="content-body-item-body">
                     <Button onClick={setupProxy}>Setup Proxy</Button>
                   </div>
                 )}
-                <OpenPositionSummary
-                  currentCollateralValue={0}
-                  newFIATDebt={0}
-                  outstandingFIATDebt={0}
-                  stabilityFee={0}
-                />
-              </div>
+                {!isProxyAvailable && (
+                  <div className="content-body-item-body">
+                    <Button disabled={hasAllowance} onClick={approve}>
+                      {loadingApprove ? 'loading' : 'Approve'}
+                    </Button>
+                  </div>
+                )}
+
+                <Form.Item dependencies={['tokenAmount']} name="fiatAmount" required>
+                  <TokenAmount
+                    disabled={false}
+                    displayDecimals={4}
+                    max={tokenFormAmount}
+                    maximumFractionDigits={6}
+                    slider
+                    tokenIcon={<FiatIcon />}
+                  />
+                </Form.Item>
+
+                <Form.Item>
+                  <Button
+                    disabled={!hasAllowance || !isProxyAvailable}
+                    htmlType="submit"
+                    type="primary"
+                  >
+                    Submit
+                  </Button>
+                </Form.Item>
+              </Form>
             </div>
-            <Form.Item>
-              <Button htmlType="submit" type="primary">
-                Submit
-              </Button>
-            </Form.Item>
-          </Form>
+          </div>
+
+          <OpenPositionSummary
+            currentCollateralValue={0}
+            newFIATDebt={0}
+            outstandingFIATDebt={0}
+            stabilityFee={0}
+          />
         </div>
       </div>
     </>
