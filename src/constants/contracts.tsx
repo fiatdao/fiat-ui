@@ -8,6 +8,8 @@ import collateralAuction from '@/src/abis/CollateralAuction.json'
 import debtAuction from '@/src/abis/DebtAuction.json'
 import surplusAuction from '@/src/abis/SurplusAuction.json'
 import fiscus from '@/src/abis/Fiscus.json'
+import vaultEPT from '@/src/abis/VaultEPT.json'
+import tranche from '@/src/abis/Tranche.json'
 
 type BaseAppContractInfo = {
   abi: any[]
@@ -108,5 +110,19 @@ export const contracts = constantContracts({
       [Chains.goerli]: '0x0953eE8ed1479B026d0FD06ECad11B79b27558aE',
     },
     abi: fiscus,
+  },
+  VAULT_EPT: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '0xeCdB7DC331a8b5117eCF548Fa4730b0dAe76077D',
+    },
+    abi: vaultEPT,
+  },
+  TRANCHE: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '',
+    },
+    abi: tranche,
   },
 })
