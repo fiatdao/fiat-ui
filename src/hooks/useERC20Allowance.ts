@@ -19,11 +19,11 @@ export const useERC20Allowance = (tokenAddress: string, spender: string) => {
     [tokenAddress, web3Provider],
   )
 
-  const approve = useCallback(() => {
+  const approve = useCallback(async () => {
     if (erc20 && isAddress(spender)) {
       setLoadingApprove(true)
-      return erc20
-        .approve(spender, ethers.constants.MaxUint256)
+      return (await erc20.approve(spender, ethers.constants.MaxUint256))
+        .wait()
         .finally(() => setLoadingApprove(false))
     }
   }, [erc20, spender])

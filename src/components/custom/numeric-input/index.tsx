@@ -7,6 +7,7 @@ export type NumericInputProps = Omit<InputProps, 'value' | 'onChange'> & {
   value?: BigNumber | number
   maximumFractionDigits?: number
   onChange?: (value: BigNumber | undefined) => void
+  hidden?: boolean
 }
 
 function removeComma(value: string): string {
@@ -15,7 +16,7 @@ function removeComma(value: string): string {
 
 const NumericInput: React.FC<NumericInputProps> = (props) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { maximumFractionDigits, ...inputProps } = props
+  const { hidden, maximumFractionDigits, ...inputProps } = props
 
   const [, forceRender] = React.useState({})
   const valueRef = React.useRef<string>('')
@@ -81,7 +82,13 @@ const NumericInput: React.FC<NumericInputProps> = (props) => {
   }
 
   return (
-    <Input {...inputProps} onBlur={handleBlur} onChange={handleChange} value={valueRef.current} />
+    <Input
+      {...inputProps}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      type={hidden ? 'hidden' : 'text'}
+      value={valueRef.current}
+    />
   )
 }
 
