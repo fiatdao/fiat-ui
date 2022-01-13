@@ -3,8 +3,8 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import { healthFactor, parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { Inventory } from '@/src/utils/your-positions-api'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
+import { Position } from '@/src/utils/your-positions-api'
 
 const LTVColumn = (ltv: any, row: any) => {
   const isIncreasing = ltv > row.lastLTV
@@ -109,7 +109,7 @@ const Columns: ColumnsType<any> = [
 ]
 
 type InventoryProps = {
-  inventory?: Inventory[]
+  inventory?: Position[]
 }
 
 const InventoryTable = ({ inventory }: InventoryProps) => {
