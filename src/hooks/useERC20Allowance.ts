@@ -24,9 +24,11 @@ export const useERC20Allowance = (tokenAddress: string, spender: string) => {
       setLoadingApprove(true)
       return (await erc20.approve(spender, ethers.constants.MaxUint256))
         .wait()
+        .then(() => erc20.allowance(currentUserAddress as string, spender))
+        .then(setAllowance)
         .finally(() => setLoadingApprove(false))
     }
-  }, [erc20, spender])
+  }, [currentUserAddress, erc20, spender])
 
   useEffect(() => {
     if (erc20 && isAddress(spender) && currentUserAddress) {

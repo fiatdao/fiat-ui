@@ -148,7 +148,6 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
 
       // TODO Extract logic to be agnostic of protocol used (vault). addCollateral('element', token, amount, fiat)
       let encodedFunctionData = ''
-      console.log(fiatAmount.toFixed(), tokenAmount.toFixed())
       if (fiatAmount.eq(0)) {
         encodedFunctionData = userActions.interface.encodeFunctionData('addCollateral', [
           VAULT_ADDRESS,
@@ -163,7 +162,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
       }
 
       const tx = await userProxy?.execute(userActions.address, encodedFunctionData, {
-        gasLimit: 30000000,
+        gasLimit: 10000000,
       })
 
       console.log('Creating position...', tx.hash)
@@ -185,6 +184,8 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
   const initialCurrent = isProxyAvailable ? (hasAllowance ? 4 : 3) : 1
 
   const [step, setStep] = useState({ current: initialCurrent, total: 5 })
+
+  console.log({ hasAllowance, step })
 
   const increaseStep = useCallback(() => {
     setStep((prev) => {
@@ -224,12 +225,11 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
   }
 
   useEffect(() => {
-    if (step.current === 3 && !loadingApprove) {
+    if (step.current === 3 && !loadingApprove && hasAllowance) {
       increaseStep()
     }
-  }, [increaseStep, loadingApprove, step])
+  }, [hasAllowance, increaseStep, loadingApprove, step])
 
-  console.log(step)
   return (
     <Grid flow="row" gap={16}>
       <StepperTitle
@@ -252,7 +252,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
           <Form.Item
             name="tokenAmount"
             required
-            style={{ display: [2, 3, 5].includes(step.current) ? 'none' : 'block' }}
+            style={{ visibility: [2, 3, 5].includes(step.current) ? 'hidden' : undefined }}
           >
             <TokenAmount
               disabled={false}
@@ -266,12 +266,12 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
             />
           </Form.Item>
         </div>
-        {!isProxyAvailable && (
+        {!isProxyAvailable && step.current !== 2 && (
           <div className="content-body-item-body">
             <Button onClick={increaseStep}>Setup Proxy</Button>
           </div>
         )}
-        {!hasAllowance && (
+        {!hasAllowance && isProxyAvailable && step.current !== 3 && (
           <div className="content-body-item-body">
             <Button onClick={increaseStep}>Allow Collateral management</Button>
           </div>
@@ -294,7 +294,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
             dependencies={['tokenAmount']}
             name="fiatAmount"
             required
-            style={{ display: step.current !== 4 ? 'none' : 'block' }}
+            style={{ visibility: step.current !== 4 ? 'hidden' : undefined }}
           >
             <TokenAmount
               disabled={false}
