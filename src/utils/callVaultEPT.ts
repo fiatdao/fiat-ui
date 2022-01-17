@@ -3,8 +3,6 @@ import { VaultEPT } from '@/types/typechain'
 import { Await } from '@/types/utils'
 import { contracts } from '@/src/constants/contracts'
 
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-
 export default async function vaultEPTCall<
   MethodName extends keyof VaultEPT['functions'],
   Params extends Parameters<VaultEPT[MethodName]> | null,

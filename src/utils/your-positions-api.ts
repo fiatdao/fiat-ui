@@ -94,7 +94,7 @@ const fetchUserProxy = async (userAddress: string) => {
 const transformPositions = async (positions: any[], provider: any): Promise<Position[]> => {
   const newPositions = []
   for (const position of positions) {
-    const vaultAddress = position.vault
+    const vaultAddress = position.vault.address
     const tokenId = position.tokenId
     const fiat = bigNumberToDecimal(position.normalDebt)
     const maturity = await vaultEPTCall(vaultAddress, provider, 'maturity', [tokenId])
@@ -128,7 +128,7 @@ const transformPositions = async (positions: any[], provider: any): Promise<Posi
 const fetchPositions = async (userAddress: string, provider: any): Promise<Position[]> => {
   const userProxy = await fetchUserProxy(userAddress)
   const proxyAddress = userProxy.proxyAddress.toLowerCase()
-  const keys = '{id,vault,tokenId,user,collateral,normalDebt}}'
+  const keys = '{id,vault{address},tokenId,user,collateral,normalDebt}}'
   const query = { query: `{positions(where: { user: "${proxyAddress}" })${keys}` }
   const positions = await fetch(SUBGRAPH_API, {
     method: 'POST',
@@ -137,8 +137,7 @@ const fetchPositions = async (userAddress: string, provider: any): Promise<Posit
   })
     .then((response) => response.json())
     .then((jsonResponse) => jsonResponse.data.positions)
-  const newPositions = await transformPositions(positions, provider)
-  return newPositions
+  return transformPositions(positions, provider)
 }
 
 const fetchInfoPage = (positions: any[]): Promise<YourPositionPageInformation> => {
