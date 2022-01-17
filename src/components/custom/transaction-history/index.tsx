@@ -6,7 +6,7 @@ import { SelectValue } from 'antd/lib/select'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { Transaction } from '@/src/utils/your-positions-api'
+import { PositionTransaction } from '@/src/utils/your-positions-api'
 import Select from '@/src/components/antd/select'
 
 const ColumnText = (obj: any) => {
@@ -18,9 +18,15 @@ const ColumnText = (obj: any) => {
 }
 
 const AmountColumn = (amount: any, row: any) => {
-  const isIncreasing = amount > row.lastAmount
-  const diff = isIncreasing ? amount - row.lastAmount : row.lastAmount - amount
-  const text = isIncreasing ? `+${diff}` : `-${diff}`
+  const delta = row.deltaAmount || 0
+  let isIncreasing = false
+  let diff = amount
+
+  if (row.action === 'MINT') {
+    isIncreasing = true
+    diff -= delta
+  }
+  const text = isIncreasing ? `+${delta}` : `-${delta}`
 
   return (
     <>
@@ -28,7 +34,7 @@ const AmountColumn = (amount: any, row: any) => {
         {text}
       </Text>
       <Text className="ml-auto" color="primary" type="p1">
-        {amount}
+        {diff}
       </Text>
     </>
   )
@@ -90,47 +96,54 @@ const Columns: ColumnsType<any> = [
 
 const ASSETS_FILTER = [
   { label: 'All Assets', value: 'all' },
-  { label: 'ePyvUSDC', value: 'ePyvUSDC_12_31_21' },
+  { label: 'ePyvUSDC', value: 'Principal Token eyUSDC:10-AUG-22-GMT' },
   { label: 'Error', value: 'error' },
 ]
 const ACTIONS_FILTER = [
   { label: 'All Actions', value: 'all' },
-  { label: 'Minted', value: 'minted' },
+  { label: 'Minted', value: 'MINT' },
   { label: 'Error', value: 'error' },
 ]
 
 type TransactionHistoryProps = {
-  transactions?: Transaction[]
+  transactions?: PositionTransaction[]
 }
 
 const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
   // TODO: properly use `assetFilter` and `actionFilter` from the state
   const [assetFilter, setAssetFilter] = useState<string>('all')
   const [actionFilter, setActionFilter] = useState<string>('all')
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(
+  const [filteredTransactions, setFilteredTransactions] = useState<PositionTransaction[]>(
     transactions || [],
   )
 
-  const onAssetFilterChange = (asset: string) => {
-    if (!asset) {
-      setAssetFilter('all')
-      setFilteredTransactions(transactions || [])
-    } else {
-      const newFilteredTransactions = transactions?.filter((t) => t.asset.includes(asset))
-      setAssetFilter(asset)
-      setFilteredTransactions(newFilteredTransactions || [])
+  const applyFilter = (
+    transaction: PositionTransaction,
+    property: keyof PositionTransaction,
+    value: string,
+  ): boolean => {
+    if (value === 'all') return true
+    return (transaction[property] as string).includes(value)
+  }
+
+  const applyFilters = (filters: string[]) => {
+    if (transactions) {
+      // TODO: we can use an array of objects with keyof and values
+      const newFilteredTransactions = transactions.filter(
+        (t) => applyFilter(t, 'asset', filters[0]) && applyFilter(t, 'action', filters[1]),
+      )
+      setFilteredTransactions(newFilteredTransactions)
     }
   }
 
-  const onActionFilterChange = (asset: string) => {
-    if (!asset) {
-      setActionFilter('all')
-      setFilteredTransactions(transactions || [])
-    } else {
-      const newFilteredTransactions = transactions?.filter((t) => t.action.includes(asset))
-      setActionFilter(asset)
-      setFilteredTransactions(newFilteredTransactions || [])
-    }
+  const onAssetFilterChange = (asset: string) => {
+    setAssetFilter(asset)
+    applyFilters([asset, actionFilter])
+  }
+
+  const onActionFilterChange = (action: string) => {
+    setActionFilter(action)
+    applyFilters([assetFilter, action])
   }
 
   return (
