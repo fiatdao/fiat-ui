@@ -1,17 +1,15 @@
 import {
   Position,
-  Transaction,
+  PositionTransaction,
   YourPositionPageInformation,
   fetchInfoPage,
   fetchPositions,
-  transactionMockFetch,
 } from '../../src/utils/your-positions-api'
 import { useEffect, useState } from 'react'
 
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
-import useFetch from '@/src/hooks/useFetch'
 import InventoryTable from '@/src/components/custom/inventory-table'
 import TransactionHistoryTable from '@/src/components/custom/transaction-history'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -20,22 +18,19 @@ const YourPositions = () => {
   const { address, isWalletConnected, readOnlyAppProvider: provider } = useWeb3Connection()
   const [activeTabKey, setActiveTabKey] = useState('inventory')
   const [inventory, setInventory] = useState<Position[]>([])
+  const [transactions, setTransactions] = useState<PositionTransaction[]>([])
   const [isLoadingPage, setIsLoadingPage] = useState(false)
   const [pageInformation, setPageInformation] = useState<YourPositionPageInformation>()
-
-  const { data: transactions } = useFetch<Transaction[]>({
-    url: 'transactions',
-    customFetch: transactionMockFetch,
-  })
 
   useEffect(() => {
     const init = async () => {
       if (address && isWalletConnected && provider) {
         setIsLoadingPage(true)
-        const positions = await fetchPositions(address, provider)
+        const [positions, positionTransactions] = await fetchPositions(address, provider)
         const newPageInformation = await fetchInfoPage(positions)
         setPageInformation(newPageInformation)
         setInventory(positions)
+        setTransactions(positionTransactions)
         setIsLoadingPage(false)
       }
     }
