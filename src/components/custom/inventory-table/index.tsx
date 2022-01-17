@@ -6,14 +6,11 @@ import { Table } from '@/src/components/antd'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import { Position } from '@/src/utils/your-positions-api'
 
-const LTVColumn = (ltv: any, row: any) => {
-  const isIncreasing = ltv > row.lastLTV
-  const diffAmount = isIncreasing ? ltv - row.lastLTV : row.lastLTV - ltv
-
+const LTVColumn = (ltv: any) => {
   return (
     <>
       <Text className="ml-auto" color="primary" type="p1">
-        {ltv}%<span style={{ color: isIncreasing ? 'green' : 'red' }}>{diffAmount}%</span>
+        {ltv}%
       </Text>
     </>
   )
