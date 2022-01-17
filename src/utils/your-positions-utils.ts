@@ -17,7 +17,9 @@ const healthFactor = (hf: number) => {
 // curried version
 const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
 
-const remainingTime = (d: Date) => {
+const remainingTime = (d: Date | null) => {
+  if (!d) return ''
+
   let today = new Date()
   const diffInDays = differenceInDays(d, today)
   today = addDays(diffInDays, today)
