@@ -22,6 +22,7 @@ export type TokenAmountProps = {
   slider?: boolean
   displayDecimals?: number
   onChange?: (value?: BigNumber) => void
+  hidden?: boolean
 }
 
 const TokenAmount: React.FC<TokenAmountProps> = (props) => {
@@ -29,6 +30,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     className,
     disabled = false,
     displayDecimals = 4,
+    hidden,
     max,
     maximumFractionDigits = 4,
     name,
@@ -86,6 +88,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
         }
         className={cn(s.component, className)}
         disabled={disabled}
+        hidden={hidden}
         maximumFractionDigits={maximumFractionDigits}
         onChange={handleInputChange}
         placeholder={
@@ -93,7 +96,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
         }
         value={bnValue}
       />
-      {slider && (
+      {slider && !hidden && (
         <Slider
           disabled={disabled}
           max={bnMaxValue.toNumber()}

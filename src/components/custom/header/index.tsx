@@ -1,17 +1,18 @@
 import s from './s.module.scss'
-import { ConnectButton } from '../connect-button'
-import { Layout } from 'antd'
 import { useRouter } from 'next/router'
+import { Layout } from 'antd'
 import cn from 'classnames'
 import { Drawer } from 'antd'
 import { useState } from 'react'
+import { ConnectButton } from '@/src/components/custom/connect-button'
+import { routesConfig } from '@/src/constants/navigation'
 import ConnectedWallet from '@/src/components/custom/connected-wallet'
 import { Logo } from '@/src/components/custom/logo'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { routesConfig } from '@/src/constants/navigation'
 import { Menu } from '@/src/components/custom/menu'
 import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
 
+// TODO: implement dynamic titles
 export const Header: React.FC = ({ ...restProps }) => {
   const { address, isWalletConnected } = useWeb3Connection()
   const router = useRouter()
