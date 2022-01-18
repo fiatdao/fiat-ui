@@ -1,35 +1,48 @@
 import { useState } from 'react'
 
 import {
-  Inventory,
+  Position,
   Transaction,
   YourPositionPageInformation,
-  inventoryMockFetch,
+  fetchInfoPage,
+  fetchPositions,
   transactionMockFetch,
-  yourPositionPageInformationMockFetch,
-} from '@/src/utils/your-positions-api'
+} from '../../src/utils/your-positions-api'
+import { useEffect, useState } from 'react'
+
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import useFetch from '@/src/hooks/useFetch'
 import InventoryTable from '@/src/components/custom/inventory-table'
 import TransactionHistoryTable from '@/src/components/custom/transaction-history'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 const YourPositions = () => {
+  const { address, isWalletConnected, readOnlyAppProvider: provider } = useWeb3Connection()
   const [activeTabKey, setActiveTabKey] = useState('inventory')
+  const [inventory, setInventory] = useState<Position[]>([])
+  const [isLoadingPage, setIsLoadingPage] = useState(false)
+  const [pageInformation, setPageInformation] = useState<YourPositionPageInformation>()
 
-  const { data: yourPosition, loading: isLoadingPage } = useFetch<YourPositionPageInformation>({
-    url: 'your-position',
-    customFetch: yourPositionPageInformationMockFetch,
-  })
-  const { data: inventory } = useFetch<Inventory[]>({
-    url: 'inventory',
-    customFetch: inventoryMockFetch,
-  })
   const { data: transactions } = useFetch<Transaction[]>({
     url: 'transactions',
     customFetch: transactionMockFetch,
   })
+
+  useEffect(() => {
+    const init = async () => {
+      if (address && isWalletConnected && provider) {
+        setIsLoadingPage(true)
+        const positions = await fetchPositions(address, provider)
+        const newPageInformation = await fetchInfoPage(positions)
+        setPageInformation(newPageInformation)
+        setInventory(positions)
+        setIsLoadingPage(false)
+      }
+    }
+    init()
+  }, [address, isWalletConnected, provider])
 
   enum TabState {
     Inventory = 'inventory',
@@ -51,10 +64,10 @@ const YourPositions = () => {
     <>
       {!isLoadingPage && (
         <InfoBlocksGrid>
-          <InfoBlock title="Total Debt" value={yourPosition?.totalDebt} />
-          <InfoBlock title="Current Value" value={yourPosition?.currentValue} />
-          <InfoBlock title="Lowest Health Factor" value={yourPosition?.lowestHealthFactor} />
-          <InfoBlock title="Next Maturity" value={yourPosition?.nextMaturity} />
+          <InfoBlock title="Total Debt" value={pageInformation?.totalDebt} />
+          <InfoBlock title="Current Value" value={pageInformation?.currentValue} />
+          <InfoBlock title="Lowest Health Factor" value={pageInformation?.lowestHealthFactor} />
+          <InfoBlock title="Next Maturity" value={pageInformation?.nextMaturity} />
         </InfoBlocksGrid>
       )}
       <Tabs>

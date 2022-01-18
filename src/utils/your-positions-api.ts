@@ -1,16 +1,22 @@
+import trancheCall from './callTranche'
+import vaultEPTCall from './callVaultEPT'
+import { bigNumberToDecimal } from './formats'
+import { remainingTime } from './your-positions-utils'
+import { min } from 'date-fns'
+
 export type YourPositionPageInformation = {
-  totalDebt: string
-  currentValue: string
+  totalDebt: number
+  currentValue: number
   lowestHealthFactor: number | null
   nextMaturity: string
 }
 
-export type Inventory = {
+export type Position = {
   name: string
-  discount: string
+  discount: number
   ltv: number
   lastLTV: number
-  minted: string
+  minted: number
   maturity: Date
   healthFactor: number | null
   action: string
@@ -25,57 +31,10 @@ export type Transaction = {
   date: Date
 }
 
+const SUBGRAPH_API =
+  process.env.SUBGRAPH_API || 'https://api.thegraph.com/subgraphs/name/laimejesus/fiatlux'
+
 const DELAY_TIME = 1000
-
-const YOUR_POSITION_PAGE_DATA: YourPositionPageInformation = {
-  totalDebt: '750,000,000',
-  currentValue: '$1,000,000.00',
-  lowestHealthFactor: 1.01,
-  nextMaturity: '12d:5h:13m',
-}
-
-const INVENTORY_DATA: Inventory[] = [
-  {
-    name: 'bb_sBOND_cDAI',
-    discount: '$500,000.00',
-    ltv: 82,
-    lastLTV: 90,
-    minted: '0',
-    maturity: new Date(2021, 11, 24),
-    healthFactor: null,
-    action: 'manage',
-  },
-  {
-    name: 'ePyvUSDC_12_31_21',
-    discount: '$500,000.00',
-    ltv: 93,
-    lastLTV: 90,
-    minted: '400,000',
-    maturity: new Date(2021, 11, 25),
-    healthFactor: 1.01,
-    action: 'manage',
-  },
-  {
-    name: 'fDAI_12_31_21',
-    discount: '$500,000.00',
-    ltv: 82,
-    lastLTV: 90,
-    minted: '0',
-    maturity: new Date(2022, 11, 15),
-    healthFactor: null,
-    action: 'manage',
-  },
-  {
-    name: 'bb_sBond_cUSDC',
-    discount: '$200,000.00',
-    ltv: 90,
-    lastLTV: 78,
-    minted: '100,000',
-    maturity: new Date(),
-    healthFactor: 4.5,
-    action: 'manage',
-  },
-]
 
 const TRANSACTION_HISTORY_DATA: Transaction[] = [
   {
@@ -112,22 +71,6 @@ const TRANSACTION_HISTORY_DATA: Transaction[] = [
   },
 ]
 
-const inventoryMockFetch = () => {
-  return new Promise((res) => {
-    setTimeout(() => {
-      res(INVENTORY_DATA)
-    }, DELAY_TIME)
-  })
-}
-
-const yourPositionPageInformationMockFetch = () => {
-  return new Promise((res) => {
-    setTimeout(() => {
-      res(YOUR_POSITION_PAGE_DATA)
-    }, DELAY_TIME)
-  })
-}
-
 const transactionMockFetch = () => {
   return new Promise((res) => {
     setTimeout(() => {
@@ -136,4 +79,88 @@ const transactionMockFetch = () => {
   })
 }
 
-export { inventoryMockFetch, yourPositionPageInformationMockFetch, transactionMockFetch }
+const fetchUserProxy = async (userAddress: string) => {
+  const keys = '{id,proxyAddress}'
+  const query = { query: `{userProxy(id: "${userAddress.toLowerCase()}")${keys}}` }
+  return fetch(SUBGRAPH_API, {
+    method: 'POST',
+    body: JSON.stringify(query),
+    headers: { 'Content-Type': 'application/json' },
+  })
+    .then((response) => response.json())
+    .then((jsonResponse) => jsonResponse.data.userProxy)
+}
+
+const transformPositions = async (positions: any[], provider: any): Promise<Position[]> => {
+  const newPositions = []
+  for (const position of positions) {
+    const vaultAddress = position.vault.address
+    const tokenId = position.tokenId
+    const fiat = bigNumberToDecimal(position.normalDebt)
+    const maturity = await vaultEPTCall(vaultAddress, provider, 'maturity', [tokenId])
+    const trancheAddress = await vaultEPTCall(vaultAddress, provider, 'getTokenAddress', [tokenId])
+    // const underlierToken = await vaultEPTCall(vaultAddress, provider, "underlierToken", null);
+    const discount = await vaultEPTCall(vaultAddress, provider, 'fairPrice', [tokenId, true, true])
+    const name = await trancheCall(trancheAddress!, provider, 'name', null)
+    const decimals = await trancheCall(trancheAddress!, provider, 'decimals', null)
+    // @TODO
+    const ltv = 82
+    const lastLTV = 90
+    const healthFactor = 1
+    const newMaturity = maturity?.mul(1000).toNumber() || Date.now()
+
+    const newPosition: Position = {
+      name: name!,
+      discount: bigNumberToDecimal(discount, decimals!),
+      minted: fiat,
+      maturity: new Date(newMaturity),
+      action: 'manage',
+      ltv: ltv,
+      lastLTV: lastLTV,
+      healthFactor,
+    }
+    newPositions.push(newPosition)
+  }
+  return newPositions
+}
+
+// @TODO: currently working for element-fi
+const fetchPositions = async (userAddress: string, provider: any): Promise<Position[]> => {
+  const userProxy = await fetchUserProxy(userAddress)
+  const proxyAddress = userProxy.proxyAddress.toLowerCase()
+  const keys = '{id,vault{address},tokenId,user,collateral,normalDebt}}'
+  const query = { query: `{positions(where: { user: "${proxyAddress}" })${keys}` }
+  const positions = await fetch(SUBGRAPH_API, {
+    method: 'POST',
+    body: JSON.stringify(query),
+    headers: { 'Content-Type': 'application/json' },
+  })
+    .then((response) => response.json())
+    .then((jsonResponse) => jsonResponse.data.positions)
+  return transformPositions(positions, provider)
+}
+
+const fetchInfoPage = (positions: any[]): Promise<YourPositionPageInformation> => {
+  let totalDebt = 0
+  let currentValue = 0
+  let lowestHealthFactor: number | null = null
+  let nextMaturity: Date | null = null
+  positions.forEach((position) => {
+    totalDebt += position.minted
+    currentValue += position.discount
+    lowestHealthFactor = !lowestHealthFactor
+      ? position.healthFactor
+      : position.healthFactor < lowestHealthFactor
+      ? position.healthFactor
+      : lowestHealthFactor
+    nextMaturity = !nextMaturity ? position.maturity : min([position.maturity, nextMaturity])
+  })
+  return Promise.resolve({
+    totalDebt,
+    currentValue,
+    lowestHealthFactor,
+    nextMaturity: remainingTime(nextMaturity!),
+  })
+}
+
+export { transactionMockFetch, fetchPositions, fetchInfoPage }
