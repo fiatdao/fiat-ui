@@ -35,6 +35,7 @@
     "additional-bignumber.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "types/subgraph/__generated__"
   ]
 }

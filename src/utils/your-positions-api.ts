@@ -3,6 +3,7 @@ import vaultEPTCall from './callVaultEPT'
 import { bigNumberToDecimal } from './formats'
 import { remainingTime } from './your-positions-utils'
 import { min } from 'date-fns'
+import { GraphQLClient } from 'graphql-request'
 
 export type YourPositionPageInformation = {
   totalDebt: number
@@ -31,6 +32,11 @@ export type PositionTransaction = {
 }
 
 const SUBGRAPH_API = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_API || ''
+// TODO Move and improve
+// TODO Query should be DocumentNode
+const graphqlFetcher = new GraphQLClient(SUBGRAPH_API)
+export const swrFetcher = <Response, Variables>(query: any, variables: Variables) =>
+  graphqlFetcher.request<Response>(query, variables)
 
 const fetchUserProxy = async (userAddress: string) => {
   const keys = '{id,proxyAddress}'
