@@ -101,8 +101,7 @@ const fetchPositions = async (
 
   const proxyAddress = userProxy.proxyAddress.toLowerCase()
   const vaultKeys = 'vault {id,name,address,underlyingAsset}'
-  const transactionKeys =
-    'positionTransactions {id,type,collateral,deltaCollateral,normalDebt,deltaNormalDebt}'
+  const transactionKeys = 'positionTransactions {id,type,collateral,normalDebt}'
   const keys = `{id,tokenId,user,collateral,normalDebt,${vaultKeys},${transactionKeys}}`
   const query = { query: `{positions(where: { user: "${proxyAddress}" })${keys}}` }
   const positionsData = await fetch(SUBGRAPH_API, {
