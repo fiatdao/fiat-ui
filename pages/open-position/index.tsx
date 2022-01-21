@@ -175,7 +175,6 @@ const OpenPosition = () => {
           }}
         />
       </div>
-
       <Table
         columns={Columns}
         dataSource={data}
