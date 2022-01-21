@@ -10,12 +10,12 @@ export type TableProps<T> = AntdTableProps<T> & {
 const Table = <T extends Record<string, any>>(
   props: React.PropsWithChildren<TableProps<T>>,
 ): React.ReactElement => {
-  const { className, inCard = false, pagination, ...tableProps } = props
+  const { className, pagination, ...tableProps } = props
 
   return (
     <AntdTable<T>
       bordered={false}
-      className={cn(s.component, className, inCard && 'ant-table-in-card')}
+      className={cn(s.component, className)}
       pagination={
         pagination
           ? {
