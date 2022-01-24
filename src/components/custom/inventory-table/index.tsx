@@ -1,18 +1,16 @@
 import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
+import Link from 'next/link'
 import { healthFactor, parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import { Position } from '@/src/utils/your-positions-api'
 
 const LTVColumn = (ltv: any) => {
   return (
-    <>
-      <Text className="ml-auto" color="primary" type="p1">
-        {ltv}%
-      </Text>
-    </>
+    <Text className="ml-auto" color="primary" type="p1">
+      {ltv}%
+    </Text>
   )
 }
 
@@ -26,6 +24,7 @@ const ColumnText = (obj: any) => {
 
 const HealthFactorColumn = (obj: any) => {
   const color = obj ? healthFactor(obj) : 'transparent'
+
   return (
     <Text className="ml-auto" style={{ color: color }} type="p1">
       {obj}
@@ -49,8 +48,8 @@ const MaturityColumn = (date: any) => {
   )
 }
 
-const ActionColumn = (text: any) => {
-  return <ButtonOutlineGradient>{text}</ButtonOutlineGradient>
+const ActionColumn = (action: Position['action']) => {
+  return <Link href={`/your-positions/${action.data.positionId}/manage`}>{action.text}</Link>
 }
 
 const Columns: ColumnsType<any> = [
