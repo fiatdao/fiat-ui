@@ -1,4 +1,4 @@
-import s from './s.module.scss'
+import s from 'pages/open-position/[collateralId]/open/s.module.scss'
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import { ethers } from 'ethers'
@@ -344,7 +344,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
 
 const OpenPosition = () => {
   const {
-    query: { positionId: tokenAddress },
+    query: { collateralId: tokenAddress },
   } = useRouter()
   const { tokenSymbol } = useTokenSymbol(tokenAddress as string)
 
