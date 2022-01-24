@@ -17,7 +17,7 @@ const healthFactor = (hf: number) => {
 // curried version
 const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
 
-const remainingTime = (d: Date | null) => {
+const remainingTime = (d: Date | null): string => {
   if (!d) return ''
 
   let today = new Date()
