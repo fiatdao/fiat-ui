@@ -5,7 +5,7 @@ export const GeneralError = ({ error }: FallbackProps) => {
     <div>
       {/* <InfoIcon /> */}
       <h1>There was an error</h1>
-      <p>{error}</p>
+      <pre>{JSON.stringify(error, null, 2)}</pre>
     </div>
   )
 }
