@@ -178,7 +178,6 @@ const OpenPosition = () => {
       <Table
         columns={Columns}
         dataSource={data}
-        inCard
         loading={false}
         pagination={{
           total: data.length,

@@ -166,7 +166,7 @@ const Columns: ColumnsType<any> = [
 
 const Liquidations = () => {
   return (
-    <div className={cn('card')}>
+    <>
       <div className="card-header">
         <Text color="primary" font="secondary" type="p1" weight="semibold">
           Voter weights
@@ -175,7 +175,6 @@ const Liquidations = () => {
       <Table
         columns={Columns}
         dataSource={data}
-        inCard
         loading={false}
         pagination={{
           total,
@@ -206,7 +205,7 @@ const Liquidations = () => {
           x: true,
         }}
       />
-    </div>
+    </>
   )
 }
 

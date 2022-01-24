@@ -3,12 +3,8 @@ import React from 'react'
 import AntdTable, { TableProps as AntdTableProps } from 'antd/lib/table'
 import cn from 'classnames'
 
-export type TableProps<T> = AntdTableProps<T> & {
-  inCard?: boolean
-}
-
 const Table = <T extends Record<string, any>>(
-  props: React.PropsWithChildren<TableProps<T>>,
+  props: React.PropsWithChildren<AntdTableProps<T>>,
 ): React.ReactElement => {
   const { className, pagination, ...tableProps } = props
 
