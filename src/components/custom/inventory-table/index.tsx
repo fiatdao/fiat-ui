@@ -1,10 +1,10 @@
-import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
 import { healthFactor, parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import { Position } from '@/src/utils/your-positions-api'
+import { CellValue } from '@/src/components/custom/cell-value'
 
 const LTVColumn = (ltv: any) => {
   return (
@@ -64,7 +64,7 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'discount',
-    render: ColumnText,
+    render: (obj: number) => <CellValue bold value={`$${obj.toFixed(2)}`} />,
     responsive: ['lg'],
     title: 'Discounted Value',
     width: 150,

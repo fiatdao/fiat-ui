@@ -1,0 +1,14 @@
+.component {
+}
+
+.value {
+  color: var(--theme-text-color);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
+
+  &.bold {
+    font-weight: 500;
+  }
+}
