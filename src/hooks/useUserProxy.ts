@@ -17,8 +17,9 @@ const PRB_PROXY = {
 
 const useUserProxy = () => {
   const { address: currentUserAddress, isAppConnected, web3Provider } = useWeb3Connection()
+  const [loadingProxy, setLoadingProxy] = useState(false)
 
-  const [proxyAddress] = useContractCall<
+  const [userProxyAddress, refetch] = useContractCall<
     PRBProxyType,
     'getCurrentProxy',
     [string],
@@ -27,18 +28,25 @@ const useUserProxy = () => {
     currentUserAddress as string,
   ])
 
-  const [userProxyAddress, setUserProxyAddress] = useState<string>(proxyAddress || DEFAULT_ADDRESS)
-
   const setupProxy = useCallback(async () => {
     if (isAppConnected && web3Provider) {
+      setLoadingProxy(true)
       const prbProxy = new Contract(
         PRB_PROXY.address[Chains.goerli],
         PRB_PROXY.abi,
         web3Provider.getSigner(),
       )
-      setUserProxyAddress(await (await prbProxy.deploy()).wait())
+
+      try {
+        await (await prbProxy.deploy()).wait()
+        refetch()
+      } catch (e) {
+        console.error('Failed to setup the Proxy', e)
+      } finally {
+        setLoadingProxy(false)
+      }
     }
-  }, [isAppConnected, web3Provider])
+  }, [refetch, isAppConnected, web3Provider])
 
   const userProxy = useMemo(() => {
     if (!userProxyAddress || !web3Provider) {
@@ -53,12 +61,12 @@ const useUserProxy = () => {
     )
   }, [userProxyAddress, web3Provider])
 
-  // userProxyAddress: userProxy.address
   // isProxyAvailable: !!userProxy
   return {
     userProxy,
     setupProxy,
     userProxyAddress,
+    loadingProxy,
     isProxyAvailable: userProxyAddress !== DEFAULT_ADDRESS,
   }
 }

@@ -112,18 +112,17 @@ const VAULT_ADDRESS = '0xeCdB7DC331a8b5117eCF548Fa4730b0dAe76077D'
 
 type FormProps = { tokenAmount: BigNumber; fiatAmount: BigNumber }
 
-const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: string }> = ({
+const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
   tokenAddress,
   tokenSymbol,
-  value,
 }) => {
   const [form] = AntdForm.useForm<FormProps>()
 
   const { address: currentUserAddress, isAppConnected, web3Provider } = useWeb3Connection()
-  const { isProxyAvailable, setupProxy, userProxy } = useUserProxy()
+  const { isProxyAvailable, setupProxy, userProxy, userProxyAddress } = useUserProxy()
   const { allowance, approve, hasAllowance, loadingApprove } = useERC20Allowance(
     tokenAddress,
-    userProxy?.address || '',
+    userProxyAddress ?? '',
   )
 
   const userActions = useUserActions()
@@ -355,7 +354,7 @@ const OpenPosition = () => {
       <Link href="/open-position" passHref>
         <Button>Back</Button>
       </Link>
-      <FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} value="$5,000" />
+      <FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />
     </>
   )
 }
