@@ -1,5 +1,5 @@
 import s from './s.module.scss'
-import stepperMachine, { TITLES_BY_STEP } from './state'
+import stepperMachine, { TITLES_BY_STEP } from '../../../../src/state/open-position-form'
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import { ethers } from 'ethers'
