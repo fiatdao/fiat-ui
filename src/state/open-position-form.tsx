@@ -41,7 +41,7 @@ interface Context {
   loadingType: string
 }
 
-type CustomerMachineEvent =
+type Events =
   | { type: 'SET_HAS_ALLOWANCE'; hasAllowance: boolean }
   | { type: 'SET_CURRENT_STEP_NUMBER'; currentStepNumber: number }
   | { type: 'SET_ERC20_AMOUNT'; erc20Amount: BigNumber }
@@ -57,7 +57,7 @@ type CustomerMachineEvent =
   | { type: 'POSITION_CREATED_ERROR' }
   | { type: 'USER_REJECTED' }
 
-const stepperMachine = createMachine<Context, CustomerMachineEvent>(
+const stepperMachine = createMachine<Context, Events>(
   {
     id: 'stepper',
     initial: 'step-1-enteringERC20Amount',
@@ -122,13 +122,6 @@ const stepperMachine = createMachine<Context, CustomerMachineEvent>(
           CONFIRM: 'confirming-position',
         },
       },
-      // 'step-5-addCollateralAndIncreaseDebt': {
-      //   // Mint FIAT
-      //   entry: [assign({ currentStepNumber: (_) => 5 })],
-      //   on: {
-      //     CONFIRM: 'confirming-position',
-      //   },
-      // },
       'confirming-position': {
         invoke: {
           src: 'submitForm',
@@ -147,14 +140,8 @@ const stepperMachine = createMachine<Context, CustomerMachineEvent>(
           },
         },
       },
-      'step-final-congrats': {
-        // Solo si fue minado mostrat congrats
-        // Si no, ver error step
-      },
-      'step-final-error': {
-        // Solo si fue minado mostrat congrats
-        // Si no, ver error step
-      },
+      'step-final-congrats': {},
+      'step-final-error': {},
     },
   },
   {
