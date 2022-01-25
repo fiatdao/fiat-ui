@@ -1,17 +1,22 @@
-import { BigNumberish } from '@ethersproject/bignumber'
+import { Contract } from '@ethersproject/contracts'
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
-import { isArray } from 'lodash'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
+import BigNumber from 'bignumber.js'
+import useSWR from 'swr'
+import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
+import { TestERC20 } from '@/types/typechain'
+import useContractCall from '@/src/hooks/contracts/useContractCall'
+import { contracts } from '@/src/constants/contracts'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Form } from '@/src/components/antd'
 import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
-import { Position, PositionTransaction, fetchPositionById } from '@/src/utils/your-positions-api'
+import { fetchPositionById } from '@/src/utils/your-positions-api'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import genericSuspense from '@/src/utils/genericSuspense'
 
@@ -29,10 +34,13 @@ const isValidPositionId = (positionId: string | string[] | undefined): boolean =
 }
 
 const extractPositionIdData = (
-  positionId: string | string[] | undefined,
-): { vaultAddress: string; tokenId: string; proxyAddress: string } | Record<string, unknown> => {
-  if (!positionId || isArray(positionId)) {
-    return {}
+  positionId: string,
+): { vaultAddress: string; tokenId: string; proxyAddress: string } => {
+  if (!isValidPositionId(positionId)) {
+    const error = new Error('Invalid position Id')
+    error.name = 'INVALID_POSITION_ID'
+
+    throw error
   }
 
   const [vaultAddress, tokenIdInHex, proxyAddress] = positionId.split('-')
@@ -41,70 +49,223 @@ const extractPositionIdData = (
   return { vaultAddress, tokenId, proxyAddress }
 }
 
-const COLLATERAL_BY_VAULT_ADDRESS: Record<string, string> = {
-  '0xeCdB7DC331a8b5117eCF548Fa4730b0dAe76077D': '0xdcf80c068b7ffdf7273d8adae4b076bf384f711a',
+const iconByAddress = new Proxy<Record<string, ReactNode>>(
+  {
+    '0xdcf80c068b7ffdf7273d8adae4b076bf384f711a': <ElementIcon />,
+  },
+  {
+    get: function (target, prop) {
+      if (typeof prop === 'string') {
+        return target[prop.toLowerCase()]
+      }
+    },
+  },
+)
+
+const DepositInput = ({
+  tokenAddress,
+  tokenDecimals,
+  tokenMaxValue,
+  vaultAddress,
+}: {
+  tokenAddress: string
+  tokenDecimals: number
+  tokenMaxValue?: BigNumber
+  vaultAddress: string
+}) => {
+  const { userProxy } = useUserProxy()
+  const userActions = useUserActions()
+  const [form] = AntdForm.useForm()
+
+  const handleDeposit = async ({ deposit }: { deposit: BigNumber }) => {
+    const toDeposit = getNonHumanValue(deposit, tokenDecimals)
+    const addCollateralEncoded = userActions.interface.encodeFunctionData('addCollateral', [
+      vaultAddress,
+      tokenAddress,
+      toDeposit.toFixed(),
+    ])
+
+    const tx = await userProxy?.execute(userActions.address, addCollateralEncoded, {
+      gasLimit: 10000000,
+    })
+    console.log('adding collateral...', tx.hash)
+
+    const receipt = await tx.wait()
+    console.log('Collateral added!', { receipt })
+  }
+
+  return (
+    <Form form={form} onFinish={handleDeposit}>
+      <Form.Item name="deposit" required>
+        <TokenAmount
+          displayDecimals={tokenDecimals}
+          max={tokenMaxValue}
+          maximumFractionDigits={tokenDecimals}
+          slider
+          tokenIcon={iconByAddress[tokenAddress]}
+        />
+      </Form.Item>
+      <Form.Item>
+        <Button htmlType="submit" type="primary">
+          Deposit collateral
+        </Button>
+      </Form.Item>
+    </Form>
+  )
 }
 
-const PositionManager = () => {
-  const { isWalletConnected, readOnlyAppProvider: provider } = useWeb3Connection()
+const COLLATERAL_KEYS = ['deposit', 'withdraw'] as const
+
+interface ManageCollateralProps {
+  activeTabKey: typeof COLLATERAL_KEYS[number]
+  setActiveTabKey: (key: ManageCollateralProps['activeTabKey']) => void
+}
+
+const isCollateralTab = (key: string): key is ManageCollateralProps['activeTabKey'] => {
+  return COLLATERAL_KEYS.includes(key as ManageCollateralProps['activeTabKey'])
+}
+
+const FIAT_KEYS = ['burn', 'mint'] as const
+
+interface ManageFiatProps {
+  activeTabKey: typeof FIAT_KEYS[number]
+  setActiveTabKey: (key: ManageFiatProps['activeTabKey']) => void
+}
+
+const isFiatTab = (key: string): key is ManageFiatProps['activeTabKey'] => {
+  return FIAT_KEYS.includes(key as ManageFiatProps['activeTabKey'])
+}
+
+const ManageCollateral = ({ activeTabKey = 'deposit', setActiveTabKey }: ManageCollateralProps) => {
+  const { address: currentUserAddress, readOnlyAppProvider: provider } = useWeb3Connection()
   const {
     query: { positionId },
   } = useRouter()
-  const [positionInfo, setPositionInfo] = useState<[Position, PositionTransaction[]]>()
+  const { tokenId, vaultAddress } = extractPositionIdData(positionId as string)
+
+  const [collateralAddress] = useContractCall(
+    vaultAddress,
+    contracts.VAULT_EPT.abi,
+    'getTokenAddress',
+    [tokenId],
+  )
+
+  const [collateralInfo, setCollateralInfo] = useState<{
+    decimals: number
+    humanValue?: BigNumber
+  }>({ decimals: 0 })
 
   useEffect(() => {
+    if (collateralAddress && currentUserAddress) {
+      const collateral = new Contract(
+        collateralAddress,
+        contracts.TEST_ERC20.abi,
+        provider,
+      ) as TestERC20
+
+      Promise.all([collateral.decimals(), collateral.balanceOf(currentUserAddress)]).then(
+        ([decimals, balance]) => {
+          setCollateralInfo({
+            decimals,
+            humanValue: balance
+              ? getHumanValue(BigNumber.from(balance.toString()), decimals)
+              : undefined,
+          })
+        },
+      )
+    }
+  }, [collateralAddress, currentUserAddress, provider])
+
+  const [form2] = AntdForm.useForm()
+  const handleWithdraw = ({ withdraw }: { withdraw: string }) => {
+    console.log(withdraw)
+  }
+
+  return (
+    <>
+      <Tabs>
+        <Tab isActive={'deposit' === activeTabKey} onClick={() => setActiveTabKey('deposit')}>
+          Deposit
+        </Tab>
+        <Tab isActive={'withdraw' === activeTabKey} onClick={() => setActiveTabKey('withdraw')}>
+          Withdraw
+        </Tab>
+      </Tabs>
+      {'deposit' === activeTabKey && (
+        <div>
+          <DepositInput
+            tokenAddress={collateralAddress}
+            tokenDecimals={collateralInfo.decimals}
+            tokenMaxValue={collateralInfo.humanValue}
+            vaultAddress={vaultAddress}
+          />
+        </div>
+      )}
+      {'withdraw' === activeTabKey && (
+        <div>
+          <Form
+            form={form2}
+            initialValues={{ tokenAmount: 0, fiatAmount: 0 }}
+            onFinish={handleWithdraw}
+            validateTrigger={['onSubmit']}
+          >
+            <Form.Item name="withdraw" required>
+              <TokenAmount
+                disabled={false}
+                displayDecimals={4}
+                max={5000}
+                maximumFractionDigits={6}
+                slider
+                tokenIcon={<ElementIcon />}
+              />
+            </Form.Item>
+            <Form.Item>
+              <Button htmlType="submit" type="primary">
+                Withdraw collateral
+              </Button>
+            </Form.Item>
+          </Form>
+        </div>
+      )}
+    </>
+  )
+}
+
+const useManagePositionInfo = () => {
+  const {
+    query: { positionId },
+  } = useRouter()
+  const { isWalletConnected, readOnlyAppProvider: provider } = useWeb3Connection()
+
+  const { data, error, mutate } = useSWR([positionId], () => {
     if (
       isWalletConnected &&
       provider &&
       isValidPositionIdType(positionId) &&
       isValidPositionId(positionId)
     ) {
-      fetchPositionById(positionId, provider).then(setPositionInfo).catch(console.error)
+      return fetchPositionById(positionId, provider)
     }
-  }, [isWalletConnected, provider, positionId])
+  })
+
+  if (error) {
+    console.error('Failed to retrieve PositionId information', error)
+  }
+
+  return [data, mutate]
+}
+
+const PositionManager = () => {
+  const [positionInfo] = useManagePositionInfo()
 
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
-  const [activeTabKey, setActiveTabKey] = useState<'deposit' | 'withdraw' | 'mint' | 'burn'>(
-    'deposit',
-  )
+  const [activeTabKey, setActiveTabKey] = useState<
+    ManageCollateralProps['activeTabKey'] | ManageFiatProps['activeTabKey']
+  >('deposit')
+
   useEffect(() => {
     setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
   }, [activeSection])
-
-  const { userProxy } = useUserProxy()
-  const userActions = useUserActions()
-
-  const [form1] = AntdForm.useForm()
-  const handleDeposit = async ({ deposit }: { deposit: BigNumberish }) => {
-    console.log(deposit)
-
-    const { proxyAddress, vaultAddress } = extractPositionIdData(positionId)
-
-    if (typeof vaultAddress === 'string') {
-      const collateralAddress = COLLATERAL_BY_VAULT_ADDRESS[vaultAddress]
-
-      if (collateralAddress !== undefined) {
-        const addCollateralEncoded = userActions.interface.encodeFunctionData('addCollateral', [
-          vaultAddress,
-          collateralAddress,
-          deposit,
-        ])
-
-        const tx = await userProxy?.execute(proxyAddress, addCollateralEncoded, {
-          gasLimit: 10000000,
-        })
-
-        console.log('adding collateral...', tx.hash)
-        const receipt = await tx.wait()
-        console.log('Collateral added!', { receipt })
-      }
-    }
-  }
-
-  const [form2] = AntdForm.useForm()
-  const handleWithdraw = ({ withdraw }: { withdraw: string }) => {
-    console.log(withdraw)
-  }
 
   const [form3] = AntdForm.useForm()
   const handleMint = ({ mint }: { mint: string }) => {
@@ -132,71 +293,10 @@ const PositionManager = () => {
           FIAT
         </Tab>
       </Tabs>
-      {'collateral' === activeSection && (
-        <>
-          <Tabs>
-            <Tab isActive={'deposit' === activeTabKey} onClick={() => setActiveTabKey('deposit')}>
-              Deposit
-            </Tab>
-            <Tab isActive={'withdraw' === activeTabKey} onClick={() => setActiveTabKey('withdraw')}>
-              Withdraw
-            </Tab>
-          </Tabs>
-          {'deposit' === activeTabKey && (
-            <div>
-              <Form
-                form={form1}
-                initialValues={{ tokenAmount: 0, fiatAmount: 0 }}
-                onFinish={handleDeposit}
-                validateTrigger={['onSubmit']}
-              >
-                <Form.Item name="deposit" required>
-                  <TokenAmount
-                    disabled={false}
-                    displayDecimals={4}
-                    max={5000}
-                    maximumFractionDigits={6}
-                    slider
-                    tokenIcon={<ElementIcon />}
-                  />
-                </Form.Item>
-                <Form.Item>
-                  <Button htmlType="submit" type="primary">
-                    Deposit collateral
-                  </Button>
-                </Form.Item>
-              </Form>
-            </div>
-          )}
-          {'withdraw' === activeTabKey && (
-            <div>
-              <Form
-                form={form2}
-                initialValues={{ tokenAmount: 0, fiatAmount: 0 }}
-                onFinish={handleWithdraw}
-                validateTrigger={['onSubmit']}
-              >
-                <Form.Item name="withdraw" required>
-                  <TokenAmount
-                    disabled={false}
-                    displayDecimals={4}
-                    max={5000}
-                    maximumFractionDigits={6}
-                    slider
-                    tokenIcon={<ElementIcon />}
-                  />
-                </Form.Item>
-                <Form.Item>
-                  <Button htmlType="submit" type="primary">
-                    Withdraw collateral
-                  </Button>
-                </Form.Item>
-              </Form>
-            </div>
-          )}
-        </>
+      {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
+        <ManageCollateral activeTabKey={activeTabKey} setActiveTabKey={setActiveTabKey} />
       )}
-      {'fiat' === activeSection && (
+      {'fiat' === activeSection && isFiatTab(activeTabKey) && (
         <>
           <Tabs>
             <Tab isActive={'mint' === activeTabKey} onClick={() => setActiveTabKey('mint')}>
