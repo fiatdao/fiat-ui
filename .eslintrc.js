@@ -79,7 +79,9 @@ module.exports = {
     }],
     "@typescript-eslint/ban-ts-comment": 'off',
     "@typescript-eslint/no-explicit-any": 'off',
-    "@next/next/no-img-element": "off"
+    "@next/next/no-img-element": "off",
+    '@typescript-eslint/no-unused-vars': ["error", {argsIgnorePattern: "^_"}],
+
   },
   globals: {
     "React": "writable"
