@@ -4,7 +4,6 @@ import {
   YourPositionPageInformation,
   fetchInfoPage,
   fetchPositions,
-  swrFetcher,
 } from '../../src/utils/your-positions-api'
 import { useEffect, useState } from 'react'
 
@@ -18,6 +17,7 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { USER_PROXY } from '@/src/queries/userProxy'
 import { userProxyVariables, userProxy_userProxy } from '@/types/subgraph/__generated__/userProxy'
 import genericSuspense from '@/src/utils/genericSuspense'
+import { swrFetcher } from '@/src/utils/graphqlFetcher'
 
 const YourPositions = () => {
   const { address, isWalletConnected, readOnlyAppProvider: provider } = useWeb3Connection()
