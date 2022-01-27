@@ -1,4 +1,5 @@
 .component {
+  display: block;
 }
 
 .value {
@@ -11,4 +12,36 @@
   &.bold {
     font-weight: 500;
   }
+
+  &.ok {
+    color: var(--theme-ok-color);
+  }
+
+  &.warning {
+    color: var(--theme-warning-color);
+  }
+
+  &.danger {
+    color: var(--theme-danger-color);
+  }
+
+  &.left {
+    text-align: left;
+  }
+
+  &.center {
+    text-align: center;
+  }
+
+  &.right {
+    text-align: right;
+  }
+}
+
+.date {
+  color: var(--theme-light-text-color);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
 }

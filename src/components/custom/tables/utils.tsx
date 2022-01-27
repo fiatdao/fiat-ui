@@ -4,14 +4,8 @@ import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 
-const healthFactor = (hf: number) => {
-  if (hf > 4.0) {
-    return 'green'
-  }
-  if (hf > 1.0) {
-    return 'orange'
-  }
-  return 'red'
+const healthFactor = (hf: number): 'danger' | 'ok' | 'warning' => {
+  return hf >= 4.0 ? 'ok' : hf >= 1.0 ? 'warning' : 'danger'
 }
 
 // curried version

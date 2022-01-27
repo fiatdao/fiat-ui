@@ -3,14 +3,29 @@ import cn from 'classnames'
 
 export const CellValue: React.FC<{
   bold?: boolean
+  className?: string
   date?: string
-  state?: 'error' | 'ok' | 'warning'
+  state?: 'danger' | 'ok' | 'warning'
   textAlign?: 'left' | 'right' | 'center'
+  tooltip?: string
   value: string
-}> = ({ bold, date, state, textAlign, value, ...restProps }) => {
+}> = ({ bold, className, date, state, textAlign, tooltip, value, ...restProps }) => {
   return (
-    <div className={cn(s.component)} {...restProps}>
-      <div className={cn(s.value, { [s.bold]: bold })}>{value}</div>
+    <div className={cn(s.component, className)} title={tooltip} {...restProps}>
+      <div
+        className={cn(
+          s.value,
+          { [s.bold]: bold },
+          { [s.ok]: state === 'ok' },
+          { [s.warning]: state === 'warning' },
+          { [s.danger]: state === 'danger' },
+          { [s.left]: textAlign === 'left' },
+          { [s.center]: textAlign === 'center' },
+          { [s.right]: textAlign === 'right' },
+        )}
+      >
+        {value}
+      </div>
       {date && <div className={cn(s.date)}>{date}</div>}
     </div>
   )
