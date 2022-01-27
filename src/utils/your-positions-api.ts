@@ -2,6 +2,7 @@ import trancheCall from './callTranche'
 import vaultEPTCall from './callVaultEPT'
 import { bigNumberToDecimal } from './formats'
 import { remainingTime } from './your-positions-utils'
+import { SUBGRAPH_API } from '../constants/misc'
 import { min } from 'date-fns'
 
 export type YourPositionPageInformation = {
@@ -29,8 +30,6 @@ export type PositionTransaction = {
   transactionHash: string
   date: Date
 }
-
-const SUBGRAPH_API = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_API || ''
 
 const fetchUserProxy = async (userAddress: string) => {
   const keys = '{id,proxyAddress}'

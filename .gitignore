@@ -40,4 +40,5 @@ yarn-error.log*
 
 #types
 /types/typechain
+/types/subgraph/*
 tsconfig.tsbuildinfo
