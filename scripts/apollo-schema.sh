@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-set -o allexport; source .env; set +o allexport
+if [ -f ".env" ]
+then
+  set -o allexport; source .env; set +o allexport
+fi
 
 OUTPUT_FILE="../types/subgraph/graphql-schema.json"
 
