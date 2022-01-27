@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-if [ -f ".env" ]
-then
-  set -o allexport; source .env; set +o allexport
-fi
+set -o allexport; source .env; set +o allexport
 
-OUTPUT_FILE="../types/subgraph/graphql-schema.json"
+SCHEMA_OUTPUT_FILE="types/subgraph/graphql-schema.json"
+GENERATED_OUTPUT_FOLDER="types/subgraph/__generated__"
 
 if [ -z $NEXT_PUBLIC_REACT_APP_SUBGRAPH_API ]
 then
@@ -13,4 +11,6 @@ then
   exit 1
 fi
 
-npx apollo service:download --endpoint=$NEXT_PUBLIC_REACT_APP_SUBGRAPH_API $OUTPUT_FILE
+npx apollo service:download --endpoint=$NEXT_PUBLIC_REACT_APP_SUBGRAPH_API $SCHEMA_OUTPUT_FILE
+
+npx apollo codegen:generate --localSchemaFile=$SCHEMA_OUTPUT_FILE --target=typescript $GENERATED_OUTPUT_FOLDER --outputFlat
