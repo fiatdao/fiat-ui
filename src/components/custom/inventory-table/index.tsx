@@ -4,7 +4,7 @@ import { healthFactor, parseDate, remainingTime } from '@/src/components/custom/
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
-import { Position } from '@/src/utils/your-positions-api'
+import { Position } from '@/src/hooks/subgraph'
 
 const LTVColumn = (ltv: any) => {
   return (
@@ -140,7 +140,7 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
             console.log(page, pageSize)
           },
         }}
-        rowKey="address"
+        rowKey="name"
         scroll={{
           x: true,
         }}

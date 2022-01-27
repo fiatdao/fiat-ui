@@ -6,8 +6,8 @@ import { SelectValue } from 'antd/lib/select'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { PositionTransaction } from '@/src/utils/your-positions-api'
 import Select from '@/src/components/antd/select'
+import { PositionTransaction } from '@/src/hooks/subgraph'
 
 const ColumnText = (obj: any) => {
   return (
