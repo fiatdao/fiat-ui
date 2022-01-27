@@ -13,7 +13,7 @@
     "start": "next start",
     "typechain": "typechain --target=ethers-v5 ./src/abis/**/*.json --out-dir ./types/typechain/",
     "postinstall": "yarn typechain; yarn schema; yarn codegen",
-    "schema": "npx apollo service:download --endpoint=https://api.thegraph.com/subgraphs/name/laimejesus/fiatlux types/subgraph/graphql-schema.json",
+    "schema": "bash scripts/apollo-schema.sh",
     "codegen": "npx apollo codegen:generate --localSchemaFile=types/subgraph/graphql-schema.json --target=typescript types/subgraph/__generated__ --outputFlat"
   },
   "lint-staged": {
