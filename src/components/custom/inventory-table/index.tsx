@@ -39,7 +39,7 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'maturity',
-    render: (date: any) => <CellValue date={remainingTime(date)} value={parseDate(date)} />,
+    render: (date: any) => <CellValue bottomValue={remainingTime(date)} value={parseDate(date)} />,
     responsive: ['xl'],
     title: 'Maturity',
   },

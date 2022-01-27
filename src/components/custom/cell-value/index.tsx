@@ -4,12 +4,12 @@ import cn from 'classnames'
 export const CellValue: React.FC<{
   bold?: boolean
   className?: string
-  date?: string
+  bottomValue?: string
   state?: 'danger' | 'ok' | 'warning'
   textAlign?: 'left' | 'right' | 'center'
   tooltip?: string
   value: string
-}> = ({ bold, className, date, state, textAlign, tooltip, value, ...restProps }) => {
+}> = ({ bold, bottomValue, className, state, textAlign, tooltip, value, ...restProps }) => {
   return (
     <div className={cn(s.component, className)} title={tooltip} {...restProps}>
       <div
@@ -26,7 +26,7 @@ export const CellValue: React.FC<{
       >
         {value}
       </div>
-      {date && <div className={cn(s.date)}>{date}</div>}
+      {bottomValue && <div className={cn(s.bottomValue)}>{bottomValue}</div>}
     </div>
   )
 }
