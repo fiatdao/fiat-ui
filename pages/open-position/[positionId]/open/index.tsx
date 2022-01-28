@@ -1,5 +1,4 @@
 import s from './s.module.scss'
-import stepperMachine, { TITLES_BY_STEP } from '../../../../src/state/open-position-form'
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import { ethers } from 'ethers'
@@ -8,6 +7,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
 import { useMachine } from '@xstate/react'
+import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
 import { contracts } from '@/src/constants/contracts'
 import { DEFAULT_ADDRESS, getHumanValue } from '@/src/web3/utils'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -157,7 +157,6 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
     if (hasAllowance) send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
   }, [hasAllowance, send])
 
-  console.log(stateMachine)
   return (
     <Grid flow="row" gap={16}>
       <StepperTitle
