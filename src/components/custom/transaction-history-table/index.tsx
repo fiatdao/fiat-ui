@@ -24,6 +24,7 @@ const Columns: ColumnsType<any> = [
     align: 'left',
     dataIndex: 'action',
     render: (obj: any) => <CellValue value={`${obj}`} />,
+    responsive: ['lg'],
     title: 'Action',
   },
   {
@@ -43,6 +44,7 @@ const Columns: ColumnsType<any> = [
         />
       )
     },
+    responsive: ['lg'],
     title: 'Amount',
   },
   {
@@ -52,10 +54,11 @@ const Columns: ColumnsType<any> = [
     title: 'Transaction Hash',
   },
   {
-    title: 'Date',
-    dataIndex: 'date',
     align: 'left',
+    dataIndex: 'date',
     render: (date: any) => <CellValue bottomValue={remainingTime(date)} value={parseDate(date)} />,
+    responsive: ['lg'],
+    title: 'Date',
   },
 ]
 
@@ -64,6 +67,7 @@ const ASSETS_FILTER = [
   { label: 'ePyvUSDC', value: 'Principal Token eyUSDC:10-AUG-22-GMT' },
   { label: 'Error', value: 'error' },
 ]
+
 const ACTIONS_FILTER = [
   { label: 'All Actions', value: 'all' },
   { label: 'Minted', value: 'MINT' },
