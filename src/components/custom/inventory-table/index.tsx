@@ -6,6 +6,7 @@ import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient
 import { Position } from '@/src/utils/your-positions-api'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
+import { PositionsAtRiskTableWrapper } from '@/src/components/custom/positions-at-risk-table-wrapper'
 
 const Columns: ColumnsType<any> = [
   {
@@ -65,38 +66,43 @@ type InventoryProps = {
 
 const InventoryTable = ({ inventory }: InventoryProps) => {
   return (
-    <Table
-      columns={Columns}
-      dataSource={inventory}
-      loading={false}
-      pagination={{
-        pageSize: 10,
-        current: 1,
-        position: ['bottomRight'],
-        showTotal: (total: number, [from, to]: [number, number]) => (
-          <>
-            <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-              Showing {from} to {to} the most recent {total}
-            </Text>
-            <Text
-              className="hidden-tablet hidden-desktop"
-              color="secondary"
-              type="p2"
-              weight="semibold"
-            >
-              {from}..{to} of {total}
-            </Text>
-          </>
-        ),
-        onChange: (page: number, pageSize: number) => {
-          console.log(page, pageSize)
-        },
-      }}
-      rowKey="address"
-      scroll={{
-        x: true,
-      }}
-    />
+    <>
+      <PositionsAtRiskTableWrapper>
+        <Table columns={Columns} dataSource={inventory} loading={false} rowKey="address" />
+      </PositionsAtRiskTableWrapper>
+      <Table
+        columns={Columns}
+        dataSource={inventory}
+        loading={false}
+        pagination={{
+          pageSize: 10,
+          current: 1,
+          position: ['bottomRight'],
+          showTotal: (total: number, [from, to]: [number, number]) => (
+            <>
+              <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
+                Showing {from} to {to} the most recent {total}
+              </Text>
+              <Text
+                className="hidden-tablet hidden-desktop"
+                color="secondary"
+                type="p2"
+                weight="semibold"
+              >
+                {from}..{to} of {total}
+              </Text>
+            </>
+          ),
+          onChange: (page: number, pageSize: number) => {
+            console.log(page, pageSize)
+          },
+        }}
+        rowKey="address"
+        scroll={{
+          x: true,
+        }}
+      />
+    </>
   )
 }
 

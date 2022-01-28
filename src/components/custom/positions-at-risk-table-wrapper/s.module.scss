@@ -1,0 +1,28 @@
+.component {
+  margin: 0 0 32px;
+}
+
+.top {
+  align-items: center;
+  background-color: var(--theme-danger-color);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  column-gap: 18px;
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  padding: 20px 25px;
+}
+
+.title {
+  color: var(--theme-text-color);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.content {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border: 1px solid var(--theme-danger-color);
+}
