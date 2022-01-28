@@ -1,0 +1,9 @@
+.ant-steps-item-title{
+  width: 100%;
+}
+
+.ant-steps-item-wait, .ant-steps-item-process{
+  .ant-steps-item-title button{
+    display: none;
+  }
+}
