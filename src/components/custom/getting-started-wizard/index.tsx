@@ -1,6 +1,5 @@
 import s from './s.module.scss'
 import Grid from '../grid'
-import { NullEvent } from 'xstate/lib/types'
 import cn from 'classnames'
 import YouTube from 'react-youtube'
 import { Button, Steps } from 'antd'

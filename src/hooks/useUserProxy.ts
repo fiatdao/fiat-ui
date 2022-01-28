@@ -17,8 +17,9 @@ const PRB_PROXY = {
 
 const useUserProxy = () => {
   const { address: currentUserAddress, isAppConnected, web3Provider } = useWeb3Connection()
+  const [loadingProxy, setLoadingProxy] = useState(false)
 
-  const [proxyAddress] = useContractCall<
+  const [proxyAddress, refetch] = useContractCall<
     PRBProxyType,
     'getCurrentProxy',
     [string],
@@ -27,39 +28,45 @@ const useUserProxy = () => {
     currentUserAddress as string,
   ])
 
-  const [userProxyAddress, setUserProxyAddress] = useState<string>(proxyAddress || DEFAULT_ADDRESS)
-
   const setupProxy = useCallback(async () => {
     if (isAppConnected && web3Provider) {
+      setLoadingProxy(true)
       const prbProxy = new Contract(
         PRB_PROXY.address[Chains.goerli],
         PRB_PROXY.abi,
         web3Provider.getSigner(),
       )
-      setUserProxyAddress(await (await prbProxy.deploy()).wait())
+      try {
+        await (await prbProxy.deploy()).wait()
+        refetch()
+        setLoadingProxy(false)
+      } catch (e) {
+        setLoadingProxy(false)
+      }
     }
-  }, [isAppConnected, web3Provider])
+  }, [isAppConnected, refetch, web3Provider])
 
   const userProxy = useMemo(() => {
-    if (!userProxyAddress || !web3Provider) {
+    if (!proxyAddress || !web3Provider) {
       return null
     }
     return new Contract(
-      userProxyAddress,
+      proxyAddress,
       [
         'function execute(address target, bytes calldata data) external payable returns (bytes memory response)',
       ],
       web3Provider.getSigner(),
     )
-  }, [userProxyAddress, web3Provider])
+  }, [proxyAddress, web3Provider])
 
   // userProxyAddress: userProxy.address
   // isProxyAvailable: !!userProxy
   return {
     userProxy,
     setupProxy,
-    userProxyAddress,
-    isProxyAvailable: userProxyAddress !== DEFAULT_ADDRESS,
+    userProxyAddress: proxyAddress,
+    loadingProxy,
+    isProxyAvailable: proxyAddress !== DEFAULT_ADDRESS,
   }
 }
 
