@@ -1,13 +1,13 @@
+import { useEffect, useState } from 'react'
+
+import useSWR from 'swr'
 import {
   Position,
   PositionTransaction,
   YourPositionPageInformation,
   fetchInfoPage,
   fetchPositions,
-} from '../../src/utils/your-positions-api'
-import { useEffect, useState } from 'react'
-
-import useSWR from 'swr'
+} from '@/src/utils/your-positions-api'
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'

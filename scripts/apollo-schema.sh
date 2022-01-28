@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -o allexport; source .env; set +o allexport
+set -o allexport; source .env.local; set +o allexport
 
 SCHEMA_OUTPUT_FILE="types/subgraph/graphql-schema.json"
 GENERATED_OUTPUT_FOLDER="types/subgraph/__generated__"
