@@ -19,7 +19,7 @@ const useUserProxy = () => {
   const { address: currentUserAddress, isAppConnected, web3Provider } = useWeb3Connection()
   const [loadingProxy, setLoadingProxy] = useState(false)
 
-  const [userProxyAddress, refetch] = useContractCall<
+  const [proxyAddress, refetch] = useContractCall<
     PRBProxyType,
     'getCurrentProxy',
     [string],
@@ -46,28 +46,28 @@ const useUserProxy = () => {
         setLoadingProxy(false)
       }
     }
-  }, [refetch, isAppConnected, web3Provider])
+  }, [isAppConnected, refetch, web3Provider])
 
   const userProxy = useMemo(() => {
-    if (!userProxyAddress || !web3Provider) {
+    if (!proxyAddress || !web3Provider) {
       return null
     }
     return new Contract(
-      userProxyAddress,
+      proxyAddress,
       [
         'function execute(address target, bytes calldata data) external payable returns (bytes memory response)',
       ],
       web3Provider.getSigner(),
     )
-  }, [userProxyAddress, web3Provider])
+  }, [proxyAddress, web3Provider])
 
   // isProxyAvailable: !!userProxy
   return {
     userProxy,
     setupProxy,
-    userProxyAddress,
+    userProxyAddress: proxyAddress,
     loadingProxy,
-    isProxyAvailable: userProxyAddress !== DEFAULT_ADDRESS,
+    isProxyAvailable: proxyAddress !== DEFAULT_ADDRESS,
   }
 }
 

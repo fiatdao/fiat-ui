@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+
+import useSWR from 'swr'
 import { remainingTime } from '@/src/utils/your-positions-utils'
 import {
   Position,
@@ -14,6 +16,10 @@ import { InfoBlock } from '@/src/components/custom/info-block'
 import InventoryTable from '@/src/components/custom/inventory-table'
 import TransactionHistoryTable from '@/src/components/custom/transaction-history'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { USER_PROXY } from '@/src/queries/userProxy'
+import { userProxyVariables, userProxy_userProxy } from '@/types/subgraph/__generated__/userProxy'
+import genericSuspense from '@/src/utils/genericSuspense'
+import { swrFetcher } from '@/src/utils/graphqlFetcher'
 
 enum TabState {
   Inventory = 'inventory',
@@ -38,6 +44,12 @@ const YourPositions = () => {
   const [transactions, setTransactions] = useState<PositionTransaction[]>([])
   const [isLoadingPage, setIsLoadingPage] = useState(false)
   const [pageInformation, setPageInformation] = useState<YourPositionPageInformation>()
+
+  const { data: datagraph, error: errorgraph } = useSWR([USER_PROXY, address], (url, value) =>
+    swrFetcher<userProxy_userProxy, userProxyVariables>(url, { id: value! }),
+  )
+
+  console.log('useSWR+GQL', { datagraph, errorgraph })
 
   useEffect(() => {
     const init = async () => {
@@ -86,4 +98,4 @@ const YourPositions = () => {
   )
 }
 
-export default YourPositions
+export default genericSuspense(YourPositions)

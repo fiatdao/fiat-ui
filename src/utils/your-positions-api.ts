@@ -1,6 +1,7 @@
 import trancheCall from './callTranche'
 import vaultEPTCall from './callVaultEPT'
 import { bigNumberToDecimal } from './formats'
+import { SUBGRAPH_API } from '../constants/misc'
 import { min } from 'date-fns'
 import { Web3Context } from '@/src/providers/web3ConnectionProvider'
 
@@ -59,8 +60,6 @@ export type PositionTransaction = {
   transactionHash: string
   date: Date
 }
-
-const SUBGRAPH_API = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_API || ''
 
 const fetchUserProxy = async (
   userAddress: string,
