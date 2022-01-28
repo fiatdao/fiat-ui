@@ -12,7 +12,8 @@
     "prettier:fix": "prettier --write \"./**/*.{js,jsx,ts,tsx}\"",
     "start": "next start",
     "typechain": "typechain --target=ethers-v5 ./src/abis/**/*.json --out-dir ./types/typechain/",
-    "postinstall": "yarn typechain"
+    "postinstall": "yarn typechain; yarn schema",
+    "schema": "bash scripts/apollo-schema.sh"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -46,6 +47,9 @@
     "classnames": "^2.3.1",
     "date-fns": "^2.24.0",
     "ethers": "^5.4.6",
+    "graphql": "^16.2.0",
+    "graphql-request": "^3.7.0",
+    "graphql-tag": "^2.12.6",
     "identicon.js": "^2.3.3",
     "lodash": "^4.17.21",
     "next": "12",
@@ -61,10 +65,11 @@
     "react-popper": "^2.2.5",
     "react-toastify": "^8.0.3",
     "react-use-storage": "^0.5.1",
+    "react-youtube": "^7.14.0",
     "sanitize.css": "^12.0.1",
     "swr": "^1.1.0-beta.8",
     "ts-enum-util": "^4.0.2",
-    "xstate": "^4.28.0"
+    "xstate": "^4.28.1"
   },
   "devDependencies": {
     "@svgr/webpack": "^6.1.2",
