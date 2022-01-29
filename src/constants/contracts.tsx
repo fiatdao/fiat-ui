@@ -55,7 +55,7 @@ export const contracts = constantContracts({
   FIAT: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x18a39fdE0179398b809Cd06a2F6300F65E3198fE',
+      [Chains.goerli]: '0x01684fbe1b63b0c06fb0d1564d0675b5546b744c',
     },
     abi: fiat,
     decimals: 18,

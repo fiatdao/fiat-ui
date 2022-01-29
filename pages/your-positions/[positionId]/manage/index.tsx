@@ -6,8 +6,9 @@ import { useRouter } from 'next/router'
 import { ReactNode, useEffect, useState } from 'react'
 import BigNumber from 'bignumber.js'
 import useSWR, { KeyedMutator } from 'swr'
+import { Chains } from '@/src/constants/chains'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
-import { TestERC20, VaultEPT } from '@/types/typechain'
+import { FIAT, TestERC20, VaultEPT } from '@/types/typechain'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { contracts } from '@/src/constants/contracts'
 import useUserProxy from '@/src/hooks/useUserProxy'
@@ -52,6 +53,7 @@ const extractPositionIdData = (
 const iconByAddress = new Proxy<Record<string, ReactNode>>(
   {
     '0xdcf80c068b7ffdf7273d8adae4b076bf384f711a': <ElementIcon />,
+    [contracts.FIAT.address[Chains.goerli].toLowerCase()]: <FiatIcon />,
   },
   {
     get: function (target, prop) {
@@ -93,6 +95,7 @@ const DepositForm = ({
   tokenAddress: string
   vaultAddress: string
 }) => {
+  console.log('MANAGE', { tokenAddress, vaultAddress })
   const { address: currentUserAddress, readOnlyAppProvider: provider } = useWeb3Connection()
   const { userProxy } = useUserProxy()
   const userActions = useUserActions()
@@ -120,6 +123,7 @@ const DepositForm = ({
 
   const handleDeposit = async ({ deposit }: { deposit: BigNumber }) => {
     const toDeposit = getNonHumanValue(deposit, tokenInfo.decimals)
+    console.log('MANAGE', { toDeposit: toDeposit.toFixed() })
     const addCollateralEncoded = userActions.interface.encodeFunctionData('addCollateral', [
       vaultAddress,
       tokenAddress,
@@ -168,34 +172,29 @@ const WithdrawForm = ({
   userBalance?: number
   vaultAddress: string
 }) => {
+  console.log('MANAGE', { tokenAddress, vaultAddress })
   const { address: currentUserAddress, readOnlyAppProvider: provider } = useWeb3Connection()
   const { userProxy } = useUserProxy()
   const userActions = useUserActions()
   const [form] = AntdForm.useForm()
 
-  const [wrappedCollateralInfo, setWrappedCollateralInfo] = useState<{
-    decimals: number
-    humanValue?: BigNumber
-  }>()
+  const [wrappedCollateralInfo, setWrappedCollateralInfo] = useState<{ decimals: number }>()
 
+  // FixMe: why `dec` returns 18 decimals for ElementPT when it's 6 instead?
   useEffect(() => {
     if (currentUserAddress) {
       const vaultEPT = new Contract(vaultAddress, contracts.VAULT_EPT.abi, provider) as VaultEPT
 
-      Promise.all([vaultEPT.dec(), vaultEPT.balanceOf(currentUserAddress, tokenId)]).then(
-        ([decimals, balance]) => {
-          setWrappedCollateralInfo({
-            decimals: decimals.toNumber(),
-            humanValue: getHumanValue(BigNumber.from(balance.toString()), decimals.toNumber()),
-          })
-        },
-      )
+      vaultEPT.dec().then((decimals) => {
+        setWrappedCollateralInfo({ decimals: decimals.toNumber() })
+      })
     }
   }, [currentUserAddress, provider, tokenId, vaultAddress])
 
   const handleWithdraw = async ({ withdraw }: { withdraw: BigNumber }) => {
     if (wrappedCollateralInfo) {
       const toWithdraw = getNonHumanValue(withdraw, wrappedCollateralInfo.decimals)
+      console.log('MANAGE', { toWithdraw: toWithdraw.toFixed() })
       const removeCollateralEncoded = userActions.interface.encodeFunctionData('removeCollateral', [
         vaultAddress,
         tokenAddress,
@@ -298,6 +297,141 @@ const ManageCollateral = ({ activeTabKey, setActiveTabKey }: ManageCollateralPro
   )
 }
 
+const MintForm = () => {
+  const [form] = AntdForm.useForm()
+
+  const handleMint = ({ mint }: { mint: string }) => {
+    console.log(mint)
+  }
+
+  return (
+    <Form form={form} onFinish={handleMint}>
+      <Form.Item name="mint" required>
+        <TokenAmount
+          disabled={false}
+          displayDecimals={4}
+          max={5000}
+          maximumFractionDigits={6}
+          slider
+          tokenIcon={<FiatIcon />}
+        />
+      </Form.Item>
+      <Form.Item>
+        <Button htmlType="submit" type="primary">
+          Mint FIAT
+        </Button>
+      </Form.Item>
+    </Form>
+  )
+}
+
+const BurnForm = ({
+  refetch,
+  tokenAddress,
+  userBalance,
+  vaultAddress,
+}: {
+  refetch: KeyedMutator<Position | undefined>
+  tokenAddress: string
+  userBalance?: number
+  vaultAddress: string
+}) => {
+  console.log('MANAGE', { tokenAddress, vaultAddress })
+  const [form] = AntdForm.useForm()
+  const { address: userAddress, web3Provider } = useWeb3Connection()
+  const userActions = useUserActions()
+  const { userProxy, userProxyAddress } = useUserProxy()
+
+  const handleBurn = async ({ burn }: { burn: BigNumber }) => {
+    if (userAddress && web3Provider && userProxy && userProxyAddress) {
+      const fiatToken = new Contract(
+        contracts.FIAT.address[Chains.goerli],
+        contracts.FIAT.abi,
+        web3Provider.getSigner(),
+      ) as FIAT
+
+      const toBurn = getNonHumanValue(burn, contracts.FIAT.decimals)
+
+      if ((await fiatToken.allowance(userAddress, userProxyAddress)).lt(toBurn.toFixed())) {
+        await fiatToken.approve(userProxyAddress, toBurn.toFixed())
+      }
+
+      const burnDebtEncoded = userActions.interface.encodeFunctionData('decreaseDebt', [
+        vaultAddress,
+        tokenAddress,
+        toBurn.toFixed(),
+      ])
+
+      const tx = await userProxy.execute(userActions.address, burnDebtEncoded, {
+        gasLimit: 1_000_000,
+      })
+      console.log('burning...', tx.hash)
+
+      const receipt = await tx.wait()
+      console.log('Debt (FIAT) burnt', { receipt })
+
+      // force update the value via SG query
+      refetch()
+    }
+  }
+
+  return (
+    <Form form={form} onFinish={handleBurn}>
+      <Form.Item name="burn" required>
+        <TokenAmount
+          displayDecimals={contracts.FIAT.decimals}
+          max={userBalance}
+          maximumFractionDigits={contracts.FIAT.decimals}
+          slider
+          tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
+        />
+      </Form.Item>
+      <Form.Item>
+        <Button htmlType="submit" type="primary">
+          Burn FIAT
+        </Button>
+      </Form.Item>
+    </Form>
+  )
+}
+
+const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) => {
+  const { data: position, mutate: refetchDebt } = useManagePositionInfo()
+
+  const { tokenId, vaultAddress } = extractPositionIdData(
+    position?.action?.data?.positionId as string,
+  )
+
+  const [collateralAddress] = useContractCall(
+    vaultAddress,
+    contracts.VAULT_EPT.abi,
+    'getTokenAddress',
+    [tokenId],
+  )
+
+  return (
+    <>
+      <Tabs>
+        <Tab isActive={'mint' === activeTabKey} onClick={() => setActiveTabKey('mint')}>
+          Mint
+        </Tab>
+        <Tab isActive={'burn' === activeTabKey} onClick={() => setActiveTabKey('burn')}>
+          Burn
+        </Tab>
+      </Tabs>
+      {'mint' === activeTabKey && <MintForm />}
+      {'burn' === activeTabKey && (
+        <BurnForm
+          refetch={refetchDebt}
+          tokenAddress={collateralAddress}
+          userBalance={position?.minted}
+          vaultAddress={vaultAddress}
+        />
+      )}
+    </>
+  )
+}
+
 const PositionManager = () => {
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<
@@ -307,16 +441,6 @@ const PositionManager = () => {
   useEffect(() => {
     setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
   }, [activeSection])
-
-  const [form3] = AntdForm.useForm()
-  const handleMint = ({ mint }: { mint: string }) => {
-    console.log(mint)
-  }
-
-  const [form4] = AntdForm.useForm()
-  const handleBurn = ({ burn }: { burn: string }) => {
-    console.log(burn)
-  }
 
   return (
     <>
@@ -338,68 +462,7 @@ const PositionManager = () => {
         <ManageCollateral activeTabKey={activeTabKey} setActiveTabKey={setActiveTabKey} />
       )}
       {'fiat' === activeSection && isFiatTab(activeTabKey) && (
-        <>
-          <Tabs>
-            <Tab isActive={'mint' === activeTabKey} onClick={() => setActiveTabKey('mint')}>
-              Mint
-            </Tab>
-            <Tab isActive={'burn' === activeTabKey} onClick={() => setActiveTabKey('burn')}>
-              Burn
-            </Tab>
-          </Tabs>
-          {'mint' === activeTabKey && (
-            <div>
-              <Form
-                form={form3}
-                initialValues={{ tokenAmount: 0, fiatAmount: 0 }}
-                onFinish={handleMint}
-                validateTrigger={['onSubmit']}
-              >
-                <Form.Item name="mint" required>
-                  <TokenAmount
-                    disabled={false}
-                    displayDecimals={4}
-                    max={5000}
-                    maximumFractionDigits={6}
-                    slider
-                    tokenIcon={<FiatIcon />}
-                  />
-                </Form.Item>
-                <Form.Item>
-                  <Button htmlType="submit" type="primary">
-                    Mint FIAT
-                  </Button>
-                </Form.Item>
-              </Form>
-            </div>
-          )}
-          {'burn' === activeTabKey && (
-            <div>
-              <Form
-                form={form4}
-                initialValues={{ tokenAmount: 0, fiatAmount: 0 }}
-                onFinish={handleBurn}
-                validateTrigger={['onSubmit']}
-              >
-                <Form.Item name="burn" required>
-                  <TokenAmount
-                    disabled={false}
-                    displayDecimals={4}
-                    max={5000}
-                    maximumFractionDigits={6}
-                    slider
-                    tokenIcon={<FiatIcon />}
-                  />
-                </Form.Item>
-                <Form.Item>
-                  <Button htmlType="submit" type="primary">
-                    Burn FIAT
-                  </Button>
-                </Form.Item>
-              </Form>
-            </div>
-          )}
-        </>
+        <ManageFiat activeTabKey={activeTabKey} setActiveTabKey={setActiveTabKey} />
       )}
     </>
   )
