@@ -95,7 +95,6 @@ const DepositForm = ({
   tokenAddress: string
   vaultAddress: string
 }) => {
-  console.log('MANAGE', { tokenAddress, vaultAddress })
   const { address: currentUserAddress, readOnlyAppProvider: provider } = useWeb3Connection()
   const { userProxy } = useUserProxy()
   const userActions = useUserActions()
@@ -162,17 +161,14 @@ const DepositForm = ({
 const WithdrawForm = ({
   refetch,
   tokenAddress,
-  tokenId,
   userBalance,
   vaultAddress,
 }: {
   refetch: KeyedMutator<Position | undefined>
   tokenAddress: string
-  tokenId: string
   userBalance?: number
   vaultAddress: string
 }) => {
-  console.log('MANAGE', { tokenAddress, vaultAddress })
   const { address: currentUserAddress, readOnlyAppProvider: provider } = useWeb3Connection()
   const { userProxy } = useUserProxy()
   const userActions = useUserActions()
@@ -189,7 +185,7 @@ const WithdrawForm = ({
         setWrappedCollateralInfo({ decimals: decimals.toNumber() })
       })
     }
-  }, [currentUserAddress, provider, tokenId, vaultAddress])
+  }, [currentUserAddress, provider, vaultAddress])
 
   const handleWithdraw = async ({ withdraw }: { withdraw: BigNumber }) => {
     if (wrappedCollateralInfo) {
@@ -287,7 +283,6 @@ const ManageCollateral = ({ activeTabKey, setActiveTabKey }: ManageCollateralPro
         <WithdrawForm
           refetch={refetchPosition}
           tokenAddress={collateralAddress}
-          tokenId={tokenId}
           userBalance={position?.discount}
           vaultAddress={vaultAddress}
         />
@@ -297,11 +292,65 @@ const ManageCollateral = ({ activeTabKey, setActiveTabKey }: ManageCollateralPro
   )
 }
 
-const MintForm = () => {
+const MintForm = ({
+  refetch,
+  tokenAddress,
+  userBalance,
+  vaultAddress,
+}: {
+  refetch: KeyedMutator<Position | undefined>
+  tokenAddress: string
+  userBalance?: number
+  vaultAddress: string
+}) => {
+  const { address: userAddress, readOnlyAppProvider: provider, web3Provider } = useWeb3Connection()
+  const { userProxy, userProxyAddress } = useUserProxy()
+  const userActions = useUserActions()
   const [form] = AntdForm.useForm()
 
-  const handleMint = ({ mint }: { mint: string }) => {
-    console.log(mint)
+  const [wrappedCollateralInfo, setWrappedCollateralInfo] = useState<{ decimals: number }>()
+
+  useEffect(() => {
+    if (userAddress) {
+      const vaultEPT = new Contract(vaultAddress, contracts.VAULT_EPT.abi, provider) as VaultEPT
+
+      vaultEPT.dec().then((decimals) => {
+        setWrappedCollateralInfo({ decimals: decimals.toNumber() })
+      })
+    }
+  }, [userAddress, provider, vaultAddress])
+
+  const handleMint = async ({ mint }: { mint: BigNumber }) => {
+    if (web3Provider && userAddress && userProxy && userProxyAddress && wrappedCollateralInfo) {
+      const collateralToken = new Contract(
+        tokenAddress,
+        contracts.TEST_ERC20.abi,
+        web3Provider.getSigner(),
+      ) as TestERC20
+
+      const toMint = getNonHumanValue(mint, contracts.FIAT.decimals)
+      // const userCollateralBalance = collateralToken.balanceOf(userAddress)
+
+      if ((await collateralToken.allowance(userAddress, userProxyAddress)).lt(toMint.toFixed())) {
+        await collateralToken.approve(userProxyAddress, toMint.toFixed())
+      }
+
+      const increaseDebtEncoded = userActions.interface.encodeFunctionData('increaseDebt', [
+        vaultAddress,
+        tokenAddress,
+        toMint.toFixed(),
+      ])
+
+      const tx = await userProxy.execute(userActions.address, increaseDebtEncoded, {
+        gasLimit: 1_000_000,
+      })
+      console.log('minting...', tx.hash)
+
+      const receipt = await tx.wait()
+      console.log('Debt (FIAT) minted', { receipt })
+
+      refetch()
+    }
   }
 
   return (
@@ -309,11 +358,11 @@ const MintForm = () => {
       <Form.Item name="mint" required>
         <TokenAmount
           disabled={false}
-          displayDecimals={4}
-          max={5000}
-          maximumFractionDigits={6}
+          displayDecimals={contracts.FIAT.decimals}
+          max={userBalance}
+          maximumFractionDigits={contracts.FIAT.decimals}
           slider
-          tokenIcon={<FiatIcon />}
+          tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
         />
       </Form.Item>
       <Form.Item>
@@ -336,7 +385,6 @@ const BurnForm = ({
   userBalance?: number
   vaultAddress: string
 }) => {
-  console.log('MANAGE', { tokenAddress, vaultAddress })
   const [form] = AntdForm.useForm()
   const { address: userAddress, web3Provider } = useWeb3Connection()
   const userActions = useUserActions()
@@ -396,7 +444,7 @@ const BurnForm = ({
 }
 
 const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) => {
-  const { data: position, mutate: refetchDebt } = useManagePositionInfo()
+  const { data: position, mutate: refetchPosition } = useManagePositionInfo()
 
   const { tokenId, vaultAddress } = extractPositionIdData(
     position?.action?.data?.positionId as string,
@@ -419,10 +467,17 @@ const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) => {
           Burn
         </Tab>
       </Tabs>
-      {'mint' === activeTabKey && <MintForm />}
+      {'mint' === activeTabKey && (
+        <MintForm
+          refetch={refetchPosition}
+          tokenAddress={collateralAddress}
+          userBalance={position?.discount}
+          vaultAddress={vaultAddress}
+        />
+      )}
       {'burn' === activeTabKey && (
         <BurnForm
-          refetch={refetchDebt}
+          refetch={refetchPosition}
           tokenAddress={collateralAddress}
           userBalance={position?.minted}
           vaultAddress={vaultAddress}
