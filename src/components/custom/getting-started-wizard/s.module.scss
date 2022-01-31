@@ -13,6 +13,13 @@
   }
 }
 
-.iconDisabled{
+.iconDisabled {
   filter: grayscale(100%);
+}
+
+.congrats {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
