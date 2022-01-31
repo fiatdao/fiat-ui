@@ -1,3 +1,4 @@
+import s from './s.module.scss'
 import cn from 'classnames'
 import React, { useEffect, useRef } from 'react'
 import ButtonOutline from '@/src/components/antd/button-outline'
@@ -54,7 +55,7 @@ export const AddTokenButton: React.FC<Props> = ({
 
   return (
     <ButtonOutline
-      className={cn(className, { disabled })}
+      className={cn(s.component, className, { disabled })}
       disabled={disabled || status === 'pending'}
       height="lg"
       onClick={addToken}

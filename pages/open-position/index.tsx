@@ -2,7 +2,6 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
-import { Button } from 'antd'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
@@ -15,6 +14,7 @@ import { usePositionsData } from '@/src/hooks/usePositionsData'
 import { PROTOCOLS, Protocol } from '@/types'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
+import ButtonOutline from '@/src/components/antd/button-outline'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -131,33 +131,31 @@ const OpenPosition = () => {
           </Tab>
         ))}
       </Tabs>
-      <div className={cn(s.filterWrapper)}>
-        <Button
+      <div className={cn(s.filters)}>
+        <ButtonOutline
           className={cn(s.pill, {
             [s.active]: Object.keys(filters).every((s) => filters[s as Protocol].active),
           })}
+          height="lg"
           onClick={() => activateFilter(null)}
-          shape="round"
-          size="large"
-          type="primary"
+          rounded
         >
           All assets
-        </Button>
+        </ButtonOutline>
         {PROTOCOLS.map((asset) => {
           return (
-            <Button
+            <ButtonOutline
               className={cn(s.pill, {
                 [s.active]: filters[asset].active,
               })}
+              height="lg"
               icon={filters[asset].icon}
               key={asset}
               onClick={() => activateFilter(asset)}
-              shape="round"
-              size="large"
-              type="primary"
+              rounded
             >
               {asset}
-            </Button>
+            </ButtonOutline>
           )
         })}
         <ToggleSwitch
