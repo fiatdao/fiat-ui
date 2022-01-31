@@ -1,9 +1,12 @@
-.ant-steps-item-title{
-  width: 100%;
-}
+.getting-started-steps {
+  .ant-steps-item-title {
+    width: 100%;
+  }
 
-.ant-steps-item-wait, .ant-steps-item-process{
-  .ant-steps-item-title button{
-    display: none;
+  .ant-steps-item-wait,
+  .ant-steps-item-active {
+    .ant-steps-item-title button {
+      display: none;
+    }
   }
 }
