@@ -1,6 +1,5 @@
 import { ColumnsType } from 'antd/lib/table/interface'
 import BigNumber from 'bignumber.js'
-import cn from 'classnames'
 
 import { formatBigValue, getEtherscanAddressUrl, shortenAddr } from '@/src/web3/utils'
 import ExternalLink from '@/src/components/custom/externalLink'
