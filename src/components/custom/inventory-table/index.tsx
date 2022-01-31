@@ -75,8 +75,8 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
         dataSource={inventory}
         loading={false}
         pagination={{
-          pageSize: 10,
           current: 1,
+          pageSize: 10,
           position: ['bottomRight'],
           showTotal: (total: number, [from, to]: [number, number]) => (
             <>
