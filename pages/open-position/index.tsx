@@ -90,18 +90,20 @@ const OpenPosition = () => {
   const [inMyWallet, setInMyWallet] = useState(false)
 
   const data = usePositionsData()
+  const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
-  const activateFilter = useCallback((filterName: Protocol | null) => {
-    if (filterName === null) {
-      setFilters(FILTERS)
-      return
-    }
+  const setFilter = useCallback((filterName: Protocol, active: boolean) => {
     setFilters((filters) => {
       const filter = filters[filterName]
-      const active = { ...filter, active: !filter.active }
-      return { ...filters, [filterName]: active }
+      return { ...filters, [filterName]: { ...filter, active: active } }
     })
   }, [])
+
+  const toggleAllFilters = useCallback(() => {
+    PROTOCOLS.map((asset) => {
+      setFilter(asset, !areAllFiltersActive)
+    })
+  }, [areAllFiltersActive, setFilter])
 
   enum TabState {
     ByIssuer = 'byIssuer',
@@ -134,8 +136,8 @@ const OpenPosition = () => {
       <div className={cn(s.filters)}>
         <ButtonOutline
           height="lg"
-          isActive={Object.keys(filters).every((s) => filters[s as Protocol].active)}
-          onClick={() => activateFilter(null)}
+          isActive={areAllFiltersActive}
+          onClick={() => toggleAllFilters()}
           rounded
         >
           All assets
@@ -147,7 +149,7 @@ const OpenPosition = () => {
               icon={filters[asset].icon}
               isActive={filters[asset].active}
               key={asset}
-              onClick={() => activateFilter(asset)}
+              onClick={() => setFilter(asset, !filters[asset].active)}
               rounded
             >
               {asset}
