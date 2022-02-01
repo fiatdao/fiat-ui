@@ -1,6 +1,5 @@
 import { ColumnsType } from 'antd/lib/table/interface'
 import BigNumber from 'bignumber.js'
-import cn from 'classnames'
 
 import { formatBigValue, getEtherscanAddressUrl, shortenAddr } from '@/src/web3/utils'
 import ExternalLink from '@/src/components/custom/externalLink'
@@ -166,7 +165,7 @@ const Columns: ColumnsType<any> = [
 
 const Liquidations = () => {
   return (
-    <div className={cn('card')}>
+    <>
       <div className="card-header">
         <Text color="primary" font="secondary" type="p1" weight="semibold">
           Voter weights
@@ -175,7 +174,6 @@ const Liquidations = () => {
       <Table
         columns={Columns}
         dataSource={data}
-        inCard
         loading={false}
         pagination={{
           total,
@@ -206,7 +204,7 @@ const Liquidations = () => {
           x: true,
         }}
       />
-    </div>
+    </>
   )
 }
 

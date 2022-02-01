@@ -1,6 +1,5 @@
 import { useElementTranchesJSON } from './useElementTranchesJSON'
 import { useWeb3Connection } from '../providers/web3ConnectionProvider'
-import { Button } from 'antd'
 import Link from 'next/link'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Contract } from 'ethers'
@@ -8,15 +7,16 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { TrancheData } from '@/types'
 import tranche from '@/src/abis/Tranche.json'
 import { Tranche } from '@/types/typechain'
+import ButtonGradient from '@/src/components/antd/button-gradient'
 
 type PositionData = TrancheData & {
-  name: string
-  collateral: string
-  protocol: string // FIXME use Protocol type
-  maturity: Date
-  faceValue: string
-  currentValue: string
   action: ReactNode
+  collateral: string
+  currentValue: string
+  faceValue: string
+  maturity: Date
+  name: string
+  protocol: string // FIXME use Protocol type
 }
 export const usePositionsData = () => {
   const [positionsData, setPositionsData] = useState<PositionData[]>([])
@@ -74,12 +74,8 @@ export const usePositionsData = () => {
             currentValue: '0',
             action: (
               <Link href={`/open-position/${position.address}/open`} passHref>
-                <Button>Open</Button>
+                <ButtonGradient>Open Position</ButtonGradient>
               </Link>
-              //     <Link href="/open-position/0xdcf80c068b7ffdf7273d8adae4b076bf384f711a/manage" passHref>
-              //     <Button>Manage</Button>
-              //   </Link>
-              // action: <Text type="p3">No assets</Text>,
             ),
           })
         }

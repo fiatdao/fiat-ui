@@ -1,4 +1,4 @@
-import { assign, createMachine, send } from 'xstate'
+import { assign, createMachine } from 'xstate'
 
 export interface Context {
   skipped: boolean
@@ -94,9 +94,7 @@ const gettingStartedMachine = createMachine<Context, Events>({
     '4': {
       id: 'mint-fiat',
       on: {
-        NEXT: {
-          actions: send({ type: 'SKIP' }),
-        },
+        NEXT: '5',
       },
     },
     '5': {

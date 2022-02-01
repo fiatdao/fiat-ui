@@ -1,106 +1,62 @@
-import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
-import Link from 'next/link'
 import { healthFactor, parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
+import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import { Position } from '@/src/utils/your-positions-api'
-
-const LTVColumn = (ltv: any) => {
-  return (
-    <Text className="ml-auto" color="primary" type="p1">
-      {ltv}%
-    </Text>
-  )
-}
-
-const ColumnText = (obj: any) => {
-  return (
-    <Text className="ml-auto" color="primary" type="p1">
-      {obj}
-    </Text>
-  )
-}
-
-const HealthFactorColumn = (obj: any) => {
-  const color = obj ? healthFactor(obj) : 'transparent'
-
-  return (
-    <Text className="ml-auto" style={{ color: color }} type="p1">
-      {obj}
-    </Text>
-  )
-}
-
-const MaturityColumn = (date: any) => {
-  const parsedDate = parseDate(date)
-  const countdown = remainingTime(date)
-
-  return (
-    <>
-      <Text className="ml-auto" color="primary" type="p1">
-        {parsedDate}
-      </Text>
-      <Text className="ml-auto" color="primary" type="p1">
-        {countdown}
-      </Text>
-    </>
-  )
-}
-
-const ActionColumn = (action: Position['action']) => {
-  return <Link href={`/your-positions/${action.data.positionId}/manage`}>{action.text}</Link>
-}
+import { CellValue } from '@/src/components/custom/cell-value'
+import { Asset } from '@/src/components/custom/asset'
+import { PositionsAtRiskTableWrapper } from '@/src/components/custom/positions-at-risk-table-wrapper'
 
 const Columns: ColumnsType<any> = [
   {
-    title: 'Asset',
+    align: 'left',
     dataIndex: 'name',
-    width: 150,
-    align: 'center',
-    render: ColumnText,
+    render: (obj: any) => <Asset mainAsset="SBOND" secondaryAsset="DAI" title={obj} />,
+    title: 'Asset',
+    width: 200,
   },
   {
-    title: 'Discounted Value',
+    align: 'left',
     dataIndex: 'discount',
-    width: 150,
-    align: 'center',
-    render: ColumnText,
+    render: (obj: number) => <CellValue bold tooltip={`$${obj}`} value={`$${obj.toFixed(2)}`} />,
+    responsive: ['lg'],
+    title: 'Discounted Value',
   },
   {
-    title: 'Max. LTV',
+    align: 'left',
     dataIndex: 'ltv',
-    width: 150,
-    align: 'center',
-    render: LTVColumn,
+    render: (obj: number) => <CellValue tooltip={`${obj}%`} value={`${obj.toFixed(2)}%`} />,
+    responsive: ['lg', 'xl'],
+    title: 'Max. LTV',
   },
   {
-    title: 'FIAT Minted',
+    align: 'left',
     dataIndex: 'minted',
-    width: 150,
-    align: 'center',
-    render: ColumnText,
+    render: (obj: number) => <CellValue tooltip={`${obj}`} value={`${obj.toFixed(3)}`} />,
+    responsive: ['xl'],
+    title: 'FIAT Minted',
   },
   {
-    title: 'Maturity',
+    align: 'left',
     dataIndex: 'maturity',
-    align: 'center',
-    width: 150,
-    render: MaturityColumn,
+    render: (date: any) => <CellValue bottomValue={remainingTime(date)} value={parseDate(date)} />,
+    responsive: ['xl'],
+    title: 'Maturity',
   },
   {
-    title: 'Health Factor',
+    align: 'left',
     dataIndex: 'healthFactor',
-    align: 'center',
-    width: 150,
-    render: HealthFactorColumn,
+    render: (obj: number) => <CellValue state={healthFactor(obj)} value={`${obj.toFixed(2)}`} />,
+    responsive: ['md'],
+    title: 'Health Factor',
   },
   {
-    title: '',
-    dataIndex: 'action',
-    width: 100,
     align: 'right',
-    render: ActionColumn,
+    dataIndex: 'action',
+    render: (text: any) => <ButtonOutlineGradient>{text}</ButtonOutlineGradient>,
+    title: '',
+    width: 110,
   },
 ]
 
@@ -110,15 +66,17 @@ type InventoryProps = {
 
 const InventoryTable = ({ inventory }: InventoryProps) => {
   return (
-    <div className={cn('card')}>
+    <>
+      <PositionsAtRiskTableWrapper>
+        <Table columns={Columns} dataSource={inventory} loading={false} rowKey="address" />
+      </PositionsAtRiskTableWrapper>
       <Table
         columns={Columns}
         dataSource={inventory}
-        inCard
         loading={false}
         pagination={{
-          pageSize: 10,
           current: 1,
+          pageSize: 10,
           position: ['bottomRight'],
           showTotal: (total: number, [from, to]: [number, number]) => (
             <>
@@ -144,7 +102,7 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
           x: true,
         }}
       />
-    </div>
+    </>
   )
 }
 

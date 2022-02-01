@@ -5,7 +5,6 @@ import cn from 'classnames'
 
 interface Props extends ButtonProps {
   height?: 'lg' | undefined
-  disabled?: boolean
 }
 
 const ButtonOutline: React.FC<Props> = ({

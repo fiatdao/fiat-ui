@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import s from './s.module.scss'
 import cn from 'classnames'
-import React from 'react'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getEtherscanAddressUrl, shortenAddr } from '@/src/web3/utils'
 import Divider from '@/src/components/antd/divider'
