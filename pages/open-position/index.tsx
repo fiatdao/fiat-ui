@@ -1,9 +1,9 @@
 import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
-
 import { ReactNode, useCallback, useState } from 'react'
 import { Button } from 'antd'
+import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
@@ -13,73 +13,66 @@ import { Grid, Tab, Tabs } from '@/src/components/custom'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { usePositionsData } from '@/src/hooks/usePositionsData'
 import { PROTOCOLS, Protocol } from '@/types'
+import { CellValue } from '@/src/components/custom/cell-value'
+import { Asset } from '@/src/components/custom/asset'
+
+const getDateState = () => {
+  // we sould decide which state to show here
+  const state = 'ok'
+
+  return state === 'ok'
+    ? 'ok'
+    : state === 'warning'
+    ? 'warning'
+    : state === 'danger'
+    ? 'danger'
+    : undefined
+}
 
 const Columns: ColumnsType<any> = [
   {
-    title: 'Protocol',
+    align: 'left',
     dataIndex: 'protocol',
-    width: 150,
-    align: 'right',
-    render: (value: string) => (
-      <Text className="ml-auto" color="primary" type="p1">
-        {value}
-      </Text>
-    ),
+    render: (obj: any) => <Asset mainAsset="SBOND" secondaryAsset="DAI" title={obj} />,
+    title: 'Protocol',
+    width: 200,
   },
   {
-    title: 'Collateral',
+    align: 'left',
     dataIndex: 'collateral',
-    width: 150,
-    align: 'right',
-    render: (value: string) => (
-      <Text className="ml-auto" color="primary" type="p1">
-        {value}
-      </Text>
-    ),
+    render: (value: string) => <CellValue value={value} />,
+    title: 'Asset',
   },
   {
-    title: 'Maturity',
+    align: 'left',
     dataIndex: 'maturity',
-    width: 150,
-    align: 'right',
-    render: (value: Date) => (
-      <Text className="ml-auto" color="primary" type="p1">
-        {value.toString()}
-      </Text>
+    render: (date: any) => (
+      <CellValue
+        bottomValue={parseDate(date)}
+        state={getDateState()}
+        value={`${remainingTime(date)} Left`}
+      />
     ),
+    title: 'Maturity',
   },
   {
-    title: 'Face Value',
+    align: 'left',
     dataIndex: 'faceValue',
-    width: 150,
-    align: 'right',
-    render: (value: string) => (
-      <Text className="ml-auto" color="primary" type="p1">
-        {value}
-      </Text>
-    ),
+    render: (value: string) => <CellValue value={`$${value}`} />,
+    title: 'Face Value',
   },
   {
-    title: 'Current Value',
+    align: 'left',
     dataIndex: 'currentValue',
-    width: 150,
-    align: 'right',
-    render: (value: string) => (
-      <Text className="ml-auto" color="primary" type="p1">
-        {value}
-      </Text>
-    ),
+    render: (value: string) => <CellValue value={`$${value}`} />,
+    title: 'Current Value',
   },
   {
-    title: '',
-    dataIndex: 'action',
-    width: 150,
     align: 'right',
-    render: (value: string) => (
-      <Text className="ml-auto" color="primary" type="p1">
-        {value}
-      </Text>
-    ),
+    dataIndex: 'action',
+    render: (value: string) => value,
+    title: '',
+    width: 110,
   },
 ]
 
@@ -175,11 +168,9 @@ const OpenPosition = () => {
           }}
         />
       </div>
-
       <Table
         columns={Columns}
         dataSource={data}
-        inCard
         loading={false}
         pagination={{
           total: data.length,
