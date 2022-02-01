@@ -2,19 +2,22 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
+import { Popover } from 'antd'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { Grid, Tab, Tabs } from '@/src/components/custom'
+import { Tab, Tabs } from '@/src/components/custom'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { usePositionsData } from '@/src/hooks/usePositionsData'
 import { PROTOCOLS, Protocol } from '@/types'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import ButtonOutline from '@/src/components/antd/button-outline'
+import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
+import Filter from '@/src/resources/svg/filter.svg'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -121,8 +124,35 @@ const OpenPosition = () => {
     },
   ]
 
+  const renderFilters = () => (
+    <>
+      <ButtonOutline
+        height="lg"
+        isActive={areAllFiltersActive}
+        onClick={() => toggleAllFilters()}
+        rounded
+      >
+        All assets
+      </ButtonOutline>
+      {PROTOCOLS.map((asset) => {
+        return (
+          <ButtonOutline
+            height="lg"
+            icon={filters[asset].icon}
+            isActive={filters[asset].active}
+            key={asset}
+            onClick={() => setFilter(asset, !filters[asset].active)}
+            rounded
+          >
+            {asset}
+          </ButtonOutline>
+        )
+      })}
+    </>
+  )
+
   return (
-    <Grid flow="row" rowsTemplate="1fr auto">
+    <>
       <h2 className={cn(s.title)}>Select a collateral type to add to your FIAT positions</h2>
       <Tabs>
         {tabs.map(({ children, key }, index) => (
@@ -131,29 +161,19 @@ const OpenPosition = () => {
           </Tab>
         ))}
       </Tabs>
+      <Popover
+        arrowContent={false}
+        content={<div className={cn(s.fitersGrid)}>{renderFilters()}</div>}
+        placement="bottomRight"
+        trigger="click"
+      >
+        <ButtonOutlineGradient className={cn(s.filtersButton)} height="lg">
+          Filter
+          <Filter />
+        </ButtonOutlineGradient>
+      </Popover>
       <div className={cn(s.filters)}>
-        <ButtonOutline
-          height="lg"
-          isActive={areAllFiltersActive}
-          onClick={() => toggleAllFilters()}
-          rounded
-        >
-          All assets
-        </ButtonOutline>
-        {PROTOCOLS.map((asset) => {
-          return (
-            <ButtonOutline
-              height="lg"
-              icon={filters[asset].icon}
-              isActive={filters[asset].active}
-              key={asset}
-              onClick={() => setFilter(asset, !filters[asset].active)}
-              rounded
-            >
-              {asset}
-            </ButtonOutline>
-          )
-        })}
+        {renderFilters()}
         <ToggleSwitch
           checked={inMyWallet}
           className={cn(s.switch)}
@@ -196,7 +216,7 @@ const OpenPosition = () => {
           x: true,
         }}
       />
-    </Grid>
+    </>
   )
 }
 

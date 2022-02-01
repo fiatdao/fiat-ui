@@ -1,7 +1,4 @@
-.wrapper {
-  --gap: 2px;
-  --transition-time: 0.25s;
-
+.background {
   align-items: center;
   background-image: linear-gradient(90deg, var(--theme-color-2) 0%, var(--theme-color-3) 100%);
   border-radius: var(--button-border-radius);
@@ -10,31 +7,33 @@
   justify-content: center;
   position: relative;
 
-  .background {
-    background-color: var(--theme-body-color);
+  .border {
     border-radius: var(--button-border-radius);
+    border: 1px solid transparent;
     display: block;
-    height: calc(100% - var(--gap));
+    height: 100%;
     overflow: hidden;
     position: relative;
-    width: calc(100% - var(--gap));
+    width: 100%;
     z-index: 5;
   }
 
   .button {
     &:global(.ant-btn) {
       align-items: center;
-      background: transparent;
+      background-color: rgba(23, 23, 23, 0.9);
       border-radius: var(--button-border-radius);
       border: none;
       color: var(--theme-text-color);
       display: flex;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 500;
       gap: 8px;
       height: 100%;
       justify-content: center;
       line-height: 1.2;
+      padding-left: 25px;
+      padding-right: 25px;
       position: relative;
       text-transform: capitalize;
       width: 100%;
@@ -44,18 +43,15 @@
 
   // states
   &:hover,
-  &:focus {
-    .border {
-      opacity: 0;
-    }
-
+  &:focus,
+  &.isActive {
     .button {
       &:global(.ant-btn) {
         color: var(--theme-text-color);
-        background: linear-gradient(
+        background-image: linear-gradient(
           90deg,
-          rgba(255, 149, 116, 0.1) 0%,
-          rgba(255, 76, 140, 0.1) 100%
+          rgba(255, 149, 116, 0.2) 0%,
+          rgba(255, 76, 140, 0.2) 100%
         );
       }
     }

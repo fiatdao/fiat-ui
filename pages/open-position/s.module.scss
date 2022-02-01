@@ -1,8 +1,14 @@
+@import '/src/styles/vars';
+
 .filters {
   align-items: center;
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
+
+  @media (max-width: #{$max-width-tablet-portrait}) {
+    display: none;
+  }
 }
 
 .title {
@@ -15,4 +21,20 @@
 
 .switch {
   margin-left: auto;
+}
+
+.filtersButton {
+  display: none;
+
+  @media (max-width: #{$max-width-tablet-portrait}) {
+    display: flex;
+    max-width: fit-content;
+    margin-bottom: 24px;
+  }
+}
+
+.fitersGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
 }
