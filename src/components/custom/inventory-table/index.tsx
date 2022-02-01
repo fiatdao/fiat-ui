@@ -1,5 +1,9 @@
 import { ColumnsType } from 'antd/lib/table/interface'
-import { healthFactor, parseDate, remainingTime } from '@/src/components/custom/tables/utils'
+import {
+  calculateHealthFactor,
+  parseDate,
+  remainingTime,
+} from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
@@ -8,53 +12,69 @@ import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import { PositionsAtRiskTableWrapper } from '@/src/components/custom/positions-at-risk-table-wrapper'
 
-const Columns: ColumnsType<any> = [
+const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'name',
-    render: (obj: any) => <Asset mainAsset="SBOND" secondaryAsset="DAI" title={obj} />,
+    render: (name: Position['name']) => (
+      <Asset mainAsset="SBOND" secondaryAsset="DAI" title={name} />
+    ),
     title: 'Asset',
     width: 200,
   },
   {
     align: 'left',
     dataIndex: 'discount',
-    render: (obj: number) => <CellValue bold tooltip={`$${obj}`} value={`$${obj.toFixed(2)}`} />,
+    render: (discount: Position['discount']) => (
+      <CellValue bold tooltip={`$${discount}`} value={`$${discount.toFixed(2)}`} />
+    ),
     responsive: ['lg'],
     title: 'Discounted Value',
   },
   {
     align: 'left',
     dataIndex: 'ltv',
-    render: (obj: number) => <CellValue tooltip={`${obj}%`} value={`${obj.toFixed(2)}%`} />,
+    render: (ltv: Position['ltv']) => (
+      <CellValue tooltip={`${ltv}%`} value={`${ltv.toFixed(2)}%`} />
+    ),
     responsive: ['lg', 'xl'],
     title: 'Max. LTV',
   },
   {
     align: 'left',
     dataIndex: 'minted',
-    render: (obj: number) => <CellValue tooltip={`${obj}`} value={`${obj.toFixed(3)}`} />,
+    render: (minted: Position['minted']) => (
+      <CellValue tooltip={`${minted}`} value={`${minted.toFixed(3)}`} />
+    ),
     responsive: ['xl'],
     title: 'FIAT Minted',
   },
   {
     align: 'left',
     dataIndex: 'maturity',
-    render: (date: any) => <CellValue bottomValue={remainingTime(date)} value={parseDate(date)} />,
+    render: (maturity: Position['maturity']) => (
+      <CellValue bottomValue={remainingTime(maturity)} value={parseDate(maturity)} />
+    ),
     responsive: ['xl'],
     title: 'Maturity',
   },
   {
     align: 'left',
     dataIndex: 'healthFactor',
-    render: (obj: number) => <CellValue state={healthFactor(obj)} value={`${obj.toFixed(2)}`} />,
+    render: (healthFactor: Position['healthFactor']) => (
+      <CellValue state={calculateHealthFactor(healthFactor)} value={`${healthFactor.toFixed(2)}`} />
+    ),
     responsive: ['md'],
     title: 'Health Factor',
   },
   {
     align: 'right',
     dataIndex: 'action',
-    render: (text: any) => <ButtonOutlineGradient>{text}</ButtonOutlineGradient>,
+    render: (action: Position['action']) => (
+      <ButtonOutlineGradient href={`/your-positions/${action.data.positionId}/manage`} type="text">
+        {action.text}
+      </ButtonOutlineGradient>
+    ),
     title: '',
     width: 110,
   },
