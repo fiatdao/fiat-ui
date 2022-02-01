@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import useSWR from 'swr'
+import { remainingTime } from '@/src/utils/your-positions-utils'
 import {
   Position,
   PositionTransaction,
@@ -8,6 +9,7 @@ import {
   fetchInfoPage,
   fetchPositions,
 } from '@/src/utils/your-positions-api'
+
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
@@ -18,6 +20,22 @@ import { USER_PROXY } from '@/src/queries/userProxy'
 import { userProxyVariables, userProxy_userProxy } from '@/types/subgraph/__generated__/userProxy'
 import genericSuspense from '@/src/utils/genericSuspense'
 import { swrFetcher } from '@/src/utils/graphqlFetcher'
+
+enum TabState {
+  Inventory = 'inventory',
+  Transactions = 'transactions',
+}
+
+const tabs = [
+  {
+    children: 'Your Current Inventory',
+    key: TabState.Inventory,
+  },
+  {
+    children: 'Transaction History',
+    key: TabState.Transactions,
+  },
+]
 
 const YourPositions = () => {
   const { address, isWalletConnected, readOnlyAppProvider: provider } = useWeb3Connection()
@@ -38,7 +56,7 @@ const YourPositions = () => {
       if (address && isWalletConnected && provider) {
         setIsLoadingPage(true)
         const [positions, positionTransactions] = await fetchPositions(address, provider)
-        const newPageInformation = await fetchInfoPage(positions)
+        const newPageInformation = fetchInfoPage(positions)
         setPageInformation(newPageInformation)
         setInventory(positions)
         setTransactions(positionTransactions)
@@ -48,22 +66,6 @@ const YourPositions = () => {
     init()
   }, [address, isWalletConnected, provider])
 
-  enum TabState {
-    Inventory = 'inventory',
-    Transactions = 'transactions',
-  }
-
-  const tabs = [
-    {
-      children: 'Your Current Inventory',
-      key: TabState.Inventory,
-    },
-    {
-      children: 'Transaction History',
-      key: TabState.Transactions,
-    },
-  ]
-
   return (
     <>
       {!isLoadingPage && (
@@ -71,7 +73,14 @@ const YourPositions = () => {
           <InfoBlock title="Total Debt" value={pageInformation?.totalDebt} />
           <InfoBlock title="Current Value" value={pageInformation?.currentValue} />
           <InfoBlock title="Lowest Health Factor" value={pageInformation?.lowestHealthFactor} />
-          <InfoBlock title="Next Maturity" value={pageInformation?.nextMaturity} />
+          <InfoBlock
+            title="Next Maturity"
+            value={
+              pageInformation?.nextMaturity
+                ? remainingTime(new Date(pageInformation.nextMaturity))
+                : undefined
+            }
+          />
         </InfoBlocksGrid>
       )}
       <Tabs>
