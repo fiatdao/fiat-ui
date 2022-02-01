@@ -1,17 +1,23 @@
 import s from './s.module.scss'
 import cn from 'classnames'
-import { Checkbox, CheckboxProps } from 'antd'
+import { Switch, SwitchProps } from 'antd'
 
 export type ToggleSwitchProps = {
-  className?: string
   label?: string
-} & CheckboxProps
+} & SwitchProps
 
-const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, label, onChange }) => {
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
+  checked,
+  className,
+  label,
+  onChange,
+  ...restProps
+}) => {
   return (
-    <Checkbox checked={checked} className={cn(s.component)} onChange={onChange}>
-      {label}
-    </Checkbox>
+    <div className={cn(s.component, className)}>
+      {label && <span className={s.label}>{label}</span>}
+      <Switch checked={checked} className={cn(s.switch)} onChange={onChange} {...restProps} />
+    </div>
   )
 }
 

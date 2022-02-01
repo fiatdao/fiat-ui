@@ -123,7 +123,7 @@ const OpenPosition = () => {
 
   return (
     <Grid flow="row" rowsTemplate="1fr auto">
-      <h1 className={cn(s.title)}>Select a collateral type to add to your FIAT positions</h1>
+      <h2 className={cn(s.title)}>Select a collateral type to add to your FIAT positions</h2>
       <Tabs>
         {tabs.map(({ children, key }, index) => (
           <Tab isActive={key === activeTabKey} key={index} onClick={() => setActiveTabKey(key)}>
@@ -156,9 +156,10 @@ const OpenPosition = () => {
         })}
         <ToggleSwitch
           checked={inMyWallet}
+          className={cn(s.switch)}
           label="In my wallet"
-          onChange={(e) => {
-            setInMyWallet(e.target.checked)
+          onChange={() => {
+            setInMyWallet(!inMyWallet)
           }}
         />
       </div>
