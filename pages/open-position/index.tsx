@@ -123,9 +123,7 @@ const OpenPosition = () => {
 
   return (
     <Grid flow="row" rowsTemplate="1fr auto">
-      <Text color="secondary" font="secondary" type="p1" weight="semibold">
-        Select a collateral type to add to your FIAT positions
-      </Text>
+      <h1 className={cn(s.title)}>Select a collateral type to add to your FIAT positions</h1>
       <Tabs>
         {tabs.map(({ children, key }, index) => (
           <Tab isActive={key === activeTabKey} key={index} onClick={() => setActiveTabKey(key)}>
