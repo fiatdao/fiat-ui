@@ -14,9 +14,11 @@ const ButtonOutline: React.FC<Props> = ({
   className,
   disabled,
   height,
+  href,
   icon,
   isActive,
   rounded,
+  type,
   ...restProps
 }: Props) => {
   return (
@@ -32,7 +34,13 @@ const ButtonOutline: React.FC<Props> = ({
       {...restProps}
     >
       <span className={cn(s.border)}>
-        <AntdButton className={cn(s.button)} disabled={disabled} icon={icon}>
+        <AntdButton
+          className={cn(s.button)}
+          disabled={disabled}
+          href={href}
+          icon={icon}
+          type={type}
+        >
           {children}
         </AntdButton>
       </span>
