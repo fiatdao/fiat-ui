@@ -4,6 +4,7 @@ import AntdButton, { ButtonProps } from 'antd/lib/button'
 import cn from 'classnames'
 
 interface Props extends ButtonProps {
+  isActive?: boolean
   height?: 'lg' | undefined
   rounded?: boolean
 }
@@ -13,6 +14,7 @@ const ButtonOutline: React.FC<Props> = ({
   className,
   disabled,
   height,
+  isActive,
   rounded,
   ...restProps
 }: Props) => {
@@ -23,6 +25,7 @@ const ButtonOutline: React.FC<Props> = ({
         { [s.lg]: height === 'lg' },
         { [s.rounded]: rounded },
         { [s.disabled]: disabled },
+        { [s.active]: isActive },
         className,
       )}
       {...restProps}

@@ -133,10 +133,8 @@ const OpenPosition = () => {
       </Tabs>
       <div className={cn(s.filters)}>
         <ButtonOutline
-          className={cn(s.pill, {
-            [s.active]: Object.keys(filters).every((s) => filters[s as Protocol].active),
-          })}
           height="lg"
+          isActive={Object.keys(filters).every((s) => filters[s as Protocol].active)}
           onClick={() => activateFilter(null)}
           rounded
         >
@@ -145,11 +143,9 @@ const OpenPosition = () => {
         {PROTOCOLS.map((asset) => {
           return (
             <ButtonOutline
-              className={cn(s.pill, {
-                [s.active]: filters[asset].active,
-              })}
               height="lg"
               icon={filters[asset].icon}
+              isActive={filters[asset].active}
               key={asset}
               onClick={() => activateFilter(asset)}
               rounded
