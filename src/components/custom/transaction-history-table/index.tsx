@@ -8,89 +8,57 @@ import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import { PositionTransaction } from '@/src/utils/your-positions-api'
 import Select from '@/src/components/antd/select'
-
-const ColumnText = (obj: any) => {
-  return (
-    <Text className="ml-auto" color="primary" type="p1">
-      {obj}
-    </Text>
-  )
-}
-
-const AmountColumn = (amount: any, row: any) => {
-  const delta = row.deltaAmount || 0
-  let isIncreasing = false
-  let diff = amount
-
-  if (row.action === 'MINT') {
-    isIncreasing = true
-    diff -= delta
-  }
-  const text = isIncreasing ? `+${delta}` : `-${delta}`
-
-  return (
-    <>
-      <Text className="ml-auto" style={{ color: isIncreasing ? 'green' : 'red' }} type="p1">
-        {text}
-      </Text>
-      <Text className="ml-auto" color="primary" type="p1">
-        {diff}
-      </Text>
-    </>
-  )
-}
-
-const MaturityColumn = (date: any) => {
-  const parsedDate = parseDate(date)
-  const countdown = remainingTime(date)
-
-  return (
-    <>
-      <Text className="ml-auto" color="primary" type="p1">
-        {parsedDate}
-      </Text>
-      <Text className="ml-auto" color="primary" type="p1">
-        {countdown}
-      </Text>
-    </>
-  )
-}
+import { CellValue } from '@/src/components/custom/cell-value'
+import { CellAddress } from '@/src/components/custom/cell-address'
+import { Asset } from '@/src/components/custom/asset'
 
 const Columns: ColumnsType<any> = [
   {
-    title: 'Asset',
+    align: 'left',
     dataIndex: 'asset',
-    width: 150,
-    align: 'center',
-    render: ColumnText,
+    render: (obj: any) => <Asset mainAsset="SBOND" secondaryAsset="DAI" title={obj} />,
+    title: 'Asset',
+    width: 200,
   },
   {
-    title: 'Action',
+    align: 'left',
     dataIndex: 'action',
-    width: 150,
-    align: 'center',
-    render: ColumnText,
+    render: (obj: any) => <CellValue value={`${obj}`} />,
+    responsive: ['lg'],
+    title: 'Action',
   },
   {
-    title: 'Amount',
+    align: 'right',
     dataIndex: 'amount',
-    width: 150,
-    align: 'center',
-    render: AmountColumn,
+    render: (amount: any, row: any) => {
+      const delta = (row.deltaAmount || 0).toFixed(3)
+      const mint = row.action === 'MINT'
+      const diff = mint ? amount - delta : amount
+      const text = mint ? `+${delta}` : `-${delta}`
+
+      return (
+        <CellValue
+          bottomValue={`$${diff.toFixed(2)}`}
+          state={mint ? 'ok' : 'danger'}
+          value={text}
+        />
+      )
+    },
+    responsive: ['lg'],
+    title: 'Amount',
   },
   {
-    title: 'Transaction Hast',
+    align: 'left',
     dataIndex: 'transactionHash',
-    width: 150,
-    align: 'center',
-    render: ColumnText,
+    render: (obj: any) => <CellAddress value={obj.substring(0, obj.search('-'))} />,
+    title: 'Transaction Hash',
   },
   {
-    title: 'Date',
+    align: 'left',
     dataIndex: 'date',
-    align: 'center',
-    width: 150,
-    render: MaturityColumn,
+    render: (date: any) => <CellValue bottomValue={remainingTime(date)} value={parseDate(date)} />,
+    responsive: ['lg'],
+    title: 'Date',
   },
 ]
 
@@ -99,6 +67,7 @@ const ASSETS_FILTER = [
   { label: 'ePyvUSDC', value: 'Principal Token eyUSDC:10-AUG-22-GMT' },
   { label: 'Error', value: 'error' },
 ]
+
 const ACTIONS_FILTER = [
   { label: 'All Actions', value: 'all' },
   { label: 'Minted', value: 'MINT' },
@@ -168,41 +137,38 @@ const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
           }))}
         />
       </div>
-      <div className={cn('card')}>
-        <Table
-          columns={Columns}
-          dataSource={filteredTransactions}
-          inCard
-          loading={false}
-          pagination={{
-            pageSize: 10,
-            current: 1,
-            position: ['bottomRight'],
-            showTotal: (total: number, [from, to]: [number, number]) => (
-              <>
-                <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                  Showing {from} to {to} the most recent {total}
-                </Text>
-                <Text
-                  className="hidden-tablet hidden-desktop"
-                  color="secondary"
-                  type="p2"
-                  weight="semibold"
-                >
-                  {from}..{to} of {total}
-                </Text>
-              </>
-            ),
-            onChange: (page: number, pageSize: number) => {
-              console.log(page, pageSize)
-            },
-          }}
-          rowKey="address"
-          scroll={{
-            x: true,
-          }}
-        />
-      </div>
+      <Table
+        columns={Columns}
+        dataSource={filteredTransactions}
+        loading={false}
+        pagination={{
+          pageSize: 10,
+          current: 1,
+          position: ['bottomRight'],
+          showTotal: (total: number, [from, to]: [number, number]) => (
+            <>
+              <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
+                Showing {from} to {to} the most recent {total}
+              </Text>
+              <Text
+                className="hidden-tablet hidden-desktop"
+                color="secondary"
+                type="p2"
+                weight="semibold"
+              >
+                {from}..{to} of {total}
+              </Text>
+            </>
+          ),
+          onChange: (page: number, pageSize: number) => {
+            console.log(page, pageSize)
+          },
+        }}
+        rowKey="address"
+        scroll={{
+          x: true,
+        }}
+      />
     </>
   )
 }
