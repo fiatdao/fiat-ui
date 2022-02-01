@@ -1,6 +1,7 @@
 import { Contract } from '@ethersproject/contracts'
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
+import AntdRadio from 'antd/lib/radio'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { ReactNode, useEffect, useState } from 'react'
@@ -502,17 +503,12 @@ const PositionManager = () => {
       <Link href="/your-positions" passHref>
         <Button>Back</Button>
       </Link>
-      <Tabs>
-        <Tab
-          isActive={'collateral' === activeSection}
-          onClick={() => setActiveSection('collateral')}
-        >
+      <AntdRadio.Group>
+        <AntdRadio.Button onClick={() => setActiveSection('collateral')}>
           Collateral
-        </Tab>
-        <Tab isActive={'fiat' === activeSection} onClick={() => setActiveSection('fiat')}>
-          FIAT
-        </Tab>
-      </Tabs>
+        </AntdRadio.Button>
+        <AntdRadio.Button onClick={() => setActiveSection('fiat')}>FIAT</AntdRadio.Button>
+      </AntdRadio.Group>
       {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
         <ManageCollateral activeTabKey={activeTabKey} setActiveTabKey={setActiveTabKey} />
       )}
