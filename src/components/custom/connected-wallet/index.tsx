@@ -24,7 +24,7 @@ const ConnectedWallet: React.FC = () => {
       <Popover
         className={s.popover}
         content={
-          <div className="card">
+          <>
             <Grid align="center" className="card-header" flow="col" gap={16} justify="start">
               <Identicon address={address!} height={40} width={40} />
               <ExternalLink className={s.addressStr} href={getEtherscanAddressUrl(address!)}>
@@ -54,9 +54,8 @@ const ConnectedWallet: React.FC = () => {
                 Disconnect
               </ButtonOutlineGradient>
             </Grid>
-          </div>
+          </>
         }
-        noPadding
         placement="bottomRight"
         trigger="click"
       >

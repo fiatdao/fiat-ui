@@ -2,7 +2,7 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
-import { Popover } from 'antd'
+import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
@@ -108,6 +108,12 @@ const OpenPosition = () => {
     })
   }, [areAllFiltersActive, setFilter])
 
+  const clearAllFilters = useCallback(() => {
+    PROTOCOLS.map((asset) => {
+      setFilter(asset, false)
+    })
+  }, [setFilter])
+
   enum TabState {
     ByIssuer = 'byIssuer',
     ByAsset = 'byAsset',
@@ -138,12 +144,12 @@ const OpenPosition = () => {
         return (
           <ButtonOutline
             height="lg"
-            icon={filters[asset].icon}
             isActive={filters[asset].active}
             key={asset}
             onClick={() => setFilter(asset, !filters[asset].active)}
             rounded
           >
+            {filters[asset].icon}
             {asset}
           </ButtonOutline>
         )
@@ -163,7 +169,16 @@ const OpenPosition = () => {
       </Tabs>
       <Popover
         arrowContent={false}
-        content={<div className={cn(s.fitersGrid)}>{renderFilters()}</div>}
+        content={
+          <>
+            <div className={cn(s.fitersGrid)}>{renderFilters()}</div>
+            <div className={cn(s.buttonContainer)}>
+              <button className={cn(s.clear)} onClick={clearAllFilters}>
+                Clear
+              </button>
+            </div>
+          </>
+        }
         placement="bottomRight"
         trigger="click"
       >

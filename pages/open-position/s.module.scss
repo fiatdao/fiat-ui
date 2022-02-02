@@ -37,4 +37,26 @@
   display: grid;
   gap: 12px;
   grid-template-columns: 1fr 1fr;
+  margin-bottom: 25px;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.clear {
+  background: transparent;
+  border: none;
+  color: var(--theme-text-color);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 auto;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    text-decoration: none;
+  }
 }

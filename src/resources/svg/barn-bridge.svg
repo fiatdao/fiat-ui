@@ -1,1 +1,46 @@
-<svg fill="none" height="20" viewBox="0 0 21 20" width="21" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><clipPath id="a"><path d="m.5 0h20v20h-20z"/></clipPath><mask id="b" height="16" maskUnits="userSpaceOnUse" width="15" x="3" y="2"><circle cx="10.5" cy="10" fill="#c4c4c4" r="7.5"/></mask><g clip-path="url(#a)"><rect fill="#ff4339" height="20" rx="10" width="20" x=".5"/><path d="m10.5382 8.99048h-.0721c-.9736 0-1.73081.79327-1.73081 1.80292v1.9471l1.76681-1.3342 1.7668 1.3342v-1.9471c0-.97359-.7932-1.76686-1.7307-1.80292z" fill="#fff"/><g mask="url(#b)"><path d="m3.00003 2.5v14.4952l4.50721-3.3534v-3.82209l-.82932-.64904 3.82208-2.88461 3.8221 2.88461-.8293.64904v3.82209l4.5072 3.3534v-14.4952z" fill="#fff"/></g></g></svg>
+<svg
+  fill="none"
+  height="20"
+  viewBox="0 0 21 20"
+  width="21"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+>
+  <clipPath id="a">
+    <path d="m.5 0h20v20h-20z" />
+  </clipPath>
+  <mask
+    id="b"
+    height="16"
+    maskUnits="userSpaceOnUse"
+    width="15"
+    x="3"
+    y="2"
+  >
+    <circle
+      cx="10.5"
+      cy="10"
+      fill="#c4c4c4"
+      r="7.5"
+    />
+  </mask>
+  <g clip-path="url(#a)">
+    <rect
+      fill="#ff4339"
+      height="20"
+      rx="10"
+      width="20"
+      x=".5"
+    />
+    <path
+      d="m10.5382 8.99048h-.0721c-.9736 0-1.73081.79327-1.73081 1.80292v1.9471l1.76681-1.3342 1.7668 1.3342v-1.9471c0-.97359-.7932-1.76686-1.7307-1.80292z"
+      fill="#fff"
+    />
+    <g mask="url(#b)">
+      <path
+        d="m3.00003 2.5v14.4952l4.50721-3.3534v-3.82209l-.82932-.64904 3.82208-2.88461 3.8221 2.88461-.8293.64904v3.82209l4.5072 3.3534v-14.4952z"
+        fill="#fff"
+      />
+    </g>
+  </g>
+</svg>

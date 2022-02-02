@@ -43,7 +43,6 @@
 
   // states
   &:hover,
-  &:focus,
   &.isActive {
     .button {
       &:global(.ant-btn) {
