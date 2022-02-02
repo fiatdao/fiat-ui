@@ -36,11 +36,13 @@ const useUserProxy = () => {
         PRB_PROXY.abi,
         web3Provider.getSigner(),
       )
+
       try {
         await (await prbProxy.deploy()).wait()
         refetch()
-        setLoadingProxy(false)
       } catch (e) {
+        console.error('Failed to setup the Proxy', e)
+      } finally {
         setLoadingProxy(false)
       }
     }
@@ -59,7 +61,6 @@ const useUserProxy = () => {
     )
   }, [proxyAddress, web3Provider])
 
-  // userProxyAddress: userProxy.address
   // isProxyAvailable: !!userProxy
   return {
     userProxy,

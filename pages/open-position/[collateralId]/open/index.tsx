@@ -113,7 +113,7 @@ const FormERC721: React.FC<{ tokenSymbol: string; value: string }> = ({ tokenSym
 
 type FormProps = { tokenAmount: BigNumber; fiatAmount: BigNumber }
 
-const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: string }> = ({
+const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
   tokenAddress,
   tokenSymbol,
 }) => {
@@ -132,7 +132,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
     'balanceOf',
     [string],
     Promise<ethers.BigNumber>
-  >(tokenAddress, contracts.TEST_ERC20.abi, 'balanceOf', [currentUserAddress || DEFAULT_ADDRESS])
+  >(tokenAddress, contracts.ERC_20.abi, 'balanceOf', [currentUserAddress || DEFAULT_ADDRESS])
 
   // Setup Proxy :tick
   // Allowance loading:tick
@@ -288,7 +288,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string; value: st
 
 const OpenPosition = () => {
   const {
-    query: { positionId: tokenAddress },
+    query: { collateralId: tokenAddress },
   } = useRouter()
   const { tokenSymbol } = useTokenSymbol(tokenAddress as string)
 
@@ -299,7 +299,7 @@ const OpenPosition = () => {
       <Link href="/open-position" passHref>
         <Button>Back</Button>
       </Link>
-      <FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} value="$5,000" />
+      <FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />
     </>
   )
 }

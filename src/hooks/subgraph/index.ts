@@ -5,78 +5,109 @@ import { USER_PROXY } from '@/src/queries/userProxy'
 import { swrFetcher } from '@/src/utils/graphqlFetcher'
 import { userProxy, userProxyVariables } from '@/types/subgraph/__generated__/userProxy'
 import {
+  positions_positions as SubgraphPosition,
   positions,
   positionsVariables,
-  positions_positions,
 } from '@/types/subgraph/__generated__/positions'
 
 import { POSITIONS } from '@/src/queries/positions'
 import { bigNumberToDecimal } from '@/src/utils/formats'
 import vaultEPTCall from '@/src/utils/callVaultEPT'
 import trancheCall from '@/src/utils/callTranche'
+import { Web3Context } from '@/src/providers/web3ConnectionProvider'
 
 export type Position = {
+  key: string
   name: string
   discount: number
   ltv: number
   minted: number
   maturity: Date
-  healthFactor: number | null
-  action: string
+  healthFactor: number
+  action: {
+    text: string
+    data: Record<string, unknown>
+  }
 }
 
 export type PositionTransaction = {
   asset: string
   action: string
   amount: number
-  deltaAmount: number
+  deltaAmount: number // does not exist in the scheme
   transactionHash: string
   date: Date
 }
 
-const transformPosition = async (
-  position: positions_positions,
-  provider: JsonRpcProvider,
+export type YourPositionPageInformation = {
+  totalDebt: number
+  currentValue: number
+  lowestHealthFactor: number
+  nextMaturity: number | null
+}
+
+/**
+ * Returns a collection of Position required by the frontend
+ * @param {SubgraphPosition} position
+ * @param {Web3Context['readOnlyAppProvider']} provider
+ * @returns Promise<[Position, Array<PositionTransaction>]>
+ */
+export const transformPosition = async (
+  position: SubgraphPosition,
+  provider: Web3Context['readOnlyAppProvider'],
 ): Promise<[Position, PositionTransaction[]]> => {
+  const positionId = position.id
   const vaultAddress = position.vault.address
   const tokenId = position.tokenId
-  // const name = vault.underlyingAsset;
-  const collateral = bigNumberToDecimal(position.collateral)
   const fiat = bigNumberToDecimal(position.normalDebt)
-  const maturity = await vaultEPTCall(vaultAddress, provider, 'maturity', [tokenId])
-  const trancheAddress = await vaultEPTCall(vaultAddress, provider, 'getTokenAddress', [tokenId])
+  const collateral = bigNumberToDecimal(position.collateral)
+
+  const [maturity, trancheAddress] = await Promise.all([
+    vaultEPTCall(vaultAddress, provider, 'maturity', [tokenId]),
+    vaultEPTCall(vaultAddress, provider, 'getTokenAddress', [tokenId]),
+  ])
+
+  const name = await trancheCall(trancheAddress!, provider, 'name', null)
+
+  // const name = vault.underlyingAsset;
   // const underlierToken = await vaultEPTCall(vaultAddress, provider, "underlierToken", null);
   // const discount = await vaultEPTCall(vaultAddress, provider, 'fairPrice', [tokenId, true, true]);
-  const name = await trancheCall(trancheAddress!, provider, 'name', null)
   // const decimals = await trancheCall(trancheAddress!, provider, 'decimals', null);
-  // @TODO
+
   const ltv = fiat / collateral
-  const healthFactor = 1
   const newMaturity = maturity?.mul(1000).toNumber() || Date.now()
 
+  // @TODO: implement calculation for hardcoded values
+  const healthFactor = 1
+
   const newPosition: Position = {
-    name: name!,
+    key: positionId,
+    name: name ?? 'unknown',
     discount: collateral,
     minted: fiat,
     maturity: new Date(newMaturity),
-    action: 'manage',
-    ltv: ltv,
+    action: { text: 'Manage', data: { positionId } },
+    ltv,
     healthFactor,
   }
+
   const newPositionTransactions = []
-  for (const positionTransaction of position.positionTransactions ?? []) {
+
+  for (const positionTransaction of position.positionTransactions || []) {
     const collateral = bigNumberToDecimal(positionTransaction.collateral)
-    // TODO const deltaCollateral = bigNumberToDecimal(positionTransaction.deltaCollateral)
+    // const deltaCollateral = bigNumberToDecimal(positionTransaction.deltaCollateral)
     const newPositionTransaction: PositionTransaction = {
-      asset: name!,
+      asset: name ?? 'unknown',
       action: positionTransaction.type,
       amount: collateral,
-      deltaAmount: 0,
+      deltaAmount: 0, // FixMe: it must be `deltaCollateral`
       transactionHash: positionTransaction.id,
       date: new Date(newMaturity),
     }
+
     newPositionTransactions.push(newPositionTransaction)
   }
+
   return [newPosition, newPositionTransactions]
 }
 
@@ -105,6 +136,17 @@ const wrangePositions = async (
 }
 
 // @TODO: currently working for element-fi
+
+/**
+ * Fetches position information from the FIAT subgraph
+ *
+ * @todo: support notional-fi protocol
+ * @todo: support barnBridge protocol
+ *
+ * @param {string} userAddress
+ * @param {Web3Context['readOnlyAppProvider']} provider
+ * @returns {Promise<[Position, Array<PositionTransaction>]>}
+ */
 export const usePositions = (userAddress: string, provider: JsonRpcProvider) => {
   const userProxy = useUserProxy(userAddress || '')
   const [positions, setPositions] = useState<Position[]>([])

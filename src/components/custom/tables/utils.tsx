@@ -4,7 +4,7 @@ import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 
-const healthFactor = (hf: number): 'danger' | 'ok' | 'warning' => {
+const calculateHealthFactor = (hf: number): 'danger' | 'ok' | 'warning' => {
   return hf >= 4.0 ? 'ok' : hf >= 1.0 ? 'warning' : 'danger'
 }
 
@@ -22,4 +22,4 @@ const remainingTime = (d: Date) => {
   return `${diffInDays}d:${diffInHours}h:${diffInMinutes}m`
 }
 
-export { healthFactor, parseDate, remainingTime }
+export { calculateHealthFactor, parseDate, remainingTime }
