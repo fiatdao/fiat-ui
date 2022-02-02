@@ -132,7 +132,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
     'balanceOf',
     [string],
     Promise<ethers.BigNumber>
-  >(tokenAddress, contracts.TEST_ERC20.abi, 'balanceOf', [currentUserAddress || DEFAULT_ADDRESS])
+  >(tokenAddress, contracts.ERC_20.abi, 'balanceOf', [currentUserAddress || DEFAULT_ADDRESS])
 
   // Setup Proxy :tick
   // Allowance loading:tick
