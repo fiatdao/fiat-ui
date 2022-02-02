@@ -8,6 +8,7 @@ import collateralAuction from '@/src/abis/CollateralAuction.json'
 import debtAuction from '@/src/abis/DebtAuction.json'
 import surplusAuction from '@/src/abis/SurplusAuction.json'
 import fiscus from '@/src/abis/Fiscus.json'
+import vault20 from '@/src/abis/Vault20.json'
 import vaultEPT from '@/src/abis/VaultEPT.json'
 import tranche from '@/src/abis/Tranche.json'
 
@@ -32,25 +33,13 @@ function constantContracts<T extends { [key in string]: AppContractInfo }>(o: T)
 }
 
 export const contracts = constantContracts({
-  TEST_ERC20: {
+  ERC_20: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x286972E9d9ac56090D5A97A7d9a8F48D8033a668',
+      [Chains.goerli]: '',
     },
     abi: erc20,
-    decimals: 6,
-    symbol: 'TEST_ERC20',
-    priceTokenId: 'fiat-coin',
-  },
-  USDC: {
-    address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0x08034634bbd210485c9c8f798afdc5432782fd18',
-    },
-    abi: erc20,
-    decimals: 6,
-    symbol: 'TEST_ERC20',
-    priceTokenId: 'fiat-coin',
+    decimals: 18,
   },
   FIAT: {
     address: {
@@ -110,6 +99,13 @@ export const contracts = constantContracts({
       [Chains.goerli]: '0x0953eE8ed1479B026d0FD06ECad11B79b27558aE',
     },
     abi: fiscus,
+  },
+  VAULT_20: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '',
+    },
+    abi: vault20,
   },
   VAULT_EPT: {
     address: {

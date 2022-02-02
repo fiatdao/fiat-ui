@@ -176,7 +176,7 @@ const stepperMachine = createMachine<Context, Events>(
           if (isAppConnected && web3Provider) {
             try {
               // TODO Hardcoded decimals
-              const _erc20Amount = getNonHumanValue(erc20Amount, contracts.TEST_ERC20.decimals)
+              const _erc20Amount = getNonHumanValue(erc20Amount, contracts.ERC_20.decimals)
               const _fiatAmount = getNonHumanValue(fiatAmount, contracts.FIAT.decimals)
               // console.log(_erc20Amount.toFixed(), _fiatAmount.toFixed())
 
