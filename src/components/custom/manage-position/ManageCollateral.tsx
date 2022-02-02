@@ -1,5 +1,5 @@
-import { DepositForm } from '@/pages/your-positions/[positionId]/manage/DepositForm'
-import { WithdrawForm } from '@/pages/your-positions/[positionId]/manage/WithdrawForm'
+import { DepositForm } from '@/src/components/custom/manage-position/DepositForm'
+import { WithdrawForm } from '@/src/components/custom/manage-position/WithdrawForm'
 import { Tab, Tabs } from '@/src/components/custom'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'

@@ -7,12 +7,12 @@ import {
   ManageFiat,
   ManageFiatProps,
   isFiatTab,
-} from '@/pages/your-positions/[positionId]/manage/ManageFiat'
+} from '@/src/components/custom/manage-position/ManageFiat'
 import {
   ManageCollateral,
   ManageCollateralProps,
   isCollateralTab,
-} from '@/pages/your-positions/[positionId]/manage/ManageCollateral'
+} from '@/src/components/custom/manage-position/ManageCollateral'
 
 const PositionManager = () => {
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')

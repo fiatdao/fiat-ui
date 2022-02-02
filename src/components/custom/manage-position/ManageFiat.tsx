@@ -1,5 +1,5 @@
-import { BurnForm } from '@/pages/your-positions/[positionId]/manage/BurnForm'
-import { MintForm } from '@/pages/your-positions/[positionId]/manage/MintForm'
+import { BurnForm } from '@/src/components/custom/manage-position/BurnForm'
+import { MintForm } from '@/src/components/custom/manage-position/MintForm'
 import { Tab, Tabs } from '@/src/components/custom'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
