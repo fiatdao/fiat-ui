@@ -1,0 +1,14 @@
+.mainContainer {
+  --gap: 24px;
+
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: 1fr minmax(400px, 1fr);
+  padding-top: 25px;
+}
+
+.infoBlocks {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: 1fr 1fr;
+}

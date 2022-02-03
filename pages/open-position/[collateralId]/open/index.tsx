@@ -6,6 +6,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
 import { useMachine } from '@xstate/react'
+import cn from 'classnames'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
 import { contracts } from '@/src/constants/contracts'
 import { DEFAULT_ADDRESS, getHumanValue } from '@/src/web3/utils'
@@ -22,6 +23,7 @@ import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { TestERC20 } from '@/types/typechain'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
+import { InfoBlock } from '@/src/components/custom/info-block'
 
 const StepperTitle: React.FC<{
   title: string
@@ -158,7 +160,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
   }, [hasAllowance, send])
 
   return (
-    <Grid flow="row" gap={16}>
+    <div>
       <StepperTitle
         currentStep={stateMachine.context.currentStepNumber}
         subtitle={TITLES_BY_STEP[stateMachine.context.currentStepNumber].subtitle}
@@ -282,7 +284,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
           </>
         )}
       </Form>
-    </Grid>
+    </div>
   )
 }
 
@@ -292,10 +294,61 @@ const OpenPosition = () => {
   } = useRouter()
   const { tokenSymbol } = useTokenSymbol(tokenAddress as string)
 
+  const mockedBlocks = [
+    {
+      title: 'Bond Name',
+      url: 'https://google.com',
+      value: 'eursCRV',
+    },
+    {
+      title: 'Underlying',
+      url: 'https://google.com',
+      value: 'DAI',
+    },
+    {
+      title: 'Bond Maturity',
+      tooltip: 'Tooltip text',
+      value: '16 May, 2021',
+    },
+    {
+      title: 'Bond Face Value',
+      tooltip: 'Tooltip text',
+      value: '$100.00',
+    },
+    {
+      title: 'Bond Current Value',
+      tooltip: 'Tooltip text',
+      value: '$150.00',
+    },
+    {
+      title: 'Collateralization Ratio',
+      tooltip: 'Tooltip text',
+      value: '43%',
+    },
+    {
+      title: 'Stability fee',
+      tooltip: 'Tooltip text',
+      value: '0',
+    },
+  ]
+
   return (
     <>
       <BackButton href="/open-position">Back</BackButton>
-      <FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />
+      <div className={cn(s.mainContainer)}>
+        <div className={cn(s.infoBlocks)}>
+          {mockedBlocks.map((item, index) => (
+            <InfoBlock
+              key={`${index}_info`}
+              title={item.title}
+              tooltip={item.tooltip || ''}
+              url={item.url || ''}
+              value={item.value}
+            />
+          ))}
+        </div>
+        <FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />
+      </div>
     </>
   )
 }
