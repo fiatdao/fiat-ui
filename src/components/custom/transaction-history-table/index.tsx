@@ -6,11 +6,11 @@ import { SelectValue } from 'antd/lib/select'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { PositionTransaction } from '@/src/utils/your-positions-api'
 import Select from '@/src/components/antd/select'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { CellAddress } from '@/src/components/custom/cell-address'
 import { Asset } from '@/src/components/custom/asset'
+import { PositionTransaction } from '@/src/hooks/subgraph'
 
 const Columns: ColumnsType<any> = [
   {

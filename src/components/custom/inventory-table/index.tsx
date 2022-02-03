@@ -7,7 +7,7 @@ import {
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
-import { Position } from '@/src/utils/your-positions-api'
+import { Position } from '@/src/hooks/subgraph'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import { PositionsAtRiskTableWrapper } from '@/src/components/custom/positions-at-risk-table-wrapper'
@@ -117,7 +117,7 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
             console.log(page, pageSize)
           },
         }}
-        rowKey="address"
+        rowKey="name"
         scroll={{
           x: true,
         }}
