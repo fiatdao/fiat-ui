@@ -9,7 +9,6 @@ import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { Tab, Tabs } from '@/src/components/custom'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { usePositionsData } from '@/src/hooks/usePositionsData'
 import { PROTOCOLS, Protocol } from '@/types'
@@ -88,7 +87,6 @@ const FILTERS: FilterData = {
 }
 
 const OpenPosition = () => {
-  const [activeTabKey, setActiveTabKey] = useState('byIssuer')
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
 
@@ -102,11 +100,11 @@ const OpenPosition = () => {
     })
   }, [])
 
-  const toggleAllFilters = useCallback(() => {
+  const activateAllFilters = useCallback(() => {
     PROTOCOLS.map((asset) => {
-      setFilter(asset, !areAllFiltersActive)
+      setFilter(asset, true)
     })
-  }, [areAllFiltersActive, setFilter])
+  }, [setFilter])
 
   const clearAllFilters = useCallback(() => {
     PROTOCOLS.map((asset) => {
@@ -114,28 +112,12 @@ const OpenPosition = () => {
     })
   }, [setFilter])
 
-  enum TabState {
-    ByIssuer = 'byIssuer',
-    ByAsset = 'byAsset',
-  }
-
-  const tabs = [
-    {
-      key: TabState.ByIssuer,
-      children: 'By Issuer',
-    },
-    {
-      key: TabState.ByAsset,
-      children: 'By Underlying',
-    },
-  ]
-
   const renderFilters = () => (
     <>
       <ButtonOutline
         height="lg"
         isActive={areAllFiltersActive}
-        onClick={() => toggleAllFilters()}
+        onClick={() => activateAllFilters()}
         rounded
       >
         All assets
@@ -157,38 +139,18 @@ const OpenPosition = () => {
     </>
   )
 
+  const clearButton = () => (
+    <button className={cn(s.clear)} onClick={clearAllFilters}>
+      Clear
+    </button>
+  )
+
   return (
     <>
       <h2 className={cn(s.title)}>Select a collateral type to add to your FIAT positions</h2>
-      <Tabs>
-        {tabs.map(({ children, key }, index) => (
-          <Tab isActive={key === activeTabKey} key={index} onClick={() => setActiveTabKey(key)}>
-            {children}
-          </Tab>
-        ))}
-      </Tabs>
-      <Popover
-        arrowContent={false}
-        content={
-          <>
-            <div className={cn(s.fitersGrid)}>{renderFilters()}</div>
-            <div className={cn(s.buttonContainer)}>
-              <button className={cn(s.clear)} onClick={clearAllFilters}>
-                Clear
-              </button>
-            </div>
-          </>
-        }
-        placement="bottomRight"
-        trigger="click"
-      >
-        <ButtonOutlineGradient className={cn(s.filtersButton)} height="lg">
-          Filter
-          <Filter />
-        </ButtonOutlineGradient>
-      </Popover>
       <div className={cn(s.filters)}>
         {renderFilters()}
+        {clearButton()}
         <ToggleSwitch
           checked={inMyWallet}
           className={cn(s.switch)}
@@ -198,6 +160,22 @@ const OpenPosition = () => {
           }}
         />
       </div>
+      <Popover
+        arrowContent={false}
+        content={
+          <>
+            <div className={cn(s.fitersGrid)}>{renderFilters()}</div>
+            <div className={cn(s.buttonContainer)}>{clearButton()}</div>
+          </>
+        }
+        placement="bottomLeft"
+        trigger="click"
+      >
+        <ButtonOutlineGradient className={cn(s.filtersButton)} height="lg">
+          Filter
+          <Filter />
+        </ButtonOutlineGradient>
+      </Popover>
       <Table
         columns={Columns}
         dataSource={data}
