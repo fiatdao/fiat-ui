@@ -12,3 +12,26 @@
   gap: var(--gap);
   grid-template-columns: 1fr 1fr;
 }
+
+.formWrapper {
+  --common-padding: 24px;
+
+  background-color: var(--theme-card-color);
+  border: 1px solid var(--theme-border-color);
+  border-radius: 8px;
+}
+
+.stepperWrapper {
+  border-bottom: 1px solid var(--theme-border-color);
+  padding: 16px var(--common-padding) var(--common-padding);
+}
+
+.stepperTitleWrapper {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 10px;
+}
+
+.form {
+  padding: var(--common-padding) var(--common-padding) 28px;
+}

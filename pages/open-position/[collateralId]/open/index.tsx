@@ -26,21 +26,20 @@ import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { InfoBlock } from '@/src/components/custom/info-block'
 
 const StepperTitle: React.FC<{
-  title: string
-  subtitle: string
   currentStep: number
+  subtitle: string
+  title: string
   totalSteps: number
 }> = ({ currentStep, subtitle, title, totalSteps }) => (
-  <Grid className={s.header} flow="row" gap={16} rowsTemplate="auto">
-    <Grid align="center" colsTemplate="auto 1fr" flow="col">
+  <div className={cn(s.stepperWrapper)}>
+    <div className={cn(s.stepperTitleWrapper)}>
       <h2>{title}</h2>
       <p className={s.steps}>
         <span className={s.currentStep}>{currentStep}</span>/{totalSteps}
       </p>
-    </Grid>
-
+    </div>
     <p>{subtitle}</p>
-  </Grid>
+  </div>
 )
 
 const OpenPositionSummary: React.FC<{
@@ -68,48 +67,6 @@ const OpenPositionSummary: React.FC<{
         <div className={s.summaryValue}>{stabilityFee}</div>
       </Grid>
     </Grid>
-  )
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const FormERC721: React.FC<{ tokenSymbol: string; value: string }> = ({ tokenSymbol, value }) => {
-  const showModal = () => {
-    console.log('showModal')
-  }
-
-  return (
-    <>
-      <div className="container">
-        <div className="container">
-          <StepperTitle
-            currentStep={1}
-            subtitle="Select which asset to deposit and how much FIAT to mint."
-            title="Configure your position"
-            totalSteps={7}
-          />
-          <div className="content-body">
-            <div className="content-body-item">
-              <div className="content-body-item-title">
-                <h4>Deposit {tokenSymbol}</h4>
-                <p>Current value: {value}</p>
-              </div>
-              <div className="content-body-item-body">
-                {/* TODO: should this modal behave as a 'select' input? */}
-                <Button onClick={showModal}>Select from wallet</Button>
-                {/* TODO: verify that the user does not have a proxy already */}
-                <Button disabled>Setup Proxy</Button>
-              </div>
-              <OpenPositionSummary
-                currentCollateralValue={0}
-                newFIATDebt={0}
-                outstandingFIATDebt={0}
-                stabilityFee={0}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
   )
 }
 
@@ -160,130 +117,132 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
   }, [hasAllowance, send])
 
   return (
-    <div>
+    <div className={cn(s.formWrapper)}>
       <StepperTitle
         currentStep={stateMachine.context.currentStepNumber}
         subtitle={TITLES_BY_STEP[stateMachine.context.currentStepNumber].subtitle}
         title={TITLES_BY_STEP[stateMachine.context.currentStepNumber].title}
         totalSteps={stateMachine.context.totalStepNumber}
       />
-      <Grid align="center" colsTemplate="auto auto" flow="col">
-        <h3>Deposit {stateMachine.context.tokenSymbol}</h3>
-        <p className={s.currentValue}>Current value: {humanReadableValue?.toFixed()}</p>
-      </Grid>
-      <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
-        {[1, 4].includes(stateMachine.context.currentStepNumber) && (
-          <div className="content-body-item-body">
-            <Form.Item name="tokenAmount" required>
-              <TokenAmount
-                displayDecimals={4}
-                max={humanReadableValue}
-                maximumFractionDigits={6}
-                onChange={(val) => val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })}
-                slider
-                tokenIcon={<ElementIcon />}
-              />
-            </Form.Item>
-          </div>
-        )}
-        {stateMachine.context.currentStepNumber === 1 && (
-          <>
-            {!isProxyAvailable && (
-              <div className="content-body-item-body">
-                <Button
-                  disabled={!stateMachine.context.erc20Amount.gt(0)}
-                  onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
-                >
-                  Setup Proxy
-                </Button>
-              </div>
-            )}
-
-            {!hasAllowance && (
-              <div className="content-body-item-body">
-                <Button
-                  disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
-                  onClick={() => send({ type: 'CLICK_ALLOW' })}
-                >
-                  Allow Collateral management
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-
-        {stateMachine.context.currentStepNumber === 2 && (
-          <div className="content-body-item-body">
-            <Button loading={loadingProxy} onClick={setupProxy}>
-              Create Proxy
-            </Button>
-          </div>
-        )}
-        {stateMachine.context.currentStepNumber === 3 && (
-          <div className="content-body-item-body">
-            <Button loading={loadingApprove} onClick={approve}>
-              Approve
-            </Button>
-          </div>
-        )}
-
-        {stateMachine.context.currentStepNumber === 4 && (
-          <>
+      <div className={cn(s.form)}>
+        <Grid align="center" colsTemplate="auto auto" flow="col">
+          <h3>Deposit {stateMachine.context.tokenSymbol}</h3>
+          <p className={s.currentValue}>Current value: {humanReadableValue?.toFixed()}</p>
+        </Grid>
+        <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
+          {[1, 4].includes(stateMachine.context.currentStepNumber) && (
             <div className="content-body-item-body">
-              <Form.Item name="fiatAmount" required>
+              <Form.Item name="tokenAmount" required>
                 <TokenAmount
-                  disabled={false}
                   displayDecimals={4}
-                  max={stateMachine.context.erc20Amount.toNumber()}
+                  max={humanReadableValue}
                   maximumFractionDigits={6}
-                  onChange={(val) => val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })}
+                  onChange={(val) => val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })}
                   slider
-                  tokenIcon={<FiatIcon />}
+                  tokenIcon={<ElementIcon />}
                 />
               </Form.Item>
             </div>
-            <div className="content-body-item-body">
-              <Button onClick={() => send({ type: 'CLICK_DEPLOY' })}>Deposit collateral</Button>
-            </div>
-          </>
-        )}
+          )}
+          {stateMachine.context.currentStepNumber === 1 && (
+            <>
+              {!isProxyAvailable && (
+                <div className="content-body-item-body">
+                  <Button
+                    disabled={!stateMachine.context.erc20Amount.gt(0)}
+                    onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
+                  >
+                    Setup Proxy
+                  </Button>
+                </div>
+              )}
 
-        {[1, 4, 5].includes(stateMachine.context.currentStepNumber) && (
-          <OpenPositionSummary
-            currentCollateralValue={stateMachine.context.erc20Amount.toNumber()}
-            newFIATDebt={0}
-            outstandingFIATDebt={0}
-            stabilityFee={0}
-          />
-        )}
-        {stateMachine.context.currentStepNumber === 5 && (
-          <>
-            <div className="content-body-item-body">Summary...</div>
+              {!hasAllowance && (
+                <div className="content-body-item-body">
+                  <Button
+                    disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
+                    onClick={() => send({ type: 'CLICK_ALLOW' })}
+                  >
+                    Allow Collateral management
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+
+          {stateMachine.context.currentStepNumber === 2 && (
             <div className="content-body-item-body">
-              <Form.Item>
-                <Button
-                  disabled={!hasAllowance || !isProxyAvailable}
-                  onClick={() =>
-                    send({
-                      type: 'CONFIRM',
-                      // @ts-ignore TODO types
-                      isAppConnected,
-                      web3Provider,
-                      userActions,
-                      userProxy,
-                      refetchErc20Balance,
-                      allowance,
-                    })
-                  }
-                  type="primary"
-                >
-                  Confirm
-                </Button>
-              </Form.Item>
+              <Button loading={loadingProxy} onClick={setupProxy}>
+                Create Proxy
+              </Button>
             </div>
-          </>
-        )}
-      </Form>
+          )}
+          {stateMachine.context.currentStepNumber === 3 && (
+            <div className="content-body-item-body">
+              <Button loading={loadingApprove} onClick={approve}>
+                Approve
+              </Button>
+            </div>
+          )}
+
+          {stateMachine.context.currentStepNumber === 4 && (
+            <>
+              <div className="content-body-item-body">
+                <Form.Item name="fiatAmount" required>
+                  <TokenAmount
+                    disabled={false}
+                    displayDecimals={4}
+                    max={stateMachine.context.erc20Amount.toNumber()}
+                    maximumFractionDigits={6}
+                    onChange={(val) => val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })}
+                    slider
+                    tokenIcon={<FiatIcon />}
+                  />
+                </Form.Item>
+              </div>
+              <div className="content-body-item-body">
+                <Button onClick={() => send({ type: 'CLICK_DEPLOY' })}>Deposit collateral</Button>
+              </div>
+            </>
+          )}
+
+          {[1, 4, 5].includes(stateMachine.context.currentStepNumber) && (
+            <OpenPositionSummary
+              currentCollateralValue={stateMachine.context.erc20Amount.toNumber()}
+              newFIATDebt={0}
+              outstandingFIATDebt={0}
+              stabilityFee={0}
+            />
+          )}
+          {stateMachine.context.currentStepNumber === 5 && (
+            <>
+              <div className="content-body-item-body">Summary...</div>
+              <div className="content-body-item-body">
+                <Form.Item>
+                  <Button
+                    disabled={!hasAllowance || !isProxyAvailable}
+                    onClick={() =>
+                      send({
+                        type: 'CONFIRM',
+                        // @ts-ignore TODO types
+                        isAppConnected,
+                        web3Provider,
+                        userActions,
+                        userProxy,
+                        refetchErc20Balance,
+                        allowance,
+                      })
+                    }
+                    type="primary"
+                  >
+                    Confirm
+                  </Button>
+                </Form.Item>
+              </div>
+            </>
+          )}
+        </Form>
+      </div>
     </div>
   )
 }
