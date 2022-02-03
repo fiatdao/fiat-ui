@@ -6,8 +6,8 @@ import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useWithdrawForm } from '@/src/hooks/managePosition'
 import { iconByAddress } from '@/src/utils/managePosition'
-import { Position } from '@/src/utils/your-positions-api'
 import { getNonHumanValue } from '@/src/web3/utils'
+import { Position } from '@/src/hooks/subgraph'
 
 export const WithdrawForm = ({
   refetch,

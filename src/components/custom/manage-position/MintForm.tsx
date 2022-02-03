@@ -8,8 +8,8 @@ import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { useMintForm } from '@/src/hooks/managePosition'
 import { iconByAddress } from '@/src/utils/managePosition'
-import { Position } from '@/src/utils/your-positions-api'
 import { getNonHumanValue } from '@/src/web3/utils'
+import { Position } from '@/src/hooks/subgraph'
 
 export const MintForm = ({
   refetch,
