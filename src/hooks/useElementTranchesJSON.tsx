@@ -17,7 +17,7 @@ export const useTranchePosition = async (id: string) => {
 }
 
 // TODO Return balance
-export const usePositionBalance = (id: string): BigNumber => {
+export const usePositionBalance = (): BigNumber => {
   return ZERO_BN
 }
 
