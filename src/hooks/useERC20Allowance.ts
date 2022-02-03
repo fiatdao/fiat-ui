@@ -14,7 +14,7 @@ export const useERC20Allowance = (tokenAddress: string, spender: string) => {
   const erc20 = useMemo(
     () =>
       isAddress(tokenAddress) && web3Provider
-        ? (new Contract(tokenAddress, contracts.TEST_ERC20.abi, web3Provider?.getSigner()) as ERC20)
+        ? (new Contract(tokenAddress, contracts.ERC_20.abi, web3Provider?.getSigner()) as ERC20)
         : null,
     [tokenAddress, web3Provider],
   )
