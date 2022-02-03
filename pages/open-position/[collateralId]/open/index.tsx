@@ -2,7 +2,6 @@ import s from './s.module.scss'
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import { ethers } from 'ethers'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
@@ -15,6 +14,7 @@ import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 import genericSuspense from '@/src/utils/genericSuspense'
 import { Form } from '@/src/components/antd'
 import { Grid, TokenAmount } from '@/src/components/custom'
+import { BackButton } from '@/src/components/custom/back-button'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import useUserProxy from '@/src/hooks/useUserProxy'
@@ -294,11 +294,7 @@ const OpenPosition = () => {
 
   return (
     <>
-      {/* TODO: implement dynamic titles */}
-      {/*<Header title={`Open ${tokenSymbol} position`} />*/}
-      <Link href="/open-position" passHref>
-        <Button>Back</Button>
-      </Link>
+      <BackButton href="/open-position">Back</BackButton>
       <FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />
     </>
   )
