@@ -27,18 +27,18 @@ import { InfoBlock } from '@/src/components/custom/info-block'
 
 const StepperTitle: React.FC<{
   currentStep: number
-  subtitle: string
+  description: string
   title: string
   totalSteps: number
-}> = ({ currentStep, subtitle, title, totalSteps }) => (
+}> = ({ currentStep, description, title, totalSteps }) => (
   <div className={cn(s.stepperWrapper)}>
     <div className={cn(s.stepperTitleWrapper)}>
-      <h2>{title}</h2>
-      <p className={s.steps}>
+      <h2 className={cn(s.stepperTitle)}>{title}</h2>
+      <div className={s.steps}>
         <span className={s.currentStep}>{currentStep}</span>/{totalSteps}
-      </p>
+      </div>
     </div>
-    <p>{subtitle}</p>
+    <p className={cn(s.stepperDescription)}>{description}</p>
   </div>
 )
 
@@ -120,7 +120,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
     <div className={cn(s.formWrapper)}>
       <StepperTitle
         currentStep={stateMachine.context.currentStepNumber}
-        subtitle={TITLES_BY_STEP[stateMachine.context.currentStepNumber].subtitle}
+        description={TITLES_BY_STEP[stateMachine.context.currentStepNumber].subtitle}
         title={TITLES_BY_STEP[stateMachine.context.currentStepNumber].title}
         totalSteps={stateMachine.context.totalStepNumber}
       />
