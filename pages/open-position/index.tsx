@@ -2,19 +2,21 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
-import { Button } from 'antd'
+import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { Grid, Tab, Tabs } from '@/src/components/custom'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { usePositionsData } from '@/src/hooks/usePositionsData'
 import { PROTOCOLS, Protocol } from '@/types'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
+import ButtonOutline from '@/src/components/antd/button-outline'
+import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
+import Filter from '@/src/resources/svg/filter.svg'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -85,89 +87,95 @@ const FILTERS: FilterData = {
 }
 
 const OpenPosition = () => {
-  const [activeTabKey, setActiveTabKey] = useState('byIssuer')
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
 
   const data = usePositionsData()
+  const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
-  const activateFilter = useCallback((filterName: Protocol | null) => {
-    if (filterName === null) {
-      setFilters(FILTERS)
-      return
-    }
+  const setFilter = useCallback((filterName: Protocol, active: boolean) => {
     setFilters((filters) => {
       const filter = filters[filterName]
-      const active = { ...filter, active: !filter.active }
-      return { ...filters, [filterName]: active }
+      return { ...filters, [filterName]: { ...filter, active: active } }
     })
   }, [])
 
-  enum TabState {
-    ByIssuer = 'byIssuer',
-    ByAsset = 'byAsset',
-  }
+  const activateAllFilters = useCallback(() => {
+    PROTOCOLS.map((asset) => {
+      setFilter(asset, true)
+    })
+  }, [setFilter])
 
-  const tabs = [
-    {
-      key: TabState.ByIssuer,
-      children: 'By Issuer',
-    },
-    {
-      key: TabState.ByAsset,
-      children: 'By Underlying',
-    },
-  ]
+  const clearAllFilters = useCallback(() => {
+    PROTOCOLS.map((asset) => {
+      setFilter(asset, false)
+    })
+  }, [setFilter])
+
+  const renderFilters = () => (
+    <>
+      <ButtonOutline
+        height="lg"
+        isActive={areAllFiltersActive}
+        onClick={() => activateAllFilters()}
+        rounded
+      >
+        All assets
+      </ButtonOutline>
+      {PROTOCOLS.map((asset) => {
+        return (
+          <ButtonOutline
+            height="lg"
+            isActive={filters[asset].active}
+            key={asset}
+            onClick={() => setFilter(asset, !filters[asset].active)}
+            rounded
+          >
+            {filters[asset].icon}
+            {asset}
+          </ButtonOutline>
+        )
+      })}
+    </>
+  )
+
+  const clearButton = () => (
+    <button className={cn(s.clear)} onClick={clearAllFilters}>
+      Clear
+    </button>
+  )
 
   return (
-    <Grid flow="row" rowsTemplate="1fr auto">
-      <Text color="secondary" font="secondary" type="p1" weight="semibold">
-        Select a collateral type to add to your FIAT positions
-      </Text>
-      <Tabs>
-        {tabs.map(({ children, key }, index) => (
-          <Tab isActive={key === activeTabKey} key={index} onClick={() => setActiveTabKey(key)}>
-            {children}
-          </Tab>
-        ))}
-      </Tabs>
-      <div className={cn(s.filterWrapper)}>
-        <Button
-          className={cn(s.pill, {
-            [s.active]: Object.keys(filters).every((s) => filters[s as Protocol].active),
-          })}
-          onClick={() => activateFilter(null)}
-          shape="round"
-          size="large"
-          type="primary"
-        >
-          All assets
-        </Button>
-        {PROTOCOLS.map((asset) => {
-          return (
-            <Button
-              className={cn(s.pill, {
-                [s.active]: filters[asset].active,
-              })}
-              icon={filters[asset].icon}
-              key={asset}
-              onClick={() => activateFilter(asset)}
-              shape="round"
-              size="large"
-              type="primary"
-            >
-              {asset}
-            </Button>
-          )
-        })}
+    <>
+      <h2 className={cn(s.title)}>Select a collateral type to add to your FIAT positions</h2>
+      <div className={cn(s.filters)}>
+        {renderFilters()}
+        {clearButton()}
         <ToggleSwitch
           checked={inMyWallet}
+          className={cn(s.switch)}
           label="In my wallet"
-          onChange={(e) => {
-            setInMyWallet(e.target.checked)
+          onChange={() => {
+            setInMyWallet(!inMyWallet)
           }}
         />
       </div>
+      <Popover
+        arrowContent={false}
+        content={
+          <>
+            <div className={cn(s.fitersGrid)}>{renderFilters()}</div>
+            <div className={cn(s.buttonContainer)}>{clearButton()}</div>
+          </>
+        }
+        placement="bottomLeft"
+        trigger="click"
+      >
+        <ButtonOutlineGradient className={cn(s.filtersButton)} height="lg">
+          Filter
+          <Filter />
+        </ButtonOutlineGradient>
+      </Popover>
       <Table
         columns={Columns}
         dataSource={data}
@@ -201,7 +209,7 @@ const OpenPosition = () => {
           x: true,
         }}
       />
-    </Grid>
+    </>
   )
 }
 

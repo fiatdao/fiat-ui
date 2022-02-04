@@ -18,6 +18,7 @@ type Action<T> =
   | { type: 'fetched'; payload: T }
   | { type: 'error'; payload: Error }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Request<T> = {
   url?: string
   customFetch?: any

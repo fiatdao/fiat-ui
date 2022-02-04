@@ -93,10 +93,3 @@
 
   @include text-gradient();
 }
-
-.popover {
-  :global(.ant-popover-inner) {
-    box-shadow: var(--theme-card-shadow);
-    border-radius: 12px;
-  }
-}

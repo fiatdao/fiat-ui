@@ -1,17 +1,14 @@
 @mixin set-border-radius($button-height) {
   &,
-  .border,
-  .background {
+  .border {
     border-radius: calc(#{$button-height} / 2);
   }
 }
 
-.wrapper {
-  --gap: 2px;
+.background {
   --transition-time: 0.25s;
 
   align-items: center;
-  background-color: var(--theme-border-color);
   border-radius: var(--button-border-radius);
   display: flex;
   height: var(--button-height);
@@ -19,25 +16,13 @@
   position: relative;
 
   .border {
-    background-color: var(--theme-border-color);
     border-radius: var(--button-border-radius);
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    transition: opacity var(--transition-time) linear;
-    width: 100%;
-    z-index: 1;
-  }
-
-  .background {
-    background-color: var(--theme-secondary-block);
-    border-radius: var(--button-border-radius);
+    border: 1px solid var(--theme-border-color);
     display: block;
-    height: calc(100% - var(--gap));
+    height: 100%;
     overflow: hidden;
     position: relative;
-    width: calc(100% - var(--gap));
+    width: 100%;
     z-index: 5;
   }
 
@@ -49,13 +34,16 @@
       border: none;
       color: var(--theme-text-color);
       display: flex;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 500;
       gap: 8px;
       height: 100%;
       justify-content: center;
       line-height: 1.2;
+      padding-left: 25px;
+      padding-right: 25px;
       position: relative;
+      transition: none;
       width: 100%;
       z-index: 5;
     }
@@ -63,21 +51,17 @@
 
   // states
   &:hover,
-  &:focus {
+  &.active {
     background-image: linear-gradient(90deg, var(--theme-color-2) 0%, var(--theme-color-3) 100%);
 
     .border {
-      opacity: 0;
+      border-color: transparent;
     }
 
     .button {
       &:global(.ant-btn) {
+        background-color: rgba(23, 23, 23, 0.9);
         color: var(--theme-text-color);
-        background: linear-gradient(
-          90deg,
-          rgba(255, 149, 116, 0.1) 0%,
-          rgba(255, 76, 140, 0.1) 100%
-        );
       }
     }
   }
