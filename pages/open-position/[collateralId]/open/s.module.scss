@@ -74,5 +74,26 @@
 }
 
 .radioTabsWrapper {
-  margin-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.balanceWrapper {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.balanceLabel {
+  color: var(--theme-text-color);
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.balance {
+  color: var(--theme-light-text-color);
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
 }

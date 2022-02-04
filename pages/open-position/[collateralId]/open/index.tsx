@@ -25,6 +25,7 @@ import { TestERC20 } from '@/types/typechain'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { InfoBlock } from '@/src/components/custom/info-block'
+import ButtonGradient from '@/src/components/antd/button-gradient'
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -136,64 +137,57 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
             Underlying
           </RadioTab>
         </RadioTabsWrapper>
-        <Grid align="center" colsTemplate="auto auto" flow="col">
-          <h3>Deposit {stateMachine.context.tokenSymbol}</h3>
-          <p className={s.currentValue}>Current value: {humanReadableValue?.toFixed()}</p>
-        </Grid>
+        {[1, 4].includes(stateMachine.context.currentStepNumber) && (
+          <div className={cn(s.balanceWrapper)}>
+            <h3 className={cn(s.balanceLabel)}>Deposit {stateMachine.context.tokenSymbol}</h3>
+            <p className={cn(s.balance)}>Available: {humanReadableValue?.toFixed()}</p>
+          </div>
+        )}
         <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
           {[1, 4].includes(stateMachine.context.currentStepNumber) && (
-            <div className="content-body-item-body">
-              <Form.Item name="tokenAmount" required>
-                <TokenAmount
-                  displayDecimals={4}
-                  max={humanReadableValue}
-                  maximumFractionDigits={6}
-                  onChange={(val) => val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })}
-                  slider
-                  tokenIcon={<ElementIcon />}
-                />
-              </Form.Item>
-            </div>
+            <Form.Item name="tokenAmount" required>
+              <TokenAmount
+                displayDecimals={4}
+                max={humanReadableValue}
+                maximumFractionDigits={6}
+                onChange={(val) => val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })}
+                slider
+                tokenIcon={<ElementIcon />}
+              />
+            </Form.Item>
           )}
           {stateMachine.context.currentStepNumber === 1 && (
             <>
               {!isProxyAvailable && (
-                <div className="content-body-item-body">
-                  <Button
-                    disabled={!stateMachine.context.erc20Amount.gt(0)}
-                    onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
-                  >
-                    Setup Proxy
-                  </Button>
-                </div>
+                <ButtonGradient
+                  disabled={!stateMachine.context.erc20Amount.gt(0)}
+                  height="lg"
+                  onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
+                >
+                  Setup Proxy
+                </ButtonGradient>
               )}
 
               {!hasAllowance && (
-                <div className="content-body-item-body">
-                  <Button
-                    disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
-                    onClick={() => send({ type: 'CLICK_ALLOW' })}
-                  >
-                    Allow Collateral management
-                  </Button>
-                </div>
+                <ButtonGradient
+                  disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
+                  onClick={() => send({ type: 'CLICK_ALLOW' })}
+                >
+                  Allow Collateral management
+                </ButtonGradient>
               )}
             </>
           )}
 
           {stateMachine.context.currentStepNumber === 2 && (
-            <div className="content-body-item-body">
-              <Button loading={loadingProxy} onClick={setupProxy}>
-                Create Proxy
-              </Button>
-            </div>
+            <ButtonGradient loading={loadingProxy} onClick={setupProxy}>
+              Create Proxy
+            </ButtonGradient>
           )}
           {stateMachine.context.currentStepNumber === 3 && (
-            <div className="content-body-item-body">
-              <Button loading={loadingApprove} onClick={approve}>
-                Approve
-              </Button>
-            </div>
+            <ButtonGradient loading={loadingApprove} onClick={approve}>
+              Approve
+            </ButtonGradient>
           )}
 
           {stateMachine.context.currentStepNumber === 4 && (
