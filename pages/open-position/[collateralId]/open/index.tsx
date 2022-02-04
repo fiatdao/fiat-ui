@@ -3,7 +3,7 @@ import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import { ethers } from 'ethers'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import BigNumber from 'bignumber.js'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
@@ -15,6 +15,7 @@ import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 import genericSuspense from '@/src/utils/genericSuspense'
 import { Form } from '@/src/components/antd'
 import { Grid, TokenAmount } from '@/src/components/custom'
+import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { BackButton } from '@/src/components/custom/back-button'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
@@ -116,6 +117,8 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
     if (hasAllowance) send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
   }, [hasAllowance, send])
 
+  const [tab, setTab] = useState('bond')
+
   return (
     <div className={cn(s.formWrapper)}>
       <StepperTitle
@@ -125,6 +128,14 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
         totalSteps={stateMachine.context.totalStepNumber}
       />
       <div className={cn(s.form)}>
+        <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
+          <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
+            Bond
+          </RadioTab>
+          <RadioTab checked={tab === 'underlying'} onClick={() => setTab('underlying')}>
+            Underlying
+          </RadioTab>
+        </RadioTabsWrapper>
         <Grid align="center" colsTemplate="auto auto" flow="col">
           <h3>Deposit {stateMachine.context.tokenSymbol}</h3>
           <p className={s.currentValue}>Current value: {humanReadableValue?.toFixed()}</p>
