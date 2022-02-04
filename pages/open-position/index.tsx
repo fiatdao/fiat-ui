@@ -1,7 +1,9 @@
 import s from './s.module.scss'
+import { transformCollaterals } from './utils'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
+import useSWR from 'swr'
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
@@ -17,6 +19,10 @@ import { Asset } from '@/src/components/custom/asset'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Filter from '@/src/resources/svg/filter.svg'
+import { COLLATERALS } from '@/src/queries/collaterals'
+import { swrFetcher } from '@/src/utils/graphqlFetcher'
+import { collaterals } from '@/types/subgraph/__generated__/collaterals'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -92,6 +98,16 @@ const OpenPosition = () => {
 
   const data = usePositionsData()
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
+
+  const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
+
+  const { data: datagraph, error: errorgraph } = useSWR(COLLATERALS, (url) =>
+    swrFetcher<collaterals, null>(url, null).then((data) =>
+      transformCollaterals(data, provider, appChainId),
+    ),
+  )
+
+  console.log('useSWR+GQL', { datagraph, errorgraph })
 
   const setFilter = useCallback((filterName: Protocol, active: boolean) => {
     setFilters((filters) => {

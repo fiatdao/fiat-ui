@@ -61,7 +61,7 @@ export const contracts = constantContracts({
   COLLYBUS: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x52702F27CeAde257f03D44f45c36F7467FF2058C',
+      [Chains.goerli]: '0x5438Fd8541135676e990295C1cd62EF779b05Ebb',
     },
     abi: collybus,
   },
