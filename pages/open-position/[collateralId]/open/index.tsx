@@ -14,7 +14,7 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 import genericSuspense from '@/src/utils/genericSuspense'
 import { Form } from '@/src/components/antd'
-import { Grid, TokenAmount } from '@/src/components/custom'
+import TokenAmount from '@/src/components/custom/token-amount'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { BackButton } from '@/src/components/custom/back-button'
 import ElementIcon from '@/src/resources/svg/element.svg'
@@ -44,33 +44,33 @@ const StepperTitle: React.FC<{
   </div>
 )
 
-const OpenPositionSummary: React.FC<{
-  currentCollateralValue: number
-  outstandingFIATDebt: number
-  newFIATDebt: number
-  stabilityFee: number
-}> = ({ currentCollateralValue, newFIATDebt, outstandingFIATDebt, stabilityFee }) => {
-  return (
-    <Grid className={s.summary} flow="row" gap={8}>
-      <Grid colsTemplate="auto auto" flow="col">
-        <div className={s.summaryTitle}>Current collateral value</div>
-        <div className={s.summaryValue}>{currentCollateralValue}</div>
-      </Grid>
-      <Grid colsTemplate="auto auto" flow="col">
-        <div className={s.summaryTitle}>Outstanding FIAT debt</div>
-        <div className={s.summaryValue}>{outstandingFIATDebt}</div>
-      </Grid>
-      <Grid colsTemplate="auto auto" flow="col">
-        <div className={s.summaryTitle}>New FIAT debt</div>
-        <div className={s.summaryValue}>{newFIATDebt}</div>
-      </Grid>
-      <Grid colsTemplate="auto auto" flow="col">
-        <div className={s.summaryTitle}>Stability fee</div>
-        <div className={s.summaryValue}>{stabilityFee}</div>
-      </Grid>
-    </Grid>
-  )
-}
+// const OpenPositionSummary: React.FC<{
+//   currentCollateralValue: number
+//   outstandingFIATDebt: number
+//   newFIATDebt: number
+//   stabilityFee: number
+// }> = ({ currentCollateralValue, newFIATDebt, outstandingFIATDebt, stabilityFee }) => {
+//   return (
+//     <Grid className={s.summary} flow="row" gap={8}>
+//       <Grid colsTemplate="auto auto" flow="col">
+//         <div className={s.summaryTitle}>Current collateral value</div>
+//         <div className={s.summaryValue}>{currentCollateralValue}</div>
+//       </Grid>
+//       <Grid colsTemplate="auto auto" flow="col">
+//         <div className={s.summaryTitle}>Outstanding FIAT debt</div>
+//         <div className={s.summaryValue}>{outstandingFIATDebt}</div>
+//       </Grid>
+//       <Grid colsTemplate="auto auto" flow="col">
+//         <div className={s.summaryTitle}>New FIAT debt</div>
+//         <div className={s.summaryValue}>{newFIATDebt}</div>
+//       </Grid>
+//       <Grid colsTemplate="auto auto" flow="col">
+//         <div className={s.summaryTitle}>Stability fee</div>
+//         <div className={s.summaryValue}>{stabilityFee}</div>
+//       </Grid>
+//     </Grid>
+//   )
+// }
 
 type FormProps = { tokenAmount: BigNumber; fiatAmount: BigNumber }
 
@@ -129,14 +129,16 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
         totalSteps={stateMachine.context.totalStepNumber}
       />
       <div className={cn(s.form)}>
-        <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
-          <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
-            Bond
-          </RadioTab>
-          <RadioTab checked={tab === 'underlying'} onClick={() => setTab('underlying')}>
-            Underlying
-          </RadioTab>
-        </RadioTabsWrapper>
+        {stateMachine.context.currentStepNumber === 1 && (
+          <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
+            <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
+              Bond
+            </RadioTab>
+            <RadioTab checked={tab === 'underlying'} onClick={() => setTab('underlying')}>
+              Underlying
+            </RadioTab>
+          </RadioTabsWrapper>
+        )}
         {[1, 4].includes(stateMachine.context.currentStepNumber) && (
           <div className={cn(s.balanceWrapper)}>
             <h3 className={cn(s.balanceLabel)}>Deposit {stateMachine.context.tokenSymbol}</h3>
@@ -167,18 +169,16 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                   Setup Proxy
                 </ButtonGradient>
               )}
-
               {!hasAllowance && (
                 <ButtonGradient
                   disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
                   onClick={() => send({ type: 'CLICK_ALLOW' })}
                 >
-                  Allow Collateral management
+                  Set Allowance
                 </ButtonGradient>
               )}
             </>
           )}
-
           {stateMachine.context.currentStepNumber === 2 && (
             <ButtonGradient loading={loadingProxy} onClick={setupProxy}>
               Create Proxy
@@ -189,36 +189,31 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
               Approve
             </ButtonGradient>
           )}
-
           {stateMachine.context.currentStepNumber === 4 && (
             <>
-              <div className="content-body-item-body">
-                <Form.Item name="fiatAmount" required>
-                  <TokenAmount
-                    disabled={false}
-                    displayDecimals={4}
-                    max={stateMachine.context.erc20Amount.toNumber()}
-                    maximumFractionDigits={6}
-                    onChange={(val) => val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })}
-                    slider
-                    tokenIcon={<FiatIcon />}
-                  />
-                </Form.Item>
-              </div>
-              <div className="content-body-item-body">
-                <Button onClick={() => send({ type: 'CLICK_DEPLOY' })}>Deposit collateral</Button>
-              </div>
+              <Form.Item name="fiatAmount" required>
+                <TokenAmount
+                  disabled={false}
+                  displayDecimals={4}
+                  max={stateMachine.context.erc20Amount.toNumber()}
+                  maximumFractionDigits={6}
+                  onChange={(val) => val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })}
+                  slider
+                  tokenIcon={<FiatIcon />}
+                />
+              </Form.Item>
+              <Button onClick={() => send({ type: 'CLICK_DEPLOY' })}>Deposit collateral</Button>
             </>
           )}
-
-          {[1, 4, 5].includes(stateMachine.context.currentStepNumber) && (
+          {/* Not sure if this is included anymore... */}
+          {/* {[1, 4, 5].includes(stateMachine.context.currentStepNumber) && (
             <OpenPositionSummary
               currentCollateralValue={stateMachine.context.erc20Amount.toNumber()}
               newFIATDebt={0}
               outstandingFIATDebt={0}
               stabilityFee={0}
             />
-          )}
+          )} */}
           {stateMachine.context.currentStepNumber === 5 && (
             <>
               <div className="content-body-item-body">Summary...</div>
