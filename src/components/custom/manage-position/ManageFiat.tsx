@@ -25,7 +25,7 @@ export const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) =
 
   const [collateralAddress] = useContractCall(
     vaultAddress,
-    contracts.VAULT_EPT.abi,
+    contracts.VAULT_20.abi,
     'getTokenAddress',
     [tokenId],
   )

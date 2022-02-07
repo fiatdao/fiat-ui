@@ -19,7 +19,7 @@ import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
-import { TestERC20 } from '@/types/typechain'
+import { ERC20 } from '@/types/typechain'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 
@@ -128,7 +128,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
 
   const userActions = useUserActions()
   const [balance, refetchErc20Balance] = useContractCall<
-    TestERC20,
+    ERC20,
     'balanceOf',
     [string],
     Promise<ethers.BigNumber>

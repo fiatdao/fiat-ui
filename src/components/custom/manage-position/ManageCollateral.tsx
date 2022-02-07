@@ -26,7 +26,7 @@ export const ManageCollateral = ({ activeTabKey, setActiveTabKey }: ManageCollat
 
   const [collateralAddress] = useContractCall(
     vaultAddress,
-    contracts.VAULT_EPT.abi,
+    contracts.VAULT_20.abi,
     'getTokenAddress',
     [tokenId],
   )
