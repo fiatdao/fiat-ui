@@ -1,24 +1,47 @@
 import gql from 'graphql-tag'
 
 export const POSITIONS = gql`
-  query positions($user: Bytes!) {
-    positions(where: { user: $user }) {
+  query positions {
+    positions {
       id
-      tokenId
-      user
-      collateral
-      normalDebt
       vault {
         id
-        name
         address
-        underlyingAsset
+        name
+        type
+        collaterizationRatio
       }
+      vaultName
+      collateral {
+        id
+        tokenId
+        address
+        symbol
+        maturity
+        underlierSymbol
+        underlierAddress
+        vaultName
+      }
+      userPosition {
+        id
+        userAddress
+        totalCollateral
+        totalFIAT
+      }
+      totalCollateral
+      totalNormalDebt
+      maturity
       positionTransactions {
         id
         type
         collateral
+        deltaCollateral
         normalDebt
+        deltaNormalDebt
+        transactionHash
+        vaultName
+        tokenId
+        user
       }
     }
   }

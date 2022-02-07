@@ -35,7 +35,7 @@ const YourPositions = () => {
   const [isLoadingPage, setIsLoadingPage] = useState(false)
   const [pageInformation, setPageInformation] = useState<YourPositionPageInformation>()
 
-  const { positionTransactions: transactions, positions } = usePositions(address!, provider)
+  const { positionTransactions: transactions, positions } = usePositions(address)
 
   useEffect(() => {
     const init = async () => {
