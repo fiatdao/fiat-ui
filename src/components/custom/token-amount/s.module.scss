@@ -1,22 +1,37 @@
 .component {
+  --group-height: 62px;
+
   :global(.ant-input-group) {
-    height: 64px;
+    height: var(--group-height);
+    border: 1px solid var(--theme-border-color);
 
     :global(.ant-input) {
-      height: 64px;
+      height: var(--group-height);
     }
 
     :global(.ant-input-group-addon) {
       &:first-of-type {
-        width: 64px;
-        padding: 0 20px;
+        background-color: transparent;
+        border-right-color: var(--theme-border-color);
+        height: var(--group-height);
+        padding: 0;
+        width: var(--group-height);
+      }
+    }
+
+    :global(.ant-input-group-addon) {
+      &:last-of-type {
+        background-color: transparent;
+        height: var(--group-height);
       }
     }
   }
 }
 
-.maxBtn {
-  @media (max-width: 767px) {
-    padding: 14px;
-  }
+.iconsWrapper {
+  align-items: center;
+  display: flex;
+  height: var(--group-height);
+  justify-content: center;
+  width: var(--group-height);
 }
