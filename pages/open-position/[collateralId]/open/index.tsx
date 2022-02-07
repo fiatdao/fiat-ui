@@ -159,7 +159,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
             </Form.Item>
           )}
           {stateMachine.context.currentStepNumber === 1 && (
-            <>
+            <div className={s.buttonsWrapper}>
               {!isProxyAvailable && (
                 <ButtonGradient
                   disabled={!stateMachine.context.erc20Amount.gt(0)}
@@ -177,12 +177,17 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                   Set Allowance
                 </ButtonGradient>
               )}
-            </>
+            </div>
           )}
           {stateMachine.context.currentStepNumber === 2 && (
-            <ButtonGradient loading={loadingProxy} onClick={setupProxy}>
-              Create Proxy
-            </ButtonGradient>
+            <div className={s.buttonsWrapper}>
+              <ButtonGradient loading={loadingProxy} onClick={setupProxy}>
+                Create Proxy
+              </ButtonGradient>
+              <button className={s.backButton} onClick={() => console.log('go back')}>
+                &#8592; Go back
+              </button>
+            </div>
           )}
           {stateMachine.context.currentStepNumber === 3 && (
             <ButtonGradient loading={loadingApprove} onClick={approve}>
@@ -217,28 +222,26 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
           {stateMachine.context.currentStepNumber === 5 && (
             <>
               <div className="content-body-item-body">Summary...</div>
-              <div className="content-body-item-body">
-                <Form.Item>
-                  <Button
-                    disabled={!hasAllowance || !isProxyAvailable}
-                    onClick={() =>
-                      send({
-                        type: 'CONFIRM',
-                        // @ts-ignore TODO types
-                        isAppConnected,
-                        web3Provider,
-                        userActions,
-                        userProxy,
-                        refetchErc20Balance,
-                        allowance,
-                      })
-                    }
-                    type="primary"
-                  >
-                    Confirm
-                  </Button>
-                </Form.Item>
-              </div>
+              <Form.Item>
+                <Button
+                  disabled={!hasAllowance || !isProxyAvailable}
+                  onClick={() =>
+                    send({
+                      type: 'CONFIRM',
+                      // @ts-ignore TODO types
+                      isAppConnected,
+                      web3Provider,
+                      userActions,
+                      userProxy,
+                      refetchErc20Balance,
+                      allowance,
+                    })
+                  }
+                  type="primary"
+                >
+                  Confirm
+                </Button>
+              </Form.Item>
             </>
           )}
         </Form>

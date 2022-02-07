@@ -1,3 +1,5 @@
+@import 'src/styles/text-gradient';
+
 .mainContainer {
   --gap: 24px;
 
@@ -96,4 +98,20 @@
   font-size: 12px;
   font-weight: 500;
   margin: 0;
+}
+
+.buttonsWrapper {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1fr;
+}
+
+.backButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  height: 24px;
+  padding: 0;
+
+  @include text-gradient();
 }
