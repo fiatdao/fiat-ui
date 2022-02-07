@@ -1,5 +1,6 @@
 import useSWR from 'swr'
 import { useEffect, useState } from 'react'
+import { BigNumber } from 'ethers'
 import { USER_PROXY } from '@/src/queries/userProxy'
 import { swrFetcher } from '@/src/utils/graphqlFetcher'
 import { userProxy, userProxyVariables } from '@/types/subgraph/__generated__/userProxy'
@@ -53,6 +54,8 @@ export const transformPosition = (
   const fiat = bigNumberToDecimal(position.totalNormalDebt)
   const collateral = bigNumberToDecimal(position.totalCollateral)
   const maturity = position.collateral?.maturity
+    ? BigNumber.from(position.collateral.maturity)
+    : undefined
   const name = position.vaultName
 
   const ltv = fiat / collateral
@@ -92,15 +95,7 @@ export const transformPosition = (
   return [newPosition, newPositionTransactions]
 }
 
-export const useUserProxy = (address: string) => {
-  const { data } = useSWR([USER_PROXY, address], (url, value) =>
-    swrFetcher<userProxy, userProxyVariables>(url, { id: value }),
-  )
-
-  return data?.userProxy?.proxyAddress || ''
-}
-
-const wrangePositions = ({ positions: rawPositions }: positions) => {
+export const wrangePositions = ({ positions: rawPositions }: positions) => {
   const pTxs = []
   const p = []
 
@@ -111,6 +106,14 @@ const wrangePositions = ({ positions: rawPositions }: positions) => {
   }
 
   return { positions: p, positionTransactions: pTxs }
+}
+
+export const useUserProxy = (address: string) => {
+  const { data } = useSWR([USER_PROXY, address], (url, value) =>
+    swrFetcher<userProxy, userProxyVariables>(url, { id: value }),
+  )
+
+  return data?.userProxy?.proxyAddress || ''
 }
 
 /**

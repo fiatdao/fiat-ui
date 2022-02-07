@@ -1,17 +1,15 @@
+import { usePosition } from './subgraph/usePosition'
 import { BigNumber as EthersBN } from '@ethersproject/bignumber'
 import { Contract, ContractTransaction } from '@ethersproject/contracts'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import useSWR from 'swr'
-import { isValidPositionId, isValidPositionIdType } from '@/src/utils/managePosition'
 import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { fetchPositionById } from '@/src/utils/your-positions-api'
 import { getHumanValue } from '@/src/web3/utils'
 import { ERC20, FIAT, Vault20 } from '@/types/typechain'
 
@@ -125,19 +123,10 @@ export const useBurnForm = () => {
 
 export const useManagePositionInfo = () => {
   const {
-    query: { positionId },
+    query: { positionId }, // TODO Query guard.
   } = useRouter()
-  const { isWalletConnected } = useWeb3Connection()
+  // const { isWalletConnected } = useWeb3Connection()
+  // TODO Pass enabled: isWalletConnected && isValidPositionIdType(positionId) && isValidPositionId(positionId)
 
-  const { data, error, mutate } = useSWR([positionId], () => {
-    if (isWalletConnected && isValidPositionIdType(positionId) && isValidPositionId(positionId)) {
-      return fetchPositionById(positionId).then(([position]) => position)
-    }
-  })
-
-  if (error) {
-    console.error('Failed to retrieve PositionId information', error)
-  }
-
-  return { data, mutate }
+  return usePosition(positionId as string)
 }

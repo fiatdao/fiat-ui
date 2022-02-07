@@ -2,7 +2,7 @@ import { BurnForm } from '@/src/components/custom/manage-position/BurnForm'
 import { MintForm } from '@/src/components/custom/manage-position/MintForm'
 import { Tab, Tabs } from '@/src/components/custom'
 import { useManagePositionInfo } from '@/src/hooks/managePosition'
-import { extractPositionIdData } from '@/src/utils/managePosition'
+import { useExtractPositionIdData } from '@/src/utils/managePosition'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 export const isFiatTab = (key: string): key is ManageFiatProps['activeTabKey'] => {
@@ -15,9 +15,9 @@ export interface ManageFiatProps {
 }
 
 export const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) => {
-  const { data: position, mutate: refetchPosition } = useManagePositionInfo()
+  const { position, refetch: refetchPosition } = useManagePositionInfo()
 
-  const { vaultAddress } = extractPositionIdData(position?.action?.data?.positionId as string)
+  const { vaultAddress } = useExtractPositionIdData()
 
   return (
     <>

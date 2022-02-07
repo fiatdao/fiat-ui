@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SWRConfig } from 'swr'
 import { Layout } from 'antd'
+import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client'
 import GeneralContextProvider from '@/src/providers/generalProvider'
 import ToastContainer from '@/src/components/custom/toast'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
@@ -13,6 +14,7 @@ import Spin from '@/src/components/antd/spin'
 
 import '@/src/styles/index.scss'
 import { Header } from '@/src/components/custom/header'
+import { SUBGRAPH_API } from '@/src/constants/misc'
 
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
@@ -24,6 +26,11 @@ function App({ Component, pageProps }: AppProps) {
   const title = 'FIAT'
   const description = 'FIAT'
   const twitterHandle = '@'
+
+  const client = new ApolloClient({
+    uri: SUBGRAPH_API,
+    cache: new InMemoryCache(),
+  })
 
   return (
     <>
@@ -51,18 +58,20 @@ function App({ Component, pageProps }: AppProps) {
       <GeneralContextProvider>
         <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
           <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
-            <Web3ConnectionProvider fallback={<Spin />}>
-              <Layout style={{ minHeight: '100vh' }}>
-                <Sidebar />
-                <Layout>
-                  <Header />
-                  <Layout.Content>
-                    <Component {...pageProps} />
-                  </Layout.Content>
+            <ApolloProvider client={client}>
+              <Web3ConnectionProvider fallback={<Spin />}>
+                <Layout style={{ minHeight: '100vh' }}>
+                  <Sidebar />
+                  <Layout>
+                    <Header />
+                    <Layout.Content>
+                      <Component {...pageProps} />
+                    </Layout.Content>
+                  </Layout>
                 </Layout>
-              </Layout>
-              <WrongNetwork />
-            </Web3ConnectionProvider>
+                <WrongNetwork />
+              </Web3ConnectionProvider>
+            </ApolloProvider>
           </ErrorBoundary>
         </SWRConfig>
       </GeneralContextProvider>

@@ -1,7 +1,6 @@
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { KeyedMutator } from 'swr'
 import { ZERO_ADDRESS, ZERO_BN } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
@@ -10,14 +9,14 @@ import { contracts } from '@/src/constants/contracts'
 import { useMintForm } from '@/src/hooks/managePosition'
 import { iconByAddress } from '@/src/utils/managePosition'
 import { getNonHumanValue } from '@/src/web3/utils'
-import { Position } from '@/src/hooks/subgraph'
+import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
 
 export const MintForm = ({
   refetch,
   userBalance,
   vaultAddress,
 }: {
-  refetch: KeyedMutator<Position | undefined>
+  refetch: RefetchPositionById
   userBalance?: number
   vaultAddress: string
 }) => {

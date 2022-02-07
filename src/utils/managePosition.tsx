@@ -1,4 +1,6 @@
+import isDev from './isDev'
 import { ReactNode } from 'react'
+import { useRouter } from 'next/router'
 import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import ElementIcon from '@/src/resources/svg/element.svg'
@@ -21,6 +23,7 @@ export const iconByAddress = new Proxy<Record<string, ReactNode>>(
 export const isValidPositionIdType = (
   positionId: string | string[] | undefined,
 ): positionId is string => {
+  console.log({ positionIsValid: typeof positionId === 'string' })
   return typeof positionId === 'string'
 }
 
@@ -29,22 +32,28 @@ export const isValidPositionId = (positionId: string | string[] | undefined): bo
     return false
   }
 
-  const positionIdRegex = new RegExp(/^(0x[a-f0-9]{40})-(0x[a-f0-9]{40})-(0x[a-f0-9]{40})$/, 'ig')
+  const positionIdRegex = new RegExp(/^(0x[a-f0-9]{40})-(0x[a-f0-9]{1,40})-(0x[a-f0-9]{40})$/, 'ig')
+  console.log({ re: positionIdRegex.test(positionId) })
   return positionIdRegex.test(positionId)
 }
 
-export const extractPositionIdData = (
-  positionId?: string,
-): { vaultAddress: string; tokenId: string; proxyAddress: string } => {
-  if (!isValidPositionIdType(positionId) || !isValidPositionId(positionId)) {
-    const error = new Error('Invalid position Id')
-    error.name = 'INVALID_POSITION_ID'
+export const useExtractPositionIdData = (): {
+  vaultAddress: string
+  tokenId: string
+  proxyAddress: string
+} => {
+  const {
+    query: { positionId }, // TODO Query guard.
+  } = useRouter()
 
-    throw error
+  if (!isValidPositionIdType(positionId) || !isValidPositionId(positionId)) {
+    if (isDev()) {
+      console.error('Invalid position id')
+    }
   }
 
-  const [vaultAddress, tokenIdInHex, proxyAddress] = positionId.split('-')
-  const tokenId = BigInt(tokenIdInHex).toString()
+  const [vaultAddress, tokenId, proxyAddress] = (positionId as string).split('-')
+  // const tokenId = BigInt(tokenIdInHex).toString()
 
   return { vaultAddress, tokenId, proxyAddress }
 }
