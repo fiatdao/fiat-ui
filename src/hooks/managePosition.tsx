@@ -44,7 +44,7 @@ export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }) => {
     }
   }, [tokenAddress, readOnlyAppProvider, address])
 
-  return { tokenInfo, userActions, userProxy }
+  return { address, tokenInfo, userActions, userProxy }
 }
 
 export const useWithdrawForm = ({ vaultAddress }: { vaultAddress: string }) => {
@@ -68,7 +68,7 @@ export const useWithdrawForm = ({ vaultAddress }: { vaultAddress: string }) => {
     }
   }, [address, readOnlyAppProvider, vaultAddress])
 
-  return { userActions, userProxy, vaultInfo }
+  return { address, userActions, userProxy, vaultInfo }
 }
 
 export const useMintForm = ({ vaultAddress }: { vaultAddress: string }) => {
@@ -92,7 +92,7 @@ export const useMintForm = ({ vaultAddress }: { vaultAddress: string }) => {
     }
   }, [address, readOnlyAppProvider, vaultAddress])
 
-  return { userActions, userProxy, vaultInfo }
+  return { address, userActions, userProxy, vaultInfo }
 }
 
 export const useBurnForm = () => {
@@ -120,23 +120,18 @@ export const useBurnForm = () => {
     }
   }, [address, userProxy, userProxyAddress, web3Provider])
 
-  return { fiatInfo, userActions, userProxy }
+  return { address, fiatInfo, userActions, userProxy }
 }
 
 export const useManagePositionInfo = () => {
   const {
     query: { positionId },
   } = useRouter()
-  const { isWalletConnected, readOnlyAppProvider: provider } = useWeb3Connection()
+  const { isWalletConnected } = useWeb3Connection()
 
   const { data, error, mutate } = useSWR([positionId], () => {
-    if (
-      isWalletConnected &&
-      provider &&
-      isValidPositionIdType(positionId) &&
-      isValidPositionId(positionId)
-    ) {
-      return fetchPositionById(positionId, provider).then(([position]) => position)
+    if (isWalletConnected && isValidPositionIdType(positionId) && isValidPositionId(positionId)) {
+      return fetchPositionById(positionId).then(([position]) => position)
     }
   })
 

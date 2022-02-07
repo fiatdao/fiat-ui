@@ -6,19 +6,14 @@ import {
   transformPosition,
 } from '../hooks/subgraph'
 import { min } from 'date-fns'
-import { Web3Context } from '@/src/providers/web3ConnectionProvider'
 
 /**
  * Fetches Position information by its ID
  *
  * @param {string} positionId
- * @param {Web3Context['readOnlyAppProvider']} provider
  * @returns {Promise<[Position, Array<PositionTransaction>]>}
  */
-const fetchPositionById = (
-  positionId: string,
-  provider: Web3Context['readOnlyAppProvider'],
-): Promise<[Position, PositionTransaction[]]> => {
+const fetchPositionById = (positionId: string): Promise<[Position, PositionTransaction[]]> => {
   const vaultKeys = 'vault {id,name,address,underlyingAsset}'
   const transactionKeys = 'positionTransactions {id,type,collateral,normalDebt}'
   const keys = `{id,tokenId,user,collateral,normalDebt,${vaultKeys},${transactionKeys}}`
@@ -31,7 +26,7 @@ const fetchPositionById = (
   })
     .then((response) => response.json())
     .then((jsonResponse) => jsonResponse.data.position)
-    .then((position) => transformPosition(position, provider))
+    .then(transformPosition)
 }
 
 /**

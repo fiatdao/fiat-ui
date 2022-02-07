@@ -176,7 +176,7 @@ const stepperMachine = createMachine<Context, Events>(
           if (isAppConnected && web3Provider) {
             try {
               // TODO Hardcoded decimals
-              const _erc20Amount = getNonHumanValue(erc20Amount, contracts.ERC_20.decimals)
+              const _erc20Amount = getNonHumanValue(erc20Amount, 18)
               const _fiatAmount = getNonHumanValue(fiatAmount, contracts.FIAT.decimals)
               // console.log(_erc20Amount.toFixed(), _fiatAmount.toFixed())
 
@@ -184,14 +184,19 @@ const stepperMachine = createMachine<Context, Events>(
               //   await approve()
               // }
 
+              // TODO: finish implementing
+              // const encodedFunctionData = userActions.interface.encodeFunctionData(
+              //   'modifyCollateralAndDebt',
+              //   [VAULT_ADDRESS, tokenAddress],
+              // )
+
               // TODO Extract logic to be agnostic of protocol used (vault). addCollateral('element', token, amount, fiat)
               let encodedFunctionData = ''
               if (fiatAmount.eq(0)) {
-                encodedFunctionData = userActions.interface.encodeFunctionData('addCollateral', [
-                  VAULT_ADDRESS,
-                  tokenAddress,
-                  _erc20Amount.toFixed(),
-                ])
+                encodedFunctionData = userActions.interface.encodeFunctionData(
+                  'modifyCollateralAndDebt',
+                  [VAULT_ADDRESS, tokenAddress, _erc20Amount.toFixed()],
+                )
               } else {
                 encodedFunctionData = userActions.interface.encodeFunctionData(
                   'addCollateralAndIncreaseDebt',
