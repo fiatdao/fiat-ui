@@ -1,5 +1,4 @@
 import s from './s.module.scss'
-import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import { ethers } from 'ethers'
 import { useRouter } from 'next/router'
@@ -19,6 +18,8 @@ import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { BackButton } from '@/src/components/custom/back-button'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import Plus from '@/src/resources/svg/gradient-plus.svg'
+import Less from '@/src/resources/svg/gradient-less.svg'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { TestERC20 } from '@/types/typechain'
@@ -26,6 +27,7 @@ import { useUserActions } from '@/src/hooks/useUserActions'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import ButtonGradient from '@/src/components/antd/button-gradient'
+import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -119,6 +121,9 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
   }, [hasAllowance, send])
 
   const [tab, setTab] = useState('bond')
+  const [mintFiat, setMintFiat] = useState(false)
+
+  const toggleMintFiat = () => setMintFiat(!mintFiat)
 
   return (
     <div className={cn(s.formWrapper)}>
@@ -172,6 +177,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
               {!hasAllowance && (
                 <ButtonGradient
                   disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
+                  height="lg"
                   onClick={() => send({ type: 'CLICK_ALLOW' })}
                 >
                   Set Allowance
@@ -181,7 +187,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
           )}
           {stateMachine.context.currentStepNumber === 2 && (
             <div className={s.buttonsWrapper}>
-              <ButtonGradient loading={loadingProxy} onClick={setupProxy}>
+              <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
                 Create Proxy
               </ButtonGradient>
               <button className={s.backButton} onClick={() => console.log('go back')}>
@@ -190,24 +196,52 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
             </div>
           )}
           {stateMachine.context.currentStepNumber === 3 && (
-            <ButtonGradient loading={loadingApprove} onClick={approve}>
-              Approve
+            <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
+              Set Allowance for TOKEN_NAME
             </ButtonGradient>
           )}
           {stateMachine.context.currentStepNumber === 4 && (
             <>
-              <Form.Item name="fiatAmount" required>
-                <TokenAmount
-                  disabled={false}
-                  displayDecimals={4}
-                  max={stateMachine.context.erc20Amount.toNumber()}
-                  maximumFractionDigits={6}
-                  onChange={(val) => val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })}
-                  slider
-                  tokenIcon={<FiatIcon />}
-                />
-              </Form.Item>
-              <Button onClick={() => send({ type: 'CLICK_DEPLOY' })}>Deposit collateral</Button>
+              {mintFiat && (
+                <div className={cn(s.fiatWrapper)}>
+                  <button className={cn(s.fiatWrapperTop)} onClick={() => toggleMintFiat()}>
+                    <span className={cn(s.fiatWrapperTopInner)}>
+                      <Less /> <span>Mint FIAT with this transaction</span>
+                    </span>
+                  </button>
+                  <div className={cn(s.fiatWrapperContents)}>
+                    <div className={cn(s.fiatWrapperContentsInner)}>
+                      <div className={cn(s.balanceWrapper)}>
+                        <h3 className={cn(s.balanceLabel)}>Mint FIAT</h3>
+                        <p className={cn(s.balance)}>Available: 4,800</p>
+                      </div>
+                      <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
+                        <TokenAmount
+                          disabled={false}
+                          displayDecimals={4}
+                          max={stateMachine.context.erc20Amount.toNumber()}
+                          maximumFractionDigits={6}
+                          onChange={(val) =>
+                            val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
+                          }
+                          tokenIcon={<FiatIcon />}
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className={s.buttonsWrapper}>
+                {!mintFiat && (
+                  <ButtonOutlineGradient onClick={() => toggleMintFiat()} textGradient>
+                    <Plus />
+                    Mint FIAT with this transaction
+                  </ButtonOutlineGradient>
+                )}
+                <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_DEPLOY' })}>
+                  Deposit collateral
+                </ButtonGradient>
+              </div>
             </>
           )}
           {/* Not sure if this is included anymore... */}
@@ -222,9 +256,10 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
           {stateMachine.context.currentStepNumber === 5 && (
             <>
               <div className="content-body-item-body">Summary...</div>
-              <Form.Item>
-                <Button
+              <div className={s.buttonsWrapper}>
+                <ButtonGradient
                   disabled={!hasAllowance || !isProxyAvailable}
+                  height="lg"
                   onClick={() =>
                     send({
                       type: 'CONFIRM',
@@ -237,11 +272,13 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                       allowance,
                     })
                   }
-                  type="primary"
                 >
                   Confirm
-                </Button>
-              </Form.Item>
+                </ButtonGradient>
+                <button className={s.backButton} onClick={() => console.log('go back')}>
+                  &#8592; Go back
+                </button>
+              </div>
             </>
           )}
         </Form>

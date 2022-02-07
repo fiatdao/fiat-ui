@@ -19,8 +19,8 @@ export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string 
     subtitle: 'Give permission to the FIAT protocol to manager your Collateral',
   },
   4: {
-    title: 'Set Collateral Allowance',
-    subtitle: 'Give permission to the FIAT protocol to manager your Collateral',
+    title: 'Configure your positions',
+    subtitle: 'Select which asset to deposit and how much FIAT to mint.',
   },
   5: {
     title: 'Confirm your new position',
