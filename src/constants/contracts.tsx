@@ -1,5 +1,6 @@
 import { Chains, ChainsValues } from '@/src/constants/chains'
 import codex from '@/src/abis/Codex.json'
+import collateralAuction from '@/src/abis/CollateralAuction.json'
 import collybus from '@/src/abis/Collybus.json'
 import erc20 from '@/src/abis/ERC20.json'
 import erc1155 from '@/src/abis/ERC1155.json'
@@ -81,6 +82,13 @@ export const contracts = constantContracts({
       [Chains.goerli]: '',
     },
     abi: vault1155,
+  },
+  COLLATERAL_AUCTION: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '0x5e17C31f106955E1b6F74eC6716bb62E1f5c2C54',
+    },
+    abi: collateralAuction,
   },
   USER_ACTIONS_20: {
     address: {
