@@ -49,7 +49,7 @@ function App({ Component, pageProps }: AppProps) {
         <meta content="#ffffff" name="theme-color" />
       </Head>
       <GeneralContextProvider>
-        <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
+        <SWRConfig value={{ suspense: false, revalidateOnFocus: false }}>
           <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
             <Web3ConnectionProvider fallback={<Spin />}>
               <Layout style={{ minHeight: '100vh' }}>

@@ -1,17 +1,15 @@
+import { usePosition } from './subgraph/usePosition'
 import { BigNumber as EthersBN } from '@ethersproject/bignumber'
 import { Contract, ContractTransaction } from '@ethersproject/contracts'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import useSWR from 'swr'
-import { isValidPositionId, isValidPositionIdType } from '@/src/utils/managePosition'
 import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { fetchPositionById } from '@/src/utils/your-positions-api'
 import { getHumanValue } from '@/src/web3/utils'
 import { ERC20, FIAT, Vault20 } from '@/types/typechain'
 
@@ -26,7 +24,7 @@ export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }) => {
   }>()
 
   useEffect(() => {
-    if (address) {
+    if (address && tokenAddress) {
       const collateral = new Contract(
         tokenAddress,
         contracts.ERC_20.abi,
@@ -44,7 +42,7 @@ export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }) => {
     }
   }, [tokenAddress, readOnlyAppProvider, address])
 
-  return { tokenInfo, userActions, userProxy }
+  return { address, tokenInfo, userActions, userProxy }
 }
 
 export const useWithdrawForm = ({ vaultAddress }: { vaultAddress: string }) => {
@@ -68,7 +66,7 @@ export const useWithdrawForm = ({ vaultAddress }: { vaultAddress: string }) => {
     }
   }, [address, readOnlyAppProvider, vaultAddress])
 
-  return { userActions, userProxy, vaultInfo }
+  return { address, userActions, userProxy, vaultInfo }
 }
 
 export const useMintForm = ({ vaultAddress }: { vaultAddress: string }) => {
@@ -92,7 +90,7 @@ export const useMintForm = ({ vaultAddress }: { vaultAddress: string }) => {
     }
   }, [address, readOnlyAppProvider, vaultAddress])
 
-  return { userActions, userProxy, vaultInfo }
+  return { address, userActions, userProxy, vaultInfo }
 }
 
 export const useBurnForm = () => {
@@ -120,29 +118,15 @@ export const useBurnForm = () => {
     }
   }, [address, userProxy, userProxyAddress, web3Provider])
 
-  return { fiatInfo, userActions, userProxy }
+  return { address, fiatInfo, userActions, userProxy }
 }
 
 export const useManagePositionInfo = () => {
   const {
-    query: { positionId },
+    query: { positionId }, // TODO Query guard.
   } = useRouter()
-  const { isWalletConnected, readOnlyAppProvider: provider } = useWeb3Connection()
+  // const { isWalletConnected } = useWeb3Connection()
+  // TODO Pass enabled: isWalletConnected && isValidPositionIdType(positionId) && isValidPositionId(positionId)
 
-  const { data, error, mutate } = useSWR([positionId], () => {
-    if (
-      isWalletConnected &&
-      provider &&
-      isValidPositionIdType(positionId) &&
-      isValidPositionId(positionId)
-    ) {
-      return fetchPositionById(positionId, provider).then(([position]) => position)
-    }
-  })
-
-  if (error) {
-    console.error('Failed to retrieve PositionId information', error)
-  }
-
-  return { data, mutate }
+  return usePosition(positionId as string)
 }

@@ -1,20 +1,16 @@
 import useSWR from 'swr'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { useEffect, useState } from 'react'
+import { BigNumber } from 'ethers'
 import { USER_PROXY } from '@/src/queries/userProxy'
-import { swrFetcher } from '@/src/utils/graphqlFetcher'
+import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { userProxy, userProxyVariables } from '@/types/subgraph/__generated__/userProxy'
 import {
   positions_positions as SubgraphPosition,
   positions,
-  positionsVariables,
 } from '@/types/subgraph/__generated__/positions'
 
 import { POSITIONS } from '@/src/queries/positions'
 import { bigNumberToDecimal } from '@/src/utils/formats'
-import vaultEPTCall from '@/src/utils/callVaultEPT'
-import trancheCall from '@/src/utils/callTranche'
-import { Web3Context } from '@/src/providers/web3ConnectionProvider'
 
 export type Position = {
   key: string
@@ -49,35 +45,23 @@ export type YourPositionPageInformation = {
 /**
  * Returns a collection of Position required by the frontend
  * @param {SubgraphPosition} position
- * @param {Web3Context['readOnlyAppProvider']} provider
- * @returns Promise<[Position, Array<PositionTransaction>]>
+ * @returns [Position, Array<PositionTransaction>]
  */
-export const transformPosition = async (
+export const transformPosition = (
   position: SubgraphPosition,
-  provider: Web3Context['readOnlyAppProvider'],
-): Promise<[Position, PositionTransaction[]]> => {
+): [Position, PositionTransaction[]] => {
   const positionId = position.id
-  const vaultAddress = position.vault.address
-  const tokenId = position.tokenId
-  const fiat = bigNumberToDecimal(position.normalDebt)
-  const collateral = bigNumberToDecimal(position.collateral)
-
-  const [maturity, trancheAddress] = await Promise.all([
-    vaultEPTCall(vaultAddress, provider, 'maturity', [tokenId]),
-    vaultEPTCall(vaultAddress, provider, 'getTokenAddress', [tokenId]),
-  ])
-
-  const name = await trancheCall(trancheAddress!, provider, 'name', null)
-
-  // const name = vault.underlyingAsset;
-  // const underlierToken = await vaultEPTCall(vaultAddress, provider, "underlierToken", null);
-  // const discount = await vaultEPTCall(vaultAddress, provider, 'fairPrice', [tokenId, true, true]);
-  // const decimals = await trancheCall(trancheAddress!, provider, 'decimals', null);
+  const fiat = bigNumberToDecimal(position.totalNormalDebt)
+  const collateral = bigNumberToDecimal(position.totalCollateral)
+  const maturity = position.collateral?.maturity
+    ? BigNumber.from(position.collateral.maturity)
+    : undefined
+  const name = position.vaultName
 
   const ltv = fiat / collateral
   const newMaturity = maturity?.mul(1000).toNumber() || Date.now()
 
-  // @TODO: implement calculation for hardcoded values
+  // @TODO: do calculation for hardcoded values
   const healthFactor = 1
 
   const newPosition: Position = {
@@ -95,12 +79,12 @@ export const transformPosition = async (
 
   for (const positionTransaction of position.positionTransactions || []) {
     const collateral = bigNumberToDecimal(positionTransaction.collateral)
-    // const deltaCollateral = bigNumberToDecimal(positionTransaction.deltaCollateral)
+    const deltaCollateral = bigNumberToDecimal(positionTransaction.deltaCollateral)
     const newPositionTransaction: PositionTransaction = {
       asset: name ?? 'unknown',
       action: positionTransaction.type,
       amount: collateral,
-      deltaAmount: 0, // FixMe: it must be `deltaCollateral`
+      deltaAmount: deltaCollateral,
       transactionHash: positionTransaction.id,
       date: new Date(newMaturity),
     }
@@ -111,23 +95,12 @@ export const transformPosition = async (
   return [newPosition, newPositionTransactions]
 }
 
-export const useUserProxy = (address: string) => {
-  const { data } = useSWR([USER_PROXY, address], (url, value) =>
-    swrFetcher<userProxy, userProxyVariables>(url, { id: value! }),
-  )
-
-  return data?.userProxy?.proxyAddress || ''
-}
-
-const wrangePositions = async (
-  { positions: rawPositions }: positions,
-  provider: JsonRpcProvider,
-) => {
+export const wranglePositions = ({ positions: rawPositions }: positions) => {
   const pTxs = []
   const p = []
 
   for (const position of rawPositions) {
-    const [newPosition, newPositionTransactions] = await transformPosition(position, provider)
+    const [newPosition, newPositionTransactions] = transformPosition(position)
     p.push(newPosition)
     pTxs.push(...newPositionTransactions)
   }
@@ -135,7 +108,13 @@ const wrangePositions = async (
   return { positions: p, positionTransactions: pTxs }
 }
 
-// @TODO: currently working for element-fi
+export const useUserProxy = (address: string) => {
+  const { data } = useSWR([USER_PROXY, address], (url, value) =>
+    graphqlFetcher<userProxy, userProxyVariables>(url, { id: value }),
+  )
+
+  return data?.userProxy?.proxyAddress || ''
+}
 
 /**
  * Fetches position information from the FIAT subgraph
@@ -143,26 +122,26 @@ const wrangePositions = async (
  * @todo: support notional-fi protocol
  * @todo: support barnBridge protocol
  *
- * @param {string} userAddress
- * @param {Web3Context['readOnlyAppProvider']} provider
+ * @param {string | null} userAddress
  * @returns {Promise<[Position, Array<PositionTransaction>]>}
  */
-export const usePositions = (userAddress: string, provider: JsonRpcProvider) => {
-  const userProxy = useUserProxy(userAddress || '')
+export const usePositions = (userAddress: string | null) => {
+  const userProxy = useUserProxy(userAddress ?? '')
   const [positions, setPositions] = useState<Position[]>([])
   const [positionTransactions, setPositionTransaction] = useState<PositionTransaction[]>([])
 
-  const { data } = useSWR([POSITIONS, userProxy || ''], (url, value) =>
-    swrFetcher<positions, positionsVariables>(url, { user: value! }),
-  )
+  // FixMe: allow filtering by userAddress (!!!!!!!)
+  const { data } = useSWR([POSITIONS, userProxy || ''], (url) => graphqlFetcher<positions>(url))
 
   useEffect(() => {
-    data &&
-      wrangePositions(data, provider).then(({ positionTransactions, positions }) => {
-        setPositions(positions)
-        setPositionTransaction(positionTransactions)
-      })
-  }, [data, provider])
+    if (!data) {
+      return
+    }
+
+    const { positionTransactions, positions } = wranglePositions(data)
+    setPositions(positions)
+    setPositionTransaction(positionTransactions)
+  }, [data])
 
   return { positions, positionTransactions }
 }

@@ -1,41 +1,134 @@
 [
   {
-    "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "internalType": "address",
+        "name": "codex_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "collybus_",
+        "type": "address"
+      },
+      {
         "internalType": "string",
-        "name": "",
+        "name": "uri",
         "type": "string"
       }
     ],
-    "name": "log",
-    "type": "event"
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "Guarded__notGranted",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Guarded__notRoot",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "y",
+        "type": "uint256"
+      }
+    ],
+    "name": "Math__mul_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
+      }
+    ],
+    "name": "Math__toInt256_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155__enter_notLive",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155__enter_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155__exit_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155__setParam_notLive",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155__setParam_unrecognizedParam",
+    "type": "error"
   },
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "sig",
+        "type": "bytes32"
+      },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "",
+        "name": "who",
         "type": "address"
       }
     ],
-    "name": "log_address",
+    "name": "AllowCaller",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
         "indexed": false,
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
+        "internalType": "bool",
+        "name": "approved",
+        "type": "bool"
       }
     ],
-    "name": "log_bytes",
+    "name": "ApprovalForAll",
     "type": "event"
   },
   {
@@ -44,188 +137,166 @@
       {
         "indexed": false,
         "internalType": "bytes32",
-        "name": "",
+        "name": "sig",
         "type": "bytes32"
-      }
-    ],
-    "name": "log_bytes32",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "int256",
-        "name": "",
-        "type": "int256"
-      }
-    ],
-    "name": "log_int",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "val",
+        "name": "who",
         "type": "address"
       }
     ],
-    "name": "log_named_address",
+    "name": "BlockCaller",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "bytes",
-        "name": "val",
-        "type": "bytes"
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "log_named_bytes",
+    "name": "Enter",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
       },
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Exit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "Lock",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "bytes32",
-        "name": "val",
+        "name": "param",
         "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "data",
+        "type": "address"
       }
     ],
-    "name": "log_named_bytes32",
+    "name": "SetParam",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
+        "indexed": true,
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "int256",
-        "name": "val",
-        "type": "int256"
+        "internalType": "uint256[]",
+        "name": "ids",
+        "type": "uint256[]"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "decimals",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "values",
+        "type": "uint256[]"
       }
     ],
-    "name": "log_named_decimal_int",
+    "name": "TransferBatch",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
+        "indexed": true,
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "val",
-        "type": "uint256"
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "decimals",
-        "type": "uint256"
-      }
-    ],
-    "name": "log_named_decimal_uint",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "int256",
-        "name": "val",
-        "type": "int256"
-      }
-    ],
-    "name": "log_named_int",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "val",
-        "type": "string"
-      }
-    ],
-    "name": "log_named_string",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "val",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
         "type": "uint256"
       }
     ],
-    "name": "log_named_uint",
+    "name": "TransferSingle",
     "type": "event"
   },
   {
@@ -234,42 +305,143 @@
       {
         "indexed": false,
         "internalType": "string",
-        "name": "",
+        "name": "value",
         "type": "string"
-      }
-    ],
-    "name": "log_string",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "uint256",
-        "name": "",
+        "name": "id",
         "type": "uint256"
       }
     ],
-    "name": "log_uint",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "name": "logs",
+    "name": "URI",
     "type": "event"
   },
   {
     "inputs": [],
-    "name": "IS_TEST",
+    "name": "ANY_CALLER",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ANY_SIG",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "sig",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "who",
+        "type": "address"
+      }
+    ],
+    "name": "allowCaller",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "accounts",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "ids",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "balanceOfBatch",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "sig",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "who",
+        "type": "address"
+      }
+    ],
+    "name": "blockCaller",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "sig",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "who",
+        "type": "address"
+      }
+    ],
+    "name": "canCall",
     "outputs": [
       {
         "internalType": "bool",
@@ -282,12 +454,182 @@
   },
   {
     "inputs": [],
-    "name": "failed",
+    "name": "codex",
+    "outputs": [
+      {
+        "internalType": "contract ICodex",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "collybus",
+    "outputs": [
+      {
+        "internalType": "contract ICollybus",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "enter",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
+    "name": "exists",
     "outputs": [
       {
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "exit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "net",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "name": "fairPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      }
+    ],
+    "name": "isApprovedForAll",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "live",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lock",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "maturity",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -372,64 +714,67 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "setUp",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "testFail_enter_amount_cannot_be_casted",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "testFail_exit_amount_cannot_be_casted",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "test_dec",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
       },
       {
         "internalType": "address",
-        "name": "owner",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "ids",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "amounts",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "safeBatchTransferFrom",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
         "type": "address"
       },
       {
         "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
       }
     ],
-    "name": "test_enter_transfersTokens_to_vault",
+    "name": "safeTransferFrom",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -437,52 +782,159 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
-        "name": "owner",
+        "name": "operator",
         "type": "address"
       },
       {
+        "internalType": "bool",
+        "name": "approved",
+        "type": "bool"
+      }
+    ],
+    "name": "setApprovalForAll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "param",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "data",
+        "type": "address"
+      }
+    ],
+    "name": "setParam",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "token",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "tokenScale",
+    "outputs": [
+      {
         "internalType": "uint256",
-        "name": "amount",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "test_exit_transfers_tokens",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
+    "name": "totalSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "test_implements_ERC165Support_For_ERC1155Receiver",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "underlierScale",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "test_implements_onERC1155BatchReceived",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "underlierToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "uri",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "test_implements_onERC1155Received",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "test_token",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "vaultType",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

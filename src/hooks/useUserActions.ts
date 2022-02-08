@@ -1,17 +1,9 @@
 import { Contract } from 'ethers'
 import { useMemo } from 'react'
+import { contracts } from '@/src/constants/contracts'
 import { Chains } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import UserActionsAbi from '@/src/abis/UserActions.json'
-import { UserActions } from '@/types/typechain/UserActions'
-
-const USER_ACTIONS = {
-  address: {
-    [Chains.mainnet]: '',
-    [Chains.goerli]: '0xBd43980D5632FA81Dd4597820Ce07E94A944C469',
-  },
-  abi: UserActionsAbi,
-}
+import { UserActions20 } from '@/types/typechain/UserActions20'
 
 export const useUserActions = () => {
   const { web3Provider } = useWeb3Connection()
@@ -19,10 +11,11 @@ export const useUserActions = () => {
   return useMemo(
     () =>
       new Contract(
-        USER_ACTIONS.address[Chains.goerli],
-        USER_ACTIONS.abi,
+        // TODO: add support for UA1155 (??)
+        contracts.USER_ACTIONS_20.address[Chains.goerli],
+        contracts.USER_ACTIONS_20.abi,
         web3Provider?.getSigner(),
-      ) as UserActions,
+      ) as UserActions20,
     [web3Provider],
   )
 }

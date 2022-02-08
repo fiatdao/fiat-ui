@@ -4,7 +4,7 @@ import { Tab, Tabs } from '@/src/components/custom'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useManagePositionInfo } from '@/src/hooks/managePosition'
-import { extractPositionIdData } from '@/src/utils/managePosition'
+import { useExtractPositionIdData } from '@/src/utils/managePosition'
 
 const COLLATERAL_KEYS = ['deposit', 'withdraw'] as const
 
@@ -18,18 +18,11 @@ export interface ManageCollateralProps {
 }
 
 export const ManageCollateral = ({ activeTabKey, setActiveTabKey }: ManageCollateralProps) => {
-  const { data: position, mutate: refetchPosition } = useManagePositionInfo()
+  const { position, refetch: refetchPosition } = useManagePositionInfo()
 
-  const { tokenId, vaultAddress } = extractPositionIdData(
-    position?.action?.data?.positionId as string,
-  )
+  const { vaultAddress } = useExtractPositionIdData()
 
-  const [collateralAddress] = useContractCall(
-    vaultAddress,
-    contracts.VAULT_EPT.abi,
-    'getTokenAddress',
-    [tokenId],
-  )
+  const [collateralAddress] = useContractCall(vaultAddress, contracts.VAULT_20.abi, 'token', null)
 
   return (
     <>

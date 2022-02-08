@@ -1,8 +1,8 @@
 import gql from 'graphql-tag'
 
-export const POSITIONS = gql`
-  query positions {
-    positions {
+export const POSITION_BY_ID = gql`
+  query positionById($id: ID!) {
+    position(id: $id) {
       id
       vault {
         id
