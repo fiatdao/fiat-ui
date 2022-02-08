@@ -265,6 +265,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                     send({
                       type: 'CONFIRM',
                       // @ts-ignore TODO types
+                      currentUserAddress,
                       isAppConnected,
                       web3Provider,
                       userActions,
