@@ -1,4 +1,5 @@
 import { ColumnsType } from 'antd/lib/table/interface'
+import Link from 'next/link'
 import {
   calculateHealthFactor,
   parseDate,
@@ -6,7 +7,6 @@ import {
 } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import { Position } from '@/src/hooks/subgraph'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
@@ -71,9 +71,7 @@ const Columns: ColumnsType<Position> = [
     align: 'right',
     dataIndex: 'action',
     render: (action: Position['action']) => (
-      <ButtonOutlineGradient href={`/your-positions/${action.data.positionId}/manage`} type="text">
-        {action.text}
-      </ButtonOutlineGradient>
+      <Link href={`/your-positions/${action.data.positionId}/manage`}>{action.text}</Link>
     ),
     title: '',
     width: 110,

@@ -1,38 +1,5 @@
-import { SUBGRAPH_API } from '../constants/misc'
-import {
-  Position,
-  PositionTransaction,
-  YourPositionPageInformation,
-  transformPosition,
-} from '../hooks/subgraph'
+import { Position, YourPositionPageInformation } from '../hooks/subgraph'
 import { min } from 'date-fns'
-import { Web3Context } from '@/src/providers/web3ConnectionProvider'
-
-/**
- * Fetches Position information by its ID
- *
- * @param {string} positionId
- * @param {Web3Context['readOnlyAppProvider']} provider
- * @returns {Promise<[Position, Array<PositionTransaction>]>}
- */
-const fetchPositionById = (
-  positionId: string,
-  provider: Web3Context['readOnlyAppProvider'],
-): Promise<[Position, PositionTransaction[]]> => {
-  const vaultKeys = 'vault {id,name,address,underlyingAsset}'
-  const transactionKeys = 'positionTransactions {id,type,collateral,normalDebt}'
-  const keys = `{id,tokenId,user,collateral,normalDebt,${vaultKeys},${transactionKeys}}`
-  const query = { query: `{position(id: "${positionId}")${keys}}` }
-
-  return fetch(SUBGRAPH_API, {
-    method: 'POST',
-    body: JSON.stringify(query),
-    headers: { 'Content-Type': 'application/json' },
-  })
-    .then((response) => response.json())
-    .then((jsonResponse) => jsonResponse.data.position)
-    .then((position) => transformPosition(position, provider))
-}
 
 /**
  * Builds the information object for the Info Panels in Your Positions page
@@ -66,4 +33,4 @@ const fetchInfoPage = (positions: Position[]): YourPositionPageInformation => {
   }, initialPositionInformation)
 }
 
-export { fetchPositionById, fetchInfoPage }
+export { fetchInfoPage }

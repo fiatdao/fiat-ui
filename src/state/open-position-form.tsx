@@ -135,7 +135,7 @@ const stepperMachine = createMachine<Context, Events>(
           },
           USER_REJECTED: {
             // @ts-ignore TODO types
-            actions: assign({ error: (_) => 'User cancell transaction' }),
+            actions: assign({ error: (_) => 'User rejected transaction' }),
             target: 'step-5-addCollateral',
           },
         },
@@ -168,40 +168,45 @@ const stepperMachine = createMachine<Context, Events>(
       submitForm:
         (
           { erc20Amount, fiatAmount, tokenAddress },
-          // @ts-ignore TODO types
-          { isAppConnected, refetchErc20Balance, userActions, userProxy, web3Provider },
+          // TODO: types
+          {
+            // @ts-ignore
+            currentUserAddress,
+            // @ts-ignore
+            isAppConnected,
+            // @ts-ignore
+            refetchErc20Balance,
+            // @ts-ignore
+            userActions,
+            // @ts-ignore
+            userProxy,
+            // @ts-ignore
+            web3Provider,
+          },
         ) =>
         (callback: any) => {
           console.log(event)
-          if (isAppConnected && web3Provider) {
+          if (isAppConnected && web3Provider && currentUserAddress) {
             try {
-              // TODO Hardcoded decimals
-              const _erc20Amount = getNonHumanValue(erc20Amount, contracts.ERC_20.decimals)
+              // FixMe: Hardcoded decimals
+              const _erc20Amount = getNonHumanValue(erc20Amount, 18)
               const _fiatAmount = getNonHumanValue(fiatAmount, contracts.FIAT.decimals)
-              // console.log(_erc20Amount.toFixed(), _fiatAmount.toFixed())
 
-              // if (allowance.lt(_erc20Amount.toFixed())) {
-              //   await approve()
-              // }
-
-              // TODO Extract logic to be agnostic of protocol used (vault). addCollateral('element', token, amount, fiat)
-              let encodedFunctionData = ''
-              if (fiatAmount.eq(0)) {
-                encodedFunctionData = userActions.interface.encodeFunctionData('addCollateral', [
+              const encodedFunctionData = userActions.interface.encodeFunctionData(
+                'modifyCollateralAndDebt',
+                [
                   VAULT_ADDRESS,
                   tokenAddress,
+                  currentUserAddress,
+                  currentUserAddress,
                   _erc20Amount.toFixed(),
-                ])
-              } else {
-                encodedFunctionData = userActions.interface.encodeFunctionData(
-                  'addCollateralAndIncreaseDebt',
-                  [VAULT_ADDRESS, tokenAddress, _erc20Amount.toFixed(), _fiatAmount.toFixed()],
-                )
-              }
+                  _fiatAmount.toFixed(),
+                ],
+              )
 
               userProxy
                 ?.execute(userActions.address, encodedFunctionData, {
-                  gasLimit: 10000000,
+                  gasLimit: 10_000_000,
                 })
                 .then((tx: any) => tx.wait())
                 .then((receipt: any) => {

@@ -1,7 +1,7 @@
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { KeyedMutator } from 'swr'
+import { ZERO_ADDRESS, ZERO_BN } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { Chains } from '@/src/constants/chains'
@@ -9,24 +9,22 @@ import { contracts } from '@/src/constants/contracts'
 import { useBurnForm } from '@/src/hooks/managePosition'
 import { iconByAddress } from '@/src/utils/managePosition'
 import { getNonHumanValue } from '@/src/web3/utils'
-import { Position } from '@/src/hooks/subgraph'
+import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
 
 export const BurnForm = ({
   refetch,
-  tokenAddress,
   userBalance,
   vaultAddress,
 }: {
-  refetch: KeyedMutator<Position | undefined>
-  tokenAddress: string
+  refetch: RefetchPositionById
   userBalance?: number
   vaultAddress: string
 }) => {
-  const { fiatInfo, userActions, userProxy } = useBurnForm()
+  const { address, fiatInfo, userActions, userProxy } = useBurnForm()
   const [form] = AntdForm.useForm()
 
   const handleBurn = async ({ burn }: { burn: BigNumber }) => {
-    if (!fiatInfo || !userProxy) {
+    if (!fiatInfo || !userProxy || !address) {
       return
     }
 
@@ -36,13 +34,12 @@ export const BurnForm = ({
       await fiatInfo.approve()
     }
 
-    const burnDebtEncoded = userActions.interface.encodeFunctionData('decreaseDebt', [
-      vaultAddress,
-      tokenAddress,
-      toBurn.toFixed(),
-    ])
+    const decreaseDebtEncoded = userActions.interface.encodeFunctionData(
+      'modifyCollateralAndDebt',
+      [vaultAddress, ZERO_ADDRESS, ZERO_ADDRESS, address, ZERO_BN, toBurn.times(-1).toFixed()],
+    )
 
-    const tx = await userProxy.execute(userActions.address, burnDebtEncoded, {
+    const tx = await userProxy.execute(userActions.address, decreaseDebtEncoded, {
       gasLimit: 1_000_000,
     })
     console.log('burning...', tx.hash)
