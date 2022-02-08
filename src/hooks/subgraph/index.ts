@@ -1,15 +1,9 @@
-import useSWR from 'swr'
-import { useEffect, useState } from 'react'
 import { BigNumber } from 'ethers'
-import { USER_PROXY } from '@/src/queries/userProxy'
-import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
-import { userProxy, userProxyVariables } from '@/types/subgraph/__generated__/userProxy'
 import {
   positions_positions as SubgraphPosition,
   positions,
 } from '@/types/subgraph/__generated__/positions'
 
-import { POSITIONS } from '@/src/queries/positions'
 import { bigNumberToDecimal } from '@/src/utils/formats'
 
 export type Position = {
@@ -106,42 +100,4 @@ export const wranglePositions = ({ positions: rawPositions }: positions) => {
   }
 
   return { positions: p, positionTransactions: pTxs }
-}
-
-export const useUserProxy = (address: string) => {
-  const { data } = useSWR([USER_PROXY, address], (url, value) =>
-    graphqlFetcher<userProxy, userProxyVariables>(url, { id: value }),
-  )
-
-  return data?.userProxy?.proxyAddress || ''
-}
-
-/**
- * Fetches position information from the FIAT subgraph
- *
- * @todo: support notional-fi protocol
- * @todo: support barnBridge protocol
- *
- * @param {string | null} userAddress
- * @returns {Promise<[Position, Array<PositionTransaction>]>}
- */
-export const usePositions = (userAddress: string | null) => {
-  const userProxy = useUserProxy(userAddress ?? '')
-  const [positions, setPositions] = useState<Position[]>([])
-  const [positionTransactions, setPositionTransaction] = useState<PositionTransaction[]>([])
-
-  // FixMe: allow filtering by userAddress (!!!!!!!)
-  const { data } = useSWR([POSITIONS, userProxy || ''], (url) => graphqlFetcher<positions>(url))
-
-  useEffect(() => {
-    if (!data) {
-      return
-    }
-
-    const { positionTransactions, positions } = wranglePositions(data)
-    setPositions(positions)
-    setPositionTransaction(positionTransactions)
-  }, [data])
-
-  return { positions, positionTransactions }
 }

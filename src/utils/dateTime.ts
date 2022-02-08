@@ -4,18 +4,9 @@ import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 
-const healthFactor = (hf: number) => {
-  if (hf > 4.0) {
-    return 'green'
-  }
-  if (hf > 1.0) {
-    return 'orange'
-  }
-  return 'red'
-}
+export const DATE_FORMAT = 'MM/dd/yyyy'
 
-// curried version
-const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
+const parseDate = formatWithOptions({ locale: enUS }, DATE_FORMAT)
 
 const remainingTime = (d: Date | null): string => {
   if (!d) return ''
@@ -30,4 +21,4 @@ const remainingTime = (d: Date | null): string => {
   return `${diffInDays}d:${diffInHours}h:${diffInMinutes}m`
 }
 
-export { healthFactor, parseDate, remainingTime }
+export { parseDate, remainingTime }

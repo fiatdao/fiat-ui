@@ -9,7 +9,7 @@ export const POSITIONS = gql`
         address
         name
         type
-        collaterizationRatio
+        collateralizationRatio
       }
       vaultName
       collateral {
