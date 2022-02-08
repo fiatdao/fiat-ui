@@ -124,6 +124,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
   const [mintFiat, setMintFiat] = useState(false)
 
   const toggleMintFiat = () => setMintFiat(!mintFiat)
+  const hfState = 'ok'
 
   return (
     <div className={cn(s.formWrapper)}>
@@ -206,7 +207,8 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                 <div className={cn(s.fiatWrapper)}>
                   <button className={cn(s.fiatWrapperTop)} onClick={() => toggleMintFiat()}>
                     <span className={cn(s.fiatWrapperTopInner)}>
-                      <Less /> <span>Mint FIAT with this transaction</span>
+                      <Less />
+                      <span>Mint FIAT with this transaction</span>
                     </span>
                   </button>
                   <div className={cn(s.fiatWrapperContents)}>
@@ -256,7 +258,37 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
           )} */}
           {stateMachine.context.currentStepNumber === 5 && (
             <>
-              <div className="content-body-item-body">Summary...</div>
+              <div className={s.summary}>
+                <div className={s.summaryRow}>
+                  <div className={s.summaryRowTitle}>In your wallet</div>
+                  <div className={s.summaryRowValue}>5,000 DAI Principal Token</div>
+                </div>
+                <div className={s.summaryRow}>
+                  <div className={s.summaryRowTitle}>Depositing into position </div>
+                  <div className={s.summaryRowValue}>5,000 DAI Principal Token</div>
+                </div>
+                <div className={s.summaryRow}>
+                  <div className={s.summaryRowTitle}>Remaining in wallet</div>
+                  <div className={s.summaryRowValue}>0 DAI Principal Token</div>
+                </div>
+                <div className={s.summaryRow}>
+                  <div className={s.summaryRowTitle}>FIAT to be minted</div>
+                  <div className={s.summaryRowValue}>2,000</div>
+                </div>
+                <div className={s.summaryRow}>
+                  <div className={s.summaryRowTitle}>Updated health factor</div>
+                  <div
+                    className={cn(
+                      s.summaryRowValue,
+                      { [s.ok]: hfState === 'ok' },
+                      // { [s.warning]: hfState === 'warning' },
+                      // { [s.danger]: hfState === 'danger' }
+                    )}
+                  >
+                    2.3
+                  </div>
+                </div>
+              </div>
               <div className={s.buttonsWrapper}>
                 <ButtonGradient
                   disabled={!hasAllowance || !isProxyAvailable}

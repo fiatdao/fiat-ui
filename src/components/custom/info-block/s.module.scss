@@ -6,8 +6,9 @@
 }
 
 .titleWrapper {
-  align-items: center;
+  align-items: flex-start;
   display: flex;
+  gap: 5px;
   justify-content: space-between;
   margin: 0 0 10px;
 }

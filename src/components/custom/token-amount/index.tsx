@@ -5,11 +5,12 @@ import cn from 'classnames'
 import Slider from '@/src/components/antd/slider'
 import { MAX_UINT_256, formatBigValue } from '@/src/web3/utils'
 
-import Grid from '@/src/components/custom/grid'
 import { TokenIconNames } from '@/src/components/custom/icon'
 import NumericInput from '@/src/components/custom/numeric-input'
 import { AssetIcons } from '@/src/components/custom/asset-icons'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
+import Tooltip from '@/src/components/antd/tooltip'
+import Info from '@/src/resources/svg/info.svg'
 
 export type TokenAmountProps = {
   className?: string
@@ -60,7 +61,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   }
 
   return (
-    <Grid flow="row" gap={12}>
+    <>
       <NumericInput
         addonAfter={
           max !== undefined ? (
@@ -85,21 +86,37 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
         value={bnValue}
       />
       {slider && !hidden && (
-        <Slider
-          disabled={disabled}
-          healthFactorVariant={slider === 'healthFactorVariant'}
-          max={bnMaxValue.toNumber()}
-          min={0}
-          onChange={onSliderChange}
-          step={step}
-          tipFormatter={(sliderValue) =>
-            sliderValue ? formatBigValue(new BigNumber(sliderValue), displayDecimals) : 0
-          }
-          tooltipPlacement="bottom"
-          value={bnValue?.toNumber()}
-        />
+        <>
+          {slider === 'healthFactorVariant' && (
+            <div className={s.healthFactorWrapper}>
+              <div className={s.safer}>Safer</div>
+              <div className={s.healthFactor}>
+                <span>
+                  Health factor <span className={s.hf}>1.95</span>
+                </span>
+                <Tooltip title={'HF Tooltip'}>
+                  <Info />
+                </Tooltip>
+              </div>
+              <div className={s.riskier}>Riskier</div>
+            </div>
+          )}
+          <Slider
+            disabled={disabled}
+            healthFactorVariant={slider === 'healthFactorVariant'}
+            max={bnMaxValue.toNumber()}
+            min={0}
+            onChange={onSliderChange}
+            step={step}
+            tipFormatter={(sliderValue) =>
+              sliderValue ? formatBigValue(new BigNumber(sliderValue), displayDecimals) : 0
+            }
+            tooltipPlacement="bottom"
+            value={bnValue?.toNumber()}
+          />
+        </>
       )}
-    </Grid>
+    </>
   )
 }
 

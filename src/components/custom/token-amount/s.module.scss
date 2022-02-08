@@ -5,6 +5,7 @@
     border-radius: 4px;
     border: 1px solid var(--theme-border-color);
     height: var(--group-height);
+    margin-bottom: 12px;
 
     :global(.ant-input) {
       height: var(--group-height);
@@ -35,4 +36,31 @@
   height: var(--group-height);
   justify-content: center;
   width: var(--group-height);
+}
+
+.healthFactorWrapper {
+  align-items: center;
+  display: flex;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.safer {
+  color: var(--theme-color-10);
+  margin-right: auto;
+}
+
+.healthFactor {
+  align-items: center;
+  color: var(--theme-color-9);
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 1fr 16px;
+}
+
+.riskier {
+  color: var(--theme-color-11);
+  margin-left: auto;
 }
