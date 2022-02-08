@@ -1,6 +1,6 @@
 import gql from 'graphql-tag'
 
-export const POSITION = gql`
+export const POSITION_BY_ID = gql`
   query positionById($id: ID!) {
     position(id: $id) {
       id

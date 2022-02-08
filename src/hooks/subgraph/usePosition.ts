@@ -1,34 +1,19 @@
-import { Position, wrangePositions } from '.'
-import { useEffect, useState } from 'react'
-import { useQuery } from '@apollo/client'
+import { wranglePositions } from '.'
+import useSWR from 'swr'
 import { positionById, positionByIdVariables } from '@/types/subgraph/__generated__/positionById'
-import { POSITION } from '@/src/queries/position'
-import { Maybe } from '@/types/utils'
+import { POSITION_BY_ID } from '@/src/queries/position'
+import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 
-/**
- * Fetches Position information by its ID
- *
- * @param {string} positionId
- * @returns {Promise<[Position>]>}
- */
 export const usePosition = (positionId: string) => {
-  const [position, setPosition] = useState<Maybe<Position>>(null)
+  const { data, mutate } = useSWR(['position-by-id'], () =>
+    graphqlFetcher<positionById, positionByIdVariables>(POSITION_BY_ID, { id: positionId }).then(
+      ({ position }) => {
+        if (position) return wranglePositions({ positions: [position] }).positions[0]
+      },
+    ),
+  )
 
-  const { data, refetch } = useQuery<positionById, positionByIdVariables>(POSITION, {
-    variables: { id: positionId },
-  })
-
-  useEffect(() => {
-    if (!data || !data.position) {
-      return
-    }
-
-    const { positions } = wrangePositions({ positions: [data.position] })
-
-    setPosition(positions[0])
-  }, [data])
-
-  return { position, refetch: () => refetch({ id: positionId }) }
+  return { position: data, refetch: mutate }
 }
 
 export type RefetchPositionById = ReturnType<typeof usePosition>['refetch']

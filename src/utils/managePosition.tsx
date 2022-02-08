@@ -23,7 +23,6 @@ export const iconByAddress = new Proxy<Record<string, ReactNode>>(
 export const isValidPositionIdType = (
   positionId: string | string[] | undefined,
 ): positionId is string => {
-  console.log({ positionIsValid: typeof positionId === 'string' })
   return typeof positionId === 'string'
 }
 
@@ -33,7 +32,6 @@ export const isValidPositionId = (positionId: string | string[] | undefined): bo
   }
 
   const positionIdRegex = new RegExp(/^(0x[a-f0-9]{40})-(0x[a-f0-9]{1,40})-(0x[a-f0-9]{40})$/, 'ig')
-  console.log({ re: positionIdRegex.test(positionId) })
   return positionIdRegex.test(positionId)
 }
 

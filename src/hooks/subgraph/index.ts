@@ -2,7 +2,7 @@ import useSWR from 'swr'
 import { useEffect, useState } from 'react'
 import { BigNumber } from 'ethers'
 import { USER_PROXY } from '@/src/queries/userProxy'
-import { swrFetcher } from '@/src/utils/graphqlFetcher'
+import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { userProxy, userProxyVariables } from '@/types/subgraph/__generated__/userProxy'
 import {
   positions_positions as SubgraphPosition,
@@ -95,7 +95,7 @@ export const transformPosition = (
   return [newPosition, newPositionTransactions]
 }
 
-export const wrangePositions = ({ positions: rawPositions }: positions) => {
+export const wranglePositions = ({ positions: rawPositions }: positions) => {
   const pTxs = []
   const p = []
 
@@ -110,7 +110,7 @@ export const wrangePositions = ({ positions: rawPositions }: positions) => {
 
 export const useUserProxy = (address: string) => {
   const { data } = useSWR([USER_PROXY, address], (url, value) =>
-    swrFetcher<userProxy, userProxyVariables>(url, { id: value }),
+    graphqlFetcher<userProxy, userProxyVariables>(url, { id: value }),
   )
 
   return data?.userProxy?.proxyAddress || ''
@@ -131,14 +131,14 @@ export const usePositions = (userAddress: string | null) => {
   const [positionTransactions, setPositionTransaction] = useState<PositionTransaction[]>([])
 
   // FixMe: allow filtering by userAddress (!!!!!!!)
-  const { data } = useSWR([POSITIONS, userProxy || ''], (url) => swrFetcher<positions>(url))
+  const { data } = useSWR([POSITIONS, userProxy || ''], (url) => graphqlFetcher<positions>(url))
 
   useEffect(() => {
     if (!data) {
       return
     }
 
-    const { positionTransactions, positions } = wrangePositions(data)
+    const { positionTransactions, positions } = wranglePositions(data)
     setPositions(positions)
     setPositionTransaction(positionTransactions)
   }, [data])

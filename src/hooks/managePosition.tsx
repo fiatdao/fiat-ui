@@ -24,7 +24,7 @@ export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }) => {
   }>()
 
   useEffect(() => {
-    if (address) {
+    if (address && tokenAddress) {
       const collateral = new Contract(
         tokenAddress,
         contracts.ERC_20.abi,
