@@ -20,7 +20,7 @@ export type TokenAmountProps = {
   maximumFractionDigits?: number
   name?: string
   onChange?: (value?: BigNumber) => void
-  slider?: boolean
+  slider?: boolean | 'healthFactorVariant'
   tokenIcon?: TokenIconNames | React.ReactNode
   value?: number | BigNumber
 }
@@ -87,6 +87,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
       {slider && !hidden && (
         <Slider
           disabled={disabled}
+          healthFactorVariant={slider === 'healthFactorVariant'}
           max={bnMaxValue.toNumber()}
           min={0}
           onChange={onSliderChange}

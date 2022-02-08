@@ -224,6 +224,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                           onChange={(val) =>
                             val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
                           }
+                          slider="healthFactorVariant"
                           tokenIcon={<FiatIcon />}
                         />
                       </Form.Item>

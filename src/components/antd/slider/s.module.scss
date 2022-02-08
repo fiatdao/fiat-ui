@@ -1,39 +1,80 @@
 .component {
+  --rail-height: 8px;
+  --border-radius: 16px;
+
   :global(.ant-slider-rail),
   &:global(.ant-slider:hover .ant-slider-rail) {
-    height: 8px;
-    background: var(--theme-secondary-block);
+    background-color: var(--theme-secondary-block);
+    border-radius: var(--border-radius);
+    height: var(--rail-height);
   }
 
   :global(.ant-slider-track),
   &:global(.ant-slider:hover .ant-slider-track) {
-    height: 8px;
-    background: var(--gradient-secondary-pink);
+    background-image: var(--gradient-secondary-pink);
+    border-radius: var(--border-radius);
+    height: var(--rail-height);
   }
 
   :global(.ant-slider-step) {
-    height: 8px;
+    height: var(--rail-height);
   }
 
   :global(.ant-slider-handle) {
-    width: 34px;
-    height: 34px;
-    border-radius: 100px;
-    margin-top: -13px;
-    border: 4px solid var(--theme-amount-color);
+    --dimensions: 34px;
+
     background: var(--gradient-secondary-pink);
+    border-radius: 50%;
+    border: 4px solid var(--theme-amount-color);
+    height: var(--dimensions);
+    margin-top: -13px;
+    width: var(--dimensions);
 
     &::after {
+      background: var(--theme-amount-color);
+      border-radius: 50%;
       content: '';
+      display: block;
+      height: 8px;
+      left: 50%;
       position: absolute;
       top: 50%;
-      left: 50%;
-      width: 8px;
-      height: 8px;
-      background: var(--theme-amount-color);
-      display: block;
-      border-radius: 100px;
       transform: translate(-50%, -50%);
+      width: 8px;
+    }
+  }
+
+  &.healthFactorVariant {
+    :global(.ant-slider-rail),
+    &:global(.ant-slider:hover .ant-slider-rail) {
+      background-image: linear-gradient(90deg, #67d772 0%, #ff4c8c 100%);
+    }
+
+    :global(.ant-slider-track),
+    &:global(.ant-slider:hover .ant-slider-track) {
+      background-color: transparent;
+      background-image: none;
+    }
+
+    :global(.ant-slider-handle) {
+      --dimensions: 24px;
+
+      &,
+      &:hover {
+        background: transparent;
+        border: 6px solid #fff;
+        height: var(--dimensions);
+        margin-top: -8px;
+        width: var(--dimensions);
+
+        &::after {
+          background: #fff;
+        }
+      }
+    }
+
+    &:global(.ant-slider:hover .ant-slider-handle) {
+      border-color: #fff !important;
     }
   }
 }
