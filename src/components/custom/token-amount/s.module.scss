@@ -2,8 +2,9 @@
   --group-height: 62px;
 
   :global(.ant-input-group) {
-    height: var(--group-height);
+    border-radius: 4px;
     border: 1px solid var(--theme-border-color);
+    height: var(--group-height);
 
     :global(.ant-input) {
       height: var(--group-height);
