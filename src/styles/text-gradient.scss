@@ -1,11 +1,8 @@
-.text-gradient {
+@mixin text-gradient() {
   background: linear-gradient(90deg, var(--theme-color-2), var(--theme-color-3));
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-}
-
-a[class*='text-gradient'] {
   transition: opacity 0.15s linear;
 
   &:hover {
@@ -15,4 +12,8 @@ a[class*='text-gradient'] {
   &:active {
     opacity: 0.5;
   }
+}
+
+.text-gradient {
+  @include text-gradient();
 }

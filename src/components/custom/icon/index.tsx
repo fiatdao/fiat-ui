@@ -23,6 +23,7 @@ import plugBgTabletImg from '@/src/resources/png/plug-bg-tablet.png'
 import plugBgImg from '@/src/resources/png/plug-bg.png'
 import RGTSrc from '@/src/resources/png/RGT.png'
 import romanAmphora from '@/src/resources/png/roman_amphora.png'
+
 // Leaderboard
 import romanCorona from '@/src/resources/png/roman_corona.png'
 import romanGalea from '@/src/resources/png/roman_galea.png'

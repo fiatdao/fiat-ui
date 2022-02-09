@@ -1,0 +1,35 @@
+.component {
+  --asset-icon-dimensions: 20px;
+
+  height: var(--asset-icon-dimensions);
+  position: relative;
+  width: var(--asset-icon-dimensions);
+}
+
+.mainAsset {
+  background-color: var(--theme-border-color);
+  border-radius: 50%;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+
+  > svg {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.secondaryAsset {
+  --dimensions: 10px;
+
+  border-radius: 50%;
+  bottom: calc(0% + 5px);
+  height: var(--dimensions);
+  position: absolute;
+  right: 0;
+  width: var(--dimensions);
+  z-index: 5;
+}

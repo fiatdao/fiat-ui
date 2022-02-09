@@ -46,9 +46,20 @@
     }
 
     &[disabled] {
-      cursor: not-allowed;
-      opacity: 0.5;
-      pointer-events: none;
+      &,
+      &:hover {
+        background: var(--theme-body-color);
+        color: var(--theme-color-5);
+        cursor: not-allowed;
+
+        &::after {
+          display: none;
+        }
+      }
     }
+  }
+
+  &.lg {
+    height: var(--button-height-lg);
   }
 }

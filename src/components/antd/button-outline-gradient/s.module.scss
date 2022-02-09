@@ -38,6 +38,13 @@
       text-transform: capitalize;
       width: 100%;
       z-index: 5;
+
+      &.textGradient > span {
+        background-clip: text;
+        background: linear-gradient(90deg, var(--theme-color-2), var(--theme-color-3));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
     }
   }
 

@@ -1,28 +1,29 @@
 import s from './s.module.scss'
 import React from 'react'
 import BigNumber from 'bignumber.js'
-import { isMobile } from 'react-device-detect'
 import cn from 'classnames'
 import Slider from '@/src/components/antd/slider'
 import { MAX_UINT_256, formatBigValue } from '@/src/web3/utils'
 
-import Grid from '@/src/components/custom/grid'
-import Icon, { TokenIconNames } from '@/src/components/custom/icon'
+import { TokenIconNames } from '@/src/components/custom/icon'
 import NumericInput from '@/src/components/custom/numeric-input'
-import { Text } from '@/src/components/custom/typography'
+import { AssetIcons } from '@/src/components/custom/asset-icons'
+import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
+import Tooltip from '@/src/components/antd/tooltip'
+import Info from '@/src/resources/svg/info.svg'
 
 export type TokenAmountProps = {
   className?: string
-  tokenIcon?: TokenIconNames | React.ReactNode
+  disabled?: boolean
+  displayDecimals?: number
+  hidden?: boolean
   max?: number | BigNumber
   maximumFractionDigits?: number
-  value?: number | BigNumber
   name?: string
-  disabled?: boolean
-  slider?: boolean
-  displayDecimals?: number
   onChange?: (value?: BigNumber) => void
-  hidden?: boolean
+  slider?: boolean | 'healthFactorVariant'
+  tokenIcon?: TokenIconNames | React.ReactNode
+  value?: number | BigNumber
 }
 
 const TokenAmount: React.FC<TokenAmountProps> = (props) => {
@@ -33,9 +34,11 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     hidden,
     max,
     maximumFractionDigits = 4,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     name,
     onChange,
     slider = false,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     tokenIcon,
     value,
   } = props
@@ -58,32 +61,18 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   }
 
   return (
-    <Grid flow="row" gap={32}>
+    <>
       <NumericInput
         addonAfter={
           max !== undefined ? (
-            <button
-              className={cn('button-ghost', s.maxBtn)}
-              disabled={disabled}
-              onClick={onMaxHandle}
-              type="button"
-            >
-              <span>MAX</span>
-            </button>
+            <ButtonOutlineGradient disabled={disabled} onClick={onMaxHandle} textGradient>
+              Max
+            </ButtonOutlineGradient>
           ) : null
         }
         addonBefore={
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {typeof tokenIcon === 'string' && (
-              <Icon height={30} name={tokenIcon as TokenIconNames} width={30} />
-            )}
-            {typeof tokenIcon === 'object' && tokenIcon}
-            <div className="mr-8" />
-            {!isMobile && (
-              <Text color="primary" type="lb1" weight="semibold">
-                {name === 'gOHM_FDT_SLP_Amphora' ? 'gOHM_FDT_SLP' : name}
-              </Text>
-            )}
+          <div className={cn(s.iconsWrapper)}>
+            <AssetIcons dimensions={'32px'} mainAsset={'SBOND'} secondaryAsset={'DAI'} />
           </div>
         }
         className={cn(s.component, className)}
@@ -97,20 +86,37 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
         value={bnValue}
       />
       {slider && !hidden && (
-        <Slider
-          disabled={disabled}
-          max={bnMaxValue.toNumber()}
-          min={0}
-          onChange={onSliderChange}
-          step={step}
-          tipFormatter={(sliderValue) =>
-            sliderValue ? formatBigValue(new BigNumber(sliderValue), displayDecimals) : 0
-          }
-          tooltipPlacement="bottom"
-          value={bnValue?.toNumber()}
-        />
+        <>
+          {slider === 'healthFactorVariant' && (
+            <div className={s.healthFactorWrapper}>
+              <div className={s.safer}>Safer</div>
+              <div className={s.healthFactor}>
+                <span>
+                  Health factor <span className={s.hf}>1.95</span>
+                </span>
+                <Tooltip title={'HF Tooltip'}>
+                  <Info />
+                </Tooltip>
+              </div>
+              <div className={s.riskier}>Riskier</div>
+            </div>
+          )}
+          <Slider
+            disabled={disabled}
+            healthFactorVariant={slider === 'healthFactorVariant'}
+            max={bnMaxValue.toNumber()}
+            min={0}
+            onChange={onSliderChange}
+            step={step}
+            tipFormatter={(sliderValue) =>
+              sliderValue ? formatBigValue(new BigNumber(sliderValue), displayDecimals) : 0
+            }
+            tooltipPlacement="bottom"
+            value={bnValue?.toNumber()}
+          />
+        </>
       )}
-    </Grid>
+    </>
   )
 }
 

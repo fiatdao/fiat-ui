@@ -3,14 +3,23 @@ import React from 'react'
 import AntdButton, { ButtonProps } from 'antd/lib/button'
 import cn from 'classnames'
 
-const ButtonGradient: React.FC<ButtonProps> = ({
+interface Props extends ButtonProps {
+  height?: 'lg' | undefined
+}
+
+const ButtonGradient: React.FC<Props> = ({
   children,
   className,
   disabled,
+  height,
   ...restProps
-}: ButtonProps) => {
+}: Props) => {
   return (
-    <AntdButton className={cn(s.component, className)} disabled={disabled} {...restProps}>
+    <AntdButton
+      className={cn(s.component, { [s.lg]: height === 'lg' }, className)}
+      disabled={disabled}
+      {...restProps}
+    >
       {children}
     </AntdButton>
   )

@@ -1,0 +1,61 @@
+.component {
+  --height: 46px;
+
+  align-items: center;
+  background: transparent;
+  border-radius: 4px;
+  border: none;
+  color: var(--theme-light-text-color);
+  cursor: pointer;
+  display: flex;
+  flex-grow: 1;
+  font-size: 14px;
+  font-weight: 500;
+  height: 100%;
+  justify-content: center;
+  line-height: 1.2;
+  width: 100%;
+  z-index: 5;
+
+  &:active {
+    opacity: 0.8;
+  }
+
+  &:hover .children {
+    color: var(--theme-text-color);
+  }
+
+  &:active,
+  &.checked {
+    background-image: linear-gradient(90deg, var(--theme-color-7) 0%, var(--theme-color-3) 100%);
+    color: var(--theme-text-color);
+  }
+
+  &.checked {
+    cursor: default;
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.radioTabsWrapper {
+  background-image: linear-gradient(90deg, var(--theme-color-7) 0%, var(--theme-color-3) 100%);
+  border-radius: 8px;
+  height: 56px;
+  border: 1px solid transparent;
+}
+
+.radioTabsInner {
+  align-items: center;
+  background: #171717;
+  border-radius: 8px;
+  display: flex;
+  gap: 4px;
+  height: 100%;
+  padding: 4px;
+  width: 100%;
+}
