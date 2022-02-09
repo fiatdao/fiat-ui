@@ -5,31 +5,3 @@
   display: grid;
   grid-template-columns: var(--asset-icon-dimensions) 1fr;
 }
-
-.assetWrapper {
-  height: var(--asset-icon-dimensions);
-  position: relative;
-  width: var(--asset-icon-dimensions);
-}
-
-.mainAsset {
-  border-radius: 50%;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  z-index: 1;
-}
-
-.secondaryAsset {
-  --dimensions: 10px;
-
-  border-radius: 50%;
-  bottom: 0;
-  height: var(--dimensions);
-  position: absolute;
-  right: 0;
-  width: var(--dimensions);
-  z-index: 5;
-}

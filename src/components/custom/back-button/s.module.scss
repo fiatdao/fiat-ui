@@ -1,0 +1,31 @@
+.component {
+  --transition-length: 0.15s;
+
+  align-items: center;
+  color: var(--theme-light-text-color);
+  display: grid;
+  font-size: 14px;
+  font-weight: 500;
+  gap: 13px;
+  grid-template-columns: 16px 1fr;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: var(--transition-length) linear color;
+
+  &:hover {
+    color: var(--theme-text-color);
+
+    .fill {
+      fill: var(--theme-text-color);
+    }
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.fill {
+  fill: var(--theme-light-text-color);
+  transition: var(--transition-length) linear fill;
+}

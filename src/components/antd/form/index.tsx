@@ -30,19 +30,21 @@ const FormItem: React.FC<FormItemProps> = (props) => {
       className={cn(s.item, className)}
       {...itemProps}
       label={
-        <>
-          <Grid align="center" flow="col" gap={4}>
-            {label}
-            {hint && (
-              <Tooltip title={hint}>
-                <span>
-                  <Icon height={15} name="info-outlined" width={15} />
-                </span>
-              </Tooltip>
-            )}
-          </Grid>
-          {extra}
-        </>
+        label ? (
+          <>
+            <Grid align="center" flow="col" gap={4}>
+              {label}
+              {hint && (
+                <Tooltip title={hint}>
+                  <span>
+                    <Icon height={15} name="info-outlined" width={15} />
+                  </span>
+                </Tooltip>
+              )}
+            </Grid>
+            {extra}
+          </>
+        ) : null
       }
     >
       {children}

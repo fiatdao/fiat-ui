@@ -12,15 +12,15 @@ export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string 
   },
   2: {
     title: 'Create a Proxy contract',
-    subtitle: 'The Proxy Contract will allow you to interact with the FIAT protocol...',
+    subtitle: 'The Proxy Contract will allow you to interact with the FIAT protocol.',
   },
   3: {
     title: 'Set Collateral Allowance',
     subtitle: 'Give permission to the FIAT protocol to manager your Collateral',
   },
   4: {
-    title: 'Set Collateral Allowance',
-    subtitle: 'Give permission to the FIAT protocol to manager your Collateral',
+    title: 'Configure your positions',
+    subtitle: 'Select which asset to deposit and how much FIAT to mint.',
   },
   5: {
     title: 'Confirm your new position',
