@@ -1,32 +1,7 @@
 @import 'src/styles/text-gradient';
 @import '/src/styles/vars';
 
-.mainContainer {
-  --gap: 24px;
-
-  display: grid;
-  gap: var(--gap);
-  grid-template-columns: 1fr minmax(400px, 1fr);
-  padding-top: 25px;
-
-  @media (max-width: #{$max-width-tablet-portrait}) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.infoBlocks {
-  display: grid;
-  gap: var(--gap);
-  grid-template-columns: 1fr 1fr;
-
-  @media (max-width: #{$max-width-mobile}) {
-    grid-template-columns: 1fr;
-  }
-}
-
 .formWrapper {
-  --common-padding: 24px;
-
   background-color: var(--theme-card-color);
   border: 1px solid var(--theme-border-color);
   border-radius: 8px;
@@ -34,7 +9,7 @@
 
 .stepperWrapper {
   border-bottom: 1px solid var(--theme-border-color);
-  padding: 16px var(--common-padding) var(--common-padding);
+  padding: 16px var(--theme-common-card-padding) var(--theme-common-card-padding);
 }
 
 .stepperTitleWrapper {
@@ -81,7 +56,7 @@
 }
 
 .form {
-  padding: var(--common-padding) var(--common-padding) 28px;
+  padding: var(--theme-common-card-padding) var(--theme-common-card-padding) 28px;
 }
 
 .radioTabsWrapper {

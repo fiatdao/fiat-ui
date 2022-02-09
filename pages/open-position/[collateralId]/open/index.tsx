@@ -29,6 +29,7 @@ import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
+import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -137,7 +138,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
   const toggleMintFiat = () => setMintFiat(!mintFiat)
 
   return (
-    <div className={cn(s.formWrapper)}>
+    <>
       {stateMachine.context.currentStepNumber !== 7 ? (
         <>
           <StepperTitle
@@ -303,7 +304,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
           <ButtonGradient height="lg">Go to bb_sBond_cDAI position</ButtonGradient>
         </div>
       )}
-    </div>
+    </>
   )
 }
 
@@ -354,20 +355,18 @@ const OpenPosition = () => {
   return (
     <>
       <BackButton href="/open-position">Back</BackButton>
-      <div className={cn(s.mainContainer)}>
-        <div className={cn(s.infoBlocks)}>
-          {mockedBlocks.map((item, index) => (
-            <InfoBlock
-              key={`${index}_info`}
-              title={item.title}
-              tooltip={item.tooltip || ''}
-              url={item.url || ''}
-              value={item.value}
-            />
-          ))}
-        </div>
-        <FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />
-      </div>
+      <PositionFormsLayout
+        form={<FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />}
+        infoBlocks={mockedBlocks.map((item, index) => (
+          <InfoBlock
+            key={`${index}_info`}
+            title={item.title}
+            tooltip={item.tooltip || ''}
+            url={item.url || ''}
+            value={item.value}
+          />
+        ))}
+      />
     </>
   )
 }

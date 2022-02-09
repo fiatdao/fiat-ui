@@ -111,6 +111,8 @@ body.mobile-menu-open {
   --button-height-lg: 48px;
 
   --content-padding: 40px;
+
+  --theme-common-card-padding: 24px;
 }
 
 @media (max-width: #{$max-width-tablet-landscape}) {
