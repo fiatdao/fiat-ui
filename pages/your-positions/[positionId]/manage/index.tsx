@@ -14,8 +14,6 @@ import {
 } from '@/src/components/custom/manage-position/ManageCollateral'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { BackButton } from '@/src/components/custom/back-button'
-// import Plus from '@/src/resources/svg/gradient-plus.svg'
-// import Less from '@/src/resources/svg/gradient-less.svg'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 
 const PositionManager = () => {

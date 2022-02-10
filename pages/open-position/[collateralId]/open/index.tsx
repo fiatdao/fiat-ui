@@ -18,7 +18,7 @@ import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { BackButton } from '@/src/components/custom/back-button'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import Plus from '@/src/resources/svg/gradient-plus.svg'
+import { ButtonMintFiat } from '@/src/components/custom/button-mint-fiat'
 import Less from '@/src/resources/svg/gradient-less.svg'
 import Success from '@/src/resources/svg/success.svg'
 import useUserProxy from '@/src/hooks/useUserProxy'
@@ -27,9 +27,9 @@ import { ERC20 } from '@/types/typechain'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import ButtonGradient from '@/src/components/antd/button-gradient'
-import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Summary } from '@/src/components/custom/summary'
+import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -163,7 +163,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                 </Form.Item>
               )}
               {stateMachine.context.currentStepNumber === 1 && (
-                <div className={cn(s.buttonsWrapper)}>
+                <ButtonsWrapper>
                   {!isProxyAvailable && (
                     <ButtonGradient
                       disabled={!stateMachine.context.erc20Amount.gt(0)}
@@ -182,17 +182,17 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                       Set Allowance
                     </ButtonGradient>
                   )}
-                </div>
+                </ButtonsWrapper>
               )}
               {stateMachine.context.currentStepNumber === 2 && (
-                <div className={cn(s.buttonsWrapper)}>
+                <ButtonsWrapper>
                   <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
                     Create Proxy
                   </ButtonGradient>
                   <button className={s.backButton} onClick={() => console.log('go back')}>
                     &#8592; Go back
                   </button>
-                </div>
+                </ButtonsWrapper>
               )}
               {stateMachine.context.currentStepNumber === 3 && (
                 <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
@@ -232,23 +232,18 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                       </div>
                     </div>
                   )}
-                  <div className={cn(s.buttonsWrapper)}>
-                    {!mintFiat && (
-                      <ButtonOutlineGradient onClick={() => toggleMintFiat()} textGradient>
-                        <Plus />
-                        Mint FIAT with this transaction
-                      </ButtonOutlineGradient>
-                    )}
+                  <ButtonsWrapper>
+                    {!mintFiat && <ButtonMintFiat onClick={() => toggleMintFiat()} />}
                     <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_DEPLOY' })}>
                       Deposit collateral
                     </ButtonGradient>
-                  </div>
+                  </ButtonsWrapper>
                 </>
               )}
               {stateMachine.context.currentStepNumber === 5 && (
                 <>
                   <Summary data={mockedSummaryData} />
-                  <div className={cn(s.buttonsWrapper)}>
+                  <ButtonsWrapper>
                     <ButtonGradient
                       disabled={!hasAllowance || !isProxyAvailable}
                       height="lg"
@@ -271,7 +266,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                     <button className={cn(s.backButton)} onClick={() => console.log('go back')}>
                       &#8592; Go back
                     </button>
-                  </div>
+                  </ButtonsWrapper>
                 </>
               )}
             </Form>

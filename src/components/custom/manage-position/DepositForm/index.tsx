@@ -2,6 +2,7 @@ import s from './s.module.scss'
 import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import { useState } from 'react'
 import { ZERO_ADDRESS, ZERO_BN } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
@@ -10,6 +11,9 @@ import { iconByAddress } from '@/src/utils/managePosition'
 import { getNonHumanValue } from '@/src/web3/utils'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
+import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
+import { ButtonMintFiat } from '@/src/components/custom/button-mint-fiat'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
 export const DepositForm = ({
   tokenAddress,
@@ -61,6 +65,10 @@ export const DepositForm = ({
     },
   ]
 
+  const [mintFiat, setMintFiat] = useState(false)
+
+  const toggleMintFiat = () => setMintFiat(!mintFiat)
+
   return (
     <Form form={form} onFinish={handleDeposit}>
       <Form.Item name="deposit" required>
@@ -72,9 +80,25 @@ export const DepositForm = ({
           tokenIcon={iconByAddress[tokenAddress]}
         />
       </Form.Item>
-      <ButtonGradient height="lg" htmlType="submit">
-        Deposit
-      </ButtonGradient>
+      {mintFiat && (
+        <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
+          <TokenAmount
+            disabled={false}
+            displayDecimals={4}
+            max={10000}
+            maximumFractionDigits={6}
+            onChange={() => console.log('mint!')}
+            slider="healthFactorVariant"
+            tokenIcon={<FiatIcon />}
+          />
+        </Form.Item>
+      )}
+      <ButtonsWrapper>
+        {!mintFiat && <ButtonMintFiat onClick={() => toggleMintFiat()} />}
+        <ButtonGradient height="lg" htmlType="submit">
+          Deposit
+        </ButtonGradient>
+      </ButtonsWrapper>
       <div className={cn(s.summary)}>
         {mockedData.map((item, index) => (
           <SummaryItem key={index} title={item.title} value={item.value} />
