@@ -30,6 +30,7 @@ import { InfoBlock } from '@/src/components/custom/info-block'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
+import { Summary } from '@/src/components/custom/summary'
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -47,45 +48,6 @@ const StepperTitle: React.FC<{
     <p className={cn(s.stepperDescription)}>{description}</p>
   </div>
 )
-
-const Summary: React.FC = () => {
-  const hfState = 'ok'
-
-  return (
-    <div className={s.summary}>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>In your wallet</div>
-        <div className={s.summaryValue}>5,000 DAI Principal Token</div>
-      </div>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>Depositing into position </div>
-        <div className={s.summaryValue}>5,000 DAI Principal Token</div>
-      </div>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>Remaining in wallet</div>
-        <div className={s.summaryValue}>0 DAI Principal Token</div>
-      </div>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>FIAT to be minted</div>
-        <div className={s.summaryValue}>2,000</div>
-      </div>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>Updated health factor</div>
-        <div
-          className={cn(
-            s.summaryValue,
-            { [s.ok]: hfState === 'ok' },
-            // TODO: Make these work
-            // { [s.warning]: hfState === 'warning' },
-            // { [s.danger]: hfState === 'danger' }
-          )}
-        >
-          2.3
-        </div>
-      </div>
-    </div>
-  )
-}
 
 type FormProps = { tokenAmount: BigNumber; fiatAmount: BigNumber }
 
@@ -136,6 +98,30 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
   const [mintFiat, setMintFiat] = useState(false)
 
   const toggleMintFiat = () => setMintFiat(!mintFiat)
+
+  const mockedSummaryData = [
+    {
+      title: 'In your wallet',
+      value: '5,000 DAI Principal Token',
+    },
+    {
+      title: 'Depositing into position ',
+      value: '5,000 DAI Principal Token',
+    },
+    {
+      title: 'Remaining in wallet',
+      value: '0 DAI Principal Token',
+    },
+    {
+      title: 'FIAT to be minted',
+      value: '2,000',
+    },
+    {
+      state: 'ok',
+      title: 'Updated health factor',
+      value: '2.3',
+    },
+  ]
 
   return (
     <>
@@ -262,7 +248,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
               )}
               {stateMachine.context.currentStepNumber === 5 && (
                 <>
-                  <Summary />
+                  <Summary data={mockedSummaryData} />
                   <div className={s.buttonsWrapper}>
                     <ButtonGradient
                       disabled={!hasAllowance || !isProxyAvailable}
@@ -300,7 +286,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
           </div>
           <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
           <p className={cn(s.lastStepText)}>Your position has been successfully created.</p>
-          <Summary />
+          <Summary data={mockedSummaryData} />
           <ButtonGradient height="lg">Go to bb_sBond_cDAI position</ButtonGradient>
         </div>
       )}
