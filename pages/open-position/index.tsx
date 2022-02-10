@@ -15,8 +15,9 @@ import { Asset } from '@/src/components/custom/asset'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Filter from '@/src/resources/svg/filter.svg'
-import { PROTOCOLS, Protocol } from '@/types/protocols'
 import { usePositions } from '@/src/hooks/subgraph/usePositions'
+import { Position } from '@/src/utils/data/positions'
+import { PROTOCOLS, Protocol } from '@/types/protocols'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -42,7 +43,7 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'collateral',
-    render: (value: string) => <CellValue value={value} />,
+    render: (value: Position['collateral']) => <CellValue value={value.symbol} />,
     title: 'Asset',
   },
   {
@@ -204,7 +205,7 @@ const OpenPosition = () => {
             console.log(page, pageSize)
           },
         }}
-        rowKey="address"
+        rowKey="id"
         scroll={{
           x: true,
         }}

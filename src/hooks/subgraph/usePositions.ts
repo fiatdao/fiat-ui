@@ -8,7 +8,7 @@ import { ChainsValues } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 export const fetchPositions = (provider: JsonRpcProvider, appChainId: ChainsValues) =>
-  graphqlFetcher<positions>(POSITIONS).then(({ positions }) => {
+  graphqlFetcher<positions>(POSITIONS).then(async ({ positions }) => {
     return Promise.all(positions.map((p) => wranglePosition(p, provider, appChainId)))
   })
 
