@@ -1,40 +1,6 @@
-<svg
-  fill="none"
-  height="18"
-  viewBox="0 0 18 18"
-  width="18"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <path
-    d="M7.74763 12.4447H3.02209"
-    stroke="white"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="1.5"
-  />
-  <path
-    d="M9.85535 5.17525H14.5809"
-    stroke="white"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="1.5"
-  />
-  <path
-    clipRule="evenodd"
-    d="M6.54472 5.13469C6.54472 4.16295 5.7511 3.375 4.77236 3.375C3.79362 3.375 3 4.16295 3 5.13469C3 6.10643 3.79362 6.89438 4.77236 6.89438C5.7511 6.89438 6.54472 6.10643 6.54472 5.13469Z"
-    fillRule="evenodd"
-    stroke="white"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="1.5"
-  />
-  <path
-    clipRule="evenodd"
-    d="M15 12.4153C15 11.4436 14.207 10.6556 13.2283 10.6556C12.2489 10.6556 11.4553 11.4436 11.4553 12.4153C11.4553 13.3871 12.2489 14.175 13.2283 14.175C14.207 14.175 15 13.3871 15 12.4153Z"
-    fillRule="evenodd"
-    stroke="white"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="1.5"
-  />
+<svg fill="none" height="18" viewBox="0 0 18 18" width="18" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7.74763 12.4447H3.02209" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+    <path d="M9.85535 5.17525H14.5809" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+    <path clipRule="evenodd" d="M6.54472 5.13469C6.54472 4.16295 5.7511 3.375 4.77236 3.375C3.79362 3.375 3 4.16295 3 5.13469C3 6.10643 3.79362 6.89438 4.77236 6.89438C5.7511 6.89438 6.54472 6.10643 6.54472 5.13469Z" fillRule="evenodd" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+    <path clipRule="evenodd" d="M15 12.4153C15 11.4436 14.207 10.6556 13.2283 10.6556C12.2489 10.6556 11.4553 11.4436 11.4553 12.4153C11.4553 13.3871 12.2489 14.175 13.2283 14.175C14.207 14.175 15 13.3871 15 12.4153Z" fillRule="evenodd" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
 </svg>
