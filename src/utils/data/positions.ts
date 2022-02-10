@@ -108,7 +108,7 @@ const wranglePosition = async (
       : 1
 
   // FIXME
-  const isAtRisk = false //healthFactor < vaultCollateralizationRatio.toNumber()
+  const isAtRisk = vaultCollateralizationRatio.gte(healthFactor)
 
   // TODO Borrowing rate
   return {
