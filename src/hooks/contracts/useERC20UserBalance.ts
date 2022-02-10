@@ -3,7 +3,7 @@ import useContractInfo from './useContractInfo'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { formatTokenValue } from '@/src/utils/formats'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
-import { AppContracts } from '@/types'
+import { AppContracts } from '@/types/protocols'
 
 export default function useERC20UserBalance(token: AppContracts) {
   const { address } = useWeb3Connection()

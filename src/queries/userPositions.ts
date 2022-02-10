@@ -15,6 +15,7 @@ export const USER_POSITIONS = gql`
           name
           type
           collateralizationRatio
+          maxDiscount
         }
         vaultName
         collateral {

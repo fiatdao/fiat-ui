@@ -1,18 +1,30 @@
-import { wranglePositions } from '.'
 import useSWR from 'swr'
-import { positionById, positionByIdVariables } from '@/types/subgraph/__generated__/positionById'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { positionByIdVariables } from '@/types/subgraph/__generated__/positionById'
 import { POSITION_BY_ID } from '@/src/queries/position'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
+import { wranglePosition } from '@/src/utils/data/positions'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { ChainsValues } from '@/src/constants/chains'
+import { positions } from '@/types/subgraph/__generated__/positions'
 
-export const fetchPosition = (positionId: string) =>
-  graphqlFetcher<positionById, positionByIdVariables>(POSITION_BY_ID, { id: positionId }).then(
-    ({ position }) => {
-      if (position) return wranglePositions({ positions: [position] }).positions[0]
-    },
-  )
+// FIXME Use fragment or find a way to unify queries
+export const fetchPosition = (
+  positionId: string,
+  provider: JsonRpcProvider,
+  appChainId: ChainsValues,
+) =>
+  graphqlFetcher<positions, positionByIdVariables>(POSITION_BY_ID, {
+    id: positionId,
+  }).then(({ positions }) => {
+    if (positions) return wranglePosition(positions[0], provider, appChainId)
+  })
 
 export const usePosition = (positionId: string) => {
-  const { data, mutate } = useSWR(['position-by-id'], () => fetchPosition(positionId))
+  const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
+  const { data, mutate } = useSWR(['position-by-id'], () =>
+    fetchPosition(positionId, provider, appChainId),
+  )
 
   return { position: data, refetch: mutate }
 }

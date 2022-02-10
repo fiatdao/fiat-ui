@@ -1,4 +1,3 @@
-import { fetchInfoPage } from '../../src/utils/your-positions-api'
 import { useEffect, useState } from 'react'
 
 import { Tab, Tabs } from '@/src/components/custom'
@@ -8,9 +7,10 @@ import InventoryTable from '@/src/components/custom/inventory-table'
 import TransactionHistoryTable from '@/src/components/custom/transaction-history-table'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import genericSuspense from '@/src/utils/genericSuspense'
-import { Position, YourPositionPageInformation } from '@/src/hooks/subgraph'
 import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 import { remainingTime } from '@/src/utils/dateTime'
+import { Position } from '@/src/utils/data/positions'
+import { YourPositionPageInformation, fetchInfoPage } from '@/src/utils/data/yourPositionInfo'
 
 enum TabState {
   Inventory = 'inventory',
@@ -50,18 +50,19 @@ const YourPositions = () => {
     init()
   }, [address, isWalletConnected, positions, provider])
 
+  // TODO Fix naming if necessary
   return (
     <>
       {!isLoadingPage && (
         <InfoBlocksGrid>
-          <InfoBlock title="Total Debt" value={pageInformation?.totalDebt} />
-          <InfoBlock title="Current Value" value={pageInformation?.currentValue} />
+          <InfoBlock title="Total Debt" value={pageInformation?.fiatDebt.toNumber()} />
+          <InfoBlock title="Current Value" value={pageInformation?.collateralValue.toNumber()} />
           <InfoBlock title="Lowest Health Factor" value={pageInformation?.lowestHealthFactor} />
           <InfoBlock
             title="Next Maturity"
             value={
-              pageInformation?.nextMaturity
-                ? remainingTime(new Date(pageInformation.nextMaturity))
+              pageInformation?.nearestMaturity
+                ? remainingTime(pageInformation.nearestMaturity)
                 : undefined
             }
           />

@@ -7,16 +7,16 @@ import {
 } from '@/src/components/custom/tables/utils'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { Position } from '@/src/hooks/subgraph'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import { PositionsAtRiskTableWrapper } from '@/src/components/custom/positions-at-risk-table-wrapper'
+import { Position } from '@/src/utils/data/positions'
 
 const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'name',
-    render: (name: Position['name']) => (
+    render: (name: Position['protocol']) => (
       <Asset mainAsset="SBOND" secondaryAsset="DAI" title={name} />
     ),
     title: 'Asset',
@@ -26,25 +26,25 @@ const Columns: ColumnsType<Position> = [
     align: 'left',
     dataIndex: 'discount',
     render: (discount: Position['discount']) => (
-      <CellValue bold tooltip={`$${discount}`} value={`$${discount.toFixed(2)}`} />
+      <CellValue bold tooltip={`$${discount}`} value={`$${discount.toNumber().toFixed(2)}`} />
     ),
     responsive: ['lg'],
     title: 'Discounted Value',
   },
   {
     align: 'left',
-    dataIndex: 'ltv',
-    render: (ltv: Position['ltv']) => (
-      <CellValue tooltip={`${ltv}%`} value={`${ltv.toFixed(2)}%`} />
+    dataIndex: 'totalCollateral',
+    render: (ltv: Position['totalCollateral']) => (
+      <CellValue tooltip={`${ltv}%`} value={`${ltv.toNumber().toFixed(2)}%`} />
     ),
     responsive: ['lg', 'xl'],
     title: 'Max. LTV',
   },
   {
     align: 'left',
-    dataIndex: 'minted',
-    render: (minted: Position['minted']) => (
-      <CellValue tooltip={`${minted}`} value={`${minted.toFixed(3)}`} />
+    dataIndex: 'totalNormalDebt',
+    render: (minted: Position['totalNormalDebt']) => (
+      <CellValue tooltip={`${minted}`} value={`${minted.toNumber().toFixed(3)}`} />
     ),
     responsive: ['xl'],
     title: 'FIAT Minted',
@@ -69,10 +69,8 @@ const Columns: ColumnsType<Position> = [
   },
   {
     align: 'right',
-    dataIndex: 'action',
-    render: (action: Position['action']) => (
-      <Link href={`/your-positions/${action.data.positionId}/manage`}>{action.text}</Link>
-    ),
+    dataIndex: 'id', // FIXME Check on chain this
+    render: (id) => <Link href={`/your-positions/${id}/manage`}>Manage</Link>,
     title: '',
     width: 110,
   },

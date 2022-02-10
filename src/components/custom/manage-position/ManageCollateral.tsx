@@ -41,7 +41,7 @@ export const ManageCollateral = ({ activeTabKey, setActiveTabKey }: ManageCollat
         <WithdrawForm
           refetch={refetchPosition}
           tokenAddress={collateralAddress}
-          userBalance={position?.discount}
+          userBalance={position?.discount.toNumber()}
           vaultAddress={vaultAddress}
         />
       )}
