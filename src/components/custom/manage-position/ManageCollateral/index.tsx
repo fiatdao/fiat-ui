@@ -1,3 +1,5 @@
+import s from './s.module.scss'
+import cn from 'classnames'
 import { DepositForm } from '@/src/components/custom/manage-position/DepositForm'
 import { WithdrawForm } from '@/src/components/custom/manage-position/WithdrawForm'
 import { Tab, Tabs } from '@/src/components/custom'
@@ -19,14 +21,12 @@ export interface ManageCollateralProps {
 
 export const ManageCollateral = ({ activeTabKey, setActiveTabKey }: ManageCollateralProps) => {
   const { position, refetch: refetchPosition } = useManagePositionInfo()
-
   const { vaultAddress } = useExtractPositionIdData()
-
   const [collateralAddress] = useContractCall(vaultAddress, contracts.VAULT_20.abi, 'token', null)
 
   return (
-    <>
-      <Tabs>
+    <div className={cn(s.component)}>
+      <Tabs className={cn(s.tabs)}>
         <Tab isActive={'deposit' === activeTabKey} onClick={() => setActiveTabKey('deposit')}>
           Deposit
         </Tab>
@@ -45,6 +45,6 @@ export const ManageCollateral = ({ activeTabKey, setActiveTabKey }: ManageCollat
           vaultAddress={vaultAddress}
         />
       )}
-    </>
+    </div>
   )
 }

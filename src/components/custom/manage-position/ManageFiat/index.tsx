@@ -1,3 +1,5 @@
+import s from './s.module.scss'
+import cn from 'classnames'
 import { BurnForm } from '@/src/components/custom/manage-position/BurnForm'
 import { MintForm } from '@/src/components/custom/manage-position/MintForm'
 import { Tab, Tabs } from '@/src/components/custom'
@@ -20,8 +22,8 @@ export const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) =
   const { vaultAddress } = useExtractPositionIdData()
 
   return (
-    <>
-      <Tabs>
+    <div className={cn(s.component)}>
+      <Tabs className={cn(s.tabs)}>
         <Tab isActive={'mint' === activeTabKey} onClick={() => setActiveTabKey('mint')}>
           Mint
         </Tab>
@@ -43,6 +45,6 @@ export const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) =
           vaultAddress={vaultAddress}
         />
       )}
-    </>
+    </div>
   )
 }

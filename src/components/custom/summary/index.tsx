@@ -6,8 +6,8 @@ export const SummaryItem: React.FC<{
   title: string
   value: string
 }> = ({ state, title, value }) => (
-  <div className={s.row}>
-    <div className={s.title}>{title}</div>
+  <div className={cn(s.row)}>
+    <div className={cn(s.title)}>{title}</div>
     <div
       className={cn(
         s.value,

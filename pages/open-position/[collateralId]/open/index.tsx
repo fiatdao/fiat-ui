@@ -26,7 +26,6 @@ import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { ERC20 } from '@/types/typechain'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
-import { InfoBlock } from '@/src/components/custom/info-block'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
@@ -41,8 +40,8 @@ const StepperTitle: React.FC<{
   <div className={cn(s.stepperWrapper)}>
     <div className={cn(s.stepperTitleWrapper)}>
       <h2 className={cn(s.stepperTitle)}>{title}</h2>
-      <div className={s.steps}>
-        <span className={s.currentStep}>{currentStep}</span>/{totalSteps}
+      <div className={cn(s.steps)}>
+        <span className={cn(s.currentStep)}>{currentStep}</span>/{totalSteps}
       </div>
     </div>
     <p className={cn(s.stepperDescription)}>{description}</p>
@@ -164,7 +163,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                 </Form.Item>
               )}
               {stateMachine.context.currentStepNumber === 1 && (
-                <div className={s.buttonsWrapper}>
+                <div className={cn(s.buttonsWrapper)}>
                   {!isProxyAvailable && (
                     <ButtonGradient
                       disabled={!stateMachine.context.erc20Amount.gt(0)}
@@ -186,7 +185,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                 </div>
               )}
               {stateMachine.context.currentStepNumber === 2 && (
-                <div className={s.buttonsWrapper}>
+                <div className={cn(s.buttonsWrapper)}>
                   <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
                     Create Proxy
                   </ButtonGradient>
@@ -233,7 +232,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                       </div>
                     </div>
                   )}
-                  <div className={s.buttonsWrapper}>
+                  <div className={cn(s.buttonsWrapper)}>
                     {!mintFiat && (
                       <ButtonOutlineGradient onClick={() => toggleMintFiat()} textGradient>
                         <Plus />
@@ -249,7 +248,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
               {stateMachine.context.currentStepNumber === 5 && (
                 <>
                   <Summary data={mockedSummaryData} />
-                  <div className={s.buttonsWrapper}>
+                  <div className={cn(s.buttonsWrapper)}>
                     <ButtonGradient
                       disabled={!hasAllowance || !isProxyAvailable}
                       height="lg"
@@ -269,7 +268,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                     >
                       Confirm
                     </ButtonGradient>
-                    <button className={s.backButton} onClick={() => console.log('go back')}>
+                    <button className={cn(s.backButton)} onClick={() => console.log('go back')}>
                       &#8592; Go back
                     </button>
                   </div>
@@ -343,15 +342,7 @@ const OpenPosition = () => {
       <BackButton href="/open-position">Back</BackButton>
       <PositionFormsLayout
         form={<FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />}
-        infoBlocks={mockedBlocks.map((item, index) => (
-          <InfoBlock
-            key={`${index}_info`}
-            title={item.title}
-            tooltip={item.tooltip || ''}
-            url={item.url || ''}
-            value={item.value}
-          />
-        ))}
+        infoBlocks={mockedBlocks}
       />
     </>
   )

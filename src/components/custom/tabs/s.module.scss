@@ -1,11 +1,6 @@
 .tabs {
   border-bottom: 1px solid var(--theme-border-color);
   display: flex;
-  margin-bottom: 20px;
-  margin-left: calc(var(--content-padding) * -1);
-  margin-right: calc(var(--content-padding) * -1);
-  padding-left: var(--content-padding);
-  padding-right: var(--content-padding);
   gap: 32px;
 }
 

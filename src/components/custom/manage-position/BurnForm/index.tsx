@@ -1,4 +1,5 @@
-import { Button } from 'antd'
+import s from './s.module.scss'
+import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { ZERO_ADDRESS, ZERO_BN } from '@/src/constants/misc'
@@ -10,6 +11,8 @@ import { useBurnForm } from '@/src/hooks/managePosition'
 import { iconByAddress } from '@/src/utils/managePosition'
 import { getNonHumanValue } from '@/src/web3/utils'
 import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
+import ButtonGradient from '@/src/components/antd/button-gradient'
+import { SummaryItem } from '@/src/components/custom/summary'
 
 export const BurnForm = ({
   refetch,
@@ -51,6 +54,25 @@ export const BurnForm = ({
     refetch()
   }
 
+  const mockedData = [
+    {
+      title: 'Current collateral value',
+      value: '$5,000',
+    },
+    {
+      title: 'Outstanding FIAT debt',
+      value: '0',
+    },
+    {
+      title: 'New FIAT debt',
+      value: '0',
+    },
+    {
+      title: 'Stability feed',
+      value: '0',
+    },
+  ]
+
   return (
     <Form form={form} onFinish={handleBurn}>
       <Form.Item name="burn" required>
@@ -62,11 +84,14 @@ export const BurnForm = ({
           tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
         />
       </Form.Item>
-      <Form.Item>
-        <Button htmlType="submit" type="primary">
-          Burn FIAT
-        </Button>
-      </Form.Item>
+      <ButtonGradient height="lg" htmlType="submit">
+        Burn
+      </ButtonGradient>
+      <div className={cn(s.summary)}>
+        {mockedData.map((item, index) => (
+          <SummaryItem key={index} title={item.title} value={item.value} />
+        ))}
+      </div>
     </Form>
   )
 }

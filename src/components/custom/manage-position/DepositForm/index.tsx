@@ -1,4 +1,5 @@
-import { Button } from 'antd'
+import s from './s.module.scss'
+import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { ZERO_ADDRESS, ZERO_BN } from '@/src/constants/misc'
@@ -7,6 +8,8 @@ import { TokenAmount } from '@/src/components/custom'
 import { useDepositForm } from '@/src/hooks/managePosition'
 import { iconByAddress } from '@/src/utils/managePosition'
 import { getNonHumanValue } from '@/src/web3/utils'
+import ButtonGradient from '@/src/components/antd/button-gradient'
+import { SummaryItem } from '@/src/components/custom/summary'
 
 export const DepositForm = ({
   tokenAddress,
@@ -39,6 +42,25 @@ export const DepositForm = ({
     console.log('Collateral added!', { receipt })
   }
 
+  const mockedData = [
+    {
+      title: 'Current collateral value',
+      value: '$5,000',
+    },
+    {
+      title: 'Outstanding FIAT debt',
+      value: '0',
+    },
+    {
+      title: 'New FIAT debt',
+      value: '0',
+    },
+    {
+      title: 'Stability feed',
+      value: '0',
+    },
+  ]
+
   return (
     <Form form={form} onFinish={handleDeposit}>
       <Form.Item name="deposit" required>
@@ -50,11 +72,14 @@ export const DepositForm = ({
           tokenIcon={iconByAddress[tokenAddress]}
         />
       </Form.Item>
-      <Form.Item>
-        <Button htmlType="submit" type="primary">
-          Deposit collateral
-        </Button>
-      </Form.Item>
+      <ButtonGradient height="lg" htmlType="submit">
+        Deposit
+      </ButtonGradient>
+      <div className={cn(s.summary)}>
+        {mockedData.map((item, index) => (
+          <SummaryItem key={index} title={item.title} value={item.value} />
+        ))}
+      </div>
     </Form>
   )
 }
