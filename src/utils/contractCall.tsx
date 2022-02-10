@@ -13,13 +13,14 @@ export default async function contractCall<
   params: Parameters<MyContract[Method]> | null,
 ): Promise<ReturnType<MyContract[Method]> | null> {
   const contract = new Contract(address as string, abi, provider) as MyContract
-  const deployedContract = await contract.deployed()
-  if (deployedContract) {
+  try {
+    const deployedContract = await contract.deployed()
     const contractMethod = deployedContract[method]
     const result = Array.isArray(params) ? await contractMethod(...params) : await contractMethod()
     if (isDev()) console.log(`result of ${method} with ${params} from contract ${address}`, result)
     return result
+  } catch (e) {
+    if (isDev()) console.error(`contract is not deployed`, e)
+    return null
   }
-  if (isDev()) console.error(`contract is not deployed`)
-  return null
 }

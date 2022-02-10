@@ -1,0 +1,62 @@
+@import '/src/styles/vars';
+
+.filters {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (max-width: #{$max-width-tablet-portrait}) {
+    display: none;
+  }
+}
+
+.title {
+  color: var(--theme-text-color);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0 0 34px;
+}
+
+.switch {
+  margin-left: auto;
+}
+
+.filtersButton {
+  display: none;
+
+  @media (max-width: #{$max-width-tablet-portrait}) {
+    display: flex;
+    max-width: fit-content;
+    margin-bottom: 24px;
+  }
+}
+
+.fitersGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+  margin-bottom: 25px;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.clear {
+  background: transparent;
+  border: none;
+  color: var(--theme-text-color);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 auto;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
