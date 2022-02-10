@@ -1,8 +1,8 @@
 import s from './s.module.scss'
 import cn from 'classnames'
+import { shortenAddr } from '@/src/web3/utils'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { chainsConfig } from '@/src/constants/chains'
-import { truncateStringInTheMiddle } from '@/src/utils/string'
 
 export const CellAddress: React.FC<{
   className?: string
@@ -31,7 +31,7 @@ export const CellAddress: React.FC<{
       {...restProps}
     >
       <a href={`${explorer}tx/${value}`} rel="noreferrer" target="_blank">
-        {truncateStringInTheMiddle(value, 6, 4)}
+        {shortenAddr(value)}
       </a>
     </div>
   )
