@@ -39,7 +39,7 @@ export const USER_POSITIONS = gql`
         maturity
         positionTransactions {
           id
-          type
+          __typename
           collateral
           deltaCollateral
           normalDebt
