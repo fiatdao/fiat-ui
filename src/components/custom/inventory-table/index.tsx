@@ -1,5 +1,6 @@
 import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
+import ButtonGradient from '@/src/components/antd/button-gradient'
 import {
   calculateHealthFactor,
   parseDate,
@@ -70,7 +71,11 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'right',
     dataIndex: 'id', // FIXME Check on chain this
-    render: (id) => <Link href={`/your-positions/${id}/manage`}>Manage</Link>,
+    render: (id) => (
+      <Link href={`/your-positions/${id}/manage`} passHref>
+        <ButtonGradient>Manage</ButtonGradient>
+      </Link>
+    ),
     title: '',
     width: 110,
   },

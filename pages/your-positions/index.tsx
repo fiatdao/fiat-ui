@@ -38,16 +38,13 @@ const YourPositions = () => {
   const { positionTransactions: transactions, positions } = usePositionsByUser(address)
 
   useEffect(() => {
-    const init = async () => {
-      if (address && isWalletConnected && provider) {
-        setIsLoadingPage(true)
-        const newPageInformation = await fetchInfoPage(positions || [])
-        setPageInformation(newPageInformation)
-        setInventory(positions)
-        setIsLoadingPage(false)
-      }
+    if (address && isWalletConnected && provider) {
+      setIsLoadingPage(true)
+      const newPageInformation = fetchInfoPage(positions || [])
+      setPageInformation(newPageInformation)
+      setInventory(positions)
+      setIsLoadingPage(false)
     }
-    init()
   }, [address, isWalletConnected, positions, provider])
 
   // TODO Fix naming if necessary
@@ -55,9 +52,12 @@ const YourPositions = () => {
     <>
       {!isLoadingPage && (
         <InfoBlocksGrid>
-          <InfoBlock title="Total Debt" value={pageInformation?.fiatDebt.toNumber()} />
-          <InfoBlock title="Current Value" value={pageInformation?.collateralValue.toNumber()} />
-          <InfoBlock title="Lowest Health Factor" value={pageInformation?.lowestHealthFactor} />
+          <InfoBlock title="Total Debt" value={pageInformation?.fiatDebt.toFixed()} />
+          <InfoBlock title="Current Value" value={pageInformation?.collateralValue.toFixed()} />
+          <InfoBlock
+            title="Lowest Health Factor"
+            value={pageInformation?.lowestHealthFactor.toFixed()}
+          />
           <InfoBlock
             title="Next Maturity"
             value={
