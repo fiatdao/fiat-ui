@@ -1,7 +1,7 @@
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { ZERO_ADDRESS, ZERO_BN } from '@/src/constants/misc'
+import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useDepositForm } from '@/src/hooks/managePosition'
@@ -27,7 +27,14 @@ export const DepositForm = ({
 
     const addCollateralEncoded = userActions.interface.encodeFunctionData(
       'modifyCollateralAndDebt',
-      [vaultAddress, tokenAddress, address, ZERO_ADDRESS, toDeposit.toFixed(), ZERO_BN],
+      [
+        vaultAddress,
+        tokenAddress,
+        address,
+        ZERO_ADDRESS,
+        toDeposit.toFixed(),
+        ZERO_BIG_NUMBER.toFixed(),
+      ],
     )
 
     const tx = await userProxy.execute(userActions.address, addCollateralEncoded, {

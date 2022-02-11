@@ -1,8 +1,9 @@
-import BN from 'bignumber.js'
-import { BigNumber } from 'ethers'
+import BigNumber from 'bignumber.js'
 import Link from 'next/link'
 import { ReactNode, useEffect, useState } from 'react'
 import useSWR from 'swr'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { CollateralAuction, Collybus } from '@/types/typechain'
 import { userAuctions } from '@/types/subgraph/__generated__/userAuctions'
 import { USER_AUCTIONS } from '@/src/queries/userAuctions'
 import contractCall from '@/src/utils/contractCall'
@@ -16,22 +17,21 @@ import { getHumanValue } from '@/src/web3/utils'
 
 type AuctionData = {
   id: string
-  protocol: string
-  asset: string
-  upForAuction: string
-  price: string
-  currentValue: string
-  profit: string
+  protocol?: string
+  asset?: string
+  upForAuction?: string
+  price?: string
+  currentValue?: string
+  profit?: string
   action: ReactNode
 }
 
-const bigNumberHelper = (value: BigNumber | null) =>
-  value?._isBigNumber ? new BN(value.toString()) : new BN(0)
-
 const calcProfit = (currentValue: BigNumber | null, auctionPrice: BigNumber | null) => {
-  return bigNumberHelper(currentValue)
-    .minus(bigNumberHelper(auctionPrice))
-    .dividedBy(bigNumberHelper(auctionPrice))
+  if (currentValue === null || auctionPrice === null) {
+    return ZERO_BIG_NUMBER
+  }
+
+  return currentValue.minus(auctionPrice).dividedBy(auctionPrice)
 }
 /**
  *
@@ -44,34 +44,36 @@ const transformCollaterals = async (
   provider: any,
   appChainId: ChainsValues,
 ): Promise<AuctionData[]> => {
-  const {
-    abi: collybusAbi,
-    address: { [appChainId]: collybusAddress },
-  } = contracts.COLLYBUS
-
-  const {
-    abi: collateralAuctionAbi,
-    address: { [appChainId]: collateralAuctionAddress },
-  } = contracts.COLLATERAL_AUCTION
-
   return await Promise.all(
     cols.userAuctions.map(async (userAuction) => {
       const vaultAddress = userAuction.vault?.address
       const underlierAddress = userAuction.collateral?.underlierAddress
       const tokenId = userAuction.collateral?.tokenId
-      const maturity = BigNumber.from(Math.round(Date.now() / 1000))
+      const maturity = Math.round(Date.now() / 1000)
 
-      const currentValue: BigNumber | null = await contractCall(
-        collybusAddress,
-        collybusAbi,
-        provider,
-        'read',
-        [vaultAddress, underlierAddress, tokenId, maturity, false],
-      )
+      let currentValue = ZERO_BIG_NUMBER
+      if (
+        typeof vaultAddress === 'string' &&
+        typeof underlierAddress === 'string' &&
+        typeof tokenId === 'string'
+      ) {
+        const _currentValue = await contractCall<Collybus, 'read'>(
+          contracts.COLLYBUS.address[appChainId],
+          contracts.COLLYBUS.abi,
+          provider,
+          'read',
+          [vaultAddress, underlierAddress, tokenId, maturity, false],
+        )
 
-      const auctionStatus = await contractCall(
-        collateralAuctionAddress,
-        collateralAuctionAbi,
+        if (_currentValue) {
+          currentValue = BigNumber.from(_currentValue.toString()) as BigNumber
+        }
+      }
+
+      const auctionStatus = await contractCall<CollateralAuction, 'getStatus'>(
+        // TODO: it should be NON_LOSS_COLLATERAL_AUCTION
+        contracts.COLLATERAL_AUCTION.address[appChainId],
+        contracts.COLLATERAL_AUCTION.abi,
         provider,
         'getStatus',
         [userAuction.id],
@@ -90,14 +92,15 @@ const transformCollaterals = async (
         id: userAuction.id,
         protocol: userAuction.vault?.name,
         asset: userAuction.collateral?.symbol,
-        upForAuction: getHumanValue(bigNumberHelper(auctionStatus.collateralToSell), 18)
-          ?.decimalPlaces(0)
-          .toString(),
-        price: getHumanValue(bigNumberHelper(auctionStatus.price), 18)?.decimalPlaces(2).toString(),
-        currentValue: getHumanValue(bigNumberHelper(currentValue), 18)?.decimalPlaces(2).toString(),
-        profit: getHumanValue(calcProfit(currentValue, auctionStatus.price))
-          ?.decimalPlaces(2)
-          .toString(),
+        upForAuction: getHumanValue(
+          BigNumber.from(auctionStatus?.collateralToSell.toString()),
+          18,
+        )?.toFormat(0),
+        price: getHumanValue(BigNumber.from(auctionStatus?.price.toString()), 18)?.toFormat(2),
+        currentValue: getHumanValue(BigNumber.from(currentValue?.toString()), 18)?.toFormat(2),
+        profit: getHumanValue(
+          calcProfit(currentValue, BigNumber.from(auctionStatus?.price.toString()) ?? null),
+        )?.toFormat(2),
         action: (
           <Link href={`/auctions/${vaultAddress}/liquidate`} passHref>
             <ButtonGradient>Liquidate</ButtonGradient>

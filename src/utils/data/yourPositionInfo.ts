@@ -1,19 +1,19 @@
 import { Position } from './positions'
-import { BigNumber } from 'ethers'
-import { ZERO_BN } from '@/src/constants/misc'
+import BigNumber from 'bignumber.js'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 export type YourPositionPageInformation = {
   collateralValue: BigNumber
   fiatDebt: BigNumber
-  lowestHealthFactor: number
+  lowestHealthFactor: BigNumber
   nearestMaturity: Date
 }
 
 const fetchInfoPage = (_positions: Position[]): YourPositionPageInformation => {
   const initialPositionInformation: YourPositionPageInformation = {
-    collateralValue: ZERO_BN,
-    fiatDebt: ZERO_BN,
-    lowestHealthFactor: 0,
+    collateralValue: ZERO_BIG_NUMBER,
+    fiatDebt: ZERO_BIG_NUMBER,
+    lowestHealthFactor: ZERO_BIG_NUMBER,
     nearestMaturity: new Date(),
   }
 

@@ -32,14 +32,14 @@ export const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) =
       {'mint' === activeTabKey && (
         <MintForm
           refetch={refetchPosition}
-          userBalance={position?.discount.toNumber()}
+          userBalance={position?.discount}
           vaultAddress={vaultAddress}
         />
       )}
       {'burn' === activeTabKey && (
         <BurnForm
           refetch={refetchPosition}
-          userBalance={position?.totalNormalDebt.toNumber()}
+          userBalance={position?.totalNormalDebt}
           vaultAddress={vaultAddress}
         />
       )}
