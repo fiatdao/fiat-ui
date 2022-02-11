@@ -6,7 +6,7 @@ import { positions_positions as SubgraphPosition } from '@/types/subgraph/__gene
 import { Maybe } from '@/types/utils'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
-import { Collybus } from '@/types/typechain'
+import { Collybus, ERC20 } from '@/types/typechain'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
 
 type TokenData = {
@@ -55,48 +55,77 @@ const wranglePosition = async (
 
   const maturity = new Date(position.maturity ? +position.maturity * 1000 : Date.now())
 
-  const currentValue =
+  let currentValue = null
+  if (
     position?.collateral?.underlierAddress &&
     position?.vault?.address &&
     position.maturity &&
     position?.collateral?.underlierAddress !== ZERO_ADDRESS
-      ? await contractCall<Collybus, 'read'>(collybusAddress, collybusAbi, provider, 'read', [
-          position.vault.address,
-          position.collateral.underlierAddress,
-          0, // FIXME Check protocol if is not an ERC20?
-          position.maturity,
-          false,
-        ])
-      : null
+  ) {
+    currentValue = await contractCall<Collybus, 'read'>(
+      collybusAddress,
+      collybusAbi,
+      provider,
+      'read',
+      [
+        position.vault.address,
+        position.collateral.underlierAddress,
+        0, // FIXME Check protocol if is not an ERC20?
+        position.maturity,
+        false,
+      ],
+    )
+  }
 
-  const faceValue =
-    position.vault?.address && position.collateral?.underlierAddress && position.maturity
-      ? await contractCall<Collybus, 'read'>(collybusAddress, collybusAbi, provider, 'read', [
-          position.vault?.address,
-          position.collateral?.underlierAddress,
-          0, // FIXME Check protocol if is not an ERC20?
-          position.maturity,
-          true,
-        ])
-      : null
-
-  const collateralDecimals =
-    (position?.collateral?.address &&
-      position?.collateral?.address !== ZERO_ADDRESS &&
-      (await contractCall(position.collateral?.address, erc20Abi, provider, 'decimals', null))) ||
-    18
-
-  const underlierDecimals =
-    (position?.collateral?.underlierAddress &&
-      position?.collateral?.underlierAddress !== ZERO_ADDRESS &&
-      (await contractCall(
+  let faceValue = null
+  if (position.vault?.address && position.collateral?.underlierAddress && position.maturity) {
+    faceValue = await contractCall<Collybus, 'read'>(
+      collybusAddress,
+      collybusAbi,
+      provider,
+      'read',
+      [
+        position.vault?.address,
         position.collateral?.underlierAddress,
-        erc20Abi,
-        provider,
-        'decimals',
-        null,
-      ))) ||
-    18
+        0, // FIXME Check protocol if is not an ERC20?
+        position.maturity,
+        true,
+      ],
+    )
+  }
+
+  let collateralDecimals = 18
+  if (position?.collateral?.address && position?.collateral?.address !== ZERO_ADDRESS) {
+    const _collateralDecimals = await contractCall<ERC20, 'decimals'>(
+      position.collateral?.address,
+      erc20Abi,
+      provider,
+      'decimals',
+      null,
+    )
+
+    if (_collateralDecimals !== null) {
+      collateralDecimals = _collateralDecimals
+    }
+  }
+
+  let underlierDecimals = 18
+  if (
+    position?.collateral?.underlierAddress &&
+    position?.collateral?.underlierAddress !== ZERO_ADDRESS
+  ) {
+    const _underlierDecimals = await contractCall<ERC20, 'decimals'>(
+      position.collateral?.underlierAddress,
+      erc20Abi,
+      provider,
+      'decimals',
+      null,
+    )
+
+    if (_underlierDecimals !== null) {
+      underlierDecimals = _underlierDecimals
+    }
+  }
 
   const healthFactor =
     currentValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()
