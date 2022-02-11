@@ -1,7 +1,7 @@
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { ZERO_ADDRESS, ZERO_BN } from '@/src/constants/misc'
+import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { Chains } from '@/src/constants/chains'
@@ -17,7 +17,7 @@ export const MintForm = ({
   vaultAddress,
 }: {
   refetch: RefetchPositionById
-  userBalance?: number
+  userBalance?: BigNumber
   vaultAddress: string
 }) => {
   const { address, userActions, userProxy } = useMintForm({ vaultAddress })
@@ -32,7 +32,14 @@ export const MintForm = ({
 
     const increaseDebtEncoded = userActions.interface.encodeFunctionData(
       'modifyCollateralAndDebt',
-      [vaultAddress, ZERO_ADDRESS, ZERO_ADDRESS, address, ZERO_BN, toMint.toFixed()],
+      [
+        vaultAddress,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        address,
+        ZERO_BIG_NUMBER.toFixed(),
+        toMint.toFixed(),
+      ],
     )
 
     const tx = await userProxy.execute(userActions.address, increaseDebtEncoded, {

@@ -1,5 +1,5 @@
 import contractCall from '../contractCall'
-import { BigNumber } from 'ethers'
+import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/positions'
 
@@ -7,28 +7,26 @@ import { Maybe } from '@/types/utils'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { Collybus } from '@/types/typechain'
-import { ZERO_ADDRESS, ZERO_BN } from '@/src/constants/misc'
+import { ZERO_ADDRESS } from '@/src/constants/misc'
+
+type TokenData = {
+  symbol: string
+  address: string
+  decimals: number
+}
 
 export type Position = {
   id: string
   protocol: string
   maturity: Date
-  collateral: {
-    symbol: string
-    address: string
-    decimals: number
-  }
-  underlier: {
-    symbol: string
-    address: string
-    decimals: number
-  }
+  collateral: TokenData
+  underlier: TokenData
   totalCollateral: BigNumber
   totalNormalDebt: BigNumber
   vaultCollateralizationRatio: Maybe<BigNumber>
   currentValue: BigNumber
   faceValue: BigNumber
-  healthFactor: number
+  healthFactor: BigNumber
   isAtRisk: boolean
   discount: BigNumber
 }
@@ -39,12 +37,12 @@ const wranglePosition = async (
   appChainId: ChainsValues,
 ): Promise<Position> => {
   const { id, vaultName: protocol } = position
-  const vaultCollateralizationRatio = position.vault?.collateralizationRatio
-    ? BigNumber.from(position.vault.collateralizationRatio)
-    : ZERO_BN
-  const totalCollateral = BigNumber.from(position.totalCollateral)
-  const totalNormalDebt = BigNumber.from(position.totalNormalDebt)
-  const discount = position.vault ? BigNumber.from(position.vault.maxDiscount) : ZERO_BN
+  const vaultCollateralizationRatio = BigNumber.from(
+    position.vault?.collateralizationRatio ?? 0,
+  ) as BigNumber
+  const totalCollateral = BigNumber.from(position.totalCollateral) as BigNumber
+  const totalNormalDebt = BigNumber.from(position.totalNormalDebt) as BigNumber
+  const discount = BigNumber.from(position.vault?.maxDiscount ?? 0) as BigNumber
 
   const {
     abi: collybusAbi,
@@ -55,10 +53,7 @@ const wranglePosition = async (
   // TODO FIXME for no-ERC20
   const { abi: erc20Abi } = contracts.ERC_20
 
-  const maturityString = position.maturity
-    ? BigNumber.from(position.maturity).mul(1000).toNumber()
-    : Date.now()
-  const maturity = new Date(maturityString)
+  const maturity = new Date(position.maturity ? +position.maturity * 1000 : Date.now())
 
   const currentValue =
     position?.collateral?.underlierAddress &&
@@ -86,25 +81,26 @@ const wranglePosition = async (
       : null
 
   const collateralDecimals =
-    position?.collateral?.address && position?.collateral?.address !== ZERO_ADDRESS
-      ? await contractCall(position.collateral?.address, erc20Abi, provider, 'decimals', null)
-      : 18
+    (position?.collateral?.address &&
+      position?.collateral?.address !== ZERO_ADDRESS &&
+      (await contractCall(position.collateral?.address, erc20Abi, provider, 'decimals', null))) ||
+    18
 
   const underlierDecimals =
-    position?.collateral?.underlierAddress &&
-    position?.collateral?.underlierAddress !== ZERO_ADDRESS
-      ? await contractCall(
-          position.collateral?.underlierAddress,
-          erc20Abi,
-          provider,
-          'decimals',
-          null,
-        )
-      : 18
+    (position?.collateral?.underlierAddress &&
+      position?.collateral?.underlierAddress !== ZERO_ADDRESS &&
+      (await contractCall(
+        position.collateral?.underlierAddress,
+        erc20Abi,
+        provider,
+        'decimals',
+        null,
+      ))) ||
+    18
 
   const healthFactor =
-    currentValue && !totalNormalDebt.isZero && !totalCollateral.isZero
-      ? currentValue.mul(totalCollateral).div(totalNormalDebt).toNumber()
+    currentValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()
+      ? currentValue.mul(totalCollateral.toFixed()).div(totalNormalDebt.toFixed()).toNumber()
       : 1
 
   // FIXME
@@ -117,8 +113,8 @@ const wranglePosition = async (
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
-    currentValue: currentValue ?? ZERO_BN,
-    faceValue: faceValue ?? ZERO_BN,
+    currentValue: BigNumber.from(currentValue?.toString() ?? 0) as BigNumber,
+    faceValue: BigNumber.from(faceValue?.toString() ?? 0) as BigNumber,
     maturity,
     collateral: {
       symbol: position?.collateral?.symbol ?? '',
@@ -130,7 +126,7 @@ const wranglePosition = async (
       address: position?.collateral?.underlierAddress ?? '',
       decimals: underlierDecimals,
     },
-    healthFactor,
+    healthFactor: BigNumber.from(healthFactor),
     isAtRisk,
     discount,
   }

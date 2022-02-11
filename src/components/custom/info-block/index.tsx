@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import Tooltip from '@/src/components/antd/tooltip'
 import Info from '@/src/resources/svg/info.svg'
@@ -9,7 +10,7 @@ interface Props {
   title: string
   tooltip?: string
   url?: string
-  value: number | string | null | undefined
+  value?: BigNumber.Value
 }
 
 export const InfoBlock: React.FC<Props> = ({

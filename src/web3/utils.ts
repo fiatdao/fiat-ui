@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import BigNumber from 'bignumber.js'
 
 BigNumber.prototype.scaleBy = function (decimals?: number): BigNumber | undefined {
@@ -18,9 +17,8 @@ BigNumber.prototype.unscaleBy = function (decimals?: number): BigNumber | undefi
 }
 
 BigNumber.ZERO = new BigNumber(0)
-BigNumber.MAX_UINT_256 = new BigNumber(2).pow(256).minus(1)
 
-BigNumber.from = (value?: BigNumber.Value): BigNumber | undefined => {
+BigNumber.from = (value: any): any => {
   if (value === undefined || value === null) {
     return undefined
   }
@@ -52,10 +50,6 @@ BigNumber.sumEach = <T = any>(
 
   return sum
 }
-
-export const MAX_UINT_256 = new BigNumber(2).pow(256).minus(1)
-export const ZERO_BIG_NUMBER = new BigNumber(0)
-export const DEFAULT_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export function getEtherscanTxUrl(txHash?: string, chainId = 42): string | undefined {
   if (txHash) {
@@ -302,7 +296,7 @@ export function formatEntrValue(value?: BigNumber): string {
 }
 
 export function isSmallEntrValue(value?: BigNumber): boolean {
-  return !!value && value.gt(ZERO_BIG_NUMBER) && value.lt(0.0001)
+  return !!value && value.gt(BigNumber.ZERO) && value.lt(0.0001)
 }
 
 export function shortenAddr(addr: string | undefined, first = 6, last = 4): string | undefined {

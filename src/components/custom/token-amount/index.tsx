@@ -2,8 +2,9 @@ import s from './s.module.scss'
 import React from 'react'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
+import { MAX_UINT_256 } from '@/src/constants/misc'
 import Slider from '@/src/components/antd/slider'
-import { MAX_UINT_256, formatBigValue } from '@/src/web3/utils'
+import { formatBigValue } from '@/src/web3/utils'
 
 import { TokenIconNames } from '@/src/components/custom/icon'
 import NumericInput from '@/src/components/custom/numeric-input'
@@ -44,9 +45,9 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   } = props
 
   const step = 1 / 10 ** Math.min(displayDecimals, 6)
-  const bnMaxValue = new BigNumber(max ?? MAX_UINT_256)
+  const bnMaxValue = BigNumber.from(max) ?? MAX_UINT_256
 
-  const bnValue = value !== undefined ? BigNumber.min(new BigNumber(value), bnMaxValue) : undefined
+  const bnValue = value !== undefined ? BigNumber.min(value, bnMaxValue) : undefined
 
   function onMaxHandle() {
     onChange?.(bnMaxValue)
@@ -57,7 +58,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   }
 
   function onSliderChange(sliderValue: number) {
-    onChange?.(new BigNumber(sliderValue))
+    onChange?.(BigNumber.from(sliderValue))
   }
 
   return (
@@ -81,7 +82,9 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
         maximumFractionDigits={maximumFractionDigits}
         onChange={handleInputChange}
         placeholder={
-          max !== undefined ? `0 (Max ${formatBigValue(bnMaxValue, displayDecimals)})` : ''
+          max !== undefined
+            ? `0 (Max ${formatBigValue(bnMaxValue.toNumber(), displayDecimals)})`
+            : ''
         }
         value={bnValue}
       />

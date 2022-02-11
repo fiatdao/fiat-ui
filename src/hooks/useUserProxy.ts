@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Contract } from 'ethers'
+import { ZERO_ADDRESS } from '@/src/constants/misc'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { Chains } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { DEFAULT_ADDRESS } from '@/src/web3/utils'
 import PRBProxy from '@/src/abis/PRBProxy.json'
 import { PRBProxy as PRBProxyType } from '@/types/typechain'
 
@@ -67,7 +67,7 @@ const useUserProxy = () => {
     setupProxy,
     userProxyAddress: proxyAddress,
     loadingProxy,
-    isProxyAvailable: proxyAddress !== DEFAULT_ADDRESS,
+    isProxyAvailable: proxyAddress !== ZERO_ADDRESS,
   }
 }
 
