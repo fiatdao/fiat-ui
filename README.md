@@ -1,5 +1,11 @@
 # fiat-dapp
 
+## Getting Started Instructions
+1. Clone the project: `git clone git@github.com:fiatdao/fiat-dapp.git`
+2. Create a .env.local file: `cp .env.example .env.local`.
+3. Install Node Dependencies: `yarn install`.
+4. Start the app with `yarn dev`.
+
 =======
 
 # UI dev stack for BN
