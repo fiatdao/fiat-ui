@@ -5,9 +5,9 @@ interface Props {
   onClick: () => void
 }
 
-export const ButtonMintFiat: React.FC<Props> = ({ onClick, ...restProps }) => (
+export const ButtonExtraFormAction: React.FC<Props> = ({ children, onClick, ...restProps }) => (
   <ButtonOutlineGradient onClick={onClick} textGradient {...restProps}>
     <Plus />
-    Mint FIAT with this transaction
+    {children}
   </ButtonOutlineGradient>
 )

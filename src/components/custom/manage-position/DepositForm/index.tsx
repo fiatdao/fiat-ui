@@ -12,8 +12,10 @@ import { getNonHumanValue } from '@/src/web3/utils'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
-import { ButtonMintFiat } from '@/src/components/custom/button-mint-fiat'
+import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { Balance } from '@/src/components/custom/balance'
+import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 
 export const DepositForm = ({
   tokenAddress,
@@ -66,8 +68,8 @@ export const DepositForm = ({
   ]
 
   const [mintFiat, setMintFiat] = useState(false)
-
   const toggleMintFiat = () => setMintFiat(!mintFiat)
+  const mintButtonText = 'Mint fiat with this transaction'
 
   return (
     <Form form={form} onFinish={handleDeposit}>
@@ -81,20 +83,31 @@ export const DepositForm = ({
         />
       </Form.Item>
       {mintFiat && (
-        <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-          <TokenAmount
-            disabled={false}
-            displayDecimals={4}
-            max={10000}
-            maximumFractionDigits={6}
-            onChange={() => console.log('mint!')}
-            slider="healthFactorVariant"
-            tokenIcon={<FiatIcon />}
-          />
-        </Form.Item>
+        <FormExtraAction
+          bottom={
+            <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
+              <TokenAmount
+                disabled={false}
+                displayDecimals={4}
+                max={10000}
+                maximumFractionDigits={6}
+                onChange={() => console.log('mint!')}
+                slider
+                tokenIcon={<FiatIcon />}
+              />
+            </Form.Item>
+          }
+          buttonText={mintButtonText}
+          onClick={toggleMintFiat}
+          top={<Balance title="Mint FIAT" value="Available: 4,800" />}
+        />
       )}
       <ButtonsWrapper>
-        {!mintFiat && <ButtonMintFiat onClick={() => toggleMintFiat()} />}
+        {!mintFiat && (
+          <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
+            {mintButtonText}
+          </ButtonExtraFormAction>
+        )}
         <ButtonGradient height="lg" htmlType="submit">
           Deposit
         </ButtonGradient>

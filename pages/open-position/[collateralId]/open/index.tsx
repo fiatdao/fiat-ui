@@ -18,8 +18,7 @@ import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { BackButton } from '@/src/components/custom/back-button'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { ButtonMintFiat } from '@/src/components/custom/button-mint-fiat'
-import Less from '@/src/resources/svg/gradient-less.svg'
+import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
 import Success from '@/src/resources/svg/success.svg'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
@@ -30,6 +29,8 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Summary } from '@/src/components/custom/summary'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
+import { Balance } from '@/src/components/custom/balance'
+import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -144,10 +145,11 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
               </RadioTabsWrapper>
             )}
             {[1, 4].includes(stateMachine.context.currentStepNumber) && (
-              <div className={cn(s.balanceWrapper)}>
-                <h3 className={cn(s.balanceLabel)}>Deposit {stateMachine.context.tokenSymbol}</h3>
-                <p className={cn(s.balance)}>Available: {humanReadableValue?.toFixed()}</p>
-              </div>
+              <Balance
+                title={`Deposit ${stateMachine.context.tokenSymbol}`}
+                value={`Available:
+              ${humanReadableValue?.toFixed()}`}
+              />
             )}
             <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
               {[1, 4].includes(stateMachine.context.currentStepNumber) && (
@@ -202,38 +204,33 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
               {stateMachine.context.currentStepNumber === 4 && (
                 <>
                   {mintFiat && (
-                    <div className={cn(s.fiatWrapper)}>
-                      <button className={cn(s.fiatWrapperTop)} onClick={() => toggleMintFiat()}>
-                        <span className={cn(s.fiatWrapperTopInner)}>
-                          <Less />
-                          <span>Mint FIAT with this transaction</span>
-                        </span>
-                      </button>
-                      <div className={cn(s.fiatWrapperContents)}>
-                        <div className={cn(s.fiatWrapperContentsInner)}>
-                          <div className={cn(s.balanceWrapper)}>
-                            <h3 className={cn(s.balanceLabel)}>Mint FIAT</h3>
-                            <p className={cn(s.balance)}>Available: 4,800</p>
-                          </div>
-                          <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-                            <TokenAmount
-                              disabled={false}
-                              displayDecimals={4}
-                              max={stateMachine.context.erc20Amount.toNumber()}
-                              maximumFractionDigits={6}
-                              onChange={(val) =>
-                                val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
-                              }
-                              slider="healthFactorVariant"
-                              tokenIcon={<FiatIcon />}
-                            />
-                          </Form.Item>
-                        </div>
-                      </div>
-                    </div>
+                    <FormExtraAction
+                      bottom={
+                        <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
+                          <TokenAmount
+                            disabled={false}
+                            displayDecimals={4}
+                            max={stateMachine.context.erc20Amount.toNumber()}
+                            maximumFractionDigits={6}
+                            onChange={(val) =>
+                              val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
+                            }
+                            slider="healthFactorVariant"
+                            tokenIcon={<FiatIcon />}
+                          />
+                        </Form.Item>
+                      }
+                      buttonText="Mint FIAT with this transaction"
+                      onClick={toggleMintFiat}
+                      top={<Balance title={`Mint FIAT`} value={`Available: 4,800`} />}
+                    />
                   )}
                   <ButtonsWrapper>
-                    {!mintFiat && <ButtonMintFiat onClick={() => toggleMintFiat()} />}
+                    {!mintFiat && (
+                      <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
+                        Mint FIAT with this transaction
+                      </ButtonExtraFormAction>
+                    )}
                     <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_DEPLOY' })}>
                       Deposit collateral
                     </ButtonGradient>
