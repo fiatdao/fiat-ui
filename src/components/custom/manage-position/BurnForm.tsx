@@ -42,7 +42,7 @@ export const BurnForm = ({
         ZERO_ADDRESS,
         address,
         ZERO_BIG_NUMBER.toFixed(),
-        toBurn.times(-1).toFixed(),
+        toBurn.negated().toFixed(),
       ],
     )
 

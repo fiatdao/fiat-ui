@@ -7,9 +7,9 @@ declare module 'bignumber.js' {
 
     static sumEach: <T = any>(items: T[], predicate: (item: T) => BigNumber | undefined) => BigNumber | undefined;
 
-    scaleBy(decimals?: number): BigNumber | undefined;
+    scaleBy(decimals?: number): BigNumber;
 
-    unscaleBy(decimals?: number): BigNumber | undefined;
+    unscaleBy(decimals?: number): BigNumber;
   }
 }
 

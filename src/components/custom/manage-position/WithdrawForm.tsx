@@ -37,7 +37,7 @@ export const WithdrawForm = ({
         tokenAddress,
         address,
         ZERO_ADDRESS,
-        toWithdraw.times(-1).toFixed(),
+        toWithdraw.negated().toFixed(),
         ZERO_BIG_NUMBER.toFixed(),
       ],
     )

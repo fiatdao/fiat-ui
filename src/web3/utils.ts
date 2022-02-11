@@ -1,22 +1,12 @@
 import BigNumber from 'bignumber.js'
 
-BigNumber.prototype.scaleBy = function (decimals?: number): BigNumber | undefined {
-  if (decimals === undefined) {
-    return undefined
-  }
-
+BigNumber.prototype.scaleBy = function (decimals: any = 0): any {
   return this.multipliedBy(10 ** decimals)
 }
 
-BigNumber.prototype.unscaleBy = function (decimals?: number): BigNumber | undefined {
-  if (decimals === undefined) {
-    return undefined
-  }
-
+BigNumber.prototype.unscaleBy = function (decimals: any = 0): any {
   return this.dividedBy(10 ** decimals)
 }
-
-BigNumber.ZERO = new BigNumber(0)
 
 BigNumber.from = (value: any): any => {
   if (value === undefined || value === null) {
@@ -31,6 +21,8 @@ BigNumber.from = (value: any): any => {
 
   return bnValue
 }
+
+BigNumber.ZERO = BigNumber.from(0)
 
 BigNumber.sumEach = <T = any>(
   items: T[],
