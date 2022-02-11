@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ReactNode, useEffect, useState } from 'react'
 import useSWR from 'swr'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { CollateralAuction } from '@/types/typechain'
+import { CollateralAuction, Collybus } from '@/types/typechain'
 import { userAuctions } from '@/types/subgraph/__generated__/userAuctions'
 import { USER_AUCTIONS } from '@/src/queries/userAuctions'
 import contractCall from '@/src/utils/contractCall'
@@ -49,17 +49,28 @@ const transformCollaterals = async (
       const vaultAddress = userAuction.vault?.address
       const underlierAddress = userAuction.collateral?.underlierAddress
       const tokenId = userAuction.collateral?.tokenId
-      const maturity = BigNumber.from(Math.round(Date.now() / 1000))
+      const maturity = Math.round(Date.now() / 1000)
 
-      const currentValue: BigNumber | null = await contractCall(
-        contracts.COLLYBUS.address[appChainId],
-        contracts.COLLYBUS.abi,
-        provider,
-        'read',
-        [vaultAddress, underlierAddress, tokenId, maturity, false],
-      )
+      let currentValue = ZERO_BIG_NUMBER
+      if (
+        typeof vaultAddress === 'string' &&
+        typeof underlierAddress === 'string' &&
+        typeof tokenId === 'string'
+      ) {
+        const _currentValue = await contractCall<Collybus, 'read'>(
+          contracts.COLLYBUS.address[appChainId],
+          contracts.COLLYBUS.abi,
+          provider,
+          'read',
+          [vaultAddress, underlierAddress, tokenId, maturity, false],
+        )
 
-      const auctionStatus: Awaited<ReturnType<CollateralAuction['getStatus']>> = await contractCall(
+        if (_currentValue) {
+          currentValue = BigNumber.from(_currentValue.toString()) as BigNumber
+        }
+      }
+
+      const auctionStatus = await contractCall<CollateralAuction, 'getStatus'>(
         // TODO: it should be NON_LOSS_COLLATERAL_AUCTION
         contracts.COLLATERAL_AUCTION.address[appChainId],
         contracts.COLLATERAL_AUCTION.abi,
@@ -81,20 +92,15 @@ const transformCollaterals = async (
         id: userAuction.id,
         protocol: userAuction.vault?.name,
         asset: userAuction.collateral?.symbol,
-        upForAuction: getHumanValue(BigNumber.from(auctionStatus.collateralToSell.toString()), 18)
-          ?.decimalPlaces(0)
-          .toString(),
-        price: getHumanValue(BigNumber.from(auctionStatus.price.toString()), 18)
-          ?.decimalPlaces(2)
-          .toString(),
-        currentValue: getHumanValue(BigNumber.from(currentValue?.toString()), 18)
-          ?.decimalPlaces(2)
-          .toString(),
+        upForAuction: getHumanValue(
+          BigNumber.from(auctionStatus?.collateralToSell.toString()),
+          18,
+        )?.toFormat(0),
+        price: getHumanValue(BigNumber.from(auctionStatus?.price.toString()), 18)?.toFormat(2),
+        currentValue: getHumanValue(BigNumber.from(currentValue?.toString()), 18)?.toFormat(2),
         profit: getHumanValue(
-          calcProfit(currentValue, BigNumber.from(auctionStatus.price.toString()) ?? null),
-        )
-          ?.decimalPlaces(2)
-          .toString(),
+          calcProfit(currentValue, BigNumber.from(auctionStatus?.price.toString()) ?? null),
+        )?.toFormat(2),
         action: (
           <Link href={`/auctions/${vaultAddress}/liquidate`} passHref>
             <ButtonGradient>Liquidate</ButtonGradient>
