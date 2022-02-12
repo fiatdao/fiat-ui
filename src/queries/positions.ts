@@ -1,8 +1,8 @@
 import gql from 'graphql-tag'
 
 export const POSITIONS = gql`
-  query positions {
-    positions {
+  query Positions($where: Position_filter) {
+    positions(where: $where) {
       id
       vaultName
       maturity

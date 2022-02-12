@@ -6,7 +6,7 @@ import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { wranglePosition } from '@/src/utils/data/positions'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { ChainsValues } from '@/src/constants/chains'
-import { positions } from '@/types/subgraph/__generated__/positions'
+import { Positions } from '@/types/subgraph/__generated__/positions'
 
 // FIXME Use fragment or find a way to unify queries
 export const fetchPosition = (
@@ -14,7 +14,7 @@ export const fetchPosition = (
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
 ) =>
-  graphqlFetcher<positions, positionByIdVariables>(POSITION_BY_ID, {
+  graphqlFetcher<Positions, positionByIdVariables>(POSITION_BY_ID, {
     id: positionId,
   }).then(({ positions }) => {
     if (positions) return wranglePosition(positions[0], provider, appChainId)

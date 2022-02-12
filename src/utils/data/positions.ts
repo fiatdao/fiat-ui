@@ -1,7 +1,7 @@
 import contractCall from '../contractCall'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/positions'
+import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/positions'
 
 import { Maybe } from '@/types/utils'
 import { ChainsValues } from '@/src/constants/chains'

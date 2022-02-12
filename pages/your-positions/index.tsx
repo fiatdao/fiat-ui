@@ -35,7 +35,7 @@ const YourPositions = () => {
   const [isLoadingPage, setIsLoadingPage] = useState(false)
   const [pageInformation, setPageInformation] = useState<YourPositionPageInformation>()
 
-  const { positionTransactions: transactions, positions } = usePositionsByUser(address)
+  const { positionTransactions: transactions, positions } = usePositionsByUser()
 
   useEffect(() => {
     if (address && isWalletConnected && provider) {
