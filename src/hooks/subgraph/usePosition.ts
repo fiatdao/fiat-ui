@@ -6,7 +6,7 @@ import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { wranglePosition } from '@/src/utils/data/positions'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { ChainsValues } from '@/src/constants/chains'
-import { Positions } from '@/types/subgraph/__generated__/positions'
+import { Positions } from '@/types/subgraph/__generated__/Positions'
 
 // FIXME Use fragment or find a way to unify queries
 export const fetchPosition = (
