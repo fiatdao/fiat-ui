@@ -1,7 +1,7 @@
 import { Button } from 'antd'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { ZERO_ADDRESS, ZERO_BN } from '@/src/constants/misc'
+import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useWithdrawForm } from '@/src/hooks/managePosition'
@@ -17,7 +17,7 @@ export const WithdrawForm = ({
 }: {
   refetch: RefetchPositionById
   tokenAddress: string
-  userBalance?: number
+  userBalance?: BigNumber
   vaultAddress: string
 }) => {
   const { address, userActions, userProxy, vaultInfo } = useWithdrawForm({ vaultAddress })
@@ -32,7 +32,14 @@ export const WithdrawForm = ({
 
     const removeCollateralEncoded = userActions.interface.encodeFunctionData(
       'modifyCollateralAndDebt',
-      [vaultAddress, tokenAddress, address, ZERO_ADDRESS, toWithdraw.times(-1).toFixed(), ZERO_BN],
+      [
+        vaultAddress,
+        tokenAddress,
+        address,
+        ZERO_ADDRESS,
+        toWithdraw.negated().toFixed(),
+        ZERO_BIG_NUMBER.toFixed(),
+      ],
     )
 
     const tx = await userProxy.execute(userActions.address, removeCollateralEncoded, {

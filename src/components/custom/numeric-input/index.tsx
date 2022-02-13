@@ -28,7 +28,7 @@ const NumericInput: React.FC<NumericInputProps> = (props) => {
   React.useEffect(() => {
     const val = props.value
 
-    valueRef.current = val !== undefined ? new BigNumber(val).toFormat() : ''
+    valueRef.current = BigNumber.from(val)?.toFormat() ?? ''
     forceRender({})
   }, [props.value])
 

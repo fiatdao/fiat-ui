@@ -14,10 +14,10 @@ import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import { Grid } from '@/src/components/custom'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
-import { PROTOCOLS, Protocol } from '@/types'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import Filter from '@/src/resources/svg/filter.svg'
+import { PROTOCOLS, Protocol } from '@/types/protocols'
 
 const Columns: ColumnsType<any> = [
   {

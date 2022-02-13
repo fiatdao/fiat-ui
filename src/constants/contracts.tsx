@@ -86,6 +86,7 @@ export const contracts = constantContracts({
   COLLATERAL_AUCTION: {
     address: {
       [Chains.mainnet]: '',
+      // TODO: review address
       [Chains.goerli]: '0x5e17C31f106955E1b6F74eC6716bb62E1f5c2C54',
     },
     abi: collateralAuction,

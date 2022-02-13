@@ -10,7 +10,7 @@ import Select from '@/src/components/antd/select'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { CellAddress } from '@/src/components/custom/cell-address'
 import { Asset } from '@/src/components/custom/asset'
-import { PositionTransaction } from '@/src/hooks/subgraph'
+import { PositionTransaction } from '@/src/utils/data/positionTransaction'
 
 const Columns: ColumnsType<any> = [
   {

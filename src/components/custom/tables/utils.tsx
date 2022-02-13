@@ -1,11 +1,12 @@
+import BigNumber from 'bignumber.js'
 import { addDays, addHours, addMinutes, formatWithOptions } from 'date-fns/fp'
 import { enUS } from 'date-fns/locale'
 import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 
-const calculateHealthFactor = (hf: number): 'danger' | 'ok' | 'warning' => {
-  return hf >= 4.0 ? 'ok' : hf >= 1.0 ? 'warning' : 'danger'
+const calculateHealthFactor = (hf: BigNumber): 'danger' | 'ok' | 'warning' => {
+  return hf.gte(4.0) ? 'ok' : hf.gte(1.0) ? 'warning' : 'danger'
 }
 
 // curried version
