@@ -4,6 +4,7 @@ import { Layout } from 'antd'
 import cn from 'classnames'
 import { Drawer } from 'antd'
 import { useState } from 'react'
+import { useGeneral } from '@/src/providers/generalProvider'
 import { ConnectButton } from '@/src/components/custom/connect-button'
 import { routesConfig } from '@/src/constants/navigation'
 import ConnectedWallet from '@/src/components/custom/connected-wallet'
@@ -12,11 +13,11 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Menu } from '@/src/components/custom/menu'
 import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
 
-// TODO: implement dynamic titles
 export const Header: React.FC = ({ ...restProps }) => {
+  const { title: pageTitle } = useGeneral()
   const { address, isWalletConnected } = useWeb3Connection()
   const router = useRouter()
-  const title: string = routesConfig[router.route]?.title || '-'
+  const title: string = pageTitle ?? routesConfig[router.route]?.title ?? '-'
   const [drawerVisible, setDrawerVisible] = useState(false)
 
   return (

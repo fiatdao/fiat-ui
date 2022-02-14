@@ -1,27 +1,27 @@
-import React from 'react'
+import { Dispatch, SetStateAction, createContext, useContext, useEffect, useState } from 'react'
 import { useLocalStorage } from 'react-use-storage'
 
 export type GeneralContextType = {
   navOpen: boolean
-  setNavOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setNavOpen: Dispatch<SetStateAction<GeneralContextType['navOpen']>>
   theme: string
+  title?: string
   isDarkTheme: boolean
   toggleDarkTheme: () => void
+  setTitle: Dispatch<SetStateAction<GeneralContextType['title']>>
+  resetTitle: () => void
 }
 
-const GeneralContext = React.createContext<GeneralContextType>({} as any)
+const GeneralContext = createContext<GeneralContextType>({} as any)
 
 const defaultTheme = 'dark'
 
-type Props = {
-  children: React.ReactNode
-}
-
-const GeneralContextProvider: React.FC<Props> = ({ children }) => {
-  const [navOpen, setNavOpen] = React.useState<boolean>(false)
+const GeneralContextProvider: React.FC = ({ children }) => {
+  const [navOpen, setNavOpen] = useState(false)
   const [theme, setTheme] = useLocalStorage('bb_theme', defaultTheme)
+  const [title, setTitle] = useState<GeneralContextType['title']>()
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (theme) {
       document.body.setAttribute('data-theme', theme)
     } else {
@@ -29,7 +29,7 @@ const GeneralContextProvider: React.FC<Props> = ({ children }) => {
     }
   }, [theme])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (navOpen) {
       document.body.setAttribute('data-fixed', 'true')
     } else {
@@ -43,9 +43,14 @@ const GeneralContextProvider: React.FC<Props> = ({ children }) => {
         navOpen,
         setNavOpen,
         theme,
+        title,
         isDarkTheme: theme === 'dark',
         toggleDarkTheme: () => {
           setTheme(theme === 'dark' ? 'light' : 'dark')
+        },
+        setTitle,
+        resetTitle: () => {
+          setTitle(undefined)
         },
       }}
     >
@@ -57,5 +62,5 @@ const GeneralContextProvider: React.FC<Props> = ({ children }) => {
 export default GeneralContextProvider
 
 export function useGeneral(): GeneralContextType {
-  return React.useContext<GeneralContextType>(GeneralContext)
+  return useContext<GeneralContextType>(GeneralContext)
 }
