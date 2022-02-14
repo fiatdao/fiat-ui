@@ -23,7 +23,7 @@ export const WithdrawForm = ({
   userBalance?: BigNumber
   vaultAddress: string
 }) => {
-  const { address, userActions, userProxy, vaultInfo } = useWithdrawForm({ vaultAddress })
+  const { address, userActions, userProxy, vaultInfo } = useWithdrawForm()
   const [form] = AntdForm.useForm()
 
   const handleWithdraw = async ({ withdraw }: { withdraw: BigNumber }) => {
