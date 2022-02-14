@@ -17,7 +17,7 @@ export const Menu: React.FC<Props> = ({ className, onClick, ...restProps }: Prop
   const [selectedItem, setSelectedItem] = useState<RouteItem>()
 
   useEffect(() => {
-    const currentItem = routes.find(({ to }) => to === pathname)
+    const currentItem = [...routes].reverse().find(({ to }) => pathname.startsWith(to))
     setSelectedItem(currentItem ?? undefined)
   }, [pathname, setSelectedItem])
 
