@@ -1,5 +1,6 @@
+import s from './s.module.scss'
+import cn from 'classnames'
 import { useEffect, useState } from 'react'
-
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
@@ -68,7 +69,7 @@ const YourPositions = () => {
           />
         </InfoBlocksGrid>
       )}
-      <Tabs>
+      <Tabs className={cn(s.tabs)}>
         {tabs.map(({ children, key }, index) => (
           <Tab isActive={key === activeTabKey} key={index} onClick={() => setActiveTabKey(key)}>
             {children}

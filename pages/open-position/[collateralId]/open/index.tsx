@@ -19,17 +19,19 @@ import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { BackButton } from '@/src/components/custom/back-button'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import Plus from '@/src/resources/svg/gradient-plus.svg'
-import Less from '@/src/resources/svg/gradient-less.svg'
+import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
 import Success from '@/src/resources/svg/success.svg'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { ERC20 } from '@/types/typechain'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
-import { InfoBlock } from '@/src/components/custom/info-block'
 import ButtonGradient from '@/src/components/antd/button-gradient'
-import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
+import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
+import { Summary } from '@/src/components/custom/summary'
+import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
+import { Balance } from '@/src/components/custom/balance'
+import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -40,52 +42,13 @@ const StepperTitle: React.FC<{
   <div className={cn(s.stepperWrapper)}>
     <div className={cn(s.stepperTitleWrapper)}>
       <h2 className={cn(s.stepperTitle)}>{title}</h2>
-      <div className={s.steps}>
-        <span className={s.currentStep}>{currentStep}</span>/{totalSteps}
+      <div className={cn(s.steps)}>
+        <span className={cn(s.currentStep)}>{currentStep}</span>/{totalSteps}
       </div>
     </div>
     <p className={cn(s.stepperDescription)}>{description}</p>
   </div>
 )
-
-const Summary: React.FC = () => {
-  const hfState = 'ok'
-
-  return (
-    <div className={s.summary}>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>In your wallet</div>
-        <div className={s.summaryValue}>5,000 DAI Principal Token</div>
-      </div>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>Depositing into position </div>
-        <div className={s.summaryValue}>5,000 DAI Principal Token</div>
-      </div>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>Remaining in wallet</div>
-        <div className={s.summaryValue}>0 DAI Principal Token</div>
-      </div>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>FIAT to be minted</div>
-        <div className={s.summaryValue}>2,000</div>
-      </div>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>Updated health factor</div>
-        <div
-          className={cn(
-            s.summaryValue,
-            { [s.ok]: hfState === 'ok' },
-            // TODO: Make these work
-            // { [s.warning]: hfState === 'warning' },
-            // { [s.danger]: hfState === 'danger' }
-          )}
-        >
-          2.3
-        </div>
-      </div>
-    </div>
-  )
-}
 
 type FormProps = { tokenAmount: BigNumber; fiatAmount: BigNumber }
 
@@ -137,8 +100,32 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
 
   const toggleMintFiat = () => setMintFiat(!mintFiat)
 
+  const mockedSummaryData = [
+    {
+      title: 'In your wallet',
+      value: '5,000 DAI Principal Token',
+    },
+    {
+      title: 'Depositing into position ',
+      value: '5,000 DAI Principal Token',
+    },
+    {
+      title: 'Remaining in wallet',
+      value: '0 DAI Principal Token',
+    },
+    {
+      title: 'FIAT to be minted',
+      value: '2,000',
+    },
+    {
+      state: 'ok',
+      title: 'Updated health factor',
+      value: '2.3',
+    },
+  ]
+
   return (
-    <div className={cn(s.formWrapper)}>
+    <>
       {stateMachine.context.currentStepNumber !== 7 ? (
         <>
           <StepperTitle
@@ -159,10 +146,11 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
               </RadioTabsWrapper>
             )}
             {[1, 4].includes(stateMachine.context.currentStepNumber) && (
-              <div className={cn(s.balanceWrapper)}>
-                <h3 className={cn(s.balanceLabel)}>Deposit {stateMachine.context.tokenSymbol}</h3>
-                <p className={cn(s.balance)}>Available: {humanReadableValue?.toFixed()}</p>
-              </div>
+              <Balance
+                title={`Deposit ${stateMachine.context.tokenSymbol}`}
+                value={`Available:
+              ${humanReadableValue?.toFixed()}`}
+              />
             )}
             <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
               {[1, 4].includes(stateMachine.context.currentStepNumber) && (
@@ -178,7 +166,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                 </Form.Item>
               )}
               {stateMachine.context.currentStepNumber === 1 && (
-                <div className={s.buttonsWrapper}>
+                <ButtonsWrapper>
                   {!isProxyAvailable && (
                     <ButtonGradient
                       disabled={!stateMachine.context.erc20Amount.gt(0)}
@@ -197,17 +185,17 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                       Set Allowance
                     </ButtonGradient>
                   )}
-                </div>
+                </ButtonsWrapper>
               )}
               {stateMachine.context.currentStepNumber === 2 && (
-                <div className={s.buttonsWrapper}>
+                <ButtonsWrapper>
                   <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
                     Create Proxy
                   </ButtonGradient>
                   <button className={s.backButton} onClick={() => console.log('go back')}>
                     &#8592; Go back
                   </button>
-                </div>
+                </ButtonsWrapper>
               )}
               {stateMachine.context.currentStepNumber === 3 && (
                 <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
@@ -217,53 +205,43 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
               {stateMachine.context.currentStepNumber === 4 && (
                 <>
                   {mintFiat && (
-                    <div className={cn(s.fiatWrapper)}>
-                      <button className={cn(s.fiatWrapperTop)} onClick={() => toggleMintFiat()}>
-                        <span className={cn(s.fiatWrapperTopInner)}>
-                          <Less />
-                          <span>Mint FIAT with this transaction</span>
-                        </span>
-                      </button>
-                      <div className={cn(s.fiatWrapperContents)}>
-                        <div className={cn(s.fiatWrapperContentsInner)}>
-                          <div className={cn(s.balanceWrapper)}>
-                            <h3 className={cn(s.balanceLabel)}>Mint FIAT</h3>
-                            <p className={cn(s.balance)}>Available: 4,800</p>
-                          </div>
-                          <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-                            <TokenAmount
-                              disabled={false}
-                              displayDecimals={4}
-                              max={stateMachine.context.erc20Amount.toNumber()}
-                              maximumFractionDigits={6}
-                              onChange={(val) =>
-                                val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
-                              }
-                              slider="healthFactorVariant"
-                              tokenIcon={<FiatIcon />}
-                            />
-                          </Form.Item>
-                        </div>
-                      </div>
-                    </div>
+                    <FormExtraAction
+                      bottom={
+                        <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
+                          <TokenAmount
+                            disabled={false}
+                            displayDecimals={4}
+                            max={stateMachine.context.erc20Amount.toNumber()}
+                            maximumFractionDigits={6}
+                            onChange={(val) =>
+                              val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
+                            }
+                            slider="healthFactorVariant"
+                            tokenIcon={<FiatIcon />}
+                          />
+                        </Form.Item>
+                      }
+                      buttonText="Mint FIAT with this transaction"
+                      onClick={toggleMintFiat}
+                      top={<Balance title={`Mint FIAT`} value={`Available: 4,800`} />}
+                    />
                   )}
-                  <div className={s.buttonsWrapper}>
+                  <ButtonsWrapper>
                     {!mintFiat && (
-                      <ButtonOutlineGradient onClick={() => toggleMintFiat()} textGradient>
-                        <Plus />
+                      <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
                         Mint FIAT with this transaction
-                      </ButtonOutlineGradient>
+                      </ButtonExtraFormAction>
                     )}
                     <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_DEPLOY' })}>
                       Deposit collateral
                     </ButtonGradient>
-                  </div>
+                  </ButtonsWrapper>
                 </>
               )}
               {stateMachine.context.currentStepNumber === 5 && (
                 <>
-                  <Summary />
-                  <div className={s.buttonsWrapper}>
+                  <Summary data={mockedSummaryData} />
+                  <ButtonsWrapper>
                     <ButtonGradient
                       disabled={!hasAllowance || !isProxyAvailable}
                       height="lg"
@@ -283,10 +261,10 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
                     >
                       Confirm
                     </ButtonGradient>
-                    <button className={s.backButton} onClick={() => console.log('go back')}>
+                    <button className={cn(s.backButton)} onClick={() => console.log('go back')}>
                       &#8592; Go back
                     </button>
-                  </div>
+                  </ButtonsWrapper>
                 </>
               )}
             </Form>
@@ -300,11 +278,11 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
           </div>
           <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
           <p className={cn(s.lastStepText)}>Your position has been successfully created.</p>
-          <Summary />
+          <Summary data={mockedSummaryData} />
           <ButtonGradient height="lg">Go to bb_sBond_cDAI position</ButtonGradient>
         </div>
       )}
-    </div>
+    </>
   )
 }
 
@@ -355,20 +333,10 @@ const OpenPosition = () => {
   return (
     <>
       <BackButton href="/open-position">Back</BackButton>
-      <div className={cn(s.mainContainer)}>
-        <div className={cn(s.infoBlocks)}>
-          {mockedBlocks.map((item, index) => (
-            <InfoBlock
-              key={`${index}_info`}
-              title={item.title}
-              tooltip={item.tooltip || ''}
-              url={item.url || ''}
-              value={item.value}
-            />
-          ))}
-        </div>
-        <FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />
-      </div>
+      <PositionFormsLayout
+        form={<FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />}
+        infoBlocks={mockedBlocks}
+      />
     </>
   )
 }

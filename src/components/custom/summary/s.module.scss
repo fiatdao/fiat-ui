@@ -1,0 +1,43 @@
+.component {
+  border-radius: 4px;
+  border: 1px solid var(--theme-border-color);
+  margin-bottom: 24px;
+  padding: 16px;
+}
+
+.row {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.title {
+  color: var(--theme-light-text-color);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.value {
+  color: var(--theme-text-color);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+
+  &.ok {
+    color: var(--theme-ok-color);
+  }
+
+  &.warning {
+    color: var(--theme-warning-color);
+  }
+
+  &.danger {
+    color: var(--theme-danger-color);
+  }
+}

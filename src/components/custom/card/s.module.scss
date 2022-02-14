@@ -1,0 +1,10 @@
+.component {
+  background-color: var(--theme-card-color);
+  border: 1px solid var(--theme-border-color);
+  border-radius: 8px;
+  padding: var(--theme-common-card-padding);
+
+  &.noPadding {
+    padding: 0;
+  }
+}
