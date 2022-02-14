@@ -11,7 +11,7 @@ import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getHumanValue } from '@/src/web3/utils'
-import { ERC20, FIAT, Vault20 } from '@/types/typechain'
+import { ERC20, FIAT } from '@/types/typechain'
 
 export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }) => {
   const { address, readOnlyAppProvider } = useWeb3Connection()
@@ -45,50 +45,50 @@ export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }) => {
   return { address, tokenInfo, userActions, userProxy }
 }
 
-export const useWithdrawForm = ({ vaultAddress }: { vaultAddress: string }) => {
-  const { address, readOnlyAppProvider } = useWeb3Connection()
+export const useWithdrawForm = (/*{ vaultAddress }: { vaultAddress: string }*/) => {
+  const { address /*, readOnlyAppProvider*/ } = useWeb3Connection()
   const userActions = useUserActions()
   const { userProxy } = useUserProxy()
 
-  const [vaultInfo, setVaultInfo] = useState<{ decimals?: number }>()
+  const [vaultInfo] = useState<{ decimals?: number }>({ decimals: 6 })
 
-  useEffect(() => {
-    if (address) {
-      const vault = new Contract(
-        vaultAddress, // TODO: differentiate between Vault20 and Vault1155??
-        contracts.VAULT_20.abi,
-        readOnlyAppProvider,
-      ) as Vault20
-
-      vault.dec().then((decimals) => {
-        setVaultInfo({ decimals: decimals.toNumber() })
-      })
-    }
-  }, [address, readOnlyAppProvider, vaultAddress])
+  // useEffect(() => {
+  //   if (address) {
+  //     const vault = new Contract(
+  //       vaultAddress, // TODO: differentiate between Vault20 and Vault1155??
+  //       contracts.VAULT_20.abi,
+  //       readOnlyAppProvider,
+  //     ) as Vault20
+  //
+  //     vault.dec().then((decimals) => {
+  //       setVaultInfo({ decimals: decimals.toNumber() })
+  //     })
+  //   }
+  // }, [address, readOnlyAppProvider, vaultAddress])
 
   return { address, userActions, userProxy, vaultInfo }
 }
 
-export const useMintForm = ({ vaultAddress }: { vaultAddress: string }) => {
-  const { address, readOnlyAppProvider } = useWeb3Connection()
+export const useMintForm = (/*{ vaultAddress }: { vaultAddress: string }*/) => {
+  const { address /*, readOnlyAppProvider*/ } = useWeb3Connection()
   const userActions = useUserActions()
   const { userProxy } = useUserProxy()
 
-  const [vaultInfo, setVaultInfo] = useState<{ decimals?: number }>()
+  const [vaultInfo] = useState<{ decimals?: number }>({ decimals: 6 })
 
-  useEffect(() => {
-    if (address) {
-      const vault = new Contract(
-        vaultAddress, // TODO: differentiate between Vault20 and Vault1155??
-        contracts.VAULT_20.abi,
-        readOnlyAppProvider,
-      ) as Vault20
-
-      vault.dec().then((decimals) => {
-        setVaultInfo({ decimals: decimals.toNumber() })
-      })
-    }
-  }, [address, readOnlyAppProvider, vaultAddress])
+  // useEffect(() => {
+  //   if (address) {
+  //     const vault = new Contract(
+  //       vaultAddress, // TODO: differentiate between Vault20 and Vault1155??
+  //       contracts.VAULT_20.abi,
+  //       readOnlyAppProvider,
+  //     ) as Vault20
+  //
+  //     vault.dec().then((decimals) => {
+  //       setVaultInfo({ decimals: decimals.toNumber() })
+  //     })
+  //   }
+  // }, [address, readOnlyAppProvider, vaultAddress])
 
   return { address, userActions, userProxy, vaultInfo }
 }

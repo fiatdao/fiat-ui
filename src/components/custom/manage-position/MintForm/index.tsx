@@ -23,7 +23,7 @@ export const MintForm = ({
   userBalance?: BigNumber
   vaultAddress: string
 }) => {
-  const { address, userActions, userProxy } = useMintForm({ vaultAddress })
+  const { address, userActions, userProxy } = useMintForm()
   const [form] = AntdForm.useForm()
 
   const handleMint = async ({ mint }: { mint: BigNumber }) => {

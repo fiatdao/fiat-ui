@@ -2,463 +2,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "codex_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "limes_",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__cancelAuction_notRunningAction",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__checkReentrancy_reentered",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__init_vaultAlreadyInit",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__isStopped_stoppedIncorrect",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__redoAuction_cannotReset",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__redoAuction_notRunningAuction",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__redoAuction_zeroStartPrice",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__setParam_unrecognizedParam",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__startAuction_overflow",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__startAuction_zeroCollateralToSell",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__startAuction_zeroDebt",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__startAuction_zeroStartPrice",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__startAuction_zeroUser",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__takeCollateral_needsReset",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__takeCollateral_noPartialPurchase",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__takeCollateral_notRunningAuction",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CollateralAuction__takeCollateral_tooExpensive",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "Guarded__notGranted",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "Guarded__notRoot",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "x",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "y",
-        "type": "uint256"
-      }
-    ],
-    "name": "Math__add_overflow",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "x",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "y",
-        "type": "uint256"
-      }
-    ],
-    "name": "Math__mul_overflow",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "x",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "y",
-        "type": "uint256"
-      }
-    ],
-    "name": "Math__sub_overflow",
-    "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "sig",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      }
-    ],
-    "name": "AllowCaller",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "sig",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      }
-    ],
-    "name": "BlockCaller",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "auctionId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "startPrice",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "debt",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "collateralToSell",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "keeper",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "tip",
-        "type": "uint256"
-      }
-    ],
-    "name": "RedoAuction",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "param",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "data",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetParam",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "param",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "data",
-        "type": "address"
-      }
-    ],
-    "name": "SetParam",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "auctionId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "startPrice",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "debt",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "collateralToSell",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "keeper",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "tip",
-        "type": "uint256"
-      }
-    ],
-    "name": "StartAuction",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "auctionId",
-        "type": "uint256"
-      }
-    ],
-    "name": "StopAuction",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "auctionId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "maxPrice",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "price",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "owe",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "debt",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "collateralToSell",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
-    "name": "TakeCollateral",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "ANY_CALLER",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ANY_SIG",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -489,24 +32,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "sig",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      }
-    ],
-    "name": "allowCaller",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "auctionCounter",
     "outputs": [
@@ -531,85 +56,43 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "index",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "debt",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "collateralToSell",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "vault",
+        "name": "",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "user",
+        "name": "",
         "type": "address"
       },
       {
         "internalType": "uint96",
-        "name": "startsAt",
+        "name": "",
         "type": "uint96"
       },
       {
         "internalType": "uint256",
-        "name": "startPrice",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "sig",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      }
-    ],
-    "name": "blockCaller",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "sig",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      }
-    ],
-    "name": "canCall",
-    "outputs": [
-      {
-        "internalType": "bool",
         "name": "",
-        "type": "bool"
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -973,32 +456,27 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "multiplier",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "maxAuctionDuration",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "maxDiscount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "auctionDebtFloor",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "contract ICollybus",
-        "name": "collybus",
+        "name": "",
         "type": "address"
       },
       {
         "internalType": "contract IPriceCalculator",
-        "name": "calc",
+        "name": "",
         "type": "address"
       }
     ],
