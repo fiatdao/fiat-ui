@@ -4,7 +4,7 @@ import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
-import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
+// import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
@@ -15,9 +15,9 @@ import { Asset } from '@/src/components/custom/asset'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Filter from '@/src/resources/svg/filter.svg'
-import { usePositions } from '@/src/hooks/subgraph/usePositions'
-import { Position } from '@/src/utils/data/positions'
 import { PROTOCOLS, Protocol } from '@/types/protocols'
+import { useCollaterals } from '@/src/hooks/subgraph/useCollaterals'
+import { Collateral } from '@/src/utils/data/collaterals'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -43,13 +43,13 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'collateral',
-    render: (value: Position['collateral']) => <CellValue value={value.symbol} />,
+    render: (value: Collateral['symbol']) => <CellValue value={value ?? ''} />,
     title: 'Asset',
   },
   {
     align: 'left',
     dataIndex: 'maturity',
-    render: (date: any) => (
+    render: (date: Collateral['maturity']) => (
       <CellValue
         bottomValue={parseDate(date)}
         state={getDateState()}
@@ -82,16 +82,21 @@ const Columns: ColumnsType<any> = [
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
 const FILTERS: FilterData = {
-  BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
+  // BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
   Notional: { active: false, name: 'Notional', icon: <Notional /> },
   Element: { active: false, name: 'Element', icon: <Element /> },
 }
 
-const OpenPosition = () => {
+const CreatePosition = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
 
-  const data = usePositions()
+  const activeFilters = Object.values(filters)
+    .filter((f) => f.active)
+    .map((f) => f.name)
+
+  const data = useCollaterals(inMyWallet, activeFilters)
+
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
   const setFilter = useCallback((filterName: Protocol, active: boolean) => {
@@ -179,10 +184,10 @@ const OpenPosition = () => {
       </Popover>
       <Table
         columns={Columns}
-        dataSource={data.positions}
-        loading={!data.positions}
+        dataSource={data}
+        loading={!data}
         pagination={{
-          total: data.positions?.length ?? 0,
+          total: data?.length ?? 0,
           pageSize: 10,
           current: 1,
           position: ['bottomRight'],
@@ -214,4 +219,4 @@ const OpenPosition = () => {
   )
 }
 
-export default OpenPosition
+export default CreatePosition
