@@ -1,26 +1,14 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import BigNumber from 'bignumber.js'
 
-BigNumber.prototype.scaleBy = function (decimals?: number): BigNumber | undefined {
-  if (decimals === undefined) {
-    return undefined
-  }
-
+BigNumber.prototype.scaleBy = function (decimals: any = 0): any {
   return this.multipliedBy(10 ** decimals)
 }
 
-BigNumber.prototype.unscaleBy = function (decimals?: number): BigNumber | undefined {
-  if (decimals === undefined) {
-    return undefined
-  }
-
+BigNumber.prototype.unscaleBy = function (decimals: any = 0): any {
   return this.dividedBy(10 ** decimals)
 }
 
-BigNumber.ZERO = new BigNumber(0)
-BigNumber.MAX_UINT_256 = new BigNumber(2).pow(256).minus(1)
-
-BigNumber.from = (value?: BigNumber.Value): BigNumber | undefined => {
+BigNumber.from = (value: any): any => {
   if (value === undefined || value === null) {
     return undefined
   }
@@ -33,6 +21,8 @@ BigNumber.from = (value?: BigNumber.Value): BigNumber | undefined => {
 
   return bnValue
 }
+
+BigNumber.ZERO = BigNumber.from(0)
 
 BigNumber.sumEach = <T = any>(
   items: T[],
@@ -53,10 +43,6 @@ BigNumber.sumEach = <T = any>(
   return sum
 }
 
-export const MAX_UINT_256 = new BigNumber(2).pow(256).minus(1)
-export const ZERO_BIG_NUMBER = new BigNumber(0)
-export const DEFAULT_ADDRESS = '0x0000000000000000000000000000000000000000'
-
 export function getEtherscanTxUrl(txHash?: string, chainId = 42): string | undefined {
   if (txHash) {
     switch (chainId) {
@@ -64,6 +50,8 @@ export function getEtherscanTxUrl(txHash?: string, chainId = 42): string | undef
         return `https://etherscan.io/tx/${txHash}`
       case 4:
         return `https://rinkeby.etherscan.io/tx/${txHash}`
+      case 5:
+        return `https://goerli.etherscan.io/tx/${txHash}`
       case 42:
         return `https://kovan.etherscan.io/tx/${txHash}`
       default:
@@ -80,6 +68,8 @@ export function getEtherscanAddressUrl(address?: string, chainId = 42): string |
         return `https://etherscan.io/address/${address}`
       case 4:
         return `https://rinkeby.etherscan.io/address/${address}`
+      case 5:
+        return `https://goerli.etherscan.io/address/${address}`
       case 42:
         return `https://kovan.etherscan.io/address/${address}`
       default:
@@ -89,40 +79,16 @@ export function getEtherscanAddressUrl(address?: string, chainId = 42): string |
   return undefined
 }
 
-export function getEtherscanABIUrl(
-  address?: string,
-  apiKey?: string,
-  chainId = 42,
-): string | undefined {
-  if (address) {
-    switch (chainId) {
-      case 1:
-        return `https://api.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=${apiKey}`
-      case 4:
-        return `https://api-rinkeby.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=${apiKey}`
-      case 42:
-        return `https://api-kovan.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=${apiKey}`
-      default:
-    }
-  }
-
-  return undefined
+export function getHumanValue(value: number | BigNumber, decimals?: number): BigNumber
+export function getHumanValue(value?: BigNumber.Value, decimals?: number): BigNumber | undefined
+export function getHumanValue(value: any, decimals: any = 0): any {
+  return value ? BigNumber.from(value)?.unscaleBy(decimals) : undefined
 }
 
-export function getExponentValue(decimals = 0): BigNumber {
-  return new BigNumber(10).pow(decimals)
-}
-
-export function getHumanValue(value?: BigNumber, decimals = 0): BigNumber | undefined {
-  return value?.div(getExponentValue(decimals))
-}
-
-export function getNonHumanValue(value: BigNumber | number, decimals = 0): BigNumber {
-  return new BigNumber(value).multipliedBy(getExponentValue(decimals))
-}
-
-export function getGasValue(price: number): number {
-  return getNonHumanValue(price, 9).toNumber()
+export function getNonHumanValue(value: number | BigNumber, decimals?: number): BigNumber
+export function getNonHumanValue(value?: BigNumber.Value, decimals?: number): BigNumber | undefined
+export function getNonHumanValue(value: any, decimals: any = 0): any {
+  return value ? BigNumber.from(value)?.scaleBy(decimals) : undefined
 }
 
 export function formatBigValue(
@@ -297,55 +263,6 @@ export function formatUSDValue(
   return val.isPositive() ? `$${formattedValue}` : `-$${formattedValue}`
 }
 
-export function formatEntrValue(value?: BigNumber): string {
-  return formatBigValue(value, 4)
-}
-
-export function isSmallEntrValue(value?: BigNumber): boolean {
-  return !!value && value.gt(ZERO_BIG_NUMBER) && value.lt(0.0001)
-}
-
 export function shortenAddr(addr: string | undefined, first = 6, last = 4): string | undefined {
   return addr ? [String(addr).slice(0, first), String(addr).slice(-last)].join('...') : undefined
-}
-
-export function fetchContractABI(address: string): any {
-  const url = getEtherscanABIUrl(address, 'config.web3.etherscan.apiKey')
-
-  if (!url) {
-    return Promise.reject()
-  }
-
-  return fetch(url)
-    .then((result) => result.json())
-    .then(({ result, status }: { status: string; result: string }) => {
-      if (status === '1') {
-        return JSON.parse(result)
-      }
-
-      return Promise.reject(result)
-    })
-}
-
-type GasPriceResult = {
-  veryFast: number
-  fast: number
-  average: number
-  safeLow: number
-}
-
-export function fetchGasPrice(): Promise<GasPriceResult> {
-  return fetch(
-    `https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=${'config.web3.etherscan.apiKey'}`,
-  )
-    .then((result) => result.json())
-    .then((result) => result.result)
-    .then((result) => {
-      return {
-        veryFast: Number(result.FastGasPrice),
-        fast: Number(result.ProposeGasPrice),
-        average: Math.round((Number(result.ProposeGasPrice) + Number(result.SafeGasPrice)) / 2),
-        safeLow: Number(result.SafeGasPrice),
-      }
-    })
 }

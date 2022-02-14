@@ -1,8 +1,6 @@
 import s from './s.module.scss'
 import cn from 'classnames'
 import { useEffect, useState } from 'react'
-import { fetchInfoPage } from '@/src/utils/your-positions-api'
-import { remainingTime } from '@/src/utils/your-positions-utils'
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
@@ -10,7 +8,10 @@ import InventoryTable from '@/src/components/custom/inventory-table'
 import TransactionHistoryTable from '@/src/components/custom/transaction-history-table'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import genericSuspense from '@/src/utils/genericSuspense'
-import { Position, YourPositionPageInformation, usePositions } from '@/src/hooks/subgraph'
+import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
+import { remainingTime } from '@/src/utils/dateTime'
+import { Position } from '@/src/utils/data/positions'
+import { YourPositionPageInformation, fetchInfoPage } from '@/src/utils/data/yourPositionInfo'
 
 enum TabState {
   Inventory = 'inventory',
@@ -35,33 +36,34 @@ const YourPositions = () => {
   const [isLoadingPage, setIsLoadingPage] = useState(false)
   const [pageInformation, setPageInformation] = useState<YourPositionPageInformation>()
 
-  const { positionTransactions: transactions, positions } = usePositions(address)
+  const { positionTransactions: transactions, positions } = usePositionsByUser()
 
   useEffect(() => {
-    const init = async () => {
-      if (address && isWalletConnected && provider) {
-        setIsLoadingPage(true)
-        const newPageInformation = await fetchInfoPage(positions)
-        setPageInformation(newPageInformation)
-        setInventory(positions)
-        setIsLoadingPage(false)
-      }
+    if (address && isWalletConnected && provider) {
+      setIsLoadingPage(true)
+      const newPageInformation = fetchInfoPage(positions || [])
+      setPageInformation(newPageInformation)
+      setInventory(positions)
+      setIsLoadingPage(false)
     }
-    init()
   }, [address, isWalletConnected, positions, provider])
 
+  // TODO Fix naming if necessary
   return (
     <>
       {!isLoadingPage && (
         <InfoBlocksGrid>
-          <InfoBlock title="Total Debt" value={pageInformation?.totalDebt} />
-          <InfoBlock title="Current Value" value={pageInformation?.currentValue} />
-          <InfoBlock title="Lowest Health Factor" value={pageInformation?.lowestHealthFactor} />
+          <InfoBlock title="Total Debt" value={pageInformation?.fiatDebt.toFixed()} />
+          <InfoBlock title="Current Value" value={pageInformation?.collateralValue.toFixed()} />
+          <InfoBlock
+            title="Lowest Health Factor"
+            value={pageInformation?.lowestHealthFactor.toFixed()}
+          />
           <InfoBlock
             title="Next Maturity"
             value={
-              pageInformation?.nextMaturity
-                ? remainingTime(new Date(pageInformation.nextMaturity))
+              pageInformation?.nearestMaturity
+                ? remainingTime(pageInformation.nearestMaturity)
                 : undefined
             }
           />

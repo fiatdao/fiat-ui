@@ -6,9 +6,10 @@ import { useEffect, useMemo, useState } from 'react'
 import BigNumber from 'bignumber.js'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
+import { ZERO_ADDRESS } from '@/src/constants/misc'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
 import { contracts } from '@/src/constants/contracts'
-import { DEFAULT_ADDRESS, getHumanValue } from '@/src/web3/utils'
+import { getHumanValue } from '@/src/web3/utils'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 import genericSuspense from '@/src/utils/genericSuspense'
@@ -69,7 +70,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
     'balanceOf',
     [string],
     Promise<ethers.BigNumber>
-  >(tokenAddress, contracts.ERC_20.abi, 'balanceOf', [currentUserAddress || DEFAULT_ADDRESS])
+  >(tokenAddress, contracts.ERC_20.abi, 'balanceOf', [currentUserAddress || ZERO_ADDRESS])
 
   // Setup Proxy :tick
   // Allowance loading:tick

@@ -10,13 +10,14 @@ import Notional from '@/src/resources/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
-import { usePositionsData } from '@/src/hooks/usePositionsData'
-import { PROTOCOLS, Protocol } from '@/types'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Filter from '@/src/resources/svg/filter.svg'
+import { usePositions } from '@/src/hooks/subgraph/usePositions'
+import { Position } from '@/src/utils/data/positions'
+import { PROTOCOLS, Protocol } from '@/types/protocols'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -42,7 +43,7 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'collateral',
-    render: (value: string) => <CellValue value={value} />,
+    render: (value: Position['collateral']) => <CellValue value={value.symbol} />,
     title: 'Asset',
   },
   {
@@ -90,7 +91,7 @@ const OpenPosition = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
 
-  const data = usePositionsData()
+  const data = usePositions()
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
   const setFilter = useCallback((filterName: Protocol, active: boolean) => {
@@ -178,10 +179,10 @@ const OpenPosition = () => {
       </Popover>
       <Table
         columns={Columns}
-        dataSource={data}
-        loading={false}
+        dataSource={data.positions}
+        loading={!data.positions}
         pagination={{
-          total: data.length,
+          total: data.positions?.length ?? 0,
           pageSize: 10,
           current: 1,
           position: ['bottomRight'],
@@ -204,7 +205,7 @@ const OpenPosition = () => {
             console.log(page, pageSize)
           },
         }}
-        rowKey="address"
+        rowKey="id"
         scroll={{
           x: true,
         }}

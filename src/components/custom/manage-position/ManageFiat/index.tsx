@@ -41,7 +41,7 @@ export const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) =
       {'burn' === activeTabKey && (
         <BurnForm
           refetch={refetchPosition}
-          userBalance={position?.minted}
+          userBalance={position?.totalNormalDebt}
           vaultAddress={vaultAddress}
         />
       )}
