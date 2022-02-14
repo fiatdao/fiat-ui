@@ -1,7 +1,10 @@
 import BigNumber from 'bignumber.js'
 import Link from 'next/link'
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode } from 'react'
 import useSWR from 'swr'
+import { auctionById, auctionByIdVariables } from '@/types/subgraph/__generated__/auctionById'
+import { AUCTION_BY_ID } from '@/src/queries/auctions'
+import { PROTOCOLS, Protocol } from '@/types/protocols'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { CollateralAuction, Collybus } from '@/types/typechain'
 import { userAuctions } from '@/types/subgraph/__generated__/userAuctions'
@@ -12,7 +15,6 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { ChainsValues } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
-import isDev from '@/src/utils/isDev'
 import { getHumanValue } from '@/src/web3/utils'
 
 type AuctionData = {
@@ -39,12 +41,12 @@ const calcProfit = (currentValue: BigNumber | null, auctionPrice: BigNumber | nu
  * @param provider
  * @param appChainId
  */
-const transformCollaterals = async (
+const transformAuctions = async (
   cols: userAuctions,
   provider: any,
   appChainId: ChainsValues,
 ): Promise<AuctionData[]> => {
-  return await Promise.all(
+  return Promise.all(
     cols.userAuctions.map(async (userAuction) => {
       const vaultAddress = userAuction.vault?.address
       const underlierAddress = userAuction.collateral?.underlierAddress
@@ -101,9 +103,12 @@ const transformCollaterals = async (
         profit: getHumanValue(
           calcProfit(currentValue, BigNumber.from(auctionStatus?.price.toString()) ?? null),
         )?.toFormat(2),
+        // TODO: disable Link when button is disabled?
         action: (
           <Link href={`/auctions/${vaultAddress}/liquidate`} passHref>
-            <ButtonGradient>Liquidate</ButtonGradient>
+            <ButtonGradient disabled={!userAuction.isActive}>
+              {userAuction.isActive ? 'Liquidate' : 'Not Available'}
+            </ButtonGradient>
           </Link>
         ),
       } as AuctionData
@@ -111,41 +116,45 @@ const transformCollaterals = async (
   )
 }
 
-const getUserAuctions = async () => {
-  // TODO userAddress as params here
-  return await graphqlFetcher<userAuctions, null>(USER_AUCTIONS, null)
+const getAuctionById = async (auctionId: string) => {
+  return await graphqlFetcher<auctionById, auctionByIdVariables>(AUCTION_BY_ID, { id: auctionId })
 }
 
-export const useAuctionData = () => {
-  const [auctionData, setAuctionData] = useState<AuctionData[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [areError, setAreError] = useState<any>(false)
+const getUserAuctions = async (activeFilters: any) => {
+  // TODO userAddress as params here
+  console.log(activeFilters)
+  return await graphqlFetcher<userAuctions, any>(
+    USER_AUCTIONS,
+    activeFilters.length
+      ? {
+          where: { vaultName_in: activeFilters },
+        }
+      : { where: null },
+  )
+}
+
+/**
+ * gets data for auctions page (list of auctions)
+ */
+export const useAuctionsData = (activeFilters: Protocol[]) => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
 
-  const { data, error } = useSWR(['auctionPageData'], async () => {
-    const userAuctions = await getUserAuctions()
-    return transformCollaterals(userAuctions, provider, appChainId)
-  })
+  const { data, error } = useSWR(
+    ['auctionsPageData', activeFilters.length === PROTOCOLS.length ? [] : activeFilters],
+    async () => {
+      const userAuctions = await getUserAuctions(activeFilters)
+      return transformAuctions(userAuctions, provider, appChainId)
+    },
+  )
 
-  if (isDev()) {
-    console.log('Fetche Response', {
-      swrKey: 'auctionPageData',
-      response: data,
-      error,
-    })
-  }
+  return { data, error: !!error, loading: !data && !error }
+}
 
-  useEffect(() => {
-    if (error) {
-      setAreError(error)
-      setIsLoading(false)
-    }
-    if (data) {
-      setIsLoading(false)
-      setAreError(false)
-      setAuctionData(data)
-    }
-  }, [data, error])
+/**
+ * gets data for auction by ID page (liquidate auction)
+ */
+export const useAuctionData = (auctionId: string) => {
+  const { data, error } = useSWR(['auctionPageData', auctionId], () => getAuctionById(auctionId))
 
-  return { data: auctionData, error: areError, loading: isLoading }
+  return { data, error: !!error, loading: !data && !error }
 }

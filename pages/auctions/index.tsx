@@ -3,7 +3,7 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import { Popover } from 'antd'
-import { useAuctionData } from '@/src/hooks/useAuctionData'
+import { useAuctionsData } from '@/src/hooks/useAuctionData'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ButtonOutline from '@/src/components/antd/button-outline'
@@ -12,8 +12,6 @@ import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
-import { Grid } from '@/src/components/custom'
-import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import Filter from '@/src/resources/svg/filter.svg'
@@ -76,11 +74,14 @@ const FILTERS: FilterData = {
 
 const Auctions = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
-  const [inMyWallet, setInMyWallet] = useState(false)
 
-  //const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
+  const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
-  const { data, error, loading } = useAuctionData()
+  const { data, error, loading } = useAuctionsData(
+    Object.values(filters)
+      .filter(({ active }) => active)
+      .map(({ name }) => name) as Protocol[],
+  )
 
   const setFilter = useCallback((filterName: Protocol, active: boolean) => {
     setFilters((filters) => {
@@ -105,7 +106,7 @@ const Auctions = () => {
     <>
       <ButtonOutline
         height="lg"
-        // isActive={areAllFiltersActive}
+        isActive={areAllFiltersActive}
         onClick={() => activateAllFilters()}
         rounded
       >
@@ -115,7 +116,7 @@ const Auctions = () => {
         return (
           <ButtonOutline
             height="lg"
-            // isActive={filters[asset].active}
+            isActive={filters[asset].active}
             key={asset}
             onClick={() => setFilter(asset, !filters[asset].active)}
             rounded
@@ -135,20 +136,11 @@ const Auctions = () => {
   )
 
   return (
-    <Grid flow="row" rowsTemplate="1fr auto">
-      <Text color="secondary" font="secondary" type="p1" weight="semibold">
-        Select an asset to liquidate and get profit
-      </Text>
+    <>
+      <h2 className={cn(s.title)}>Select an asset to liquidate and get profit</h2>
       <div className={cn(s.filters)}>
         {renderFilters()}
         {clearButton()}
-        <ToggleSwitch
-          checked={inMyWallet}
-          label="In my wallet"
-          onChange={(e) => {
-            setInMyWallet(e)
-          }}
-        />
       </div>
       <Popover
         arrowContent={false}
@@ -204,7 +196,7 @@ const Auctions = () => {
           />
         </SkeletonTable>
       )}
-    </Grid>
+    </>
   )
 }
 
