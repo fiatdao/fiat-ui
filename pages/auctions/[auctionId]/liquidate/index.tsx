@@ -1,9 +1,17 @@
 import s from './s.module.scss'
-import { useRouter } from 'next/router'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useState } from 'react'
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
+import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
+import contractCall from '@/src/utils/contractCall'
+import { contracts } from '@/src/constants/contracts'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { getNonHumanValue } from '@/src/web3/utils'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { useAuctionData } from '@/src/hooks/useAuctionData'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import { BackButton } from '@/src/components/custom/back-button'
@@ -30,39 +38,19 @@ const StepperTitle: React.FC<{
 )
 
 const Summary: React.FC = () => {
-  const hfState = 'ok'
-
   return (
     <div className={s.summary}>
       <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>In your wallet</div>
+        <div className={s.summaryTitle}>Amount</div>
         <div className={s.summaryValue}>5,000 DAI Principal Token</div>
       </div>
       <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>Depositing into position </div>
+        <div className={s.summaryTitle}>Current price</div>
         <div className={s.summaryValue}>5,000 DAI Principal Token</div>
       </div>
       <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>Remaining in wallet</div>
+        <div className={s.summaryTitle}>Total value</div>
         <div className={s.summaryValue}>0 DAI Principal Token</div>
-      </div>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>FIAT to be minted</div>
-        <div className={s.summaryValue}>2,000</div>
-      </div>
-      <div className={s.summaryRow}>
-        <div className={s.summaryTitle}>Updated health factor</div>
-        <div
-          className={cn(
-            s.summaryValue,
-            { [s.ok]: hfState === 'ok' },
-            // TODO: Make these work
-            // { [s.warning]: hfState === 'warning' },
-            // { [s.danger]: hfState === 'danger' }
-          )}
-        >
-          2.3
-        </div>
       </div>
     </div>
   )
@@ -83,36 +71,102 @@ const LiquidateAuction = () => {
 
   const [form] = AntdForm.useForm<FormProps>()
   const [step, setStep] = useState(1)
+  const [sendingForm, setSendingForm] = useState(false)
 
-  const mockedBlocks = [
+  const {
+    address: currentUserAddress,
+    appChainId,
+    isAppConnected,
+    readOnlyAppProvider,
+    web3Provider,
+  } = useWeb3Connection()
+
+  const provider = isAppConnected && web3Provider ? web3Provider.getSigner() : readOnlyAppProvider
+
+  const { data, loading } = useAuctionData(auctionId as string)
+
+  const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
+    data?.tokenAddress as string,
+    currentUserAddress as string,
+  )
+
+  const { tokenSymbol } = useTokenSymbol(data?.tokenAddress as string)
+
+  const blocksData = [
     {
       title: 'Up for Auction',
-      tooltip: 'Tooltip text',
-      value: '20,000',
+      tooltip: 'Tooltip text', // TODO tooltip text?
+      value: data?.upForAuction || undefined,
     },
     {
       title: 'Auction Price',
-      tooltip: 'Tooltip text',
-      value: '$150.00',
+      tooltip: 'Tooltip text', // TODO tooltip text?
+      value: `$${data?.price}`,
     },
     {
-      title: 'Current Value',
-      tooltip: 'Tooltip text',
-      value: '$250.00',
+      title: 'Collateral Value',
+      tooltip: 'Tooltip text', // TODO tooltip text?
+      value: `$${data?.collateralValue}`,
     },
     {
       title: 'Profit',
-      tooltip: 'Tooltip text',
-      value: '5.33%',
+      tooltip: 'Tooltip text', // TODO tooltip text?
+      value: `${data?.profit}%`,
     },
   ]
+
+  useEffect(() => {
+    if (loadingApprove) {
+      setSendingForm(true)
+    } else {
+      setSendingForm(false)
+    }
+  }, [loadingApprove])
+
+  const onSubmit = async () => {
+    if (!hasAllowance) {
+      await approve()
+    } else {
+      setSendingForm(true)
+
+      const collateralAmountToSend = getNonHumanValue(
+        form.getFieldValue('liquidateAmount'),
+        18,
+      ).toFixed()
+
+      console.log(collateralAmountToSend)
+
+      contractCall(
+        contracts.COLLATERAL_AUCTION.address[appChainId],
+        contracts.COLLATERAL_AUCTION.abi,
+        provider,
+        'takeCollateral',
+        [
+          auctionId,
+          collateralAmountToSend,
+          ZERO_BIG_NUMBER.toFixed(),
+          currentUserAddress,
+          [],
+          {
+            gasLimit: 10_000_000,
+          },
+        ],
+      )
+        .then(() => {
+          setSendingForm(false)
+        })
+        .catch((err) => console.log(err))
+    }
+  }
+
+  if (loading) return <p>Loading...</p>
 
   return (
     <>
       <BackButton href="/auctions">Back</BackButton>
       <div className={cn(s.mainContainer)}>
         <div className={cn(s.infoBlocks)}>
-          {mockedBlocks.map((item, index) => (
+          {blocksData.map((item, index) => (
             <InfoBlock
               key={`${index}_info`}
               title={item.title}
@@ -125,7 +179,7 @@ const LiquidateAuction = () => {
         <div className={cn(s.formWrapper)}>
           <StepperTitle
             currentStep={step}
-            description={'Select the amount to be liquidated'}
+            description={step === 1 ? 'Select the amount to be liquidated' : 'Confirm the details'}
             title={'Liquidate a position'}
             totalSteps={2}
           />
@@ -134,21 +188,21 @@ const LiquidateAuction = () => {
               <>
                 <div className={cn(s.balanceWrapper)}>
                   <h3 className={cn(s.balanceLabel)}>Select amount</h3>
-                  <p className={cn(s.balance)}>Available: 10.000</p>
+                  <p className={cn(s.balance)}>Collateral left: ${data?.collateralToSell}</p>
                 </div>
 
-                <Form form={form} initialValues={{ liquidateAmount: 0 }}>
+                <Form form={form} initialValues={{ liquidateAmount: 0 }} onFinish={onSubmit}>
                   <Form.Item name="liquidateAmount" required>
                     <TokenAmount
+                      disabled={sendingForm}
                       displayDecimals={4}
-                      max={10000}
+                      max={Number(data?.collateralToSell)}
                       maximumFractionDigits={6}
-                      onChange={(val) => val}
                       slider
                       tokenIcon={<ElementIcon />}
                     />
                   </Form.Item>
-                  <ButtonGradient disabled={false} height="lg" onClick={() => setStep(2)}>
+                  <ButtonGradient disabled={sendingForm} height="lg" onClick={() => setStep(2)}>
                     Liquidate
                   </ButtonGradient>
                 </Form>
@@ -158,10 +212,14 @@ const LiquidateAuction = () => {
               <>
                 <Summary />
                 <div className={s.buttonsWrapper}>
-                  <ButtonGradient height="lg" onClick={() => console.log('confirm liquidity')}>
-                    Confirm
+                  <ButtonGradient height="lg" loading={sendingForm} onClick={form.submit}>
+                    {hasAllowance ? 'Confirm' : `Set Allowance for ${tokenSymbol}`}
                   </ButtonGradient>
-                  <button className={s.backButton} onClick={() => setStep(1)}>
+                  <button
+                    className={s.backButton}
+                    disabled={sendingForm}
+                    onClick={() => setStep(1)}
+                  >
                     &#8592; Go back
                   </button>
                 </div>

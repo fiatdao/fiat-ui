@@ -1,17 +1,26 @@
 import gql from 'graphql-tag'
 
-export const AUCTION_BY_ID = gql`
-  query auctionById($id: ID!) {
-    userAuction(id: $id) {
+export const AUCTIONS = gql`
+  query auctions($where: UserAuction_filter) {
+    userAuctions(where: $where) {
       id
+      auctionId
+      isActive
       collateralToSell
       tokenId
       vaultName
-      isActive
-      user
+      vault {
+        id
+        name
+        address
+      }
       collateral {
+        id
+        tokenId
+        symbol
         underlierAddress
       }
+      user
     }
   }
 `

@@ -1,4 +1,5 @@
 import contractCall from '../contractCall'
+import { BigNumberToDateOrCurrent } from '../dateTime'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
@@ -8,7 +9,6 @@ import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { Collybus, ERC20 } from '@/types/typechain'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
-import { BigNumberToDateOrCurrent } from '../dateTime'
 
 export type Position = {
   id: string
@@ -19,7 +19,7 @@ export type Position = {
   totalCollateral: BigNumber
   totalNormalDebt: BigNumber
   vaultCollateralizationRatio: Maybe<BigNumber>
-  currentValue: BigNumber
+  collateralValue: BigNumber
   faceValue: BigNumber
   healthFactor: BigNumber
   isAtRisk: boolean
@@ -50,16 +50,14 @@ const wranglePosition = async (
 
   const maturity = BigNumberToDateOrCurrent(position.maturity)
 
-  let currentValue = null
+  let collateralValue = null
   if (
     position?.collateral?.underlierAddress &&
     position?.vault?.address &&
     position.maturity &&
     position?.collateral?.underlierAddress !== ZERO_ADDRESS
   ) {
-    // TODO Replace with vault fairPrice [wad].
-    // Use conditional flag vaultType ~ erc20
-    currentValue = await contractCall<Collybus, 'read'>(
+    collateralValue = await contractCall<Collybus, 'read'>(
       collybusAddress,
       collybusAbi,
       provider,
@@ -125,8 +123,8 @@ const wranglePosition = async (
   }
 
   const healthFactor =
-    currentValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()
-      ? currentValue.mul(totalCollateral.toFixed()).div(totalNormalDebt.toFixed()).toNumber()
+    collateralValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()
+      ? collateralValue.mul(totalCollateral.toFixed()).div(totalNormalDebt.toFixed()).toNumber()
       : 1
 
   // FIXME
@@ -139,7 +137,7 @@ const wranglePosition = async (
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
-    currentValue: BigNumber.from(currentValue?.toString() ?? 0) as BigNumber,
+    collateralValue: BigNumber.from(collateralValue?.toString() ?? 0) as BigNumber,
     faceValue: BigNumber.from(faceValue?.toString() ?? 0) as BigNumber,
     maturity,
     collateral: {
