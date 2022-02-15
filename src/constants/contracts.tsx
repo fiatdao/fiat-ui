@@ -93,7 +93,7 @@ export const contracts = constantContracts({
   USER_ACTIONS_20: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x65d5E7FA3F933195FACF76c3565f31A878c79E3C',
+      [Chains.goerli]: '0xf88C65e435446ac54F105C508D246649A4FA1BcC',
     },
     abi: userActions20,
   },

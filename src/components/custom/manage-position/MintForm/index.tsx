@@ -38,6 +38,7 @@ export const MintForm = ({
       [
         vaultAddress,
         ZERO_ADDRESS,
+        0,
         ZERO_ADDRESS,
         address,
         ZERO_BIG_NUMBER.toFixed(),
