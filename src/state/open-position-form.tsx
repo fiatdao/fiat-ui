@@ -3,7 +3,7 @@ import { assign, createMachine } from 'xstate'
 import { getNonHumanValue } from '@/src/web3/utils'
 import { contracts } from '@/src/constants/contracts'
 
-const VAULT_ADDRESS = '0xeCdB7DC331a8b5117eCF548Fa4730b0dAe76077D'
+const VAULT_ADDRESS = '0x517cD535B96941758469254484C0c0399Bb7363A'
 
 export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string } } = {
   1: {
@@ -185,18 +185,18 @@ const stepperMachine = createMachine<Context, Events>(
           },
         ) =>
         (callback: any) => {
-          console.log(event)
           if (isAppConnected && web3Provider && currentUserAddress) {
             try {
               // FixMe: Hardcoded decimals
-              const _erc20Amount = getNonHumanValue(erc20Amount, 18)
-              const _fiatAmount = getNonHumanValue(fiatAmount, contracts.FIAT.decimals)
+              const _erc20Amount = getNonHumanValue(erc20Amount, 18) // must be in WAD
+              const _fiatAmount = getNonHumanValue(fiatAmount, contracts.FIAT.decimals) // WAD
 
               const encodedFunctionData = userActions.interface.encodeFunctionData(
                 'modifyCollateralAndDebt',
                 [
                   VAULT_ADDRESS,
                   tokenAddress,
+                  0,
                   currentUserAddress,
                   currentUserAddress,
                   _erc20Amount.toFixed(),

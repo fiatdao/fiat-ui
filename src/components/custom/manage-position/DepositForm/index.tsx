@@ -39,6 +39,7 @@ export const DepositForm = ({
       [
         vaultAddress,
         tokenAddress,
+        0,
         address,
         ZERO_ADDRESS,
         toDeposit.toFixed(),

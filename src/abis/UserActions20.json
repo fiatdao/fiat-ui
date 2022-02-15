@@ -2,23 +2,18 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "codex_",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "moneta_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "fiat_",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "y",
+        "type": "uint256"
       }
     ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
+    "name": "Math__mul_overflow",
+    "type": "error"
   },
   {
     "inputs": [],
@@ -26,32 +21,12 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "UserActions__vaultEnter_zeroTokenAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "UserActions__vaultEnter_zeroVaultAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "UserActions__vaultExit_zeroToAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "UserActions__vaultExit_zeroTokenAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "UserActions__vaultExit_zeroVaultAddress",
-    "type": "error"
-  },
-  {
     "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
       {
         "internalType": "address",
         "name": "spender",
@@ -63,7 +38,7 @@
         "type": "uint256"
       }
     ],
-    "name": "approveFIAT",
+    "name": "approveToken",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -105,6 +80,11 @@
         "internalType": "address",
         "name": "token",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       },
       {
         "internalType": "address",

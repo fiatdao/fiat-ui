@@ -38,6 +38,7 @@ export const WithdrawForm = ({
       [
         vaultAddress,
         tokenAddress,
+        0,
         address,
         ZERO_ADDRESS,
         toWithdraw.negated().toFixed(),
