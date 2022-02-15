@@ -54,7 +54,7 @@ const YourPositions = () => {
       {!isLoadingPage && (
         <InfoBlocksGrid>
           <InfoBlock title="Total Debt" value={pageInformation?.fiatDebt.toFixed()} />
-          <InfoBlock title="Current Value" value={pageInformation?.collateralValue.toFixed()} />
+          <InfoBlock title="Collateral Value" value={pageInformation?.collateralValue.toFixed()} />
           <InfoBlock
             title="Lowest Health Factor"
             value={pageInformation?.lowestHealthFactor.toFixed()}
