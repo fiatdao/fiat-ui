@@ -196,7 +196,7 @@ const stepperMachine = createMachine<Context, Events>(
                 [
                   VAULT_ADDRESS,
                   tokenAddress,
-                  '0',
+                  0,
                   currentUserAddress,
                   currentUserAddress,
                   _erc20Amount.toFixed(),

@@ -48,6 +48,7 @@ export const BurnForm = ({
       [
         vaultAddress,
         ZERO_ADDRESS,
+        0,
         ZERO_ADDRESS,
         address,
         ZERO_BIG_NUMBER.toFixed(),
