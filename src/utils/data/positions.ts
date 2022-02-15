@@ -24,7 +24,7 @@ export type Position = {
   totalCollateral: BigNumber
   totalNormalDebt: BigNumber
   vaultCollateralizationRatio: Maybe<BigNumber>
-  currentValue: BigNumber
+  collateralValue: BigNumber
   faceValue: BigNumber
   healthFactor: BigNumber
   isAtRisk: boolean
@@ -55,14 +55,14 @@ const wranglePosition = async (
 
   const maturity = new Date(position.maturity ? +position.maturity * 1000 : Date.now())
 
-  let currentValue = null
+  let collateralValue = null
   if (
     position?.collateral?.underlierAddress &&
     position?.vault?.address &&
     position.maturity &&
     position?.collateral?.underlierAddress !== ZERO_ADDRESS
   ) {
-    currentValue = await contractCall<Collybus, 'read'>(
+    collateralValue = await contractCall<Collybus, 'read'>(
       collybusAddress,
       collybusAbi,
       provider,
@@ -128,8 +128,8 @@ const wranglePosition = async (
   }
 
   const healthFactor =
-    currentValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()
-      ? currentValue.mul(totalCollateral.toFixed()).div(totalNormalDebt.toFixed()).toNumber()
+    collateralValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()
+      ? collateralValue.mul(totalCollateral.toFixed()).div(totalNormalDebt.toFixed()).toNumber()
       : 1
 
   // FIXME
@@ -142,7 +142,7 @@ const wranglePosition = async (
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
-    currentValue: BigNumber.from(currentValue?.toString() ?? 0) as BigNumber,
+    collateralValue: BigNumber.from(collateralValue?.toString() ?? 0) as BigNumber,
     faceValue: BigNumber.from(faceValue?.toString() ?? 0) as BigNumber,
     maturity,
     collateral: {

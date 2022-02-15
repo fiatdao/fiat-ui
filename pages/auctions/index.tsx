@@ -45,9 +45,9 @@ const Columns: ColumnsType<any> = [
   },
   {
     align: 'left',
-    dataIndex: 'currentValue',
+    dataIndex: 'collateralValue',
     render: (value: string) => <CellValue value={`$${value}`} />,
-    title: 'Current Value',
+    title: 'Collateral Value',
   },
   {
     align: 'left',

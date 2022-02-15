@@ -43,10 +43,10 @@ interface Context {
 
 type Events =
   | { type: 'SET_HAS_ALLOWANCE'; hasAllowance: boolean }
-  | { type: 'SET_CURRENT_STEP_NUMBER'; currentStepNumber: number }
+  | { type: 'SET_PROXY_AVAILABLE'; isProxyAvailable: boolean }
   | { type: 'SET_ERC20_AMOUNT'; erc20Amount: BigNumber }
   | { type: 'SET_FIAT_AMOUNT'; fiatAmount: BigNumber }
-  | { type: 'SET_LOADING'; isLoading: boolean }
+  | { type: 'SET_LOADING'; loading: boolean }
   | { type: 'CLICK_SETUP_PROXY' }
   | { type: 'CLICK_ALLOW' }
   | { type: 'CLICK_DEPLOY' }
@@ -57,30 +57,31 @@ type Events =
   | { type: 'POSITION_CREATED_ERROR' }
   | { type: 'USER_REJECTED' }
 
+const initialContext: Context = {
+  erc20Amount: BigNumber.ZERO,
+  fiatAmount: BigNumber.ZERO,
+  currentStepNumber: 1,
+  totalStepNumber: 5,
+  tokenSymbol: '',
+  tokenAddress: '',
+  hasAllowance: false,
+  isProxyAvailable: false,
+  loading: false,
+  loadingType: '',
+}
 const stepperMachine = createMachine<Context, Events>(
   {
     id: 'stepper',
     initial: 'step-1-enteringERC20Amount',
-    // Globals machine events
-    context: {
-      erc20Amount: BigNumber.ZERO,
-      fiatAmount: BigNumber.ZERO,
-      currentStepNumber: 1,
-      totalStepNumber: 5,
-      tokenSymbol: '',
-      tokenAddress: '',
-      hasAllowance: false,
-      isProxyAvailable: false,
-      loading: false,
-      loadingType: '',
-    },
+    context: initialContext,
     on: {
       SET_HAS_ALLOWANCE: {
         actions: 'setAllowance',
         target: 'step-1-enteringERC20Amount',
       },
-      SET_CURRENT_STEP_NUMBER: {
-        actions: ['setCurrentStepNumber'],
+      SET_PROXY_AVAILABLE: {
+        actions: 'setProxyAvailable',
+        target: 'step-1-enteringERC20Amount',
       },
       SET_ERC20_AMOUNT: { actions: 'setERC20Amount' },
       SET_FIAT_AMOUNT: { actions: 'setFiatAmount' },
@@ -101,6 +102,10 @@ const stepperMachine = createMachine<Context, Events>(
         },
       },
       'step-2-setupProxy': {
+        always: {
+          target: 'step-1-enteringERC20Amount',
+          cond: (ctx) => ctx.isProxyAvailable,
+        },
         entry: [assign({ currentStepNumber: (_) => 2 })],
       },
       'step-3-approveAllowance': {
@@ -150,14 +155,14 @@ const stepperMachine = createMachine<Context, Events>(
       setAllowance: assign<Context, any>((ctx, { hasAllowance }) => ({
         hasAllowance,
       })),
+      setProxyAvailable: assign<Context, any>((ctx, { isProxyAvailable }) => ({
+        isProxyAvailable,
+      })),
       setERC20Amount: assign<Context, any>((_ctx, { erc20Amount }) => ({
         erc20Amount,
       })),
       setFiatAmount: assign<Context, any>((_ctx, { fiatAmount }) => ({
         fiatAmount,
-      })),
-      setCurrentStepNumber: assign<Context, any>((_ctx, { currentStepNumber }) => ({
-        currentStepNumber,
       })),
       setLoading: assign<Context, any>((_ctx, { loading, loadingType }) => ({
         loading,
@@ -191,6 +196,8 @@ const stepperMachine = createMachine<Context, Events>(
               const _erc20Amount = getNonHumanValue(erc20Amount, 18) // must be in WAD
               const _fiatAmount = getNonHumanValue(fiatAmount, contracts.FIAT.decimals) // WAD
 
+              // dividir x collateralizationRatio
+              // max fiat === _erc20Amount / collateralizationRatio
               const encodedFunctionData = userActions.interface.encodeFunctionData(
                 'modifyCollateralAndDebt',
                 [

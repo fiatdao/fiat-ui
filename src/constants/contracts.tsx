@@ -48,7 +48,7 @@ export const contracts = constantContracts({
   FIAT: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xf4054D739592A28559b37D5950B62a18e5ec73DB',
+      [Chains.goerli]: '0x8a372c777E96d8B3F3CA85Cf0449d05B822458ff',
     },
     abi: fiat,
     decimals: 18,
@@ -58,14 +58,14 @@ export const contracts = constantContracts({
   CODEX: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xdB85ee14BD31558C9620da98565622912E725958',
+      [Chains.goerli]: '0x3a94FA8FAdbC48D6C4f44149A8b9F668bD510066',
     },
     abi: codex,
   },
   COLLYBUS: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x4B1002aB18D7Ea45125D6F908B3A13f947C3FBF9',
+      [Chains.goerli]: '0x5438Fd8541135676e990295C1cd62EF779b05Ebb',
     },
     abi: collybus,
   },
@@ -86,7 +86,7 @@ export const contracts = constantContracts({
   COLLATERAL_AUCTION: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xfeba478B1a0CE24B86F064B51e489D8e79a41Cf0',
+      [Chains.goerli]: '0x5e17C31f106955E1b6F74eC6716bb62E1f5c2C54',
     },
     abi: collateralAuction,
   },

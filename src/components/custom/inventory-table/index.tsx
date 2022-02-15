@@ -30,7 +30,7 @@ const Columns: ColumnsType<Position> = [
       <CellValue bold tooltip={`$${discount}`} value={`$${discount.toNumber().toFixed(2)}`} />
     ),
     responsive: ['lg'],
-    title: 'Discounted Value',
+    title: 'Collateral Value',
   },
   {
     align: 'left',
