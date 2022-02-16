@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
-import { BackButton } from '@/src/components/custom/back-button'
+import { ButtonBack } from '@/src/components/custom/button-back'
 import { Balance } from '@/src/components/custom/balance'
 import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
@@ -335,7 +335,7 @@ const OpenPosition = () => {
 
   return (
     <>
-      <BackButton href="/open-position">Back</BackButton>
+      <ButtonBack href="/open-position">Back</ButtonBack>
       <PositionFormsLayout
         form={<FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />}
         infoBlocks={mockedBlocks}

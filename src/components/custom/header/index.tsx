@@ -12,6 +12,7 @@ import { Logo } from '@/src/components/custom/logo'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Menu } from '@/src/components/custom/menu'
 import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
+import { ButtonMobileMenu } from '@/src/components/custom/button-mobile-menu'
 
 export const Header: React.FC = ({ ...restProps }) => {
   const { title: pageTitle } = useGeneral()
@@ -27,12 +28,10 @@ export const Header: React.FC = ({ ...restProps }) => {
         <Logo className={cn(s.logoWrapper)} />
         <div className={cn(s.endWrapper)}>
           {isWalletConnected && address ? <ConnectedWallet /> : <ConnectButton />}
-          <button className={cn(s.mobileButton)} onClick={() => setDrawerVisible((prev) => !prev)}>
-            <span className={cn(s.burguerMenuButton, { [s.isDrawerVisible]: drawerVisible })}>
-              <span className={cn(s.line, s.line1)}></span>
-              <span className={cn(s.line, s.line2)}></span>
-            </span>
-          </button>
+          <ButtonMobileMenu
+            drawerVisible={drawerVisible}
+            onClick={() => setDrawerVisible((prev) => !prev)}
+          />
         </div>
       </Layout.Header>
       <Drawer

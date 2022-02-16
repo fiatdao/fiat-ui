@@ -13,7 +13,7 @@ import {
   isCollateralTab,
 } from '@/src/components/custom/manage-position/ManageCollateral'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
-import { BackButton } from '@/src/components/custom/back-button'
+import { ButtonBack } from '@/src/components/custom/button-back'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 
 const PositionManager = () => {
@@ -66,7 +66,7 @@ const PositionManager = () => {
 
   return (
     <>
-      <BackButton href="/your-positions">Back</BackButton>
+      <ButtonBack href="/your-positions">Back</ButtonBack>
       <PositionFormsLayout
         form={
           <>
