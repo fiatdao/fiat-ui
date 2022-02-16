@@ -1,0 +1,32 @@
+.component {
+  --icon-size: 24px;
+
+  align-items: center;
+  border-radius: 4px;
+  border: 1px solid var(--theme-border-color);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: var(--icon-size) 1fr;
+  padding: 12px 16px;
+}
+
+.icon {
+  align-items: center;
+  display: flex;
+  height: var(--icon-size);
+  justify-content: center;
+  width: var(--icon-size);
+
+  > svg {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.text {
+  color: var(--theme-text-color);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
