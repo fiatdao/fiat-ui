@@ -40,8 +40,8 @@
 .endWrapper {
   align-items: center;
   display: flex;
-  margin-left: auto;
   gap: 8px;
+  margin-left: auto;
 }
 
 .drawer {
@@ -64,5 +64,11 @@
 
   .sideMenuFooter {
     margin-top: auto;
+  }
+}
+
+.infoButton {
+  @media (max-width: #{$max-width-tablet-portrait}) {
+    display: none;
   }
 }

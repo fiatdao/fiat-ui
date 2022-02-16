@@ -33,10 +33,15 @@ export const Header: React.FC = ({ ...restProps }) => {
         <div className={cn(s.endWrapper)}>
           {!isConnected && <ConnectButton />}
           <HeaderInfoButton
+            className={cn(s.infoButton)}
             icon={<FiatIcon />}
             text={<span style={{ fontSize: '16px' }}>20.00</span>}
           />
-          <HeaderInfoButton icon={<Ethereum />} text={'Ethereum Mainnet'} />
+          <HeaderInfoButton
+            className={cn(s.infoButton)}
+            icon={<Ethereum />}
+            text={'Ethereum Mainnet'}
+          />
           {isConnected && <ConnectedWallet />}
           <ButtonMobileMenu
             drawerVisible={drawerVisible}
