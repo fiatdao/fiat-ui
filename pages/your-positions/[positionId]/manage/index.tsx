@@ -48,7 +48,7 @@ const PositionManager = () => {
       value: '$100.00',
     },
     {
-      title: 'Bond Current Value',
+      title: 'Bond Collateral Value',
       tooltip: 'Tooltip text',
       value: '$150.00',
     },

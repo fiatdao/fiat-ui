@@ -4,7 +4,6 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { ethers } from 'ethers'
-import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -33,6 +32,7 @@ import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
 import genericSuspense from '@/src/utils/genericSuspense'
 import { getHumanValue } from '@/src/web3/utils'
 import { ERC20 } from '@/types/typechain'
+import { useQueryParam } from '@/src/hooks/useQueryParam'
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -87,14 +87,17 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
       hasAllowance,
       tokenAddress,
       tokenSymbol,
+      loading: true,
     },
   })
 
   // hasAllowance comes in false on init.
   // This useEffect change hasAllowance value on Machine
   useEffect(() => {
-    if (hasAllowance) send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
-  }, [hasAllowance, send])
+    send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
+    send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
+    send({ type: 'SET_LOADING', loading: false })
+  }, [hasAllowance, isProxyAvailable, send])
 
   const [tab, setTab] = useState('bond')
   const [mintFiat, setMintFiat] = useState(false)
@@ -288,9 +291,7 @@ const FormERC20: React.FC<{ tokenSymbol: string; tokenAddress: string }> = ({
 }
 
 const OpenPosition = () => {
-  const {
-    query: { collateralId: tokenAddress },
-  } = useRouter()
+  const tokenAddress = useQueryParam('collateralId')
   const { tokenSymbol } = useTokenSymbol(tokenAddress as string)
   useDynamicTitle(tokenSymbol && `Create ${tokenSymbol} position`)
 
@@ -316,7 +317,7 @@ const OpenPosition = () => {
       value: '$100.00',
     },
     {
-      title: 'Bond Current Value',
+      title: 'Bond Collateral Value',
       tooltip: 'Tooltip text',
       value: '$150.00',
     },
