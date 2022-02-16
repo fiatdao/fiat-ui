@@ -27,7 +27,11 @@ export const fetchCollaterals = ({
     where: { vaultName_in: vaultNames, address_in: userCollaterals },
   }).then(async ({ collaterals }) => {
     console.log({ returnedCollaterals: collaterals, userCollaterals, appChainId, provider })
-    return Promise.all(collaterals.map((p) => wrangleCollateral(p, provider, appChainId)))
+    return Promise.all(
+      collaterals
+        .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
+        .map((p) => wrangleCollateral(p, provider, appChainId)),
+    )
   })
 }
 
@@ -36,12 +40,13 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   const { positions } = usePositionsByUser()
 
   console.log({ inMyWallet, positions, protocols })
-  // TODO Make this more performante avoiding wrangle of positions and maybe avoiding the whole query
-  const collaterals = inMyWallet ? _.uniq(positions.map((p) => p.collateral.address)) : []
-  const { data } = useSWR(['collaterals', collaterals.join(''), protocols?.join('')], () =>
+  // TODO Make this more performante avoiding wrangle of positions or the whole query when inMyWallet is false
+  const collaterals = inMyWallet ? _.uniq(positions.map((p) => p.collateral.address)) : undefined
+
+  const { data } = useSWR(['collaterals', collaterals?.join(''), protocols?.join('')], () =>
     fetchCollaterals({
       protocols: protocols?.length > 0 ? protocols : undefined,
-      collaterals: collaterals.length > 0 ? collaterals : undefined,
+      collaterals,
       provider,
       appChainId,
     }),

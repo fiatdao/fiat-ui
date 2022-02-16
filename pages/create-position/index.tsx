@@ -4,7 +4,6 @@ import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
-// import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
@@ -18,6 +17,8 @@ import Filter from '@/src/resources/svg/filter.svg'
 import { PROTOCOLS, Protocol } from '@/types/protocols'
 import { useCollaterals } from '@/src/hooks/subgraph/useCollaterals'
 import { Collateral } from '@/src/utils/data/collaterals'
+import { getHumanValue } from '@/src/web3/utils'
+import { WAD_DECIMALS } from '@/src/constants/misc'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -35,16 +36,24 @@ const getDateState = () => {
 const Columns: ColumnsType<any> = [
   {
     align: 'left',
-    dataIndex: 'protocol',
-    render: (obj: any) => <Asset mainAsset="SBOND" secondaryAsset="DAI" title={obj} />,
+    dataIndex: 'vaultName',
+    render: (obj: Collateral['vaultName']) => (
+      <Asset mainAsset="SBOND" secondaryAsset="DAI" title={obj ?? 'unknown'} />
+    ),
     title: 'Protocol',
     width: 200,
   },
   {
     align: 'left',
-    dataIndex: 'collateral',
-    render: (value: Collateral['symbol']) => <CellValue value={value ?? ''} />,
+    dataIndex: 'symbol',
+    render: (value: Collateral['symbol']) => <CellValue value={value ?? '-'} />,
     title: 'Asset',
+  },
+  {
+    align: 'left',
+    dataIndex: 'underlierSymbol',
+    render: (value: Collateral['underlierSymbol']) => <CellValue value={value ?? '-'} />,
+    title: 'Underlying',
   },
   {
     align: 'left',
@@ -61,19 +70,32 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'faceValue',
-    render: (value: string) => <CellValue value={`$${value}`} />,
+    render: (value: Collateral['faceValue']) => (
+      <CellValue value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`} />
+    ),
     title: 'Face Value',
   },
   {
     align: 'left',
-    dataIndex: 'collateralValue',
-    render: (value: string) => <CellValue value={`$${value}`} />,
-    title: 'Collateral Value',
+    dataIndex: 'currentValue',
+    render: (value: Collateral['currentValue']) => (
+      <CellValue value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`} />
+    ),
+    title: 'Current Value',
+  },
+  {
+    align: 'left',
+    dataIndex: 'vault',
+    render: ({ collateralizationRatio: value }: Collateral['vault']) => {
+      console.log(value, value?.toString(), getHumanValue(value ?? 0, WAD_DECIMALS))
+      return <CellValue value={`${getHumanValue(value ?? 0, WAD_DECIMALS)}%`} />
+    },
+    title: 'Collateralization Ratio',
   },
   {
     align: 'right',
     dataIndex: 'action',
-    render: (value: string) => value,
+    render: (_value: string) => 'TEST',
     title: '',
     width: 110,
   },
