@@ -1,3 +1,9 @@
+@mixin hide-when-collapsed() {
+  :global(.ant-layout-sider-collapsed) & {
+    display: none;
+  }
+}
+
 .menu {
   background-color: transparent;
   border: none;
@@ -47,9 +53,7 @@
     transform: none;
     transition: none;
 
-    :global(.ant-layout-sider-collapsed) & {
-      display: none;
-    }
+    @include hide-when-collapsed();
   }
 
   &.isActive {
@@ -77,9 +81,7 @@
   line-height: 1.2;
   white-space: nowrap;
 
-  :global(.ant-layout-sider-collapsed) & {
-    display: none;
-  }
+  @include hide-when-collapsed();
 }
 
 .icon {
@@ -106,6 +108,8 @@
   margin-left: auto;
   margin-right: 10px;
   min-width: var(--dimensions);
+
+  @include hide-when-collapsed();
 }
 
 .badgeInner {
@@ -117,11 +121,15 @@
 }
 
 .badgeBackground {
+  align-items: center;
   background: rgba(0, 0, 0, 0.6);
   border-radius: var(--button-border-radius);
+  color: var(--theme-text-color);
   display: flex;
-  justify-content: center;
-  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
   height: 100%;
+  justify-content: center;
+  line-height: 1.2;
   width: 100%;
 }
