@@ -10,7 +10,6 @@ import ButtonOutline from '@/src/components/antd/button-outline'
 import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
-import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
@@ -169,25 +168,12 @@ const Auctions = () => {
               total: data?.length,
               pageSize: 10,
               current: 1,
-              position: ['bottomRight'],
+              position: ['bottomCenter'],
               showTotal: (total: number, [from, to]: [number, number]) => (
                 <>
-                  <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                    Showing {from} to {to} the most recent {total}
-                  </Text>
-                  <Text
-                    className="hidden-tablet hidden-desktop"
-                    color="secondary"
-                    type="p2"
-                    weight="semibold"
-                  >
-                    {from}..{to} of {total}
-                  </Text>
+                  Showing {from} to {to} the most recent {total}
                 </>
               ),
-              onChange: (page: number, pageSize: number) => {
-                console.log(page, pageSize)
-              },
             }}
             rowKey="id"
             scroll={{
