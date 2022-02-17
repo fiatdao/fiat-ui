@@ -335,7 +335,7 @@ const OpenPosition = () => {
 
   return (
     <>
-      <BackButton href="/open-position">Back</BackButton>
+      <BackButton href="/create-position">Back</BackButton>
       <PositionFormsLayout
         form={<FormERC20 tokenAddress={tokenAddress as string} tokenSymbol={tokenSymbol} />}
         infoBlocks={mockedBlocks}

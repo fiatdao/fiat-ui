@@ -3,6 +3,7 @@ import { enUS } from 'date-fns/locale'
 import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
+import { Maybe } from '@/types/utils'
 
 export const DATE_FORMAT = 'MM/dd/yyyy'
 
@@ -21,4 +22,8 @@ const remainingTime = (d: Date | null): string => {
   return `${diffInDays}d:${diffInHours}h:${diffInMinutes}m`
 }
 
-export { parseDate, remainingTime }
+const BigNumberToDateOrCurrent = (ts: Maybe<string>): Date => {
+  return new Date(ts ? +ts * 1000 : Date.now())
+}
+
+export { parseDate, remainingTime, BigNumberToDateOrCurrent }

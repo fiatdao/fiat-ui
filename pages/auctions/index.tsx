@@ -7,7 +7,6 @@ import { useAuctionsData } from '@/src/hooks/useAuctionData'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ButtonOutline from '@/src/components/antd/button-outline'
-import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
@@ -67,7 +66,6 @@ const Columns: ColumnsType<any> = [
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
 const FILTERS: FilterData = {
-  BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
   Notional: { active: false, name: 'Notional', icon: <Notional /> },
   Element: { active: false, name: 'Element', icon: <Element /> },
 }

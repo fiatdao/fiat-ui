@@ -2,9 +2,10 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
+import { id } from 'date-fns/locale'
+import Link from 'next/link'
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
-import BarnBridge from '@/src/resources/svg/barn-bridge.svg'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Text } from '@/src/components/custom/typography'
@@ -15,9 +16,12 @@ import { Asset } from '@/src/components/custom/asset'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Filter from '@/src/resources/svg/filter.svg'
-import { usePositions } from '@/src/hooks/subgraph/usePositions'
-import { Position } from '@/src/utils/data/positions'
 import { PROTOCOLS, Protocol } from '@/types/protocols'
+import { useCollaterals } from '@/src/hooks/subgraph/useCollaterals'
+import { Collateral } from '@/src/utils/data/collaterals'
+import { getHumanValue } from '@/src/web3/utils'
+import { WAD_DECIMALS } from '@/src/constants/misc'
+import ButtonGradient from '@/src/components/antd/button-gradient'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -35,21 +39,29 @@ const getDateState = () => {
 const Columns: ColumnsType<any> = [
   {
     align: 'left',
-    dataIndex: 'protocol',
-    render: (obj: any) => <Asset mainAsset="SBOND" secondaryAsset="DAI" title={obj} />,
+    dataIndex: 'vaultName',
+    render: (obj: Collateral['vaultName']) => (
+      <Asset mainAsset="SBOND" secondaryAsset="DAI" title={obj ?? 'unknown'} />
+    ),
     title: 'Protocol',
     width: 200,
   },
   {
     align: 'left',
-    dataIndex: 'collateral',
-    render: (value: Position['collateral']) => <CellValue value={value.symbol} />,
+    dataIndex: 'symbol',
+    render: (value: Collateral['symbol']) => <CellValue value={value ?? '-'} />,
     title: 'Asset',
   },
   {
     align: 'left',
+    dataIndex: 'underlierSymbol',
+    render: (value: Collateral['underlierSymbol']) => <CellValue value={value ?? '-'} />,
+    title: 'Underlying',
+  },
+  {
+    align: 'left',
     dataIndex: 'maturity',
-    render: (date: any) => (
+    render: (date: Collateral['maturity']) => (
       <CellValue
         bottomValue={parseDate(date)}
         state={getDateState()}
@@ -61,19 +73,40 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'faceValue',
-    render: (value: string) => <CellValue value={`$${value}`} />,
+    render: (value: Collateral['faceValue']) => (
+      <CellValue value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`} />
+    ),
     title: 'Face Value',
   },
   {
     align: 'left',
-    dataIndex: 'collateralValue',
-    render: (value: string) => <CellValue value={`$${value}`} />,
+    dataIndex: 'currentValue',
+    render: (value: Collateral['currentValue']) => (
+      <CellValue value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`} />
+    ),
     title: 'Collateral Value',
   },
   {
+    align: 'left',
+    dataIndex: 'vault',
+    render: ({ collateralizationRatio: value }: Collateral['vault']) => {
+      return <CellValue value={`${getHumanValue(value ?? 0, WAD_DECIMALS)}%`} />
+    },
+    title: 'Collateralization Ratio',
+  },
+  {
     align: 'right',
-    dataIndex: 'action',
-    render: (value: string) => value,
+    //dataIndex: 'action',
+    render: (value: Collateral) =>
+      value.hasBalance ? (
+        <Link href={`/your-positions/${id}/manage`} passHref>
+          <ButtonGradient>Manage</ButtonGradient>
+        </Link>
+      ) : (
+        <Link href={`/create-position/${value.address}/open`} passHref>
+          <ButtonGradient>Open</ButtonGradient>
+        </Link>
+      ),
     title: '',
     width: 110,
   },
@@ -82,16 +115,21 @@ const Columns: ColumnsType<any> = [
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
 const FILTERS: FilterData = {
-  BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
+  // BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
   Notional: { active: false, name: 'Notional', icon: <Notional /> },
   Element: { active: false, name: 'Element', icon: <Element /> },
 }
 
-const OpenPosition = () => {
+const CreatePosition = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
 
-  const data = usePositions()
+  const activeFilters = Object.values(filters)
+    .filter((f) => f.active)
+    .map((f) => f.name)
+
+  const data = useCollaterals(inMyWallet, activeFilters)
+
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
   const setFilter = useCallback((filterName: Protocol, active: boolean) => {
@@ -179,10 +217,10 @@ const OpenPosition = () => {
       </Popover>
       <Table
         columns={Columns}
-        dataSource={data.positions}
-        loading={!data.positions}
+        dataSource={data}
+        loading={!data}
         pagination={{
-          total: data.positions?.length ?? 0,
+          total: data?.length ?? 0,
           pageSize: 10,
           current: 1,
           position: ['bottomRight'],
@@ -214,4 +252,4 @@ const OpenPosition = () => {
   )
 }
 
-export default OpenPosition
+export default CreatePosition

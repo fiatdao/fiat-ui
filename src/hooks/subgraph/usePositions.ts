@@ -24,18 +24,15 @@ export const fetchPositions = ({
   graphqlFetcher<Positions, PositionsVariables>(POSITIONS, {
     where: { id, userAddress, vaultName },
   }).then(async ({ positions }) => {
-    console.log({ id, userAddress, vaultName })
     return Promise.all(positions.map((p) => wranglePosition(p, provider, appChainId)))
   })
 
 export const usePositions = (id?: string, address?: string, protocol?: string) => {
-  console.log({ id, address, protocol })
-
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
-  // TODO Change key depending on parameters
   const { data } = useSWR(['positions', id, address, protocol], () =>
     fetchPositions({ id, address, protocol, provider, appChainId }),
   )
 
+  // TODO Remove positionTransactions from here
   return { positions: data, positionTransactions: [] }
 }
