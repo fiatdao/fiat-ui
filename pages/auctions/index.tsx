@@ -157,9 +157,12 @@ const Auctions = () => {
           <Filter />
         </ButtonOutlineGradient>
       </Popover>
-
       {!error && (
-        <SkeletonTable columns={Columns as SkeletonTableColumnsType[]} loading={loading}>
+        <SkeletonTable
+          columns={Columns as SkeletonTableColumnsType[]}
+          loading={loading}
+          rowCount={2}
+        >
           <Table
             columns={Columns}
             dataSource={data}

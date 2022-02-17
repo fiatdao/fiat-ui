@@ -69,6 +69,6 @@
 
 .infoButton {
   @media (max-width: #{$max-width-tablet-portrait}) {
-    display: none;
+    display: none !important;
   }
 }
