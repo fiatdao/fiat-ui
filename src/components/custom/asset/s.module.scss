@@ -5,3 +5,7 @@
   display: grid;
   grid-template-columns: var(--asset-icon-dimensions) 1fr;
 }
+
+.title {
+  white-space: nowrap;
+}
