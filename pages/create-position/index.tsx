@@ -84,7 +84,7 @@ const Columns: ColumnsType<any> = [
     render: (value: Collateral['currentValue']) => (
       <CellValue value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`} />
     ),
-    title: 'Current Value',
+    title: 'Collateral Value',
   },
   {
     align: 'left',
