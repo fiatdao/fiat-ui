@@ -1,19 +1,14 @@
 import contractCall from '../contractCall'
+import { BigNumberToDateOrCurrent } from '../dateTime'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
 
-import { Maybe } from '@/types/utils'
+import { Maybe, TokenData } from '@/types/utils'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { Collybus, ERC20 } from '@/types/typechain'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
-
-type TokenData = {
-  symbol: string
-  address: string
-  decimals: number
-}
 
 export type Position = {
   id: string
@@ -53,7 +48,7 @@ const wranglePosition = async (
   // TODO FIXME for no-ERC20
   const { abi: erc20Abi } = contracts.ERC_20
 
-  const maturity = new Date(position.maturity ? +position.maturity * 1000 : Date.now())
+  const maturity = BigNumberToDateOrCurrent(position.maturity)
 
   let collateralValue = null
   if (

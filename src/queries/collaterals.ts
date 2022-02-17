@@ -1,18 +1,21 @@
 import gql from 'graphql-tag'
 
 export const COLLATERALS = gql`
-  query collaterals {
-    collaterals {
+  query Collaterals($where: Collateral_filter) {
+    collaterals(where: $where) {
       id
-      symbol
-      maturity
       tokenId
+      vaultName
+      symbol
       underlierSymbol
       underlierAddress
+      maturity
+      address
       faceValue
       vault {
         id
-        name
+        type
+        collateralizationRatio
         address
       }
     }
