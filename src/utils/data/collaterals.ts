@@ -3,7 +3,7 @@ import contractCall from '../contractCall'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from 'bignumber.js'
-import { Collaterals_collaterals as SubgraphCollateral } from '@/types/subgraph/__generated__/collaterals'
+import { Collaterals_collaterals as SubgraphCollateral } from '@/types/subgraph/__generated__/Collaterals'
 
 import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
