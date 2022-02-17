@@ -12,6 +12,8 @@ import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 import { remainingTime } from '@/src/utils/dateTime'
 import { Position } from '@/src/utils/data/positions'
 import { YourPositionPageInformation, fetchInfoPage } from '@/src/utils/data/yourPositionInfo'
+import { WAD_DECIMALS } from '@/src/constants/misc'
+import { getHumanValue } from '@/src/web3/utils'
 
 enum TabState {
   Inventory = 'inventory',
@@ -41,23 +43,31 @@ const YourPositions = () => {
   useEffect(() => {
     if (address && isWalletConnected && provider) {
       setIsLoadingPage(true)
-      const newPageInformation = fetchInfoPage(positions || [])
-      setPageInformation(newPageInformation)
+      const newPageInformation = fetchInfoPage(positions)
       setInventory(positions)
+      setPageInformation(newPageInformation)
       setIsLoadingPage(false)
     }
-  }, [address, isWalletConnected, positions, provider])
+  }, [address, isWalletConnected, provider, positions])
 
   // TODO Fix naming if necessary
   return (
     <>
       {!isLoadingPage && (
         <InfoBlocksGrid>
-          <InfoBlock title="Total Debt" value={pageInformation?.fiatDebt.toFixed()} />
-          <InfoBlock title="Collateral Value" value={pageInformation?.collateralValue.toFixed()} />
+          <InfoBlock
+            title="Total Debt"
+            value={(getHumanValue(pageInformation?.fiatDebt, WAD_DECIMALS) || 0).toFixed(3)}
+          />
+          <InfoBlock
+            title="Collateral Value"
+            value={(getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS) || 0).toFixed(2)}
+          />
           <InfoBlock
             title="Lowest Health Factor"
-            value={pageInformation?.lowestHealthFactor.toFixed()}
+            value={(
+              getHumanValue(pageInformation?.lowestHealthFactor || 0, WAD_DECIMALS) || 0
+            ).toFixed(2)}
           />
           <InfoBlock
             title="Next Maturity"
