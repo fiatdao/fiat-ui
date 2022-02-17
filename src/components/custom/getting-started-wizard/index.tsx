@@ -243,7 +243,7 @@ const GettingStartedWizard = () => {
           <p>
             {totalSteps} of {totalSteps} completed
           </p>
-          <Button href="/open-position">Go to the app</Button>
+          <Button href="/create-position">Go to the app</Button>
         </div>
       )}
 

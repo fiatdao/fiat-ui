@@ -2,6 +2,8 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
+import { id } from 'date-fns/locale'
+import Link from 'next/link'
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
 import Element from '@/src/resources/svg/element.svg'
@@ -19,6 +21,7 @@ import { useCollaterals } from '@/src/hooks/subgraph/useCollaterals'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { getHumanValue } from '@/src/web3/utils'
 import { WAD_DECIMALS } from '@/src/constants/misc'
+import ButtonGradient from '@/src/components/antd/button-gradient'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -87,15 +90,23 @@ const Columns: ColumnsType<any> = [
     align: 'left',
     dataIndex: 'vault',
     render: ({ collateralizationRatio: value }: Collateral['vault']) => {
-      console.log(value, value?.toString(), getHumanValue(value ?? 0, WAD_DECIMALS))
       return <CellValue value={`${getHumanValue(value ?? 0, WAD_DECIMALS)}%`} />
     },
     title: 'Collateralization Ratio',
   },
   {
     align: 'right',
-    dataIndex: 'action',
-    render: (_value: string) => 'TEST',
+    //dataIndex: 'action',
+    render: (value: Collateral) =>
+      value.hasBalance ? (
+        <Link href={`/your-positions/${id}/manage`} passHref>
+          <ButtonGradient>Manage</ButtonGradient>
+        </Link>
+      ) : (
+        <Link href={`/create-position/${value.address}/open`} passHref>
+          <ButtonGradient>Open</ButtonGradient>
+        </Link>
+      ),
     title: '',
     width: 110,
   },

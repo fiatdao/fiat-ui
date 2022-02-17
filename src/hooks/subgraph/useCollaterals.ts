@@ -1,6 +1,6 @@
 import { usePositionsByUser } from './usePositionsByUser'
 import useSWR from 'swr'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { Web3Provider } from '@ethersproject/providers'
 import _ from 'lodash'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/collaterals'
@@ -18,15 +18,12 @@ export const fetchCollaterals = ({
 }: {
   protocols?: string[]
   collaterals?: string[]
-  provider: JsonRpcProvider
+  provider: Web3Provider
   appChainId: ChainsValues
 }) => {
-  const where = _.omitBy({ vaultName_in: vaultNames, address_in: userCollaterals }, _.isNil)
-  console.log({ where })
   return graphqlFetcher<Collaterals, CollateralsVariables>(COLLATERALS, {
     where: { vaultName_in: vaultNames, address_in: userCollaterals },
   }).then(async ({ collaterals }) => {
-    console.log({ returnedCollaterals: collaterals, userCollaterals, appChainId, provider })
     return Promise.all(
       collaterals
         .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
@@ -36,10 +33,13 @@ export const fetchCollaterals = ({
 }
 
 export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
-  const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
+  const { appChainId, web3Provider: provider } = useWeb3Connection()
   const { positions } = usePositionsByUser()
 
-  console.log({ inMyWallet, positions, protocols })
+  if (!provider) {
+    throw 'useCollateral without user'
+  }
+
   // TODO Make this more performante avoiding wrangle of positions or the whole query when inMyWallet is false
   const collaterals = inMyWallet ? _.uniq(positions.map((p) => p.collateral.address)) : undefined
 

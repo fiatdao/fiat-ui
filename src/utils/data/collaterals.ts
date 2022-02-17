@@ -1,6 +1,7 @@
 import { BigNumberToDateOrCurrent } from '../dateTime'
 import contractCall from '../contractCall'
-import { JsonRpcProvider } from '@ethersproject/providers'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from 'bignumber.js'
 import { Collaterals_collaterals as SubgraphCollateral } from '@/types/subgraph/__generated__/collaterals'
 
@@ -9,6 +10,7 @@ import { Maybe } from '@/types/utils'
 import { contracts } from '@/src/constants/contracts'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
 import { Collybus } from '@/types/typechain/Collybus'
+import { ERC20 } from '@/types/typechain'
 
 export type Collateral = {
   id: string
@@ -22,17 +24,20 @@ export type Collateral = {
   faceValue: Maybe<BigNumber>
   currentValue: Maybe<BigNumber>
   vault: { collateralizationRatio: Maybe<BigNumber>; address: string }
+  hasBalance: boolean
 }
 
 const wrangleCollateral = async (
   collateral: SubgraphCollateral,
-  provider: JsonRpcProvider,
+  provider: Web3Provider,
   appChainId: ChainsValues,
 ): Promise<Collateral> => {
   const {
     abi: collybusAbi,
     address: { [appChainId]: collybusAddress },
   } = contracts.COLLYBUS
+
+  const erc20abi = contracts.ERC_20.abi
 
   let currentValue = null
   if (
@@ -55,9 +60,14 @@ const wrangleCollateral = async (
       ],
     )
   }
-  console.log(
-    collateral.vault?.collateralizationRatio?.toString(),
-    BigNumber.from(collateral.vault?.collateralizationRatio)?.toString(),
+
+  const address = await provider.getSigner().getAddress()
+  const balance = await contractCall<ERC20, 'balanceOf'>(
+    collateral.address ?? ZERO_ADDRESS,
+    erc20abi,
+    provider,
+    'balanceOf',
+    [address],
   )
 
   return {
@@ -69,6 +79,7 @@ const wrangleCollateral = async (
       collateralizationRatio: BigNumber.from(collateral.vault?.collateralizationRatio) ?? null,
       address: collateral.vault?.address ?? '',
     },
+    hasBalance: !!balance && balance.gt(0),
   }
 }
 export { wrangleCollateral }
