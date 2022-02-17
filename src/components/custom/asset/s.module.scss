@@ -1,9 +1,7 @@
 .component {
-  --asset-icon-dimensions: 20px;
-
+  align-items: center;
   column-gap: 8px;
-  display: grid;
-  grid-template-columns: var(--asset-icon-dimensions) 1fr;
+  display: flex;
 }
 
 .title {

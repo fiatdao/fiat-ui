@@ -74,7 +74,10 @@ const Columns: ColumnsType<any> = [
     align: 'left',
     dataIndex: 'faceValue',
     render: (value: Collateral['faceValue']) => (
-      <CellValue value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`} />
+      <CellValue
+        tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
+        value={`$${getHumanValue(value ?? 0, WAD_DECIMALS).toFixed(3)}`}
+      />
     ),
     title: 'Face Value',
   },
@@ -82,7 +85,10 @@ const Columns: ColumnsType<any> = [
     align: 'left',
     dataIndex: 'currentValue',
     render: (value: Collateral['currentValue']) => (
-      <CellValue value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`} />
+      <CellValue
+        tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
+        value={`$${getHumanValue(value ?? 0, WAD_DECIMALS).toFixed(3)}`}
+      />
     ),
     title: 'Collateral Value',
   },
@@ -96,15 +102,14 @@ const Columns: ColumnsType<any> = [
   },
   {
     align: 'right',
-    //dataIndex: 'action',
     render: (value: Collateral) =>
       value.hasBalance ? (
         <Link href={`/your-positions/${id}/manage`} passHref>
-          <ButtonGradient>Manage</ButtonGradient>
+          <ButtonOutlineGradient>Manage</ButtonOutlineGradient>
         </Link>
       ) : (
         <Link href={`/create-position/${value.address}/open`} passHref>
-          <ButtonGradient>Open</ButtonGradient>
+          <ButtonGradient>Open Position</ButtonGradient>
         </Link>
       ),
     title: '',
