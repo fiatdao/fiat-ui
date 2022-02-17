@@ -25,6 +25,7 @@ export type Collateral = {
   currentValue: Maybe<BigNumber>
   vault: { collateralizationRatio: Maybe<BigNumber>; address: string }
   hasBalance: boolean
+  manageId: Maybe<string>
 }
 
 const wrangleCollateral = async (
@@ -80,6 +81,8 @@ const wrangleCollateral = async (
       address: collateral.vault?.address ?? '',
     },
     hasBalance: !!balance && balance.gt(0),
+    manageId:
+      collateral.vault?.address && address ? `${collateral.vault.address}-0x0-${address}` : null,
   }
 }
 export { wrangleCollateral }
