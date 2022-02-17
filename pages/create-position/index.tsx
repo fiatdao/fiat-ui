@@ -4,6 +4,7 @@ import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import { id } from 'date-fns/locale'
 import Link from 'next/link'
+import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/utils/table'
 import Element from '@/src/resources/svg/element.svg'
@@ -220,16 +221,18 @@ const CreatePosition = () => {
           <Filter />
         </ButtonOutlineGradient>
       </Popover>
-      <Table
-        columns={Columns}
-        dataSource={data}
-        loading={!data}
-        pagination={tablePagination(data?.length ?? 0)}
-        rowKey="id"
-        scroll={{
-          x: true,
-        }}
-      />
+      <SkeletonTable columns={Columns as SkeletonTableColumnsType[]} loading={!data} rowCount={2}>
+        <Table
+          columns={Columns}
+          dataSource={data}
+          loading={false}
+          pagination={tablePagination(data?.length ?? 0)}
+          rowKey="id"
+          scroll={{
+            x: true,
+          }}
+        />
+      </SkeletonTable>
     </>
   )
 }

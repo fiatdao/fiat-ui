@@ -11,6 +11,7 @@ import { CellAddress } from '@/src/components/custom/cell-address'
 import { Asset } from '@/src/components/custom/asset'
 import { PositionTransaction } from '@/src/utils/data/positionTransaction'
 import { tablePagination } from '@/src/utils/table'
+import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
 
 const Columns: ColumnsType<any> = [
   {
@@ -137,16 +138,22 @@ const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
           }))}
         />
       </div>
-      <Table
-        columns={Columns}
-        dataSource={filteredTransactions}
-        loading={false}
-        pagination={tablePagination(filteredTransactions?.length ?? 0)}
-        rowKey="address"
-        scroll={{
-          x: true,
-        }}
-      />
+      <SkeletonTable
+        columns={Columns as SkeletonTableColumnsType[]}
+        loading={!filteredTransactions}
+        rowCount={2}
+      >
+        <Table
+          columns={Columns}
+          dataSource={filteredTransactions}
+          loading={false}
+          pagination={tablePagination(filteredTransactions?.length ?? 0)}
+          rowKey="address"
+          scroll={{
+            x: true,
+          }}
+        />
+      </SkeletonTable>
     </>
   )
 }

@@ -4,6 +4,7 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { calculateHealthFactor, parseDate, remainingTime } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
 import { CellValue } from '@/src/components/custom/cell-value'
+import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
 import { Asset } from '@/src/components/custom/asset'
 import { PositionsAtRiskTableWrapper } from '@/src/components/custom/positions-at-risk-table-wrapper'
 import { Position } from '@/src/utils/data/positions'
@@ -87,16 +88,22 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
       <PositionsAtRiskTableWrapper>
         <Table columns={Columns} dataSource={inventory} loading={false} rowKey="address" />
       </PositionsAtRiskTableWrapper>
-      <Table
-        columns={Columns}
-        dataSource={inventory}
-        loading={false}
-        pagination={tablePagination(inventory?.length ?? 0)}
-        rowKey="name"
-        scroll={{
-          x: true,
-        }}
-      />
+      <SkeletonTable
+        columns={Columns as SkeletonTableColumnsType[]}
+        loading={!inventory}
+        rowCount={2}
+      >
+        <Table
+          columns={Columns}
+          dataSource={inventory}
+          loading={false}
+          pagination={tablePagination(inventory?.length ?? 0)}
+          rowKey="name"
+          scroll={{
+            x: true,
+          }}
+        />
+      </SkeletonTable>
     </>
   )
 }
