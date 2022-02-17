@@ -1,0 +1,300 @@
+import React, { FC, createContext, useContext, useEffect } from 'react';
+import BigNumber from 'bignumber.js';
+import { AbiItem } from 'web3-utils';
+import tokens from './tokenAddresses';
+import { createAbiItem, formatUSD } from '../web3/utils';
+import { useWeb3Connection } from './web3ConnectionProvider';
+
+export enum KnownTokens {
+  FDT = 'FDT',
+  ETH = 'ETH',
+  USDC = 'USDC',
+  BOND = 'BOND',
+  DAI = 'DAI',
+  WBTC = 'WBTC',
+  NOTE = 'NOTE',
+}
+
+export type TokenMeta = {
+  symbol: string;
+  name: string;
+  address: string;
+  decimals: number;
+  coinGeckoId?: string;
+  price?: BigNumber;
+  icon?: string;
+};
+
+export const FDTToken: TokenMeta = {
+  address: tokens.fdt,
+  symbol: KnownTokens.FDT,
+  name: 'FDT Token',
+  decimals: 18,
+  icon: 'png/fiat-dao' as any,
+  coinGeckoId: 'fiat-dao-token'
+};
+
+export const EthToken: TokenMeta = {
+  symbol: KnownTokens.ETH,
+  name: 'Ether',
+  address: '0x',
+  decimals: 18,
+  icon: 'token-eth',
+  coinGeckoId: 'ethereum',
+};
+
+export const UsdcToken: TokenMeta = {
+  address: tokens.usdc,
+  symbol: KnownTokens.USDC,
+  name: 'USD Coin',
+  decimals: 6,
+  icon: 'token-usdc',
+  coinGeckoId: 'usd-coin',
+};
+
+export const BondToken: TokenMeta = {
+  address: tokens.bond,
+  symbol: KnownTokens.BOND,
+  name: 'BarnBridge',
+  decimals: 18,
+  icon: 'static/token-bond',
+  coinGeckoId: 'barnbridge',
+};
+
+export const DaiToken: TokenMeta = {
+  address: tokens.dai,
+  symbol: KnownTokens.DAI,
+  name: 'BarnBridge',
+  decimals: 18,
+  icon: 'static/dai',
+  coinGeckoId: 'dai',
+};
+
+export const WBTCToken: TokenMeta = {
+  address: tokens.wbtc,
+  symbol: KnownTokens.WBTC,
+  name: 'BarnBridge',
+  decimals: 18,
+  icon: 'static/wrapped-bitcoin',
+  coinGeckoId: 'wrapped-bitcoin',
+};
+
+
+const KNOWN_TOKENS: TokenMeta[] = [
+  FDTToken,
+  EthToken,
+  UsdcToken,
+  BondToken,
+];
+
+(window as any).KNOWN_TOKENS = KNOWN_TOKENS;
+
+export function getKnownTokens(): TokenMeta[] {
+  return [...KNOWN_TOKENS];
+}
+
+type ContextType = {
+  tokens: TokenMeta[];
+  version: number;
+  getTokenBySymbol(symbol: string): TokenMeta | undefined;
+  getTokenByAddress(address: string): TokenMeta | undefined;
+  getTokenPriceIn(source: string, target: string): BigNumber | undefined;
+  convertTokenIn(amount: BigNumber | undefined, source: string, target: string): BigNumber | undefined;
+  convertTokenInUSD(amount: BigNumber | undefined, source: string): BigNumber | undefined;
+};
+
+const Context = createContext<ContextType>({
+  tokens: [...KNOWN_TOKENS],
+  version: 0,
+  getTokenBySymbol: () => undefined,
+  getTokenByAddress: () => undefined,
+  getTokenPriceIn: () => undefined,
+  convertTokenIn: () => undefined,
+  convertTokenInUSD: () => undefined,
+});
+
+export function useKnownTokens(): ContextType {
+  return useContext<ContextType>(Context);
+}
+
+export function getTokenBySymbol(symbol: string): TokenMeta | undefined {
+  return KNOWN_TOKENS.find(token => token.symbol === symbol);
+}
+
+export function getTokenByAddress(address: string): TokenMeta | undefined {
+  return KNOWN_TOKENS.find(token => token.address.toLowerCase() === address.toLowerCase());
+}
+
+const LP_PRICE_FEED_ABI: AbiItem[] = [
+  createAbiItem('decimals', [], ['int8']),
+  createAbiItem('totalSupply', [], ['uint256']),
+  createAbiItem('getReserves', [], ['uint112', 'uint112']),
+  createAbiItem('token0', [], ['address']),
+];
+
+const getDecimals = async (
+  address: string | null | undefined,
+  provider: JsonRpcProvider,
+): Promise<number> => {
+  if (!address) return 18
+  const { abi: erc20Abi } = contracts.ERC_20
+  const decimals = await contractCall<ERC20, 'decimals'>(
+    address,
+    erc20Abi,
+    provider,
+    'decimals',
+    null,
+  )
+  return decimals || 18
+}
+
+// ToDo: Check the ENTR price calculation
+async function getFdtPrice(): Promise<BigNumber> {
+  const priceFeedContract = new Erc20Contract(LP_PRICE_FEED_ABI, gOHMFdtSLPToken.address);
+
+  const [token0, { 0: reserve0, 1: reserve1 }] = await priceFeedContract.batch([
+    { method: 'token0' },
+    { method: 'getReserves' },
+  ]);
+
+  let fdtReserve;
+  let gOHMReserve;
+
+  if (String(token0).toLowerCase() === FDTToken.address) {
+    fdtReserve = new BigNumber(reserve0).unscaleBy(FDTToken.decimals);
+    gOHMReserve = new BigNumber(reserve1).unscaleBy(gOHMToken.decimals);
+  } else {
+    fdtReserve = new BigNumber(reserve1).unscaleBy(FDTToken.decimals);
+    gOHMReserve = new BigNumber(reserve0).unscaleBy(gOHMToken.decimals);
+  }
+
+  if (!gOHMReserve || !fdtReserve || fdtReserve.eq(BigNumber.ZERO)) {
+    return BigNumber.ZERO;
+  }
+
+  gOHMReserve = (gOHMReserve as BigNumber).times(gOHMToken?.price as BigNumber)
+
+  return gOHMReserve.dividedBy(fdtReserve);
+}
+
+export function getTokenPrice(symbol: string): BigNumber | undefined {
+  return getTokenBySymbol(symbol)?.price;
+}
+
+export function getTokenPriceIn(source: string, target: string): BigNumber | undefined {
+  const sourcePrice = getTokenPrice(source);
+  const targetPrice = getTokenPrice(target);
+
+  if (!sourcePrice || !targetPrice) {
+    return undefined;
+  }
+
+  return sourcePrice.dividedBy(targetPrice);
+}
+
+export function convertTokenIn(
+  amount: BigNumber | number | undefined,
+  source: string,
+  target: string,
+): BigNumber | undefined {
+  if (amount === undefined || amount === null) {
+    return undefined;
+  }
+
+  if (amount === 0 || BigNumber.ZERO.eq(amount)) {
+    return BigNumber.ZERO;
+  }
+
+  const bnAmount = new BigNumber(amount);
+
+  if (bnAmount.isNaN()) {
+    return undefined;
+  }
+
+  if (source === target) {
+    return bnAmount;
+  }
+
+  const price = getTokenPriceIn(source, target);
+
+  if (!price) {
+    return undefined;
+  }
+
+  return bnAmount.multipliedBy(price);
+}
+
+export function convertTokenInUSD(amount: BigNumber | number | undefined, source: string): BigNumber | undefined {
+  return convertTokenIn(amount, source, KnownTokens.USDC);
+}
+
+const KnownTokensProvider: FC = props => {
+  const { children } = props;
+
+  const { address, isWalletConnected, readOnlyAppProvider: provider } = useWeb3Connection()
+
+  useEffect(() => {
+    (FDTToken.contract as Erc20Contract).loadCommon().catch(Error);
+
+    (async () => {
+      const ids = KNOWN_TOKENS.map(tk => tk.coinGeckoId)
+        .filter(Boolean)
+        .join(',');
+
+      try {
+        const prices = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`,
+        ).then(res => res.json());
+
+        KNOWN_TOKENS.forEach(token => {
+          if (token.coinGeckoId) {
+            const price = prices[token.coinGeckoId]?.usd;
+
+            if (price) {
+              token.price = new BigNumber(price);
+            }
+          }
+        });
+
+        FDTToken.price = await getFdtPrice().catch(() => undefined);
+
+        KNOWN_TOKENS.forEach(token => {
+          console.log(`[Token Price] ${token.symbol} = ${formatUSD(token.price)}`);
+        });
+      } catch {}
+
+      reload();
+    })();
+  }, []);
+
+  useEffect(() => {
+    KNOWN_TOKENS.forEach(token => {
+      token.contract?.setProvider(wallet.provider);
+    });
+  }, [wallet.provider]);
+
+  useEffect(() => {
+    KNOWN_TOKENS.forEach(token => {
+      token.contract?.setAccount(wallet.account);
+    });
+
+    // load fdt balance for connected wallet
+    if (wallet.account) {
+      (FDTToken.contract as Erc20Contract).loadBalance().then(reload).catch(Error);
+    }
+  }, [wallet.account]);
+
+  const value = {
+    tokens: [...KNOWN_TOKENS],
+    version,
+    getTokenBySymbol,
+    getTokenByAddress,
+    getTokenPriceIn,
+    convertTokenIn,
+    convertTokenInUSD,
+  };
+
+  return <Context.Provider value={value}>{children}</Context.Provider>;
+};
+
+export default KnownTokensProvider;

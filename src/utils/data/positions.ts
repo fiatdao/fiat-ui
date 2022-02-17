@@ -147,7 +147,7 @@ const wranglePosition = async (
       address: position?.collateral?.underlierAddress ?? '',
       decimals: underlierDecimals,
     },
-    healthFactor: healthFactor,
+    healthFactor,
     isAtRisk,
   }
 }
