@@ -5,10 +5,9 @@ import { ReactNode, useCallback, useState } from 'react'
 import { id } from 'date-fns/locale'
 import Link from 'next/link'
 import Popover from '@/src/components/antd/popover'
-import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
+import { parseDate, remainingTime } from '@/src/utils/table'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
-import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { CellValue } from '@/src/components/custom/cell-value'
@@ -22,6 +21,7 @@ import { Collateral } from '@/src/utils/data/collaterals'
 import { getHumanValue } from '@/src/web3/utils'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import ButtonGradient from '@/src/components/antd/button-gradient'
+import { tablePagination } from '@/src/utils/table'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -224,30 +224,7 @@ const CreatePosition = () => {
         columns={Columns}
         dataSource={data}
         loading={!data}
-        pagination={{
-          total: data?.length ?? 0,
-          pageSize: 10,
-          current: 1,
-          position: ['bottomRight'],
-          showTotal: (total: number, [from, to]: [number, number]) => (
-            <>
-              <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                Showing {from} to {to} the most recent {total}
-              </Text>
-              <Text
-                className="hidden-tablet hidden-desktop"
-                color="secondary"
-                type="p2"
-                weight="semibold"
-              >
-                {from}..{to} of {total}
-              </Text>
-            </>
-          ),
-          onChange: (page: number, pageSize: number) => {
-            console.log(page, pageSize)
-          },
-        }}
+        pagination={tablePagination(data?.length ?? 0)}
         rowKey="id"
         scroll={{
           x: true,

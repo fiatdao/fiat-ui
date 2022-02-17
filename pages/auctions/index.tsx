@@ -10,6 +10,7 @@ import ButtonOutline from '@/src/components/antd/button-outline'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Table } from '@/src/components/antd'
+import { tablePagination } from '@/src/utils/table'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import Filter from '@/src/resources/svg/filter.svg'
@@ -165,17 +166,7 @@ const Auctions = () => {
             columns={Columns}
             dataSource={data}
             loading={false}
-            pagination={{
-              total: data?.length,
-              pageSize: 10,
-              current: 1,
-              position: ['bottomCenter'],
-              showTotal: (total: number, [from, to]: [number, number]) => (
-                <>
-                  Showing {from} to {to} the most recent {total}
-                </>
-              ),
-            }}
+            pagination={tablePagination(data?.length ?? 0)}
             rowKey="id"
             scroll={{
               x: true,

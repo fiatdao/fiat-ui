@@ -5,14 +5,14 @@ import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 
-const calculateHealthFactor = (hf: BigNumber): 'danger' | 'ok' | 'warning' => {
+export const calculateHealthFactor = (hf: BigNumber): 'danger' | 'ok' | 'warning' => {
   return hf.gte(4.0) ? 'ok' : hf.gte(1.0) ? 'warning' : 'danger'
 }
 
 // curried version
-const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
+export const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
 
-const remainingTime = (d: Date) => {
+export const remainingTime = (d: Date) => {
   let today = new Date()
   const diffInDays = differenceInDays(d, today)
   today = addDays(diffInDays, today)
@@ -23,4 +23,16 @@ const remainingTime = (d: Date) => {
   return `${diffInDays}d:${diffInHours}h:${diffInMinutes}m`
 }
 
-export { calculateHealthFactor, parseDate, remainingTime }
+export const tablePagination = (total: number | undefined): any => {
+  return {
+    total: total,
+    pageSize: 10,
+    current: 1,
+    position: ['bottomCenter'],
+    showTotal: (total: number, [from, to]: [number, number]) => (
+      <>
+        Showing {from} to {to} the most recent {total}
+      </>
+    ),
+  }
+}

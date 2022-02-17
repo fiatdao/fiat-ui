@@ -1,17 +1,13 @@
 import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
 import ButtonGradient from '@/src/components/antd/button-gradient'
-import {
-  calculateHealthFactor,
-  parseDate,
-  remainingTime,
-} from '@/src/components/custom/tables/utils'
-import { Text } from '@/src/components/custom/typography'
+import { calculateHealthFactor, parseDate, remainingTime } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import { PositionsAtRiskTableWrapper } from '@/src/components/custom/positions-at-risk-table-wrapper'
 import { Position } from '@/src/utils/data/positions'
+import { tablePagination } from '@/src/utils/table'
 
 const Columns: ColumnsType<Position> = [
   {
@@ -95,29 +91,7 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
         columns={Columns}
         dataSource={inventory}
         loading={false}
-        pagination={{
-          current: 1,
-          pageSize: 10,
-          position: ['bottomRight'],
-          showTotal: (total: number, [from, to]: [number, number]) => (
-            <>
-              <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                Showing {from} to {to} the most recent {total}
-              </Text>
-              <Text
-                className="hidden-tablet hidden-desktop"
-                color="secondary"
-                type="p2"
-                weight="semibold"
-              >
-                {from}..{to} of {total}
-              </Text>
-            </>
-          ),
-          onChange: (page: number, pageSize: number) => {
-            console.log(page, pageSize)
-          },
-        }}
+        pagination={tablePagination(inventory?.length ?? 0)}
         rowKey="name"
         scroll={{
           x: true,
