@@ -1,3 +1,5 @@
+@import '/src/styles/vars';
+
 .ant-table-pagination.ant-pagination {
   --left-position-sider-open: 256px;
   --left-position-sider-collapsed: 80px;
@@ -52,6 +54,10 @@
     a {
       color: var(--theme-color-3);
     }
+  }
+
+  @media (max-width: #{$max-width-mobile}) {
+    display: none;
   }
 }
 
