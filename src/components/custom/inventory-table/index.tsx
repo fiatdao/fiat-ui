@@ -25,9 +25,9 @@ const Columns: ColumnsType<Position> = [
   },
   {
     align: 'left',
-    dataIndex: 'discount',
-    render: (discount: Position['discount']) => (
-      <CellValue bold tooltip={`$${discount}`} value={`$${discount.toNumber().toFixed(2)}`} />
+    dataIndex: 'totalCollateral',
+    render: (discount: Position['totalCollateral']) => (
+      <CellValue bold tooltip={`$${discount}`} value={`$${discount.toFixed(2)}`} />
     ),
     responsive: ['lg'],
     title: 'Collateral Value',

@@ -32,7 +32,7 @@ export const DepositForm = ({
       return
     }
 
-    const toDeposit = getNonHumanValue(deposit, tokenInfo.decimals)
+    const toDeposit = getNonHumanValue(deposit, 18)
 
     const addCollateralEncoded = userActions.interface.encodeFunctionData(
       'modifyCollateralAndDebt',
@@ -43,6 +43,7 @@ export const DepositForm = ({
         address,
         ZERO_ADDRESS,
         toDeposit.toFixed(),
+        // TODO: add the value for the minting amount (`toMint`)
         ZERO_BIG_NUMBER.toFixed(),
       ],
     )

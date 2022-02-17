@@ -31,7 +31,7 @@ export const WithdrawForm = ({
       return
     }
 
-    const toWithdraw = getNonHumanValue(withdraw, vaultInfo.decimals)
+    const toWithdraw = getNonHumanValue(withdraw, 18)
 
     const removeCollateralEncoded = userActions.interface.encodeFunctionData(
       'modifyCollateralAndDebt',

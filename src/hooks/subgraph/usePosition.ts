@@ -1,32 +1,36 @@
-import useSWR from 'swr'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { positionByIdVariables } from '@/types/subgraph/__generated__/positionById'
-import { POSITION_BY_ID } from '@/src/queries/position'
-import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
-import { wranglePosition } from '@/src/utils/data/positions'
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import useSWR from 'swr'
+import { Positions, PositionsVariables } from '@/types/subgraph/__generated__/Positions'
 import { ChainsValues } from '@/src/constants/chains'
-import { Positions } from '@/types/subgraph/__generated__/Positions'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { wranglePosition } from '@/src/utils/data/positions'
+import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
+import { POSITIONS } from '@/src/queries/positions'
 
 // FIXME Use fragment or find a way to unify queries
-export const fetchPosition = (
+export const fetchPosition = async (
   positionId: string,
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
-) =>
-  graphqlFetcher<Positions, positionByIdVariables>(POSITION_BY_ID, {
-    id: positionId,
+) => {
+  return graphqlFetcher<Positions, PositionsVariables>(POSITIONS, {
+    where: {
+      id: positionId,
+    },
   }).then(({ positions }) => {
-    if (positions) return wranglePosition(positions[0], provider, appChainId)
-  })
+    const [position] = positions
 
+    if (position) {
+      return wranglePosition(position, provider, appChainId)
+    }
+  })
+}
 export const usePosition = (positionId: string) => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
-  const { data, mutate } = useSWR(['position-by-id'], () =>
+  const { data, error, mutate } = useSWR(['position-by-id', positionId, appChainId], () =>
     fetchPosition(positionId, provider, appChainId),
   )
-
-  return { position: data, refetch: mutate }
+  return { position: data, refetch: mutate, error }
 }
 
 export type RefetchPositionById = ReturnType<typeof usePosition>['refetch']
