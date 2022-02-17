@@ -1,41 +1,47 @@
 import { Position } from './positions'
 import BigNumber from 'bignumber.js'
+import { min } from 'date-fns'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 export type YourPositionPageInformation = {
   collateralValue: BigNumber
   fiatDebt: BigNumber
-  lowestHealthFactor: BigNumber
-  nearestMaturity: Date
+  lowestHealthFactor: BigNumber | null
+  nearestMaturity: Date | null
 }
 
-const fetchInfoPage = (_positions: Position[]): YourPositionPageInformation => {
+const fetchInfoPage = (positions: Position[]): YourPositionPageInformation => {
   const initialPositionInformation: YourPositionPageInformation = {
     collateralValue: ZERO_BIG_NUMBER,
     fiatDebt: ZERO_BIG_NUMBER,
-    lowestHealthFactor: ZERO_BIG_NUMBER,
-    nearestMaturity: new Date(),
+    lowestHealthFactor: null,
+    nearestMaturity: null,
   }
 
+  positions.forEach((p) => {
+    // TODO: need to calculate in USD
+    initialPositionInformation.collateralValue = initialPositionInformation.collateralValue.plus(
+      p.totalCollateral,
+    )
+    initialPositionInformation.fiatDebt = initialPositionInformation.collateralValue.plus(
+      p.totalNormalDebt,
+    )
+    if (!initialPositionInformation.nearestMaturity) {
+      initialPositionInformation.nearestMaturity = p.maturity
+    } else {
+      initialPositionInformation.nearestMaturity = min([
+        p.maturity,
+        initialPositionInformation.nearestMaturity,
+      ])
+    }
+    if (
+      !initialPositionInformation.lowestHealthFactor ||
+      p.healthFactor.lte(initialPositionInformation.lowestHealthFactor)
+    ) {
+      initialPositionInformation.lowestHealthFactor = p.healthFactor
+    }
+  })
   return initialPositionInformation
-
-  //   return positions.reduce((acc, { discount, healthFactor, maturity, minted }) => {
-  //     // totalDebt
-  //     const totalDebt = acc.totalDebt + minted
-  //     // currentValue
-  //     const currentValue = acc.currentValue + discount
-
-  //     // lowestHealthFactor
-  //     const isNewLowest = acc.lowestHealthFactor === null || healthFactor < acc.lowestHealthFactor
-  //     const lowestHealthFactor = isNewLowest ? healthFactor : acc.lowestHealthFactor
-
-  //     // nextMaturity
-  //     const maturityInMS = maturity.getTime()
-  //     const nextMaturity =
-  //       acc.nextMaturity === null ? maturityInMS : min([maturityInMS, acc.nextMaturity]).getTime()
-
-  //     return { totalDebt, currentValue, lowestHealthFactor, nextMaturity }
-  //   }, initialPositionInformation)
 }
 
 export { fetchInfoPage }
