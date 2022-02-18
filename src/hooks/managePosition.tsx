@@ -7,7 +7,7 @@ import { ethers } from 'ethers'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { Chains } from '@/src/constants/chains'
+import { Chains, ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
@@ -15,6 +15,12 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getHumanValue } from '@/src/web3/utils'
 import { ERC20, FIAT, UserActions20 } from '@/types/typechain'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
+
+type ManageForm = {
+  address: string | null
+  userActions: UserActions20
+  userProxy: Contract | null
+}
 
 type TokenInfo = {
   decimals?: number
@@ -63,22 +69,19 @@ const useDecimalsAndTokenValue = ({
   return { tokenInfo, updateToken }
 }
 
-type UseDepositForm = {
-  address: string | null
-  tokenInfo?: TokenInfo
-  userActions: UserActions20
-  userProxy: Contract | null
-  fiatInfo: TokenInfo
+type UseFiatBalance = {
+  fiatInfo?: TokenInfo
+  updateFiat: () => void
 }
 
-export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }): UseDepositForm => {
-  const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
-  const userActions = useUserActions()
-  const { userProxy } = useUserProxy()
-
-  const { tokenInfo } = useDecimalsAndTokenValue({ tokenAddress, address, readOnlyAppProvider })
-
-  const [FIATBalance] = useContractCall(
+const useFiatBalance = ({
+  address,
+  appChainId,
+}: {
+  address: string | null
+  appChainId: ChainsValues
+}): UseFiatBalance => {
+  const [FIATBalance, refetch] = useContractCall(
     contracts.FIAT.address[appChainId],
     contracts.FIAT.abi,
     'balanceOf',
@@ -88,15 +91,26 @@ export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }): UseD
     decimals: 18, // 4 or 6 or 18?
     humanValue: FIATBalance ? getHumanValue(FIATBalance.toString(), 18) : ZERO_BIG_NUMBER,
   }
+  return { fiatInfo, updateFiat: refetch }
+}
+
+type UseDepositForm = ManageForm & {
+  tokenInfo?: TokenInfo
+  fiatInfo?: TokenInfo
+}
+
+export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }): UseDepositForm => {
+  const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
+  const userActions = useUserActions()
+  const { userProxy } = useUserProxy()
+  const { tokenInfo } = useDecimalsAndTokenValue({ tokenAddress, address, readOnlyAppProvider })
+  const { fiatInfo } = useFiatBalance({ address, appChainId })
 
   return { address, tokenInfo, userActions, userProxy, fiatInfo }
 }
 
-type UseWithdrawForm = {
-  address: string | null
+type UseWithdrawForm = ManageForm & {
   tokenInfo?: TokenInfo
-  userActions: UserActions20
-  userProxy: Contract | null
 }
 
 export const useWithdrawForm = ({ tokenAddress }: { tokenAddress: string }): UseWithdrawForm => {
@@ -108,28 +122,17 @@ export const useWithdrawForm = ({ tokenAddress }: { tokenAddress: string }): Use
   return { address, tokenInfo, userActions, userProxy }
 }
 
-export const useMintForm = (/*{ vaultAddress }: { vaultAddress: string }*/) => {
-  const { address /*, readOnlyAppProvider*/ } = useWeb3Connection()
+type UseMintForm = ManageForm & {
+  fiatInfo?: TokenInfo
+}
+
+export const useMintForm = (): UseMintForm => {
+  const { address, appChainId } = useWeb3Connection()
   const userActions = useUserActions()
   const { userProxy } = useUserProxy()
+  const { fiatInfo } = useFiatBalance({ address, appChainId })
 
-  const [vaultInfo] = useState<{ decimals?: number }>({ decimals: 6 })
-
-  // useEffect(() => {
-  //   if (address) {
-  //     const vault = new Contract(
-  //       vaultAddress, // TODO: differentiate between Vault20 and Vault1155??
-  //       contracts.VAULT_20.abi,
-  //       readOnlyAppProvider,
-  //     ) as Vault20
-  //
-  //     vault.dec().then((decimals) => {
-  //       setVaultInfo({ decimals: decimals.toNumber() })
-  //     })
-  //   }
-  // }, [address, readOnlyAppProvider, vaultAddress])
-
-  return { address, userActions, userProxy, vaultInfo }
+  return { address, userActions, userProxy, fiatInfo }
 }
 
 export const useBurnForm = () => {
