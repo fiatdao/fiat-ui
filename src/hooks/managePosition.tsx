@@ -1,7 +1,6 @@
 import { usePosition } from './subgraph/usePosition'
 import { ZERO_BIG_NUMBER } from '../constants/misc'
-import { BigNumber as EthersBN } from '@ethersproject/bignumber'
-import { Contract, ContractTransaction } from '@ethersproject/contracts'
+import { Contract } from '@ethersproject/contracts'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import { useRouter } from 'next/router'
@@ -135,32 +134,40 @@ export const useMintForm = (): UseMintForm => {
   return { address, userActions, userProxy, fiatInfo }
 }
 
-export const useBurnForm = () => {
-  const { address, web3Provider } = useWeb3Connection()
+type UseBurnForm = ManageForm & {
+  tokenInfo?: TokenInfo
+  fiatInfo?: TokenInfo
+  updateAllowance: () => Promise<any>
+  fiatAllowance?: BigNumber
+}
+
+export const useBurnForm = ({ tokenAddress }: { tokenAddress: string }): UseBurnForm => {
+  const { address, appChainId, readOnlyAppProvider, web3Provider } = useWeb3Connection()
   const userActions = useUserActions()
   const { userProxy, userProxyAddress } = useUserProxy()
 
-  const [fiatInfo, setFiatInfo] =
-    useState<{ allowance: EthersBN; approve: () => Promise<ContractTransaction> }>()
+  const { tokenInfo } = useDecimalsAndTokenValue({ address, readOnlyAppProvider, tokenAddress })
+  const { fiatInfo } = useFiatBalance({ address, appChainId })
+  const [fiatAllowance] = useContractCall(
+    contracts.FIAT.address[appChainId],
+    contracts.FIAT.abi,
+    'allowance',
+    [address, userProxyAddress],
+  )
 
-  useEffect(() => {
-    if (address && web3Provider && userProxy && userProxyAddress) {
+  const updateAllowance = useCallback(async () => {
+    if (tokenAddress && web3Provider && address && userProxyAddress) {
       const fiatToken = new Contract(
         contracts.FIAT.address[Chains.goerli],
         contracts.FIAT.abi,
         web3Provider.getSigner(),
       ) as FIAT
-
-      fiatToken.allowance(address, userProxyAddress).then((allowance) => {
-        setFiatInfo({
-          allowance,
-          approve: () => fiatToken.approve(userProxyAddress, ethers.constants.MaxUint256),
-        })
-      })
+      return fiatToken.approve(userProxyAddress!, ethers.constants.MaxUint256)
     }
-  }, [address, userProxy, userProxyAddress, web3Provider])
+    return Promise.resolve(null)
+  }, [tokenAddress, web3Provider, address, userProxyAddress])
 
-  return { address, fiatInfo, userActions, userProxy }
+  return { address, fiatInfo, fiatAllowance, userActions, userProxy, tokenInfo, updateAllowance }
 }
 
 export const useManagePositionInfo = () => {
