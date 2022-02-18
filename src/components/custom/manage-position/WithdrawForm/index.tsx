@@ -2,7 +2,8 @@ import s from './s.module.scss'
 import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { useState } from 'react'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useWithdrawForm } from '@/src/hooks/managePosition'
@@ -12,10 +13,12 @@ import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
 
+type HandleWithdrawForm = {
+  withdraw: BigNumber
+}
+
 export const WithdrawForm = ({
-  refetch,
   tokenAddress,
-  userBalance,
   vaultAddress,
 }: {
   refetch: RefetchPositionById
@@ -23,15 +26,16 @@ export const WithdrawForm = ({
   userBalance?: BigNumber
   vaultAddress: string
 }) => {
-  const { address, userActions, userProxy, vaultInfo } = useWithdrawForm()
+  const [submitting, setSubmitting] = useState<boolean>(false)
+  const { address, tokenInfo, userActions, userProxy } = useWithdrawForm({ tokenAddress })
   const [form] = AntdForm.useForm()
 
-  const handleWithdraw = async ({ withdraw }: { withdraw: BigNumber }) => {
-    if (!vaultInfo || !userProxy || !address) {
+  const handleWithdraw = async ({ withdraw }: HandleWithdrawForm) => {
+    if (!tokenInfo || !userProxy || !address) {
       return
     }
 
-    const toWithdraw = getNonHumanValue(withdraw, 18)
+    const toWithdraw = withdraw ? getNonHumanValue(withdraw, 18) : ZERO_BIG_NUMBER
 
     const removeCollateralEncoded = userActions.interface.encodeFunctionData(
       'modifyCollateralAndDebt',
@@ -40,21 +44,24 @@ export const WithdrawForm = ({
         tokenAddress,
         0,
         address,
-        ZERO_ADDRESS,
+        address,
         toWithdraw.negated().toFixed(),
         ZERO_BIG_NUMBER.toFixed(),
       ],
     )
-
-    const tx = await userProxy.execute(userActions.address, removeCollateralEncoded, {
-      gasLimit: 1_000_000,
-    })
-    console.log('withdrawing...', tx.hash)
-
-    const receipt = await tx.wait()
-    console.log('Collateral withdrawn', { receipt })
-
-    refetch()
+    setSubmitting(true)
+    try {
+      const tx = await userProxy.execute(userActions.address, removeCollateralEncoded, {
+        gasLimit: 1_000_000,
+      })
+      await tx.wait()
+    } catch (err) {
+      console.log(err)
+    } finally {
+      setSubmitting(submitting)
+    }
+    // @TODO: does not make sense to refetch because graph takes some time to update
+    //        we could add a notification to tell the user that update will take some time
   }
 
   const mockedData = [
@@ -78,24 +85,26 @@ export const WithdrawForm = ({
 
   return (
     <Form form={form} onFinish={handleWithdraw}>
-      <Form.Item name="withdraw" required>
-        <TokenAmount
-          disabled={false}
-          displayDecimals={vaultInfo?.decimals}
-          max={userBalance}
-          maximumFractionDigits={vaultInfo?.decimals}
-          slider
-          tokenIcon={iconByAddress[tokenAddress]}
-        />
-      </Form.Item>
-      <ButtonGradient height="lg" htmlType="submit">
-        Withdraw
-      </ButtonGradient>
-      <div className={cn(s.summary)}>
-        {mockedData.map((item, index) => (
-          <SummaryItem key={index} title={item.title} value={item.value} />
-        ))}
-      </div>
+      <fieldset disabled={submitting}>
+        <Form.Item name="withdraw" required>
+          <TokenAmount
+            disabled={submitting}
+            displayDecimals={tokenInfo?.decimals}
+            max={tokenInfo?.humanValue}
+            maximumFractionDigits={tokenInfo?.decimals}
+            slider
+            tokenIcon={iconByAddress[tokenAddress]}
+          />
+        </Form.Item>
+        <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
+          Withdraw
+        </ButtonGradient>
+        <div className={cn(s.summary)}>
+          {mockedData.map((item, index) => (
+            <SummaryItem key={index} title={item.title} value={item.value} />
+          ))}
+        </div>
+      </fieldset>
     </Form>
   )
 }
