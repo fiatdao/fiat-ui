@@ -20,7 +20,7 @@ export const MintForm = ({
 }: {
   refetch: RefetchPositionById
   userBalance?: BigNumber
-  vaultAddress: string
+  vaultAddress?: string
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
   const { address, fiatInfo, userActions, userProxy } = useMintForm()
@@ -36,7 +36,7 @@ export const MintForm = ({
     const increaseDebtEncoded = userActions.interface.encodeFunctionData(
       'modifyCollateralAndDebt',
       [
-        vaultAddress,
+        vaultAddress!,
         ZERO_ADDRESS,
         0,
         ZERO_ADDRESS,
@@ -81,24 +81,26 @@ export const MintForm = ({
 
   return (
     <Form form={form} onFinish={handleMint}>
-      <Form.Item name="mint" required>
-        <TokenAmount
-          disabled={submitting}
-          displayDecimals={fiatInfo?.decimals}
-          max={fiatInfo?.humanValue}
-          maximumFractionDigits={fiatInfo?.decimals}
-          slider
-          tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
-        />
-      </Form.Item>
-      <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
-        Mint
-      </ButtonGradient>
-      <div className={cn(s.summary)}>
-        {mockedData.map((item, index) => (
-          <SummaryItem key={index} title={item.title} value={item.value} />
-        ))}
-      </div>
+      <fieldset disabled={submitting}>
+        <Form.Item name="mint" required>
+          <TokenAmount
+            disabled={submitting}
+            displayDecimals={fiatInfo?.decimals}
+            max={fiatInfo?.humanValue}
+            maximumFractionDigits={fiatInfo?.decimals}
+            slider
+            tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
+          />
+        </Form.Item>
+        <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
+          Mint
+        </ButtonGradient>
+        <div className={cn(s.summary)}>
+          {mockedData.map((item, index) => (
+            <SummaryItem key={index} title={item.title} value={item.value} />
+          ))}
+        </div>
+      </fieldset>
     </Form>
   )
 }

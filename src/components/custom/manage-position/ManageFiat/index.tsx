@@ -4,7 +4,6 @@ import { BurnForm } from '@/src/components/custom/manage-position/BurnForm'
 import { MintForm } from '@/src/components/custom/manage-position/MintForm'
 import { Tab, Tabs } from '@/src/components/custom'
 import { useManagePositionInfo } from '@/src/hooks/managePosition'
-import { useExtractPositionIdData } from '@/src/utils/managePosition'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 export const isFiatTab = (key: string): key is ManageFiatProps['activeTabKey'] => {
@@ -18,8 +17,6 @@ export interface ManageFiatProps {
 
 export const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) => {
   const { position, refetch: refetchPosition } = useManagePositionInfo()
-
-  const { vaultAddress } = useExtractPositionIdData()
 
   return (
     <div className={cn(s.component)}>
@@ -35,14 +32,13 @@ export const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) =
         <MintForm
           refetch={refetchPosition}
           userBalance={position?.totalCollateral}
-          vaultAddress={vaultAddress}
+          vaultAddress={position?.protocolAddress}
         />
       )}
       {'burn' === activeTabKey && (
         <BurnForm
-          refetch={refetchPosition}
-          userBalance={position?.totalNormalDebt}
-          vaultAddress={vaultAddress}
+          tokenAddress={position?.collateral?.address ?? ''}
+          vaultAddress={position?.protocolAddress ?? ''}
         />
       )}
     </div>
