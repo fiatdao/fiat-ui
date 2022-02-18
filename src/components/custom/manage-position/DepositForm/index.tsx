@@ -107,9 +107,9 @@ export const DepositForm = ({
               <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
                 <TokenAmount
                   disabled={submiting}
-                  displayDecimals={fiatInfo.decimals}
-                  max={fiatInfo.humanValue}
-                  maximumFractionDigits={fiatInfo.decimals}
+                  displayDecimals={fiatInfo?.decimals}
+                  max={fiatInfo?.humanValue}
+                  maximumFractionDigits={fiatInfo?.decimals}
                   slider
                   tokenIcon={<FiatIcon />}
                 />
@@ -117,7 +117,7 @@ export const DepositForm = ({
             }
             buttonText={mintButtonText}
             onClick={toggleMintFiat}
-            top={<Balance title="Mint FIAT" value={`Available: ${fiatInfo.humanValue}`} />}
+            top={<Balance title="Mint FIAT" value={`Available: ${fiatInfo?.humanValue}`} />}
           />
         )}
         <ButtonsWrapper>

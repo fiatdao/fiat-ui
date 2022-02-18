@@ -2,6 +2,7 @@ import s from './s.module.scss'
 import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import { useState } from 'react'
 import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
@@ -15,15 +16,14 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
 
 export const MintForm = ({
-  refetch,
-  userBalance,
   vaultAddress,
 }: {
   refetch: RefetchPositionById
   userBalance?: BigNumber
   vaultAddress: string
 }) => {
-  const { address, userActions, userProxy } = useMintForm()
+  const [submitting, setSubmitting] = useState<boolean>(false)
+  const { address, fiatInfo, userActions, userProxy } = useMintForm()
   const [form] = AntdForm.useForm()
 
   const handleMint = async ({ mint }: { mint: BigNumber }) => {
@@ -45,16 +45,19 @@ export const MintForm = ({
         toMint.toFixed(),
       ],
     )
-
-    const tx = await userProxy.execute(userActions.address, increaseDebtEncoded, {
-      gasLimit: 1_000_000,
-    })
-    console.log('minting...', tx.hash)
-
-    const receipt = await tx.wait()
-    console.log('Debt (FIAT) minted', { receipt })
-
-    refetch()
+    setSubmitting(true)
+    try {
+      const tx = await userProxy.execute(userActions.address, increaseDebtEncoded, {
+        gasLimit: 1_000_000,
+      })
+      await tx.wait()
+    } catch (err) {
+      console.log(err)
+    } finally {
+      setSubmitting(submitting)
+    }
+    // @TODO: does not make sense to refetch because graph takes some time to update
+    //        we could add a notification to tell the user that update will take some time
   }
 
   const mockedData = [
@@ -80,15 +83,15 @@ export const MintForm = ({
     <Form form={form} onFinish={handleMint}>
       <Form.Item name="mint" required>
         <TokenAmount
-          disabled={false}
-          displayDecimals={contracts.FIAT.decimals}
-          max={userBalance}
-          maximumFractionDigits={contracts.FIAT.decimals}
+          disabled={submitting}
+          displayDecimals={fiatInfo?.decimals}
+          max={fiatInfo?.humanValue}
+          maximumFractionDigits={fiatInfo?.decimals}
           slider
           tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
         />
       </Form.Item>
-      <ButtonGradient height="lg" htmlType="submit">
+      <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
         Mint
       </ButtonGradient>
       <div className={cn(s.summary)}>
