@@ -3,12 +3,12 @@ import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useState } from 'react'
-import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useDepositForm } from '@/src/hooks/managePosition'
 import { iconByAddress } from '@/src/utils/managePosition'
-import { getNonHumanValue } from '@/src/web3/utils'
+import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
@@ -16,6 +16,14 @@ import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Balance } from '@/src/components/custom/balance'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import useContractCall from '@/src/hooks/contracts/useContractCall'
+import { contracts } from '@/src/constants/contracts'
+
+type HandleDepositForm = {
+  deposit: BigNumber
+  fiatAmount: BigNumber
+}
 
 export const DepositForm = ({
   tokenAddress,
@@ -24,37 +32,49 @@ export const DepositForm = ({
   tokenAddress: string
   vaultAddress: string
 }) => {
+  const [submiting, setSubmiting] = useState<boolean>(false)
   const { address, tokenInfo, userActions, userProxy } = useDepositForm({ tokenAddress })
   const [form] = AntdForm.useForm()
+  const { address: currentUserAddress, appChainId } = useWeb3Connection()
 
-  const handleDeposit = async ({ deposit }: { deposit: BigNumber }) => {
+  const [FIATBalance] = useContractCall(
+    contracts.FIAT.address[appChainId],
+    contracts.FIAT.abi,
+    'balanceOf',
+    [currentUserAddress],
+  )
+  const humanValueFiatBalance = FIATBalance ? getHumanValue(FIATBalance.toString(), 18) : 0
+
+  const handleDeposit = async ({ deposit, fiatAmount }: HandleDepositForm) => {
     if (!tokenInfo || !userProxy || !address) {
       return
     }
 
-    const toDeposit = getNonHumanValue(deposit, 18)
+    const toDeposit = deposit ? getNonHumanValue(deposit, 18) : ZERO_BIG_NUMBER
+    const toFiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, 18) : ZERO_BIG_NUMBER
 
     const addCollateralEncoded = userActions.interface.encodeFunctionData(
       'modifyCollateralAndDebt',
       [
         vaultAddress,
         tokenAddress,
-        0,
-        address,
-        ZERO_ADDRESS,
+        0, // TODO: tokenID = 0 only for Element(ERC20)
+        address, // userProxy
+        address, // userProxy
         toDeposit.toFixed(),
-        // TODO: add the value for the minting amount (`toMint`)
-        ZERO_BIG_NUMBER.toFixed(),
+        toFiatAmount.toFixed(),
       ],
     )
-
-    const tx = await userProxy.execute(userActions.address, addCollateralEncoded, {
-      gasLimit: 1_000_000,
-    })
-    console.log('adding collateral...', tx.hash)
-
-    const receipt = await tx.wait()
-    console.log('Collateral added!', { receipt })
+    setSubmiting(true)
+    try {
+      const tx = await userProxy.execute(userActions.address, addCollateralEncoded, {
+        gasLimit: 1_000_000,
+      })
+      await tx.wait()
+      setSubmiting(false)
+    } catch (err) {
+      setSubmiting(false)
+    }
   }
 
   const mockedData = [
@@ -82,50 +102,52 @@ export const DepositForm = ({
 
   return (
     <Form form={form} onFinish={handleDeposit}>
-      <Form.Item name="deposit" required>
-        <TokenAmount
-          displayDecimals={tokenInfo?.decimals}
-          max={tokenInfo?.humanValue}
-          maximumFractionDigits={tokenInfo?.decimals}
-          slider
-          tokenIcon={iconByAddress[tokenAddress]}
-        />
-      </Form.Item>
-      {mintFiat && (
-        <FormExtraAction
-          bottom={
-            <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-              <TokenAmount
-                disabled={false}
-                displayDecimals={4}
-                max={10000}
-                maximumFractionDigits={6}
-                onChange={() => console.log('mint!')}
-                slider
-                tokenIcon={<FiatIcon />}
-              />
-            </Form.Item>
-          }
-          buttonText={mintButtonText}
-          onClick={toggleMintFiat}
-          top={<Balance title="Mint FIAT" value="Available: 4,800" />}
-        />
-      )}
-      <ButtonsWrapper>
-        {!mintFiat && (
-          <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
-            {mintButtonText}
-          </ButtonExtraFormAction>
+      <fieldset disabled={submiting}>
+        <Form.Item name="deposit" required>
+          <TokenAmount
+            disabled={submiting}
+            displayDecimals={tokenInfo?.decimals}
+            max={tokenInfo?.humanValue}
+            maximumFractionDigits={tokenInfo?.decimals}
+            slider
+            tokenIcon={iconByAddress[tokenAddress]}
+          />
+        </Form.Item>
+        {mintFiat && (
+          <FormExtraAction
+            bottom={
+              <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
+                <TokenAmount
+                  disabled={submiting}
+                  displayDecimals={4}
+                  max={humanValueFiatBalance}
+                  maximumFractionDigits={6}
+                  slider
+                  tokenIcon={<FiatIcon />}
+                />
+              </Form.Item>
+            }
+            buttonText={mintButtonText}
+            onClick={toggleMintFiat}
+            top={<Balance title="Mint FIAT" value={`Available: ${humanValueFiatBalance}`} />}
+          />
         )}
-        <ButtonGradient height="lg" htmlType="submit">
-          Deposit
-        </ButtonGradient>
-      </ButtonsWrapper>
-      <div className={cn(s.summary)}>
-        {mockedData.map((item, index) => (
-          <SummaryItem key={index} title={item.title} value={item.value} />
-        ))}
-      </div>
+        <ButtonsWrapper>
+          {!mintFiat && (
+            <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
+              {mintButtonText}
+            </ButtonExtraFormAction>
+          )}
+          <ButtonGradient height="lg" htmlType="submit" loading={submiting}>
+            Deposit
+          </ButtonGradient>
+        </ButtonsWrapper>
+        <div className={cn(s.summary)}>
+          {mockedData.map((item, index) => (
+            <SummaryItem key={index} title={item.title} value={item.value} />
+          ))}
+        </div>
+      </fieldset>
     </Form>
   )
 }
