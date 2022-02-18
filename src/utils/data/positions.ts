@@ -14,6 +14,7 @@ import { BigNumberToDateOrCurrent } from '../dateTime'
 export type Position = {
   id: string
   protocol: string
+  protocolAddress: string
   maturity: Date
   collateral: TokenData
   underlier: TokenData
@@ -130,6 +131,7 @@ const wranglePosition = async (
   // TODO Borrowing rate
   return {
     id,
+    protocolAddress: position.vault?.address ?? '',
     protocol: protocol ?? '',
     vaultCollateralizationRatio,
     totalCollateral,
