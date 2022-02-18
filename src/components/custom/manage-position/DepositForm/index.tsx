@@ -8,7 +8,7 @@ import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useDepositForm } from '@/src/hooks/managePosition'
 import { iconByAddress } from '@/src/utils/managePosition'
-import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
+import { getNonHumanValue } from '@/src/web3/utils'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
@@ -16,9 +16,6 @@ import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Balance } from '@/src/components/custom/balance'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import useContractCall from '@/src/hooks/contracts/useContractCall'
-import { contracts } from '@/src/constants/contracts'
 
 type HandleDepositForm = {
   deposit: BigNumber
@@ -33,17 +30,8 @@ export const DepositForm = ({
   vaultAddress: string
 }) => {
   const [submiting, setSubmiting] = useState<boolean>(false)
-  const { address, tokenInfo, userActions, userProxy } = useDepositForm({ tokenAddress })
+  const { address, fiatInfo, tokenInfo, userActions, userProxy } = useDepositForm({ tokenAddress })
   const [form] = AntdForm.useForm()
-  const { address: currentUserAddress, appChainId } = useWeb3Connection()
-
-  const [FIATBalance] = useContractCall(
-    contracts.FIAT.address[appChainId],
-    contracts.FIAT.abi,
-    'balanceOf',
-    [currentUserAddress],
-  )
-  const humanValueFiatBalance = FIATBalance ? getHumanValue(FIATBalance.toString(), 18) : 0
 
   const handleDeposit = async ({ deposit, fiatAmount }: HandleDepositForm) => {
     if (!tokenInfo || !userProxy || !address) {
@@ -119,9 +107,9 @@ export const DepositForm = ({
               <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
                 <TokenAmount
                   disabled={submiting}
-                  displayDecimals={4}
-                  max={humanValueFiatBalance}
-                  maximumFractionDigits={6}
+                  displayDecimals={fiatInfo.decimals}
+                  max={fiatInfo.humanValue}
+                  maximumFractionDigits={fiatInfo.decimals}
                   slider
                   tokenIcon={<FiatIcon />}
                 />
@@ -129,7 +117,7 @@ export const DepositForm = ({
             }
             buttonText={mintButtonText}
             onClick={toggleMintFiat}
-            top={<Balance title="Mint FIAT" value={`Available: ${humanValueFiatBalance}`} />}
+            top={<Balance title="Mint FIAT" value={`Available: ${fiatInfo.humanValue}`} />}
           />
         )}
         <ButtonsWrapper>
