@@ -28,7 +28,7 @@ type TokenInfo = {
 
 type UseDecimalsAndTokenValue = {
   tokenInfo?: TokenInfo
-  updateToken: () => void
+  updateToken: () => Promise<void>
 }
 
 const useDecimalsAndTokenValue = ({
@@ -42,7 +42,7 @@ const useDecimalsAndTokenValue = ({
 }): UseDecimalsAndTokenValue => {
   const [tokenInfo, setTokenInfo] = useState<TokenInfo>()
 
-  const updateToken = useCallback(() => {
+  const updateToken = useCallback(async () => {
     if (tokenAddress && readOnlyAppProvider && address) {
       const collateral = new Contract(
         tokenAddress,
@@ -50,7 +50,7 @@ const useDecimalsAndTokenValue = ({
         readOnlyAppProvider,
       ) as ERC20
 
-      Promise.all([collateral.decimals(), collateral.balanceOf(address)]).then(
+      await Promise.all([collateral.decimals(), collateral.balanceOf(address)]).then(
         ([decimals, balance]) => {
           setTokenInfo({
             decimals,
@@ -70,7 +70,7 @@ const useDecimalsAndTokenValue = ({
 
 type UseFiatBalance = {
   fiatInfo?: TokenInfo
-  updateFiat: () => void
+  updateFiat: () => Promise<void>
 }
 
 const useFiatBalance = ({
@@ -80,7 +80,7 @@ const useFiatBalance = ({
   address: string | null
   appChainId: ChainsValues
 }): UseFiatBalance => {
-  const [FIATBalance, refetch] = useContractCall(
+  const [FIATBalance, updateFiat] = useContractCall(
     contracts.FIAT.address[appChainId],
     contracts.FIAT.abi,
     'balanceOf',
@@ -90,22 +90,28 @@ const useFiatBalance = ({
     decimals: 18, // 4 or 6 or 18?
     humanValue: FIATBalance ? getHumanValue(FIATBalance.toString(), 18) : ZERO_BIG_NUMBER,
   }
-  return { fiatInfo, updateFiat: refetch }
+  return { fiatInfo, updateFiat }
 }
 
 type UseDepositForm = ManageForm & {
   tokenInfo?: TokenInfo
   fiatInfo?: TokenInfo
+  updateFiat: () => Promise<void>
+  updateToken: () => Promise<void>
 }
 
 export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }): UseDepositForm => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const userActions = useUserActions()
   const { userProxy } = useUserProxy()
-  const { tokenInfo } = useDecimalsAndTokenValue({ tokenAddress, address, readOnlyAppProvider })
-  const { fiatInfo } = useFiatBalance({ address, appChainId })
+  const { tokenInfo, updateToken } = useDecimalsAndTokenValue({
+    tokenAddress,
+    address,
+    readOnlyAppProvider,
+  })
+  const { fiatInfo, updateFiat } = useFiatBalance({ address, appChainId })
 
-  return { address, tokenInfo, userActions, userProxy, fiatInfo }
+  return { address, tokenInfo, updateFiat, updateToken, userActions, userProxy, fiatInfo }
 }
 
 type UseWithdrawForm = ManageForm & {

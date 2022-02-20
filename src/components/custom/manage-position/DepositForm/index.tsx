@@ -3,7 +3,8 @@ import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useState } from 'react'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { contracts } from '@/src/constants/contracts'
+import { WAIT_BLOCKS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useDepositForm } from '@/src/hooks/managePosition'
@@ -17,7 +18,7 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Balance } from '@/src/components/custom/balance'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 
-type HandleDepositForm = {
+type DepositFormFields = {
   deposit: BigNumber
   fiatAmount: BigNumber
 }
@@ -29,39 +30,66 @@ export const DepositForm = ({
   tokenAddress: string
   vaultAddress: string
 }) => {
-  const [submiting, setSubmiting] = useState<boolean>(false)
-  const { address, fiatInfo, tokenInfo, userActions, userProxy } = useDepositForm({ tokenAddress })
-  const [form] = AntdForm.useForm()
+  const [submitting, setSubmitting] = useState<boolean>(false)
+  const [maxFiatValue, setMaxFiatValue] = useState<BigNumber | undefined>()
+  const { address, fiatInfo, tokenInfo, updateFiat, updateToken, userActions, userProxy } =
+    useDepositForm({
+      tokenAddress,
+    })
+  const [form] = AntdForm.useForm<DepositFormFields>()
 
-  const handleDeposit = async ({ deposit, fiatAmount }: HandleDepositForm) => {
+  const calculateAndSetMaxFiat = (amountToDeposit: BigNumber) => {
+    setMaxFiatValue(
+      amountToDeposit
+        // TODO: remove the hardcoded 1.1 factor
+        .dividedBy(1.1)
+        .decimalPlaces(contracts.FIAT.decimals),
+    )
+  }
+
+  const [mintFiat, setMintFiat] = useState(false)
+  const toggleMintFiat = () => {
+    setMintFiat((prevStatus) => !prevStatus)
+  }
+  const mintButtonText = 'Mint fiat with this transaction'
+
+  const handleDeposit = async ({ deposit, fiatAmount }: DepositFormFields) => {
     if (!tokenInfo || !userProxy || !address) {
       return
     }
 
     const toDeposit = deposit ? getNonHumanValue(deposit, 18) : ZERO_BIG_NUMBER
-    const toFiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, 18) : ZERO_BIG_NUMBER
+    const toMint = fiatAmount ? getNonHumanValue(fiatAmount, 18) : ZERO_BIG_NUMBER
 
     const addCollateralEncoded = userActions.interface.encodeFunctionData(
       'modifyCollateralAndDebt',
       [
         vaultAddress,
         tokenAddress,
-        0, // TODO: tokenID = 0 only for Element(ERC20)
-        address, // userProxy
-        address, // userProxy
+        0,
+        address, // user Address
+        address, // user Address
         toDeposit.toFixed(),
-        toFiatAmount.toFixed(),
+        toMint.toFixed(),
       ],
     )
-    setSubmiting(true)
+
+    setSubmitting(true)
+
     try {
       const tx = await userProxy.execute(userActions.address, addCollateralEncoded, {
         gasLimit: 1_000_000,
       })
-      await tx.wait()
-      setSubmiting(false)
+      await tx.wait(WAIT_BLOCKS)
+      // form reset (better with xstate?)
+      await Promise.all([updateToken(), updateFiat()])
+      toggleMintFiat()
+      calculateAndSetMaxFiat(ZERO_BIG_NUMBER)
+      form.resetFields()
     } catch (err) {
-      setSubmiting(false)
+      console.error('Failed to Deposit', err)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -84,58 +112,61 @@ export const DepositForm = ({
     },
   ]
 
-  const [mintFiat, setMintFiat] = useState(false)
-  const toggleMintFiat = () => setMintFiat(!mintFiat)
-  const mintButtonText = 'Mint fiat with this transaction'
-
   return (
     <Form form={form} onFinish={handleDeposit}>
-      <fieldset disabled={submiting}>
-        <Form.Item name="deposit" required>
-          <TokenAmount
-            disabled={submiting}
-            displayDecimals={tokenInfo?.decimals}
-            max={tokenInfo?.humanValue}
-            maximumFractionDigits={tokenInfo?.decimals}
-            slider
-            tokenIcon={iconByAddress[tokenAddress]}
-          />
-        </Form.Item>
-        {mintFiat && (
-          <FormExtraAction
-            bottom={
-              <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-                <TokenAmount
-                  disabled={submiting}
-                  displayDecimals={fiatInfo?.decimals}
-                  max={fiatInfo?.humanValue}
-                  maximumFractionDigits={fiatInfo?.decimals}
-                  slider
-                  tokenIcon={<FiatIcon />}
-                />
-              </Form.Item>
-            }
-            buttonText={mintButtonText}
-            onClick={toggleMintFiat}
-            top={<Balance title="Mint FIAT" value={`Available: ${fiatInfo?.humanValue}`} />}
-          />
-        )}
-        <ButtonsWrapper>
-          {!mintFiat && (
-            <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
-              {mintButtonText}
-            </ButtonExtraFormAction>
+      {tokenInfo && fiatInfo && (
+        <fieldset disabled={submitting}>
+          <Form.Item name="deposit" required>
+            <TokenAmount
+              disabled={submitting}
+              displayDecimals={tokenInfo.decimals}
+              max={tokenInfo.humanValue}
+              maximumFractionDigits={tokenInfo.decimals}
+              onChange={(value) => {
+                if (value) {
+                  calculateAndSetMaxFiat(value)
+                }
+              }}
+              slider
+              tokenIcon={iconByAddress[tokenAddress]}
+            />
+          </Form.Item>
+          {mintFiat && (
+            <FormExtraAction
+              bottom={
+                <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
+                  <TokenAmount
+                    disabled={submitting}
+                    displayDecimals={contracts.FIAT.decimals}
+                    max={maxFiatValue}
+                    maximumFractionDigits={contracts.FIAT.decimals}
+                    slider
+                    tokenIcon={<FiatIcon />}
+                  />
+                </Form.Item>
+              }
+              buttonText={mintButtonText}
+              onClick={toggleMintFiat}
+              top={<Balance title="Mint FIAT" value={`Available: ${fiatInfo.humanValue}`} />}
+            />
           )}
-          <ButtonGradient height="lg" htmlType="submit" loading={submiting}>
-            Deposit
-          </ButtonGradient>
-        </ButtonsWrapper>
-        <div className={cn(s.summary)}>
-          {mockedData.map((item, index) => (
-            <SummaryItem key={index} title={item.title} value={item.value} />
-          ))}
-        </div>
-      </fieldset>
+          <ButtonsWrapper>
+            {!mintFiat && (
+              <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
+                {mintButtonText}
+              </ButtonExtraFormAction>
+            )}
+            <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
+              Deposit
+            </ButtonGradient>
+          </ButtonsWrapper>
+          <div className={cn(s.summary)}>
+            {mockedData.map((item, index) => (
+              <SummaryItem key={index} title={item.title} value={item.value} />
+            ))}
+          </div>
+        </fieldset>
+      )}
     </Form>
   )
 }

@@ -1,4 +1,4 @@
-import useSWR, { SWRConfiguration } from 'swr'
+import useSWR, { KeyedMutator, SWRConfiguration } from 'swr'
 import { Contract, ContractInterface } from '@ethersproject/contracts'
 import contractCall from '@/src/utils/contractCall'
 
@@ -17,7 +17,7 @@ export default function useContractCall<
   method: Method,
   params: Params | null,
   options?: SWRConfiguration,
-): [Await<Return> | null, () => void] {
+): [Await<Return> | null, KeyedMutator<Return>] {
   const { isAppConnected, readOnlyAppProvider, web3Provider } = useWeb3Connection()
   const provider = isAppConnected && web3Provider ? web3Provider.getSigner() : readOnlyAppProvider
 
