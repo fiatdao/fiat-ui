@@ -1,12 +1,11 @@
-import { ReactText, useCallback, useRef } from 'react'
+import { notification } from 'antd'
+import { useCallback } from 'react'
 
 import { Contract, ContractTransaction } from '@ethersproject/contracts'
-import { toast } from 'react-toastify'
 
-import { ChainAppContractInfo } from '@/src/constants/contracts'
+import { AppContractInfo } from '@/src/constants/contracts'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { TransactionError } from '@/src/utils/TransactionError'
-import { toastError, toastSuccess, toastWarning, toastWorking } from '@/src/utils/toast'
 
 export type QueryOptions = {
   refetchInterval: number
@@ -16,36 +15,47 @@ export default function useTransaction<
   MyContract extends Contract,
   Method extends keyof MyContract,
   Params extends Parameters<MyContract[Method]>,
->(contractInfo: ChainAppContractInfo, method: Method) {
-  const { getExplorerUrl, isAppConnected, web3Provider } = useWeb3Connection()
-
-  const toastId = useRef<ReactText | undefined>(undefined)
+>(contractInfo: AppContractInfo, method: Method) {
+  const { appChainId, getExplorerUrl, isAppConnected, web3Provider } = useWeb3Connection()
 
   return useCallback(
     async (...params: Params) => {
       const signer = web3Provider?.getSigner()
       if (!signer) {
-        toastId.current = toastError('Transaction failed, there is no provider')
+        notification.destroy()
+        notification.error({
+          description: 'Transaction failed, there is no provider',
+          message: 'Transaction error',
+        })
         return null
       }
 
       if (!isAppConnected) {
-        toast.dismiss(toastId.current)
-        toastId.current = toastError('ERROR: App is not connected')
+        notification.destroy()
+        notification.error({
+          description: 'App is not connected',
+          message: 'Error',
+        })
         return null
       }
 
-      const contract = new Contract(contractInfo.address, contractInfo.abi, signer) as MyContract
+      const contract = new Contract(
+        contractInfo.address[appChainId],
+        contractInfo.abi,
+        signer,
+      ) as MyContract
 
       let tx: ContractTransaction
       try {
-        toast.dismiss(toastId.current)
-        toastId.current = toastWorking('Plase sign the transaction.')
+        notification.destroy()
+        notification.info({
+          description: 'Please sign the transaction.',
+          message: 'Sign',
+        })
         tx = await contract[method](...params)
-        toast.dismiss(toastId.current)
-        toastId.current = toastWorking(
-          <>
-            Awaiting tx execution,{' '}
+        notification.destroy()
+        notification.info({
+          description: (
             <a
               href={getExplorerUrl(tx.hash)}
               referrerPolicy="no-referrer"
@@ -54,9 +64,10 @@ export default function useTransaction<
             >
               view on explorer
             </a>
-          </>,
-          false,
-        )
+          ),
+          message: 'Awaiting tx execution',
+          duration: 0,
+        })
       } catch (e: any) {
         const error = new TransactionError(
           e.data?.message || e.message || 'Unable to decode revert reason',
@@ -64,22 +75,27 @@ export default function useTransaction<
           e.data,
         )
         if (error.code === 4001) {
-          toast.dismiss(toastId.current)
-          toastId.current = toastWarning('User denied signature')
+          notification.destroy()
+          notification.warning({
+            description: 'User denied signature',
+            message: 'Transaction rejected',
+          })
           return null
         }
 
-        toast.dismiss(toastId.current)
-        toastId.current = toastError(error.message)
+        notification.destroy()
+        notification.error({
+          description: error.message,
+          message: 'Transaction error',
+        })
         return null
       }
 
       try {
         const receipt = await tx.wait()
-        toast.dismiss(toastId.current)
-        toastId.current = toastSuccess(
-          <>
-            Transaccion success,{' '}
+        notification.destroy()
+        notification.success({
+          description: (
             <a
               href={getExplorerUrl(tx.hash)}
               referrerPolicy="no-referrer"
@@ -88,8 +104,9 @@ export default function useTransaction<
             >
               view on explorer
             </a>
-          </>,
-        ) // receipt.transactionHash
+          ),
+          message: 'Transaction success',
+        })
         return receipt
       } catch (e: any) {
         const error = new TransactionError(
@@ -97,11 +114,22 @@ export default function useTransaction<
           e.data?.code || e.code,
           e.data,
         )
-        toast.dismiss(toastId.current)
-        toastId.current = toastError(error.message)
+        notification.destroy()
+        notification.error({
+          description: error.message,
+          message: 'Transaction error',
+        })
         return null
       }
     },
-    [web3Provider, contractInfo, isAppConnected, method, getExplorerUrl],
+    [
+      web3Provider,
+      isAppConnected,
+      contractInfo.address,
+      contractInfo.abi,
+      appChainId,
+      method,
+      getExplorerUrl,
+    ],
   )
 }

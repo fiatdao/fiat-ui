@@ -1,10 +1,11 @@
 import s from './s.module.scss'
+import Link from 'next/link'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import { Popover } from 'antd'
-import { useAuctionsData } from '@/src/hooks/useAuctionData'
-import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
+import { useAuctions } from '@/src/hooks/subgraph/useAuctions'
+import ButtonGradient from '@/src/components/antd/button-gradient'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import Element from '@/src/resources/svg/element.svg'
@@ -57,7 +58,14 @@ const Columns: ColumnsType<any> = [
   {
     align: 'right',
     dataIndex: 'action',
-    render: (value: string) => value,
+    render: ({ id, isActive }) =>
+      isActive ? (
+        <Link href={`/auctions/${id}/liquidate`} passHref>
+          <ButtonGradient>Liquidate</ButtonGradient>
+        </Link>
+      ) : (
+        <ButtonGradient disabled>Not Available</ButtonGradient>
+      ),
     title: '',
     width: 110,
   },
@@ -70,16 +78,17 @@ const FILTERS: FilterData = {
   Element: { active: false, name: 'Element', icon: <Element /> },
 }
 
+const getParsedActiveFilters = (filters: FilterData) =>
+  Object.values(filters)
+    .filter(({ active }) => active)
+    .map(({ name }) => name) as Protocol[]
+
 const Auctions = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
 
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
-  const { data, error, loading } = useAuctionsData(
-    Object.values(filters)
-      .filter(({ active }) => active)
-      .map(({ name }) => name) as Protocol[],
-  )
+  const { auctions, error, loading } = useAuctions(getParsedActiveFilters(filters))
 
   const setFilter = useCallback((filterName: Protocol, active: boolean) => {
     setFilters((filters) => {
@@ -158,41 +167,39 @@ const Auctions = () => {
       </Popover>
 
       {!error && (
-        <SkeletonTable columns={Columns as SkeletonTableColumnsType[]} loading={loading}>
-          <Table
-            columns={Columns}
-            dataSource={data}
-            loading={false}
-            pagination={{
-              total: data?.length,
-              pageSize: 10,
-              current: 1,
-              position: ['bottomRight'],
-              showTotal: (total: number, [from, to]: [number, number]) => (
-                <>
-                  <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                    Showing {from} to {to} the most recent {total}
-                  </Text>
-                  <Text
-                    className="hidden-tablet hidden-desktop"
-                    color="secondary"
-                    type="p2"
-                    weight="semibold"
-                  >
-                    {from}..{to} of {total}
-                  </Text>
-                </>
-              ),
-              onChange: (page: number, pageSize: number) => {
-                console.log(page, pageSize)
-              },
-            }}
-            rowKey="id"
-            scroll={{
-              x: true,
-            }}
-          />
-        </SkeletonTable>
+        <Table
+          columns={Columns}
+          dataSource={auctions}
+          loading={loading}
+          pagination={{
+            total: auctions?.length,
+            pageSize: 10,
+            current: 1,
+            position: ['bottomRight'],
+            showTotal: (total: number, [from, to]: [number, number]) => (
+              <>
+                <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
+                  Showing {from} to {to} the most recent {total}
+                </Text>
+                <Text
+                  className="hidden-tablet hidden-desktop"
+                  color="secondary"
+                  type="p2"
+                  weight="semibold"
+                >
+                  {from}..{to} of {total}
+                </Text>
+              </>
+            ),
+            onChange: (page: number, pageSize: number) => {
+              console.log(page, pageSize)
+            },
+          }}
+          rowKey="id"
+          scroll={{
+            x: true,
+          }}
+        />
       )}
     </>
   )
