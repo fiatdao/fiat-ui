@@ -3,7 +3,7 @@ import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useState } from 'react'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { WAIT_BLOCKS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useWithdrawForm } from '@/src/hooks/managePosition'
@@ -13,12 +13,14 @@ import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
 
-type HandleWithdrawForm = {
+type WithdrawFormFields = {
   withdraw: BigNumber
 }
 
 export const WithdrawForm = ({
+  refetch,
   tokenAddress,
+  userBalance,
   vaultAddress,
 }: {
   refetch: RefetchPositionById
@@ -28,10 +30,10 @@ export const WithdrawForm = ({
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
   const { address, tokenInfo, userActions, userProxy } = useWithdrawForm({ tokenAddress })
-  const [form] = AntdForm.useForm()
+  const [form] = AntdForm.useForm<WithdrawFormFields>()
 
-  const handleWithdraw = async ({ withdraw }: HandleWithdrawForm) => {
-    if (!tokenInfo || !userProxy || !address) {
+  const handleWithdraw = async ({ withdraw }: WithdrawFormFields) => {
+    if (!userProxy || !address) {
       return
     }
 
@@ -54,14 +56,16 @@ export const WithdrawForm = ({
       const tx = await userProxy.execute(userActions.address, removeCollateralEncoded, {
         gasLimit: 1_000_000,
       })
-      await tx.wait()
+      await tx.wait(WAIT_BLOCKS)
+      // if we `WAIT_BLOCKS` we can prevent false positives due to a fork and may be waiting for the
+      // subgraph to be updated
+      await refetch()
+      form.resetFields()
     } catch (err) {
-      console.log(err)
+      console.log('Failed to Withdraw', err)
     } finally {
-      setSubmitting(submitting)
+      setSubmitting(false)
     }
-    // @TODO: does not make sense to refetch because graph takes some time to update
-    //        we could add a notification to tell the user that update will take some time
   }
 
   const mockedData = [
@@ -85,26 +89,28 @@ export const WithdrawForm = ({
 
   return (
     <Form form={form} onFinish={handleWithdraw}>
-      <fieldset disabled={submitting}>
-        <Form.Item name="withdraw" required>
-          <TokenAmount
-            disabled={submitting}
-            displayDecimals={tokenInfo?.decimals}
-            max={tokenInfo?.humanValue}
-            maximumFractionDigits={tokenInfo?.decimals}
-            slider
-            tokenIcon={iconByAddress[tokenAddress]}
-          />
-        </Form.Item>
-        <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
-          Withdraw
-        </ButtonGradient>
-        <div className={cn(s.summary)}>
-          {mockedData.map((item, index) => (
-            <SummaryItem key={index} title={item.title} value={item.value} />
-          ))}
-        </div>
-      </fieldset>
+      {tokenInfo && userBalance && (
+        <fieldset disabled={submitting}>
+          <Form.Item name="withdraw" required>
+            <TokenAmount
+              disabled={submitting}
+              displayDecimals={tokenInfo?.decimals}
+              max={userBalance}
+              maximumFractionDigits={tokenInfo?.decimals}
+              slider
+              tokenIcon={iconByAddress[tokenAddress]}
+            />
+          </Form.Item>
+          <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
+            Withdraw
+          </ButtonGradient>
+          <div className={cn(s.summary)}>
+            {mockedData.map((item, index) => (
+              <SummaryItem key={index} title={item.title} value={item.value} />
+            ))}
+          </div>
+        </fieldset>
+      )}
     </Form>
   )
 }
