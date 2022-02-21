@@ -4,7 +4,6 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { SWRConfig } from 'swr'
 import { Layout } from 'antd'
 import GeneralContextProvider from '@/src/providers/generalProvider'
-import ToastContainer from '@/src/components/custom/toast'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
 import WrongNetwork from '@/src/components/custom/wrong-network'
 import { GeneralError } from '@/src/components/custom/general-error'
@@ -66,7 +65,6 @@ function App({ Component, pageProps }: AppProps) {
           </ErrorBoundary>
         </SWRConfig>
       </GeneralContextProvider>
-      <ToastContainer />
     </>
   )
 }

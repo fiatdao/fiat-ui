@@ -14,9 +14,11 @@ export const AUCTION_BY_ID = gql`
       collateral {
         underlierAddress
         symbol
+        tokenId
       }
       vault {
         address
+        name
       }
     }
   }
