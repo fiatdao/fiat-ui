@@ -118,7 +118,7 @@ type UseWithdrawForm = ManageForm & {
   tokenInfo?: TokenInfo
 }
 
-export const useWithdrawForm = ({ tokenAddress }: { tokenAddress: string }): UseWithdrawForm => {
+export const useWithdrawForm = ({ tokenAddress }: { tokenAddress?: string }): UseWithdrawForm => {
   const { address, readOnlyAppProvider } = useWeb3Connection()
   const userActions = useUserActions()
   const { userProxy } = useUserProxy()

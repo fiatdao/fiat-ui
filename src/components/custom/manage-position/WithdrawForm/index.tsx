@@ -87,30 +87,29 @@ export const WithdrawForm = ({
     },
   ]
 
+  console.log({ userBalance })
   return (
     <Form form={form} onFinish={handleWithdraw}>
-      {tokenInfo && userBalance && (
-        <fieldset disabled={submitting}>
-          <Form.Item name="withdraw" required>
-            <TokenAmount
-              disabled={submitting}
-              displayDecimals={tokenInfo?.decimals}
-              max={userBalance}
-              maximumFractionDigits={tokenInfo?.decimals}
-              slider
-              tokenIcon={iconByAddress[tokenAddress]}
-            />
-          </Form.Item>
-          <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
-            Withdraw
-          </ButtonGradient>
-          <div className={cn(s.summary)}>
-            {mockedData.map((item, index) => (
-              <SummaryItem key={index} title={item.title} value={item.value} />
-            ))}
-          </div>
-        </fieldset>
-      )}
+      <fieldset disabled={submitting}>
+        <Form.Item name="withdraw" required>
+          <TokenAmount
+            disabled={submitting}
+            displayDecimals={tokenInfo?.decimals}
+            max={userBalance}
+            maximumFractionDigits={tokenInfo?.decimals}
+            slider
+            tokenIcon={iconByAddress[tokenAddress]}
+          />
+        </Form.Item>
+        <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
+          Withdraw
+        </ButtonGradient>
+        <div className={cn(s.summary)}>
+          {mockedData.map((item, index) => (
+            <SummaryItem key={index} title={item.title} value={item.value} />
+          ))}
+        </div>
+      </fieldset>
     </Form>
   )
 }

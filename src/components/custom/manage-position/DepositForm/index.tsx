@@ -114,59 +114,57 @@ export const DepositForm = ({
 
   return (
     <Form form={form} onFinish={handleDeposit}>
-      {tokenInfo && fiatInfo && (
-        <fieldset disabled={submitting}>
-          <Form.Item name="deposit" required>
-            <TokenAmount
-              disabled={submitting}
-              displayDecimals={tokenInfo.decimals}
-              max={tokenInfo.humanValue}
-              maximumFractionDigits={tokenInfo.decimals}
-              onChange={(value) => {
-                if (value) {
-                  calculateAndSetMaxFiat(value)
-                }
-              }}
-              slider
-              tokenIcon={iconByAddress[tokenAddress]}
-            />
-          </Form.Item>
-          {mintFiat && (
-            <FormExtraAction
-              bottom={
-                <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-                  <TokenAmount
-                    disabled={submitting}
-                    displayDecimals={contracts.FIAT.decimals}
-                    max={maxFiatValue}
-                    maximumFractionDigits={contracts.FIAT.decimals}
-                    slider
-                    tokenIcon={<FiatIcon />}
-                  />
-                </Form.Item>
+      <fieldset disabled={submitting}>
+        <Form.Item name="deposit" required>
+          <TokenAmount
+            disabled={submitting}
+            displayDecimals={tokenInfo?.decimals}
+            max={tokenInfo?.humanValue}
+            maximumFractionDigits={tokenInfo?.decimals}
+            onChange={(value) => {
+              if (value) {
+                calculateAndSetMaxFiat(value)
               }
-              buttonText={mintButtonText}
-              onClick={toggleMintFiat}
-              top={<Balance title="Mint FIAT" value={`Available: ${fiatInfo.humanValue}`} />}
-            />
+            }}
+            slider
+            tokenIcon={iconByAddress[tokenAddress]}
+          />
+        </Form.Item>
+        {mintFiat && (
+          <FormExtraAction
+            bottom={
+              <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
+                <TokenAmount
+                  disabled={submitting}
+                  displayDecimals={contracts.FIAT.decimals}
+                  max={maxFiatValue}
+                  maximumFractionDigits={contracts.FIAT.decimals}
+                  slider
+                  tokenIcon={<FiatIcon />}
+                />
+              </Form.Item>
+            }
+            buttonText={mintButtonText}
+            onClick={toggleMintFiat}
+            top={<Balance title="Mint FIAT" value={`Available: ${fiatInfo?.humanValue}`} />}
+          />
+        )}
+        <ButtonsWrapper>
+          {!mintFiat && (
+            <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
+              {mintButtonText}
+            </ButtonExtraFormAction>
           )}
-          <ButtonsWrapper>
-            {!mintFiat && (
-              <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
-                {mintButtonText}
-              </ButtonExtraFormAction>
-            )}
-            <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
-              Deposit
-            </ButtonGradient>
-          </ButtonsWrapper>
-          <div className={cn(s.summary)}>
-            {mockedData.map((item, index) => (
-              <SummaryItem key={index} title={item.title} value={item.value} />
-            ))}
-          </div>
-        </fieldset>
-      )}
+          <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
+            Deposit
+          </ButtonGradient>
+        </ButtonsWrapper>
+        <div className={cn(s.summary)}>
+          {mockedData.map((item, index) => (
+            <SummaryItem key={index} title={item.title} value={item.value} />
+          ))}
+        </div>
+      </fieldset>
     </Form>
   )
 }

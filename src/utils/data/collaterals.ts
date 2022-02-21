@@ -10,7 +10,7 @@ import { Maybe } from '@/types/utils'
 import { contracts } from '@/src/constants/contracts'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
 import { Collybus } from '@/types/typechain/Collybus'
-import { ERC20 } from '@/types/typechain'
+import { Codex, ERC20, PRBProxy } from '@/types/typechain'
 
 export type Collateral = {
   id: string
@@ -38,8 +38,6 @@ const wrangleCollateral = async (
     address: { [appChainId]: collybusAddress },
   } = contracts.COLLYBUS
 
-  const erc20abi = contracts.ERC_20.abi
-
   let currentValue = null
   if (
     collateral?.underlierAddress &&
@@ -65,11 +63,28 @@ const wrangleCollateral = async (
   const address = await provider.getSigner().getAddress()
   const balance = await contractCall<ERC20, 'balanceOf'>(
     collateral.address ?? ZERO_ADDRESS,
-    erc20abi,
+    contracts.ERC_20.abi,
     provider,
     'balanceOf',
     [address],
   )
+  const userProxyAddress = await contractCall<PRBProxy, 'getCurrentProxy'>(
+    contracts.PRB_Proxy.address[appChainId],
+    contracts.PRB_Proxy.abi,
+    provider,
+    'getCurrentProxy',
+    [address],
+  )
+
+  const position = await contractCall<Codex, 'positions'>(
+    contracts.CODEX.address[appChainId],
+    contracts.CODEX.abi,
+    provider,
+    'positions',
+    [collateral.vault?.address ?? ZERO_ADDRESS, '0x0', userProxyAddress ?? ZERO_ADDRESS],
+  )
+
+  const hasPosition = !position?.collateral.isZero() || !position?.normalDebt.isZero()
 
   return {
     ...collateral,
@@ -81,8 +96,11 @@ const wrangleCollateral = async (
       address: collateral.vault?.address ?? '',
     },
     hasBalance: !!balance && balance.gt(0),
+    // FixMe: `address` must be user's Proxy Address
     manageId:
-      collateral.vault?.address && address ? `${collateral.vault.address}-0x0-${address}` : null,
+      hasPosition && collateral.vault?.address && userProxyAddress !== ZERO_ADDRESS
+        ? `${collateral.vault.address}-0x0-${address}`
+        : null,
   }
 }
 export { wrangleCollateral }
