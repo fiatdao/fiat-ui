@@ -1,22 +1,18 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Contract } from 'ethers'
+import { contracts } from '@/src/constants/contracts'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
-import { Chains } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import PRBProxy from '@/src/abis/PRBProxy.json'
 import { PRBProxy as PRBProxyType } from '@/types/typechain'
 
-const PRB_PROXY = {
-  address: {
-    [Chains.mainnet]: '',
-    [Chains.goerli]: '0xc918902ef2f428f2dc77e3b4b5e5e153aab9d1b0',
-  },
-  abi: PRBProxy,
-}
-
 const useUserProxy = () => {
-  const { address: currentUserAddress, isAppConnected, web3Provider } = useWeb3Connection()
+  const {
+    address: currentUserAddress,
+    appChainId,
+    isAppConnected,
+    web3Provider,
+  } = useWeb3Connection()
   const [loadingProxy, setLoadingProxy] = useState(false)
 
   const [proxyAddress, refetch] = useContractCall<
@@ -24,7 +20,7 @@ const useUserProxy = () => {
     'getCurrentProxy',
     [string],
     Promise<string>
-  >(PRB_PROXY.address[Chains.goerli], PRB_PROXY.abi, 'getCurrentProxy', [
+  >(contracts.PRB_Proxy.address[appChainId], contracts.PRB_Proxy.abi, 'getCurrentProxy', [
     currentUserAddress as string,
   ])
 
@@ -32,8 +28,8 @@ const useUserProxy = () => {
     if (isAppConnected && web3Provider) {
       setLoadingProxy(true)
       const prbProxy = new Contract(
-        PRB_PROXY.address[Chains.goerli],
-        PRB_PROXY.abi,
+        contracts.PRB_Proxy.address[appChainId],
+        contracts.PRB_Proxy.abi,
         web3Provider.getSigner(),
       )
 
@@ -46,7 +42,7 @@ const useUserProxy = () => {
         setLoadingProxy(false)
       }
     }
-  }, [isAppConnected, refetch, web3Provider])
+  }, [appChainId, isAppConnected, refetch, web3Provider])
 
   const userProxy = useMemo(() => {
     if (!proxyAddress || !web3Provider) {

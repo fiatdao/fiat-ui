@@ -123,6 +123,7 @@ const wranglePosition = async (
     getDecimals(position.collateral?.underlierAddress, provider),
   ])
 
+  console.log(' HELLO !!!')
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
   if (currentValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()) {
@@ -132,6 +133,7 @@ const wranglePosition = async (
     isAtRisk = vaultCollateralizationRatio.gte(healthFactor)
   }
 
+  console.log(' ALO!!!! ')
   // TODO Borrowing rate
   return {
     id,

@@ -9,6 +9,7 @@ import userActions20 from '@/src/abis/UserActions20.json'
 import userActions1155 from '@/src/abis/UserActions1155.json'
 import vault20 from '@/src/abis/Vault20.json'
 import vault1155 from '@/src/abis/Vault1155.json'
+import prbProxy from '@/src/abis/PRBProxy.json'
 
 type BaseAppContractInfo = {
   abi: any[]
@@ -89,6 +90,13 @@ export const contracts = constantContracts({
       [Chains.goerli]: '0xfeba478B1a0CE24B86F064B51e489D8e79a41Cf0',
     },
     abi: collateralAuction,
+  },
+  PRB_Proxy: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '0xc918902ef2f428f2dc77e3b4b5e5e153aab9d1b0',
+    },
+    abi: prbProxy,
   },
   USER_ACTIONS_20: {
     address: {
