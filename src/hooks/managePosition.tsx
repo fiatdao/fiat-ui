@@ -87,7 +87,7 @@ const useFiatBalance = ({
     [address],
   )
   const fiatInfo: TokenInfo = {
-    decimals: 18, // 4 or 6 or 18?
+    decimals: contracts.FIAT.decimals,
     humanValue: FIATBalance ? getHumanValue(FIATBalance.toString(), 18) : ZERO_BIG_NUMBER,
   }
   return { fiatInfo, updateFiat }
@@ -129,15 +129,16 @@ export const useWithdrawForm = ({ tokenAddress }: { tokenAddress: string }): Use
 
 type UseMintForm = ManageForm & {
   fiatInfo?: TokenInfo
+  updateFiat: () => Promise<void>
 }
 
 export const useMintForm = (): UseMintForm => {
   const { address, appChainId } = useWeb3Connection()
   const userActions = useUserActions()
   const { userProxy } = useUserProxy()
-  const { fiatInfo } = useFiatBalance({ address, appChainId })
+  const { fiatInfo, updateFiat } = useFiatBalance({ address, appChainId })
 
-  return { address, userActions, userProxy, fiatInfo }
+  return { address, userActions, userProxy, fiatInfo, updateFiat }
 }
 
 type UseBurnForm = ManageForm & {

@@ -2,8 +2,8 @@ import s from './s.module.scss'
 import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { useState } from 'react'
-import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { useMemo, useState } from 'react'
+import { WAIT_BLOCKS, ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { Chains } from '@/src/constants/chains'
@@ -15,7 +15,14 @@ import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
 
+const calculateRemainingFiat = (userBalance: BigNumber, fiatAmount: BigNumber) => {
+  // TODO: remove the hardcoded 1.1 factor
+  return userBalance.dividedBy(1.1).decimalPlaces(contracts.FIAT.decimals).minus(fiatAmount)
+}
+
 export const MintForm = ({
+  refetch,
+  userBalance,
   vaultAddress,
 }: {
   refetch: RefetchPositionById
@@ -23,11 +30,18 @@ export const MintForm = ({
   vaultAddress?: string
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const { address, fiatInfo, userActions, userProxy } = useMintForm()
+  const { address, fiatInfo, updateFiat, userActions, userProxy } = useMintForm()
   const [form] = AntdForm.useForm()
 
+  const maxFiatValue = useMemo<BigNumber | undefined>(() => {
+    // FixMe: this works when the component is mounted, but needs to be updated after form submit
+    if (userBalance && fiatInfo?.humanValue) {
+      return calculateRemainingFiat(userBalance, fiatInfo.humanValue)
+    }
+  }, [userBalance, fiatInfo])
+
   const handleMint = async ({ mint }: { mint: BigNumber }) => {
-    if (!userProxy || !address) {
+    if (!userProxy || !address || !vaultAddress || !userBalance || !fiatInfo?.humanValue) {
       return
     }
 
@@ -36,7 +50,7 @@ export const MintForm = ({
     const increaseDebtEncoded = userActions.interface.encodeFunctionData(
       'modifyCollateralAndDebt',
       [
-        vaultAddress!,
+        vaultAddress,
         ZERO_ADDRESS,
         0,
         ZERO_ADDRESS,
@@ -45,19 +59,21 @@ export const MintForm = ({
         toMint.toFixed(),
       ],
     )
+
     setSubmitting(true)
+
     try {
       const tx = await userProxy.execute(userActions.address, increaseDebtEncoded, {
         gasLimit: 1_000_000,
       })
-      await tx.wait()
+      await tx.wait(WAIT_BLOCKS)
+      await Promise.all([refetch(), updateFiat()])
+      form.resetFields()
     } catch (err) {
-      console.log(err)
+      console.log('Failed to mint FIAT', err)
     } finally {
-      setSubmitting(submitting)
+      setSubmitting(false)
     }
-    // @TODO: does not make sense to refetch because graph takes some time to update
-    //        we could add a notification to tell the user that update will take some time
   }
 
   const mockedData = [
@@ -85,9 +101,9 @@ export const MintForm = ({
         <Form.Item name="mint" required>
           <TokenAmount
             disabled={submitting}
-            displayDecimals={fiatInfo?.decimals}
-            max={fiatInfo?.humanValue}
-            maximumFractionDigits={fiatInfo?.decimals}
+            displayDecimals={contracts.FIAT.decimals}
+            max={maxFiatValue}
+            maximumFractionDigits={contracts.FIAT.decimals}
             slider
             tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
           />
