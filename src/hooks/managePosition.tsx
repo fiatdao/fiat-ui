@@ -6,7 +6,7 @@ import { ethers } from 'ethers'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { Chains, ChainsValues } from '@/src/constants/chains'
+import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
@@ -36,7 +36,7 @@ const useDecimalsAndTokenValue = ({
   readOnlyAppProvider,
   tokenAddress,
 }: {
-  tokenAddress: string
+  tokenAddress?: string
   address: string | null
   readOnlyAppProvider: JsonRpcProvider
 }): UseDecimalsAndTokenValue => {
@@ -145,16 +145,17 @@ type UseBurnForm = ManageForm & {
   tokenInfo?: TokenInfo
   fiatInfo?: TokenInfo
   updateAllowance: () => Promise<any>
+  updateFiat: () => Promise<any>
   fiatAllowance?: BigNumber
 }
 
-export const useBurnForm = ({ tokenAddress }: { tokenAddress: string }): UseBurnForm => {
+export const useBurnForm = ({ tokenAddress }: { tokenAddress?: string }): UseBurnForm => {
   const { address, appChainId, readOnlyAppProvider, web3Provider } = useWeb3Connection()
   const userActions = useUserActions()
   const { userProxy, userProxyAddress } = useUserProxy()
 
   const { tokenInfo } = useDecimalsAndTokenValue({ address, readOnlyAppProvider, tokenAddress })
-  const { fiatInfo } = useFiatBalance({ address, appChainId })
+  const { fiatInfo, updateFiat } = useFiatBalance({ address, appChainId })
   const [fiatAllowance] = useContractCall(
     contracts.FIAT.address[appChainId],
     contracts.FIAT.abi,
@@ -165,16 +166,25 @@ export const useBurnForm = ({ tokenAddress }: { tokenAddress: string }): UseBurn
   const updateAllowance = useCallback(async () => {
     if (tokenAddress && web3Provider && address && userProxyAddress) {
       const fiatToken = new Contract(
-        contracts.FIAT.address[Chains.goerli],
+        contracts.FIAT.address[appChainId],
         contracts.FIAT.abi,
         web3Provider.getSigner(),
       ) as FIAT
-      return fiatToken.approve(userProxyAddress!, ethers.constants.MaxUint256)
+      return fiatToken.approve(userProxyAddress, ethers.constants.MaxUint256)
     }
     return Promise.resolve(null)
-  }, [tokenAddress, web3Provider, address, userProxyAddress])
+  }, [tokenAddress, web3Provider, address, userProxyAddress, appChainId])
 
-  return { address, fiatInfo, fiatAllowance, userActions, userProxy, tokenInfo, updateAllowance }
+  return {
+    address,
+    fiatInfo,
+    fiatAllowance,
+    updateFiat,
+    userActions,
+    userProxy,
+    tokenInfo,
+    updateAllowance,
+  }
 }
 
 export const useManagePositionInfo = () => {

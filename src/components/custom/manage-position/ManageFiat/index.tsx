@@ -37,8 +37,10 @@ export const ManageFiat = ({ activeTabKey, setActiveTabKey }: ManageFiatProps) =
       )}
       {'burn' === activeTabKey && (
         <BurnForm
-          tokenAddress={position?.collateral?.address ?? ''}
-          vaultAddress={position?.protocolAddress ?? ''}
+          refetch={refetchPosition}
+          tokenAddress={position?.collateral?.address}
+          userBalance={position?.totalCollateral}
+          vaultAddress={position?.protocolAddress}
         />
       )}
     </div>

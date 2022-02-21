@@ -3,6 +3,7 @@ import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useState } from 'react'
+import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { Chains } from '@/src/constants/chains'
@@ -17,59 +18,87 @@ import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Balance } from '@/src/components/custom/balance'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
-type HandleBurnForm = {
+type BurnFormFields = {
   burn: BigNumber
-  fiatAmount: BigNumber
+  withdraw: BigNumber
 }
 
 export const BurnForm = ({
+  refetch,
   tokenAddress,
+  userBalance,
   vaultAddress,
 }: {
-  vaultAddress: string
-  tokenAddress: string
+  refetch: RefetchPositionById
+  vaultAddress?: string
+  userBalance?: BigNumber
+  tokenAddress?: string
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const { address, fiatAllowance, fiatInfo, tokenInfo, updateAllowance, userActions, userProxy } =
-    useBurnForm({ tokenAddress })
-  const [form] = AntdForm.useForm()
+  const {
+    address,
+    fiatAllowance,
+    fiatInfo,
+    tokenInfo,
+    updateAllowance,
+    updateFiat,
+    userActions,
+    userProxy,
+  } = useBurnForm({ tokenAddress })
+  const [form] = AntdForm.useForm<BurnFormFields>()
 
-  const handleBurn = async ({ burn, fiatAmount }: HandleBurnForm) => {
-    if (!fiatInfo || !userProxy || !address) {
+  // FixMe: txs are failing, burning or burning and withdrawing
+  const handleBurn = async ({ burn, withdraw }: BurnFormFields) => {
+    if (!fiatInfo || !userProxy || !address || !tokenAddress || !vaultAddress) {
       return
     }
 
     const toBurn = burn ? getNonHumanValue(burn, 18) : ZERO_BIG_NUMBER
-    const toFiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, 18) : ZERO_BIG_NUMBER
+    const toWithdraw = withdraw ? getNonHumanValue(withdraw, 18) : ZERO_BIG_NUMBER
 
     try {
       setSubmitting(true)
-      if (fiatAllowance && fiatAllowance.lt(toBurn.toFixed())) {
+
+      if (fiatAllowance?.lt(toBurn.toFixed())) {
         await updateAllowance()
       }
+
       const decreaseDebtEncoded = userActions.interface.encodeFunctionData(
         'modifyCollateralAndDebt',
         [
           vaultAddress,
           tokenAddress,
           0,
+          toWithdraw.isZero() ? ZERO_ADDRESS : address,
           address,
-          address,
+          toWithdraw.negated().toFixed(),
           toBurn.negated().toFixed(),
-          toFiatAmount.negated().toFixed(),
         ],
       )
-      // @TODO: FIX ME ............
+
+      console.log([
+        vaultAddress,
+        tokenAddress,
+        0,
+        toWithdraw.isZero() ? ZERO_ADDRESS : address,
+        address,
+        toWithdraw.negated().toFixed(),
+        toBurn.negated().toFixed(),
+      ])
+
       const tx = await userProxy.execute(userActions.address, decreaseDebtEncoded, {
         gasLimit: 1_000_000,
       })
+
       await tx.wait()
+      await Promise.all([refetch(), updateFiat()])
+      form.resetFields()
     } catch (err) {
-      console.log(err)
+      console.log('Failed to burn FIAT', err)
     } finally {
-      setSubmitting(submitting)
+      setSubmitting(false)
     }
   }
 
@@ -98,52 +127,55 @@ export const BurnForm = ({
 
   return (
     <Form form={form} onFinish={handleBurn}>
-      <fieldset disabled={submitting}>
-        <Form.Item name="fiatAmount" required>
-          <TokenAmount
-            disabled={submitting}
-            displayDecimals={fiatInfo?.decimals}
-            max={fiatInfo?.humanValue}
-            maximumFractionDigits={fiatInfo?.decimals}
-            slider
-            tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
-          />
-        </Form.Item>
-        {withdrawCollateral && (
-          <FormExtraAction
-            bottom={
-              <Form.Item name="burn" required style={{ marginBottom: 0 }}>
-                <TokenAmount
-                  disabled={submitting}
-                  displayDecimals={tokenInfo?.decimals}
-                  max={tokenInfo?.humanValue}
-                  maximumFractionDigits={tokenInfo?.decimals}
-                  slider
-                  tokenIcon={<FiatIcon />}
-                />
-              </Form.Item>
-            }
-            buttonText={withdrawCollateralButtonText}
-            onClick={toggleWithdrawCollateral}
-            top={<Balance title="Mint FIAT" value={`Available: ${tokenInfo?.humanValue}`} />}
-          />
-        )}
-        <ButtonsWrapper>
-          {!withdrawCollateral && (
-            <ButtonExtraFormAction onClick={() => toggleWithdrawCollateral()}>
-              {withdrawCollateralButtonText}
-            </ButtonExtraFormAction>
+      {fiatInfo && tokenInfo && (
+        <fieldset disabled={submitting}>
+          <Form.Item name="burn" required>
+            <TokenAmount
+              disabled={submitting}
+              displayDecimals={fiatInfo?.decimals}
+              max={fiatInfo?.humanValue}
+              maximumFractionDigits={fiatInfo?.decimals}
+              slider
+              tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
+            />
+          </Form.Item>
+          {withdrawCollateral && (
+            <FormExtraAction
+              bottom={
+                <Form.Item name="withdraw" required style={{ marginBottom: 0 }}>
+                  {/* TODO: max={userBalance.plus(burn.times(1.1))} ??? */}
+                  <TokenAmount
+                    disabled={submitting}
+                    displayDecimals={tokenInfo?.decimals}
+                    max={userBalance}
+                    maximumFractionDigits={tokenInfo?.decimals}
+                    slider
+                    tokenIcon={<FiatIcon />}
+                  />
+                </Form.Item>
+              }
+              buttonText={withdrawCollateralButtonText}
+              onClick={toggleWithdrawCollateral}
+              top={<Balance title="Collateral" value={`Available: ${tokenInfo?.humanValue}`} />}
+            />
           )}
-          <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
-            Burn
-          </ButtonGradient>
-        </ButtonsWrapper>
-        <div className={cn(s.summary)}>
-          {mockedData.map((item, index) => (
-            <SummaryItem key={index} title={item.title} value={item.value} />
-          ))}
-        </div>
-      </fieldset>
+          <ButtonsWrapper>
+            {!withdrawCollateral && (
+              <ButtonExtraFormAction onClick={() => toggleWithdrawCollateral()}>
+                {withdrawCollateralButtonText}
+              </ButtonExtraFormAction>
+            )}
+            <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
+              Burn
+            </ButtonGradient>
+          </ButtonsWrapper>
+          <div className={cn(s.summary)}>
+            {mockedData.map((item, index) => (
+              <SummaryItem key={index} title={item.title} value={item.value} />
+            ))}
+          </div>
+        </fieldset>
+      )}
     </Form>
   )
 }
