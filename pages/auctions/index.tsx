@@ -1,9 +1,11 @@
 import s from './s.module.scss'
+import Link from 'next/link'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import { Popover } from 'antd'
-import { useAuctionsData } from '@/src/hooks/useAuctionData'
+import { useAuctions } from '@/src/hooks/subgraph/useAuctions'
+import ButtonGradient from '@/src/components/antd/button-gradient'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ButtonOutline from '@/src/components/antd/button-outline'
@@ -57,7 +59,14 @@ const Columns: ColumnsType<any> = [
   {
     align: 'right',
     dataIndex: 'action',
-    render: (value: string) => value,
+    render: ({ id, isActive }) =>
+      isActive ? (
+        <Link href={`/auctions/${id}/liquidate`} passHref>
+          <ButtonGradient>Liquidate</ButtonGradient>
+        </Link>
+      ) : (
+        <ButtonGradient disabled>Not Available</ButtonGradient>
+      ),
     title: '',
     width: 110,
   },
@@ -70,16 +79,17 @@ const FILTERS: FilterData = {
   Element: { active: false, name: 'Element', icon: <Element /> },
 }
 
+const getParsedActiveFilters = (filters: FilterData) =>
+  Object.values(filters)
+    .filter(({ active }) => active)
+    .map(({ name }) => name) as Protocol[]
+
 const Auctions = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
 
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
-  const { data, error, loading } = useAuctionsData(
-    Object.values(filters)
-      .filter(({ active }) => active)
-      .map(({ name }) => name) as Protocol[],
-  )
+  const { auctions, error, loading } = useAuctions(getParsedActiveFilters(filters))
 
   const setFilter = useCallback((filterName: Protocol, active: boolean) => {
     setFilters((filters) => {
@@ -164,9 +174,9 @@ const Auctions = () => {
         >
           <Table
             columns={Columns}
-            dataSource={data}
+            dataSource={auctions}
             loading={false}
-            pagination={tablePagination(data?.length ?? 0)}
+            pagination={tablePagination(auctions?.length ?? 0)}
             rowKey="id"
             scroll={{
               x: true,
