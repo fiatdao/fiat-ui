@@ -21,19 +21,26 @@ export const Menu: React.FC<Props> = ({ className, onClick, ...restProps }: Prop
     setSelectedItem(currentItem ?? undefined)
   }, [pathname, setSelectedItem])
 
+  const userPositions = 4
+
   return (
     <div className={cn(s.menu, className)} onClick={onClick} {...restProps}>
-      {routes.map((item, index) => (
-        <Link href={item.to} key={index} passHref>
-          <a className={cn(s.item, { [s.isActive]: selectedItem?.key === item.key })}>
+      {routes.map(({ badge, icon, iconActive, key, title, to }, index) => (
+        <Link href={to} key={`${index}_${key}`} passHref>
+          <a className={cn(s.item, { [s.isActive]: selectedItem?.key === key })}>
             <img
-              alt={item.title}
+              alt={title}
               className={cn(s.icon)}
-              src={`data:image/svg+xml;base64,${
-                selectedItem?.key === item.key ? item.iconActive : item.icon
-              }`}
+              src={`data:image/svg+xml;base64,${selectedItem?.key === key ? iconActive : icon}`}
             />
-            <span className={cn(s.title)}>{item.title}</span>
+            <span className={cn(s.title)}>{title}</span>
+            {badge && (
+              <span className={cn(s.badge)}>
+                <span className={cn(s.badgeInner)}>
+                  <span className={cn(s.badgeBackground)}>{userPositions}</span>
+                </span>
+              </span>
+            )}
           </a>
         </Link>
       ))}

@@ -12,6 +12,10 @@ import { Logo } from '@/src/components/custom/logo'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Menu } from '@/src/components/custom/menu'
 import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
+import { ButtonMobileMenu } from '@/src/components/custom/button-mobile-menu'
+import { HeaderInfoButton } from '@/src/components/custom/header-info-button'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import Ethereum from '@/src/resources/svg/ethereum.svg'
 
 export const Header: React.FC = ({ ...restProps }) => {
   const { title: pageTitle } = useGeneral()
@@ -19,6 +23,7 @@ export const Header: React.FC = ({ ...restProps }) => {
   const router = useRouter()
   const title: string = pageTitle ?? routesConfig[router.route]?.title ?? '-'
   const [drawerVisible, setDrawerVisible] = useState(false)
+  const isConnected = isWalletConnected && address
 
   return (
     <>
@@ -26,13 +31,22 @@ export const Header: React.FC = ({ ...restProps }) => {
         <h1 className={cn(s.title)}>{title}</h1>
         <Logo className={cn(s.logoWrapper)} />
         <div className={cn(s.endWrapper)}>
-          {isWalletConnected && address ? <ConnectedWallet /> : <ConnectButton />}
-          <button className={cn(s.mobileButton)} onClick={() => setDrawerVisible((prev) => !prev)}>
-            <span className={cn(s.burguerMenuButton, { [s.isDrawerVisible]: drawerVisible })}>
-              <span className={cn(s.line, s.line1)}></span>
-              <span className={cn(s.line, s.line2)}></span>
-            </span>
-          </button>
+          {!isConnected && <ConnectButton />}
+          <HeaderInfoButton
+            className={cn(s.infoButton)}
+            icon={<FiatIcon />}
+            text={<span style={{ fontSize: '16px' }}>20.00</span>}
+          />
+          <HeaderInfoButton
+            className={cn(s.infoButton)}
+            icon={<Ethereum />}
+            text={'Ethereum Mainnet'}
+          />
+          {isConnected && <ConnectedWallet />}
+          <ButtonMobileMenu
+            drawerVisible={drawerVisible}
+            onClick={() => setDrawerVisible((prev) => !prev)}
+          />
         </div>
       </Layout.Header>
       <Drawer

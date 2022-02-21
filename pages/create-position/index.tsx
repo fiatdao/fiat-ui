@@ -3,11 +3,11 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import Link from 'next/link'
+import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
 import Popover from '@/src/components/antd/popover'
-import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
+import { parseDate, remainingTime } from '@/src/utils/table'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
-import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { CellValue } from '@/src/components/custom/cell-value'
@@ -21,6 +21,7 @@ import { Collateral } from '@/src/utils/data/collaterals'
 import { getHumanValue } from '@/src/web3/utils'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import ButtonGradient from '@/src/components/antd/button-gradient'
+import { tablePagination } from '@/src/utils/table'
 
 const getDateState = () => {
   // we sould decide which state to show here
@@ -73,7 +74,10 @@ const Columns: ColumnsType<any> = [
     align: 'left',
     dataIndex: 'faceValue',
     render: (value: Collateral['faceValue']) => (
-      <CellValue value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`} />
+      <CellValue
+        tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
+        value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3)}`}
+      />
     ),
     title: 'Face Value',
   },
@@ -81,7 +85,10 @@ const Columns: ColumnsType<any> = [
     align: 'left',
     dataIndex: 'currentValue',
     render: (value: Collateral['currentValue']) => (
-      <CellValue value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`} />
+      <CellValue
+        tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
+        value={`${value ? '$' + getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3) : '-'}`}
+      />
     ),
     title: 'Collateral Value',
   },
@@ -95,15 +102,14 @@ const Columns: ColumnsType<any> = [
   },
   {
     align: 'right',
-    //dataIndex: 'action',
     render: (value: Collateral) =>
       value.hasBalance && value.manageId ? (
         <Link href={`/your-positions/${value.manageId}/manage`} passHref>
-          <ButtonGradient>Manage</ButtonGradient>
+          <ButtonOutlineGradient>Manage</ButtonOutlineGradient>
         </Link>
       ) : (
         <Link href={`/create-position/${value.address}/open`} passHref>
-          <ButtonGradient>Open</ButtonGradient>
+          <ButtonGradient>Open Position</ButtonGradient>
         </Link>
       ),
     title: '',
@@ -214,39 +220,18 @@ const CreatePosition = () => {
           <Filter />
         </ButtonOutlineGradient>
       </Popover>
-      <Table
-        columns={Columns}
-        dataSource={data}
-        loading={!data}
-        pagination={{
-          total: data?.length ?? 0,
-          pageSize: 10,
-          current: 1,
-          position: ['bottomRight'],
-          showTotal: (total: number, [from, to]: [number, number]) => (
-            <>
-              <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                Showing {from} to {to} the most recent {total}
-              </Text>
-              <Text
-                className="hidden-tablet hidden-desktop"
-                color="secondary"
-                type="p2"
-                weight="semibold"
-              >
-                {from}..{to} of {total}
-              </Text>
-            </>
-          ),
-          onChange: (page: number, pageSize: number) => {
-            console.log(page, pageSize)
-          },
-        }}
-        rowKey="id"
-        scroll={{
-          x: true,
-        }}
-      />
+      <SkeletonTable columns={Columns as SkeletonTableColumnsType[]} loading={!data} rowCount={2}>
+        <Table
+          columns={Columns}
+          dataSource={data}
+          loading={false}
+          pagination={tablePagination(data?.length ?? 0)}
+          rowKey="id"
+          scroll={{
+            x: true,
+          }}
+        />
+      </SkeletonTable>
     </>
   )
 }

@@ -4,7 +4,6 @@
  */
 @import 'vars';
 @import 'sanitize.css/sanitize';
-@import 'react-toastify/dist/ReactToastify';
 @import 'antd/dist/antd.dark.min'; // or it could be "@import 'antd/dist/antd.min';" too
 
 @import 'theme-shared';
@@ -16,14 +15,15 @@
 @import 'flex';
 @import 'grid';
 @import 'layout';
-@import 'text-gradient';
 @import 'notifications';
+@import 'pagination';
 @import 'rechart';
 @import 'slider';
 @import 'spin';
 @import 'steps';
 @import 'switch';
 @import 'text';
+@import 'text-gradient';
 @import 'utils';
 @import 'walletConnect';
 

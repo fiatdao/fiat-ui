@@ -2,23 +2,26 @@ import s from './s.module.scss'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { useAuction } from '@/src/hooks/subgraph/useAuction'
+import useTransaction from '@/src/hooks/contracts/useTransaction'
+import useContractCall from '@/src/hooks/contracts/useContractCall'
+import WalletButton from '@/src/components/custom/connect-button'
+import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
-import contractCall from '@/src/utils/contractCall'
 import { contracts } from '@/src/constants/contracts'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { getNonHumanValue } from '@/src/web3/utils'
+import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { useAuctionData } from '@/src/hooks/useAuctionData'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { InfoBlock } from '@/src/components/custom/info-block'
-import { BackButton } from '@/src/components/custom/back-button'
+import { ButtonBack } from '@/src/components/custom/button-back'
 import { Form } from '@/src/components/antd'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import genericSuspense from '@/src/utils/genericSuspense'
 import TokenAmount from '@/src/components/custom/token-amount'
+
+const SLIPPAGE_VALUE = BigNumber.from(0.02) // 2%
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -63,27 +66,15 @@ type FormProps = { liquidateAmount: BigNumber }
 //  `maxPrice` must be less than `price`
 //  setAllowance and call takeCollateral from collateralAuction contract
 const LiquidateAuction = () => {
-  const {
-    query: { auctionId },
-  } = useRouter()
-
-  console.log({ auctionId })
+  const auctionId = useQueryParam('auctionId')
 
   const [form] = AntdForm.useForm<FormProps>()
   const [step, setStep] = useState(1)
   const [sendingForm, setSendingForm] = useState(false)
 
-  const {
-    address: currentUserAddress,
-    appChainId,
-    isAppConnected,
-    readOnlyAppProvider,
-    web3Provider,
-  } = useWeb3Connection()
+  const { address: currentUserAddress, appChainId, isWalletConnected } = useWeb3Connection()
 
-  const provider = isAppConnected && web3Provider ? web3Provider.getSigner() : readOnlyAppProvider
-
-  const { data, loading } = useAuctionData(auctionId as string)
+  const { data, loading } = useAuction(auctionId as string)
 
   const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
     data?.tokenAddress as string,
@@ -91,6 +82,54 @@ const LiquidateAuction = () => {
   )
 
   const { tokenSymbol } = useTokenSymbol(data?.tokenAddress as string)
+
+  const [FIATBalance, refetchFIATBalance] = useContractCall(
+    contracts.FIAT.address[appChainId],
+    contracts.FIAT.abi,
+    'balanceOf',
+    [currentUserAddress],
+  )
+
+  const takeCollateralTx = useTransaction(contracts.COLLATERAL_AUCTION, 'takeCollateral')
+
+  useEffect(() => {
+    setSendingForm(loadingApprove)
+  }, [loadingApprove])
+
+  const onSubmit = () => {
+    setSendingForm(true)
+
+    // TODO SUM slippage fixed value
+    const collateralAmountToSend = getNonHumanValue(
+      form.getFieldValue('liquidateAmount').multipliedBy(SLIPPAGE_VALUE.plus(BigNumber.from(1))),
+      18,
+    )
+
+    // maxPrice parameter calc TODO must be in USD?
+    const maxPrice = getNonHumanValue(
+      BigNumber.from(FIATBalance.toString()).dividedBy(collateralAmountToSend),
+      18,
+    ).toFixed(0)
+
+    takeCollateralTx(
+      auctionId,
+      collateralAmountToSend.toFixed(),
+      maxPrice,
+      currentUserAddress,
+      [],
+      {
+        gasLimit: 10_000_000, //TODO this gasLimit is OK?
+      },
+    )
+      .then(() => {
+        refetchFIATBalance()
+        setSendingForm(false)
+      })
+      .catch((err) => {
+        console.log(err)
+        setSendingForm(false)
+      })
+  }
 
   const blocksData = [
     {
@@ -115,55 +154,20 @@ const LiquidateAuction = () => {
     },
   ]
 
-  useEffect(() => {
-    if (loadingApprove) {
-      setSendingForm(true)
-    } else {
-      setSendingForm(false)
-    }
-  }, [loadingApprove])
-
-  const onSubmit = async () => {
-    if (!hasAllowance) {
-      await approve()
-    } else {
-      setSendingForm(true)
-
-      const collateralAmountToSend = getNonHumanValue(
-        form.getFieldValue('liquidateAmount'),
-        18,
-      ).toFixed()
-
-      console.log(collateralAmountToSend)
-
-      contractCall(
-        contracts.COLLATERAL_AUCTION.address[appChainId],
-        contracts.COLLATERAL_AUCTION.abi,
-        provider,
-        'takeCollateral',
-        [
-          auctionId,
-          collateralAmountToSend,
-          ZERO_BIG_NUMBER.toFixed(),
-          currentUserAddress,
-          [],
-          {
-            gasLimit: 10_000_000,
-          },
-        ],
-      )
-        .then(() => {
-          setSendingForm(false)
-        })
-        .catch((err) => console.log(err))
-    }
-  }
+  if (!isWalletConnected) return <WalletButton />
 
   if (loading) return <p>Loading...</p>
 
+  console.log({
+    FIATBalance: getHumanValue(
+      BigNumber.from(FIATBalance.toString()),
+      contracts.FIAT.decimals,
+    )?.toFormat(4),
+  })
+
   return (
     <>
-      <BackButton href="/auctions">Back</BackButton>
+      <ButtonBack href="/auctions">Back</ButtonBack>
       <div className={cn(s.mainContainer)}>
         <div className={cn(s.infoBlocks)}>
           {blocksData.map((item, index) => (
@@ -188,7 +192,7 @@ const LiquidateAuction = () => {
               <>
                 <div className={cn(s.balanceWrapper)}>
                   <h3 className={cn(s.balanceLabel)}>Select amount</h3>
-                  <p className={cn(s.balance)}>Collateral left: ${data?.collateralToSell}</p>
+                  <p className={cn(s.balance)}>Collateral left: ${Number(data?.upForAuction)}</p>
                 </div>
 
                 <Form form={form} initialValues={{ liquidateAmount: 0 }} onFinish={onSubmit}>
@@ -196,7 +200,7 @@ const LiquidateAuction = () => {
                     <TokenAmount
                       disabled={sendingForm}
                       displayDecimals={4}
-                      max={Number(data?.collateralToSell)}
+                      max={Number(data?.upForAuction)}
                       maximumFractionDigits={6}
                       slider
                       tokenIcon={<ElementIcon />}
@@ -212,7 +216,11 @@ const LiquidateAuction = () => {
               <>
                 <Summary />
                 <div className={s.buttonsWrapper}>
-                  <ButtonGradient height="lg" loading={sendingForm} onClick={form.submit}>
+                  <ButtonGradient
+                    height="lg"
+                    loading={sendingForm}
+                    onClick={() => (hasAllowance ? form.submit() : approve())}
+                  >
                     {hasAllowance ? 'Confirm' : `Set Allowance for ${tokenSymbol}`}
                   </ButtonGradient>
                   <button

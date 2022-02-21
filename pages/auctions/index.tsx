@@ -1,16 +1,18 @@
 import s from './s.module.scss'
+import Link from 'next/link'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import { Popover } from 'antd'
-import { useAuctionsData } from '@/src/hooks/useAuctionData'
+import { useAuctions } from '@/src/hooks/subgraph/useAuctions'
+import ButtonGradient from '@/src/components/antd/button-gradient'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
-import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
+import { tablePagination } from '@/src/utils/table'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import Filter from '@/src/resources/svg/filter.svg'
@@ -57,7 +59,14 @@ const Columns: ColumnsType<any> = [
   {
     align: 'right',
     dataIndex: 'action',
-    render: (value: string) => value,
+    render: ({ id, isActive }) =>
+      isActive ? (
+        <Link href={`/auctions/${id}/liquidate`} passHref>
+          <ButtonGradient>Liquidate</ButtonGradient>
+        </Link>
+      ) : (
+        <ButtonGradient disabled>Not Available</ButtonGradient>
+      ),
     title: '',
     width: 110,
   },
@@ -70,16 +79,17 @@ const FILTERS: FilterData = {
   Element: { active: false, name: 'Element', icon: <Element /> },
 }
 
+const getParsedActiveFilters = (filters: FilterData) =>
+  Object.values(filters)
+    .filter(({ active }) => active)
+    .map(({ name }) => name) as Protocol[]
+
 const Auctions = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
 
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
-  const { data, error, loading } = useAuctionsData(
-    Object.values(filters)
-      .filter(({ active }) => active)
-      .map(({ name }) => name) as Protocol[],
-  )
+  const { auctions, error, loading } = useAuctions(getParsedActiveFilters(filters))
 
   const setFilter = useCallback((filterName: Protocol, active: boolean) => {
     setFilters((filters) => {
@@ -156,37 +166,17 @@ const Auctions = () => {
           <Filter />
         </ButtonOutlineGradient>
       </Popover>
-
       {!error && (
-        <SkeletonTable columns={Columns as SkeletonTableColumnsType[]} loading={loading}>
+        <SkeletonTable
+          columns={Columns as SkeletonTableColumnsType[]}
+          loading={loading}
+          rowCount={2}
+        >
           <Table
             columns={Columns}
-            dataSource={data}
+            dataSource={auctions}
             loading={false}
-            pagination={{
-              total: data?.length,
-              pageSize: 10,
-              current: 1,
-              position: ['bottomRight'],
-              showTotal: (total: number, [from, to]: [number, number]) => (
-                <>
-                  <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                    Showing {from} to {to} the most recent {total}
-                  </Text>
-                  <Text
-                    className="hidden-tablet hidden-desktop"
-                    color="secondary"
-                    type="p2"
-                    weight="semibold"
-                  >
-                    {from}..{to} of {total}
-                  </Text>
-                </>
-              ),
-              onChange: (page: number, pageSize: number) => {
-                console.log(page, pageSize)
-              },
-            }}
+            pagination={tablePagination(auctions?.length ?? 0)}
             rowKey="id"
             scroll={{
               x: true,
