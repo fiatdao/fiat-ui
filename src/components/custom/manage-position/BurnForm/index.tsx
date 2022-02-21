@@ -127,55 +127,53 @@ export const BurnForm = ({
 
   return (
     <Form form={form} onFinish={handleBurn}>
-      {fiatInfo && tokenInfo && (
-        <fieldset disabled={submitting}>
-          <Form.Item name="burn" required>
-            <TokenAmount
-              disabled={submitting}
-              displayDecimals={fiatInfo?.decimals}
-              max={fiatInfo?.humanValue}
-              maximumFractionDigits={fiatInfo?.decimals}
-              slider
-              tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
-            />
-          </Form.Item>
-          {withdrawCollateral && (
-            <FormExtraAction
-              bottom={
-                <Form.Item name="withdraw" required style={{ marginBottom: 0 }}>
-                  {/* TODO: max={userBalance.plus(burn.times(1.1))} ??? */}
-                  <TokenAmount
-                    disabled={submitting}
-                    displayDecimals={tokenInfo?.decimals}
-                    max={userBalance}
-                    maximumFractionDigits={tokenInfo?.decimals}
-                    slider
-                    tokenIcon={<FiatIcon />}
-                  />
-                </Form.Item>
-              }
-              buttonText={withdrawCollateralButtonText}
-              onClick={toggleWithdrawCollateral}
-              top={<Balance title="Collateral" value={`Available: ${tokenInfo?.humanValue}`} />}
-            />
+      <fieldset disabled={submitting}>
+        <Form.Item name="burn" required>
+          <TokenAmount
+            disabled={submitting}
+            displayDecimals={fiatInfo?.decimals}
+            max={fiatInfo?.humanValue}
+            maximumFractionDigits={fiatInfo?.decimals}
+            slider
+            tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
+          />
+        </Form.Item>
+        {withdrawCollateral && (
+          <FormExtraAction
+            bottom={
+              <Form.Item name="withdraw" required style={{ marginBottom: 0 }}>
+                {/* TODO: max={userBalance.plus(burn.times(1.1))} ??? */}
+                <TokenAmount
+                  disabled={submitting}
+                  displayDecimals={tokenInfo?.decimals}
+                  max={userBalance}
+                  maximumFractionDigits={tokenInfo?.decimals}
+                  slider
+                  tokenIcon={<FiatIcon />}
+                />
+              </Form.Item>
+            }
+            buttonText={withdrawCollateralButtonText}
+            onClick={toggleWithdrawCollateral}
+            top={<Balance title="Collateral" value={`Available: ${tokenInfo?.humanValue}`} />}
+          />
+        )}
+        <ButtonsWrapper>
+          {!withdrawCollateral && (
+            <ButtonExtraFormAction onClick={() => toggleWithdrawCollateral()}>
+              {withdrawCollateralButtonText}
+            </ButtonExtraFormAction>
           )}
-          <ButtonsWrapper>
-            {!withdrawCollateral && (
-              <ButtonExtraFormAction onClick={() => toggleWithdrawCollateral()}>
-                {withdrawCollateralButtonText}
-              </ButtonExtraFormAction>
-            )}
-            <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
-              Burn
-            </ButtonGradient>
-          </ButtonsWrapper>
-          <div className={cn(s.summary)}>
-            {mockedData.map((item, index) => (
-              <SummaryItem key={index} title={item.title} value={item.value} />
-            ))}
-          </div>
-        </fieldset>
-      )}
+          <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
+            Burn
+          </ButtonGradient>
+        </ButtonsWrapper>
+        <div className={cn(s.summary)}>
+          {mockedData.map((item, index) => (
+            <SummaryItem key={index} title={item.title} value={item.value} />
+          ))}
+        </div>
+      </fieldset>
     </Form>
   )
 }
