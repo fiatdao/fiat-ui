@@ -3,14 +3,15 @@ import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
 import { useState } from 'react'
 import { SelectValue } from 'antd/lib/select'
-import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
-import { Text } from '@/src/components/custom/typography'
+import { parseDate, remainingTime } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
 import Select from '@/src/components/antd/select'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { CellAddress } from '@/src/components/custom/cell-address'
 import { Asset } from '@/src/components/custom/asset'
 import { PositionTransaction } from '@/src/utils/data/positionTransaction'
+import { tablePagination } from '@/src/utils/table'
+import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
 
 const Columns: ColumnsType<any> = [
   {
@@ -137,38 +138,22 @@ const TransactionHistoryTable = ({ transactions }: TransactionHistoryProps) => {
           }))}
         />
       </div>
-      <Table
-        columns={Columns}
-        dataSource={filteredTransactions}
-        loading={false}
-        pagination={{
-          pageSize: 10,
-          current: 1,
-          position: ['bottomRight'],
-          showTotal: (total: number, [from, to]: [number, number]) => (
-            <>
-              <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                Showing {from} to {to} the most recent {total}
-              </Text>
-              <Text
-                className="hidden-tablet hidden-desktop"
-                color="secondary"
-                type="p2"
-                weight="semibold"
-              >
-                {from}..{to} of {total}
-              </Text>
-            </>
-          ),
-          onChange: (page: number, pageSize: number) => {
-            console.log(page, pageSize)
-          },
-        }}
-        rowKey="address"
-        scroll={{
-          x: true,
-        }}
-      />
+      <SkeletonTable
+        columns={Columns as SkeletonTableColumnsType[]}
+        loading={!filteredTransactions}
+        rowCount={2}
+      >
+        <Table
+          columns={Columns}
+          dataSource={filteredTransactions}
+          loading={false}
+          pagination={tablePagination(filteredTransactions?.length ?? 0)}
+          rowKey="address"
+          scroll={{
+            x: true,
+          }}
+        />
+      </SkeletonTable>
     </>
   )
 }

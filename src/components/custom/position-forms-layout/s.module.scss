@@ -17,6 +17,7 @@
   display: grid;
   gap: var(--gap);
   grid-template-columns: 1fr 1fr;
+  height: fit-content;
 
   @media (max-width: #{$max-width-mobile}) {
     grid-template-columns: 1fr;

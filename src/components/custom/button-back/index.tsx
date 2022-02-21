@@ -2,7 +2,7 @@ import s from './s.module.scss'
 import cn from 'classnames'
 import Link from 'next/link'
 
-export const BackButton: React.FC<{ className?: string; href: string }> = ({
+export const ButtonBack: React.FC<{ className?: string; href: string }> = ({
   children,
   className,
   href,

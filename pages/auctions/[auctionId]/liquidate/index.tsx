@@ -15,7 +15,7 @@ import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { InfoBlock } from '@/src/components/custom/info-block'
-import { BackButton } from '@/src/components/custom/back-button'
+import { ButtonBack } from '@/src/components/custom/button-back'
 import { Form } from '@/src/components/antd'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import genericSuspense from '@/src/utils/genericSuspense'
@@ -167,7 +167,7 @@ const LiquidateAuction = () => {
 
   return (
     <>
-      <BackButton href="/auctions">Back</BackButton>
+      <ButtonBack href="/auctions">Back</ButtonBack>
       <div className={cn(s.mainContainer)}>
         <div className={cn(s.infoBlocks)}>
           {blocksData.map((item, index) => (

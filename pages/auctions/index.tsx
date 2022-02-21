@@ -6,12 +6,13 @@ import { ReactNode, useCallback, useState } from 'react'
 import { Popover } from 'antd'
 import { useAuctions } from '@/src/hooks/subgraph/useAuctions'
 import ButtonGradient from '@/src/components/antd/button-gradient'
+import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
-import { Text } from '@/src/components/custom/typography'
 import { Table } from '@/src/components/antd'
+import { tablePagination } from '@/src/utils/table'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import Filter from '@/src/resources/svg/filter.svg'
@@ -165,41 +166,23 @@ const Auctions = () => {
           <Filter />
         </ButtonOutlineGradient>
       </Popover>
-
       {!error && (
-        <Table
-          columns={Columns}
-          dataSource={auctions}
+        <SkeletonTable
+          columns={Columns as SkeletonTableColumnsType[]}
           loading={loading}
-          pagination={{
-            total: auctions?.length,
-            pageSize: 10,
-            current: 1,
-            position: ['bottomRight'],
-            showTotal: (total: number, [from, to]: [number, number]) => (
-              <>
-                <Text className="hidden-mobile" color="secondary" type="p2" weight="semibold">
-                  Showing {from} to {to} the most recent {total}
-                </Text>
-                <Text
-                  className="hidden-tablet hidden-desktop"
-                  color="secondary"
-                  type="p2"
-                  weight="semibold"
-                >
-                  {from}..{to} of {total}
-                </Text>
-              </>
-            ),
-            onChange: (page: number, pageSize: number) => {
-              console.log(page, pageSize)
-            },
-          }}
-          rowKey="id"
-          scroll={{
-            x: true,
-          }}
-        />
+          rowCount={2}
+        >
+          <Table
+            columns={Columns}
+            dataSource={auctions}
+            loading={false}
+            pagination={tablePagination(auctions?.length ?? 0)}
+            rowKey="id"
+            scroll={{
+              x: true,
+            }}
+          />
+        </SkeletonTable>
       )}
     </>
   )
