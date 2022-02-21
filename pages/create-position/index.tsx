@@ -2,7 +2,6 @@ import s from './s.module.scss'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
-import { id } from 'date-fns/locale'
 import Link from 'next/link'
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/components/custom/tables/utils'
@@ -98,8 +97,8 @@ const Columns: ColumnsType<any> = [
     align: 'right',
     //dataIndex: 'action',
     render: (value: Collateral) =>
-      value.hasBalance ? (
-        <Link href={`/your-positions/${id}/manage`} passHref>
+      value.hasBalance && value.manageId ? (
+        <Link href={`/your-positions/${value.manageId}/manage`} passHref>
           <ButtonGradient>Manage</ButtonGradient>
         </Link>
       ) : (

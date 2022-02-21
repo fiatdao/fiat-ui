@@ -12,43 +12,32 @@ import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import { PositionsAtRiskTableWrapper } from '@/src/components/custom/positions-at-risk-table-wrapper'
 import { Position } from '@/src/utils/data/positions'
+import { WAD_DECIMALS } from '@/src/constants/misc'
+import { getHumanValue } from '@/src/web3/utils'
 
 const Columns: ColumnsType<Position> = [
   {
     align: 'left',
-    dataIndex: 'name',
-    render: (name: Position['protocol']) => (
-      <Asset mainAsset="SBOND" secondaryAsset="DAI" title={name} />
+    dataIndex: 'protocol',
+    render: (protocol: Position['protocol']) => (
+      <Asset mainAsset="SBOND" secondaryAsset="DAI" title={protocol} />
     ),
+    title: 'Protocol',
+    width: 200,
+  },
+  {
+    align: 'left',
+    dataIndex: 'collateral',
+    render: (collateral: Position['collateral']) => <CellValue bold value={collateral.symbol} />,
     title: 'Asset',
     width: 200,
   },
   {
     align: 'left',
-    dataIndex: 'totalCollateral',
-    render: (discount: Position['totalCollateral']) => (
-      <CellValue bold tooltip={`$${discount}`} value={`$${discount.toFixed(2)}`} />
-    ),
+    dataIndex: 'underlier',
+    render: (underlier: Position['underlier']) => <CellValue bold value={underlier.symbol} />,
     responsive: ['lg'],
     title: 'Collateral Value',
-  },
-  {
-    align: 'left',
-    dataIndex: 'totalCollateral',
-    render: (ltv: Position['totalCollateral']) => (
-      <CellValue tooltip={`${ltv}%`} value={`${ltv.toNumber().toFixed(2)}%`} />
-    ),
-    responsive: ['lg', 'xl'],
-    title: 'Max. LTV',
-  },
-  {
-    align: 'left',
-    dataIndex: 'totalNormalDebt',
-    render: (minted: Position['totalNormalDebt']) => (
-      <CellValue tooltip={`${minted}`} value={`${minted.toNumber().toFixed(3)}`} />
-    ),
-    responsive: ['xl'],
-    title: 'FIAT Minted',
   },
   {
     align: 'left',
@@ -61,9 +50,38 @@ const Columns: ColumnsType<Position> = [
   },
   {
     align: 'left',
+    dataIndex: 'totalNormalDebt',
+    render: (minted: Position['totalNormalDebt']) => (
+      <CellValue
+        tooltip={`${minted}`}
+        value={`${getHumanValue(minted, WAD_DECIMALS).toFixed(3)}`}
+      />
+    ),
+    responsive: ['xl'],
+    title: 'FIAT Minted',
+  },
+  // @TODO: need to show USD value for this collateral
+  {
+    align: 'left',
+    dataIndex: 'totalCollateral',
+    render: (totalCollateral: Position['totalCollateral'], obj: Position) => (
+      <CellValue
+        bottomValue={`$${getHumanValue(obj.collateralValue, WAD_DECIMALS).toFixed(2)}`}
+        value={`${getHumanValue(totalCollateral, WAD_DECIMALS).toFixed(2)}`}
+      />
+    ),
+    responsive: ['lg', 'xl'],
+    title: 'Collateral Deposited',
+  },
+  // @TODO: missing info icon button
+  {
+    align: 'left',
     dataIndex: 'healthFactor',
     render: (healthFactor: Position['healthFactor']) => (
-      <CellValue state={calculateHealthFactor(healthFactor)} value={`${healthFactor.toFixed(2)}`} />
+      <CellValue
+        state={calculateHealthFactor(healthFactor)}
+        value={`${getHumanValue(healthFactor, WAD_DECIMALS).toFixed(2)}`}
+      />
     ),
     responsive: ['md'],
     title: 'Health Factor',
@@ -86,11 +104,14 @@ type InventoryProps = {
 }
 
 const InventoryTable = ({ inventory }: InventoryProps) => {
+  const riskPositions = inventory?.filter((p) => p.isAtRisk)
   return (
     <>
-      <PositionsAtRiskTableWrapper>
-        <Table columns={Columns} dataSource={inventory} loading={false} rowKey="address" />
-      </PositionsAtRiskTableWrapper>
+      {riskPositions && riskPositions.length > 0 && (
+        <PositionsAtRiskTableWrapper>
+          <Table columns={Columns} dataSource={riskPositions} loading={false} rowKey="address" />
+        </PositionsAtRiskTableWrapper>
+      )}
       <Table
         columns={Columns}
         dataSource={inventory}

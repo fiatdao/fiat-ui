@@ -1,8 +1,10 @@
 import contractCall from '../contractCall'
+import { BigNumberToDateOrCurrent } from '../dateTime'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { Positions_positions } from '@/types/subgraph/__generated__/Positions'
+import { BigNumber as BigNumberEthers } from 'ethers'
 import { getHumanValue } from '@/src/web3/utils'
+import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
 
 import { Maybe, TokenData } from '@/types/utils'
 import { ChainsValues } from '@/src/constants/chains'
@@ -13,6 +15,7 @@ import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 export type Position = {
   id: string
   protocol: string
+  protocolAddress: string
   maturity: Date
   collateral: TokenData
   underlier: TokenData
@@ -25,113 +28,120 @@ export type Position = {
   isAtRisk: boolean
 }
 
-const wranglePosition = async (
-  position: Positions_positions,
-  provider: JsonRpcProvider,
+const readValue = async (
+  position: SubgraphPosition,
+  net: boolean,
   appChainId: ChainsValues,
-): Promise<Position> => {
-  const { id, vaultName: protocol } = position
-  const vaultCollateralizationRatio = BigNumber.from(
-    position.vault?.collateralizationRatio ?? 0,
-  ) as BigNumber
-  const totalCollateral = getHumanValue(BigNumber.from(position.totalCollateral) as BigNumber, 18)
-  const totalNormalDebt = getHumanValue(BigNumber.from(position.totalNormalDebt) as BigNumber, 18)
-  const maturity = new Date(position.maturity ? +position.maturity * 1000 : Date.now())
-
-  let collateralValue = null
+  provider: JsonRpcProvider,
+): Promise<BigNumber> => {
+  const {
+    abi: collybusAbi,
+    address: { [appChainId]: collybusAddress },
+  } = contracts.COLLYBUS
   if (
     position?.collateral?.underlierAddress &&
     position?.vault?.address &&
     position.maturity &&
     position?.collateral?.underlierAddress !== ZERO_ADDRESS
   ) {
-    collateralValue = await contractCall<Collybus, 'read'>(
-      contracts.COLLYBUS.address[appChainId],
-      contracts.COLLYBUS.abi,
-      provider,
-      'read',
-      [
-        position.vault.address,
-        position.collateral.underlierAddress,
-        0, // FIXME Check protocol if is not an ERC20?
-        position.maturity,
-        false,
-      ],
-    )
-  }
-
-  let faceValue = null
-  if (position.vault?.address && position.collateral?.underlierAddress && position.maturity) {
-    faceValue = await contractCall<Collybus, 'read'>(
-      contracts.COLLYBUS.address[appChainId],
-      contracts.COLLYBUS.abi,
-      provider,
-      'read',
-      [
-        position.vault?.address,
-        position.collateral?.underlierAddress,
-        0, // FIXME Check protocol if is not an ERC20?
-        position.maturity,
-        true,
-      ],
-    )
-  }
-
-  let collateralDecimals = 18
-  if (position?.collateral?.address && position?.collateral?.address !== ZERO_ADDRESS) {
-    const _collateralDecimals = await contractCall<ERC20, 'decimals'>(
-      position.collateral?.address,
-      contracts.ERC_20.abi,
-      provider,
-      'decimals',
-      null,
-    )
-
-    if (_collateralDecimals !== null) {
-      collateralDecimals = _collateralDecimals
+    try {
+      const readResult = (await contractCall<Collybus, 'read'>(
+        collybusAddress,
+        collybusAbi,
+        provider,
+        'read',
+        [
+          position.vault.address,
+          position.collateral.underlierAddress,
+          0, // FIXME Check protocol if is not an ERC20?
+          position.maturity,
+          net,
+        ],
+      )) as BigNumberEthers
+      return new BigNumber(readResult.toString())
+    } catch (err) {
+      return Promise.resolve(ZERO_BIG_NUMBER)
     }
   }
+  return Promise.resolve(ZERO_BIG_NUMBER)
+}
 
-  let underlierDecimals = 18
-  if (
-    position?.collateral?.underlierAddress &&
-    position?.collateral?.underlierAddress !== ZERO_ADDRESS
-  ) {
-    const _underlierDecimals = await contractCall<ERC20, 'decimals'>(
-      position.collateral?.underlierAddress,
-      contracts.ERC_20.abi,
-      provider,
-      'decimals',
-      null,
-    )
+const getCurrentValue = (
+  position: SubgraphPosition,
+  appChainId: ChainsValues,
+  provider: JsonRpcProvider,
+): Promise<BigNumber> => {
+  return readValue(position, false, appChainId, provider)
+}
 
-    if (_underlierDecimals !== null) {
-      underlierDecimals = _underlierDecimals
-    }
+const getFaceValue = (
+  position: SubgraphPosition,
+  appChainId: ChainsValues,
+  provider: JsonRpcProvider,
+): Promise<BigNumber> => {
+  return readValue(position, true, appChainId, provider)
+}
+
+const getDecimals = async (
+  address: string | null | undefined,
+  provider: JsonRpcProvider,
+): Promise<number> => {
+  if (!address) {
+    return 18
   }
 
+  const decimals = await contractCall<ERC20, 'decimals'>(
+    address,
+    contracts.ERC_20.abi,
+    provider,
+    'decimals',
+    null,
+  )
+
+  return decimals ?? 18
+}
+
+const wranglePosition = async (
+  position: SubgraphPosition,
+  provider: JsonRpcProvider,
+  appChainId: ChainsValues,
+): Promise<Position> => {
+  const { id, vaultName: protocol } = position
+  // we use 18 decimals, as values stored are stored in WAD in the FIAT protocol
+  const vaultCollateralizationRatio = getHumanValue(
+    BigNumber.from(position.vault?.collateralizationRatio ?? 1e18) as BigNumber,
+    18,
+  )
+  const totalCollateral = getHumanValue(BigNumber.from(position.totalCollateral) as BigNumber, 18)
+  const totalNormalDebt = getHumanValue(BigNumber.from(position.totalNormalDebt) as BigNumber, 18)
+  const maturity = BigNumberToDateOrCurrent(position.maturity)
+
+  const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
+    getCurrentValue(position, appChainId, provider),
+    getFaceValue(position, appChainId, provider),
+    getDecimals(position.collateral?.address, provider), // collateral is an ERC20 token
+    getDecimals(position.collateral?.underlierAddress, provider),
+  ])
+
+  let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
-  if (collateralValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()) {
-    const s = totalCollateral.toFixed()
-    const s1 = totalNormalDebt.toFixed()
-    healthFactor = (BigNumber.from(collateralValue.toString()) as BigNumber).times(s).div(s1)
+  if (currentValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()) {
+    healthFactor = new BigNumber(
+      currentValue.times(totalCollateral.toFixed()).div(totalNormalDebt.toFixed()).toNumber(),
+    )
+    isAtRisk = vaultCollateralizationRatio.gte(healthFactor)
   }
-
-  // FIXME
-  const isAtRisk = vaultCollateralizationRatio.gte(healthFactor)
 
   // TODO Borrowing rate
   return {
     id,
+    protocolAddress: position.vault?.address ?? '',
     protocol: protocol ?? '',
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
-    collateralValue: getHumanValue(
-      BigNumber.from(collateralValue?.toString() ?? 0) as BigNumber,
-      18,
-    ),
-    faceValue: getHumanValue(BigNumber.from(faceValue?.toString() ?? 0) as BigNumber, 18),
+    collateralValue: currentValue,
+    faceValue,
     maturity,
     collateral: {
       symbol: position?.collateral?.symbol ?? '',
