@@ -29,10 +29,10 @@ export const fetchPositions = ({
 
 export const usePositions = (id?: string, address?: string, protocol?: string) => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
-  const { data } = useSWR(['positions', id, address, protocol], () =>
+  const { data, error, mutate } = useSWR(['positions', id, address, protocol], () =>
     fetchPositions({ id, address, protocol, provider, appChainId }),
   )
 
   // TODO Remove positionTransactions from here
-  return { positions: data, positionTransactions: [] }
+  return { positions: data, error, refetch: mutate }
 }

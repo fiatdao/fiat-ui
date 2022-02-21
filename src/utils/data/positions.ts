@@ -3,6 +3,7 @@ import { BigNumberToDateOrCurrent } from '../dateTime'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber as BigNumberEthers } from 'ethers'
+import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
 
 import { Maybe, TokenData } from '@/types/utils'
@@ -14,6 +15,7 @@ import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 export type Position = {
   id: string
   protocol: string
+  protocolAddress: string
   maturity: Date
   collateral: TokenData
   underlier: TokenData
@@ -24,7 +26,6 @@ export type Position = {
   faceValue: BigNumber
   healthFactor: BigNumber
   isAtRisk: boolean
-  discount: BigNumber
 }
 
 const readValue = async (
@@ -85,16 +86,19 @@ const getDecimals = async (
   address: string | null | undefined,
   provider: JsonRpcProvider,
 ): Promise<number> => {
-  if (!address) return 18
-  const { abi: erc20Abi } = contracts.ERC_20
+  if (!address) {
+    return 18
+  }
+
   const decimals = await contractCall<ERC20, 'decimals'>(
     address,
-    erc20Abi,
+    contracts.ERC_20.abi,
     provider,
     'decimals',
     null,
   )
-  return decimals || 18
+
+  return decimals ?? 18
 }
 
 const wranglePosition = async (
@@ -103,21 +107,21 @@ const wranglePosition = async (
   appChainId: ChainsValues,
 ): Promise<Position> => {
   const { id, vaultName: protocol } = position
-  const vaultCollateralizationRatio = BigNumber.from(
-    position.vault?.collateralizationRatio ?? 0,
-  ) as BigNumber
-  const totalCollateral = BigNumber.from(position.totalCollateral) as BigNumber
-  const totalNormalDebt = BigNumber.from(position.totalNormalDebt) as BigNumber
-  const discount = BigNumber.from(position.vault?.maxDiscount ?? 0) as BigNumber
+  // we use 18 decimals, as values stored are stored in WAD in the FIAT protocol
+  const vaultCollateralizationRatio = getHumanValue(
+    BigNumber.from(position.vault?.collateralizationRatio ?? 1e18) as BigNumber,
+    18,
+  )
+  const totalCollateral = getHumanValue(BigNumber.from(position.totalCollateral) as BigNumber, 18)
+  const totalNormalDebt = getHumanValue(BigNumber.from(position.totalNormalDebt) as BigNumber, 18)
   const maturity = BigNumberToDateOrCurrent(position.maturity)
 
-  // TODO Move to const [ ... ] = await Promise.all([..., ..., ...])
-  // TODO FIXME for no-ERC20
-  const currentValue = await getCurrentValue(position, appChainId, provider)
-  const faceValue = await getFaceValue(position, appChainId, provider)
-
-  const collateralDecimals = 18 // collateral is not an erc20 contract
-  const underlierDecimals = await getDecimals(position.collateral?.underlierAddress, provider)
+  const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
+    getCurrentValue(position, appChainId, provider),
+    getFaceValue(position, appChainId, provider),
+    getDecimals(position.collateral?.address, provider), // collateral is an ERC20 token
+    getDecimals(position.collateral?.underlierAddress, provider),
+  ])
 
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
@@ -131,12 +135,13 @@ const wranglePosition = async (
   // TODO Borrowing rate
   return {
     id,
+    protocolAddress: position.vault?.address ?? '',
     protocol: protocol ?? '',
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
     collateralValue: currentValue,
-    faceValue: faceValue,
+    faceValue,
     maturity,
     collateral: {
       symbol: position?.collateral?.symbol ?? '',
@@ -148,9 +153,8 @@ const wranglePosition = async (
       address: position?.collateral?.underlierAddress ?? '',
       decimals: underlierDecimals,
     },
-    healthFactor: healthFactor,
+    healthFactor,
     isAtRisk,
-    discount,
   }
 }
 export { wranglePosition }
