@@ -5,6 +5,9 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import cn from 'classnames'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { usePositionsBadge } from '@/src/hooks/usePositionsBadge'
 import { RouteItem, routes } from '@/src/constants/navigation'
 
 interface Props {
@@ -12,16 +15,28 @@ interface Props {
   onClick?: () => void
 }
 
+const PositionsBadge = () => {
+  const userPositions = usePositionsBadge()
+
+  return (
+    <span className={cn(s.badge)}>
+      <span className={cn(s.badgeInner)}>
+        <span className={cn(s.badgeBackground)}>{userPositions}</span>
+      </span>
+    </span>
+  )
+}
+
 export const Menu: React.FC<Props> = ({ className, onClick, ...restProps }: Props) => {
   const { pathname } = useRouter()
   const [selectedItem, setSelectedItem] = useState<RouteItem>()
+  const { address, isWalletConnected } = useWeb3Connection()
+  const isConnected = isWalletConnected && address
 
   useEffect(() => {
     const currentItem = [...routes].reverse().find(({ to }) => pathname.startsWith(to))
     setSelectedItem(currentItem ?? undefined)
   }, [pathname, setSelectedItem])
-
-  const userPositions = 4
 
   return (
     <div className={cn(s.menu, className)} onClick={onClick} {...restProps}>
@@ -34,12 +49,10 @@ export const Menu: React.FC<Props> = ({ className, onClick, ...restProps }: Prop
               src={`data:image/svg+xml;base64,${selectedItem?.key === key ? iconActive : icon}`}
             />
             <span className={cn(s.title)}>{title}</span>
-            {badge && (
-              <span className={cn(s.badge)}>
-                <span className={cn(s.badgeInner)}>
-                  <span className={cn(s.badgeBackground)}>{userPositions}</span>
-                </span>
-              </span>
+            {badge && isConnected && (
+              <SafeSuspense>
+                <PositionsBadge />
+              </SafeSuspense>
             )}
           </a>
         </Link>

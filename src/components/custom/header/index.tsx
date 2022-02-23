@@ -4,6 +4,8 @@ import { Layout } from 'antd'
 import cn from 'classnames'
 import { Drawer } from 'antd'
 import { useState } from 'react'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useGeneral } from '@/src/providers/generalProvider'
 import { ConnectButton } from '@/src/components/custom/connect-button'
 import { routesConfig } from '@/src/constants/navigation'
@@ -16,6 +18,12 @@ import { ButtonMobileMenu } from '@/src/components/custom/button-mobile-menu'
 import { HeaderInfoButton } from '@/src/components/custom/header-info-button'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import Ethereum from '@/src/resources/svg/ethereum.svg'
+
+const FiatBalanceInfo = () => {
+  const [fiatBalance] = useFIATBalance(true)
+
+  return <span style={{ fontSize: '16px' }}>{fiatBalance.toFixed(2)}</span>
+}
 
 export const Header: React.FC = ({ ...restProps }) => {
   const { title: pageTitle } = useGeneral()
@@ -32,16 +40,24 @@ export const Header: React.FC = ({ ...restProps }) => {
         <Logo className={cn(s.logoWrapper)} />
         <div className={cn(s.endWrapper)}>
           {!isConnected && <ConnectButton />}
-          <HeaderInfoButton
-            className={cn(s.infoButton)}
-            icon={<FiatIcon />}
-            text={<span style={{ fontSize: '16px' }}>20.00</span>}
-          />
-          <HeaderInfoButton
-            className={cn(s.infoButton)}
-            icon={<Ethereum />}
-            text={'Ethereum Mainnet'}
-          />
+          {isConnected && (
+            <HeaderInfoButton
+              className={cn(s.infoButton)}
+              icon={<FiatIcon />}
+              text={
+                <SafeSuspense fallback={<span style={{ fontSize: '16px' }}>00.00</span>}>
+                  <FiatBalanceInfo />
+                </SafeSuspense>
+              }
+            />
+          )}
+          {isConnected && (
+            <HeaderInfoButton
+              className={cn(s.infoButton)}
+              icon={<Ethereum />}
+              text={'Ethereum Mainnet'}
+            />
+          )}
           {isConnected && <ConnectedWallet />}
           <ButtonMobileMenu
             drawerVisible={drawerVisible}

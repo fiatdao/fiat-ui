@@ -112,8 +112,8 @@ const wranglePosition = async (
     BigNumber.from(position.vault?.collateralizationRatio ?? 1e18) as BigNumber,
     18,
   )
-  const totalCollateral = getHumanValue(BigNumber.from(position.totalCollateral) as BigNumber, 18)
-  const totalNormalDebt = getHumanValue(BigNumber.from(position.totalNormalDebt) as BigNumber, 18)
+  const totalCollateral = BigNumber.from(position.totalCollateral) ?? ZERO_BIG_NUMBER
+  const totalNormalDebt = BigNumber.from(position.totalNormalDebt) ?? ZERO_BIG_NUMBER
   const maturity = BigNumberToDateOrCurrent(position.maturity)
 
   const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
@@ -123,7 +123,6 @@ const wranglePosition = async (
     getDecimals(position.collateral?.underlierAddress, provider),
   ])
 
-  console.log(' HELLO !!!')
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
   if (currentValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()) {
@@ -133,7 +132,6 @@ const wranglePosition = async (
     isAtRisk = vaultCollateralizationRatio.gte(healthFactor)
   }
 
-  console.log(' ALO!!!! ')
   // TODO Borrowing rate
   return {
     id,

@@ -3,7 +3,9 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import Link from 'next/link'
-import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
+import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/utils/table'
 import Element from '@/src/resources/svg/element.svg'
@@ -125,6 +127,23 @@ const FILTERS: FilterData = {
   Element: { active: false, name: 'Element', icon: <Element /> },
 }
 
+// TODO fix types here
+const PositionsTable = ({ activeFilters, inMyWallet }: any) => {
+  const data = useCollaterals(inMyWallet, activeFilters)
+
+  return (
+    <Table
+      columns={Columns}
+      dataSource={data}
+      pagination={tablePagination(data?.length ?? 0)}
+      rowKey="id"
+      scroll={{
+        x: true,
+      }}
+    />
+  )
+}
+
 const CreatePosition = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
@@ -132,8 +151,6 @@ const CreatePosition = () => {
   const activeFilters = Object.values(filters)
     .filter((f) => f.active)
     .map((f) => f.name)
-
-  const data = useCollaterals(inMyWallet, activeFilters)
 
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
@@ -220,20 +237,16 @@ const CreatePosition = () => {
           <Filter />
         </ButtonOutlineGradient>
       </Popover>
-      <SkeletonTable columns={Columns as SkeletonTableColumnsType[]} loading={!data} rowCount={2}>
-        <Table
-          columns={Columns}
-          dataSource={data}
-          loading={false}
-          pagination={tablePagination(data?.length ?? 0)}
-          rowKey="id"
-          scroll={{
-            x: true,
-          }}
-        />
-      </SkeletonTable>
+
+      <SafeSuspense
+        fallback={
+          <SkeletonTable columns={Columns as SkeletonTableColumnsType[]} loading rowCount={2} />
+        }
+      >
+        <PositionsTable activeFilters={activeFilters} inMyWallet={inMyWallet} />
+      </SafeSuspense>
     </>
   )
 }
 
-export default CreatePosition
+export default withRequiredConnection(CreatePosition)

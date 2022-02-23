@@ -87,7 +87,6 @@ export const WithdrawForm = ({
     },
   ]
 
-  console.log({ userBalance })
   return (
     <Form form={form} onFinish={handleWithdraw}>
       <fieldset disabled={submitting}>

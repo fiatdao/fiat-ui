@@ -3,22 +3,22 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useEffect, useState } from 'react'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useAuction } from '@/src/hooks/subgraph/useAuction'
 import useTransaction from '@/src/hooks/contracts/useTransaction'
-import useContractCall from '@/src/hooks/contracts/useContractCall'
-import WalletButton from '@/src/components/custom/connect-button'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { contracts } from '@/src/constants/contracts'
-import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
+import { getNonHumanValue } from '@/src/web3/utils'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { Form } from '@/src/components/antd'
 import ElementIcon from '@/src/resources/svg/element.svg'
-import genericSuspense from '@/src/utils/genericSuspense'
 import TokenAmount from '@/src/components/custom/token-amount'
 
 const SLIPPAGE_VALUE = BigNumber.from(0.02) // 2%
@@ -61,10 +61,6 @@ const Summary: React.FC = () => {
 
 type FormProps = { liquidateAmount: BigNumber }
 
-// TODO:
-//  retrieve price with `getStatus`
-//  `maxPrice` must be less than `price`
-//  setAllowance and call takeCollateral from collateralAuction contract
 const LiquidateAuction = () => {
   const auctionId = useQueryParam('auctionId')
 
@@ -72,9 +68,9 @@ const LiquidateAuction = () => {
   const [step, setStep] = useState(1)
   const [sendingForm, setSendingForm] = useState(false)
 
-  const { address: currentUserAddress, appChainId, isWalletConnected } = useWeb3Connection()
+  const { address: currentUserAddress } = useWeb3Connection()
 
-  const { data, loading } = useAuction(auctionId as string)
+  const { data } = useAuction(auctionId as string)
 
   const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
     data?.tokenAddress as string,
@@ -83,12 +79,9 @@ const LiquidateAuction = () => {
 
   const { tokenSymbol } = useTokenSymbol(data?.tokenAddress as string)
 
-  const [FIATBalance, refetchFIATBalance] = useContractCall(
-    contracts.FIAT.address[appChainId],
-    contracts.FIAT.abi,
-    'balanceOf',
-    [currentUserAddress],
-  )
+  useDynamicTitle(tokenSymbol && `Liquidate ${tokenSymbol} position`)
+
+  const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
   const takeCollateralTx = useTransaction(contracts.COLLATERAL_AUCTION, 'takeCollateral')
 
@@ -106,10 +99,7 @@ const LiquidateAuction = () => {
     )
 
     // maxPrice parameter calc TODO must be in USD?
-    const maxPrice = getNonHumanValue(
-      BigNumber.from(FIATBalance.toString()).dividedBy(collateralAmountToSend),
-      18,
-    ).toFixed(0)
+    const maxPrice = getNonHumanValue(FIATBalance.dividedBy(collateralAmountToSend), 18).toFixed(0)
 
     takeCollateralTx(
       auctionId,
@@ -121,8 +111,8 @@ const LiquidateAuction = () => {
         gasLimit: 10_000_000, //TODO this gasLimit is OK?
       },
     )
-      .then(() => {
-        refetchFIATBalance()
+      .then(async () => {
+        await refetchFIATBalance()
         setSendingForm(false)
       })
       .catch((err) => {
@@ -153,17 +143,6 @@ const LiquidateAuction = () => {
       value: `${data?.profit}%`,
     },
   ]
-
-  if (!isWalletConnected) return <WalletButton />
-
-  if (loading) return <p>Loading...</p>
-
-  console.log({
-    FIATBalance: getHumanValue(
-      BigNumber.from(FIATBalance.toString()),
-      contracts.FIAT.decimals,
-    )?.toFormat(4),
-  })
 
   return (
     <>
@@ -240,4 +219,4 @@ const LiquidateAuction = () => {
   )
 }
 
-export default genericSuspense(LiquidateAuction)
+export default withRequiredConnection(LiquidateAuction)

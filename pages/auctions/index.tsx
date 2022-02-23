@@ -4,9 +4,10 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import { Popover } from 'antd'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { useAuctions } from '@/src/hooks/subgraph/useAuctions'
 import ButtonGradient from '@/src/components/antd/button-gradient'
-import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
+import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import Element from '@/src/resources/svg/element.svg'
@@ -84,12 +85,27 @@ const getParsedActiveFilters = (filters: FilterData) =>
     .filter(({ active }) => active)
     .map(({ name }) => name) as Protocol[]
 
+const AuctionsTable = ({ filters }: any) => {
+  const { auctions } = useAuctions(getParsedActiveFilters(filters))
+
+  return (
+    <Table
+      columns={Columns}
+      dataSource={auctions}
+      loading={false}
+      pagination={tablePagination(auctions?.length ?? 0)}
+      rowKey="id"
+      scroll={{
+        x: true,
+      }}
+    />
+  )
+}
+
 const Auctions = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
 
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
-
-  const { auctions, error, loading } = useAuctions(getParsedActiveFilters(filters))
 
   const setFilter = useCallback((filterName: Protocol, active: boolean) => {
     setFilters((filters) => {
@@ -166,24 +182,13 @@ const Auctions = () => {
           <Filter />
         </ButtonOutlineGradient>
       </Popover>
-      {!error && (
-        <SkeletonTable
-          columns={Columns as SkeletonTableColumnsType[]}
-          loading={loading}
-          rowCount={2}
-        >
-          <Table
-            columns={Columns}
-            dataSource={auctions}
-            loading={false}
-            pagination={tablePagination(auctions?.length ?? 0)}
-            rowKey="id"
-            scroll={{
-              x: true,
-            }}
-          />
-        </SkeletonTable>
-      )}
+      <SafeSuspense
+        fallback={
+          <SkeletonTable columns={Columns as SkeletonTableColumnsType[]} loading rowCount={2} />
+        }
+      >
+        <AuctionsTable filters={filters} />
+      </SafeSuspense>
     </>
   )
 }

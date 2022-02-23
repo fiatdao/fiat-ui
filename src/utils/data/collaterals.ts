@@ -99,7 +99,7 @@ const wrangleCollateral = async (
     // FixMe: `address` must be user's Proxy Address
     manageId:
       hasPosition && collateral.vault?.address && userProxyAddress !== ZERO_ADDRESS
-        ? `${collateral.vault.address}-0x0-${address}`
+        ? `${collateral.vault.address}-0x0-${userProxyAddress}`
         : null,
   }
 }
