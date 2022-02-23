@@ -1,13 +1,10 @@
 import Head from 'next/head'
-import genericSuspense from '@/src/utils/genericSuspense'
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import WalletButton from '@/src/components/custom/connect-button'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
 
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
 
 function Connect() {
-  const { isWalletConnected } = useWeb3Connection()
   const mockedInfo = [
     {
       title: 'Liquidations',
@@ -52,15 +49,7 @@ function Connect() {
     },
   ]
 
-  return !isWalletConnected ? (
-    <>
-      <Head>
-        <title>Connect Your Wallet - FIAT</title>
-      </Head>
-      <h1>Please Connect Your Wallet</h1>
-      <WalletButton />
-    </>
-  ) : (
+  return (
     <>
       <Head>
         <title>Dashboard - FIAT</title>
@@ -74,4 +63,4 @@ function Connect() {
   )
 }
 
-export default genericSuspense(Connect)
+export default withRequiredConnection(Connect)

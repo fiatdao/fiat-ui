@@ -18,7 +18,7 @@ import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Balance } from '@/src/components/custom/balance'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
-import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 type BurnFormFields = {
   burn: BigNumber
@@ -28,7 +28,6 @@ type BurnFormFields = {
 export const BurnForm = ({
   refetch,
   tokenAddress,
-  userBalance,
   vaultAddress,
 }: {
   refetch: RefetchPositionById
@@ -39,17 +38,16 @@ export const BurnForm = ({
   const [submitting, setSubmitting] = useState<boolean>(false)
   const {
     address,
+    approveToken,
+    burnFiat,
     fiatAllowance,
     fiatInfo,
     tokenInfo,
-    updateAllowance,
     updateFiat,
-    userActions,
     userProxy,
   } = useBurnForm({ tokenAddress })
   const [form] = AntdForm.useForm<BurnFormFields>()
 
-  // FixMe: txs are failing, burning or burning and withdrawing
   const handleBurn = async ({ burn, withdraw }: BurnFormFields) => {
     if (!fiatInfo || !userProxy || !address || !tokenAddress || !vaultAddress) {
       return
@@ -62,37 +60,16 @@ export const BurnForm = ({
       setSubmitting(true)
 
       if (fiatAllowance?.lt(toBurn.toFixed())) {
-        await updateAllowance()
+        await approveToken()
       }
-
-      const decreaseDebtEncoded = userActions.interface.encodeFunctionData(
-        'modifyCollateralAndDebt',
-        [
-          vaultAddress,
-          tokenAddress,
-          0,
-          toWithdraw.isZero() ? ZERO_ADDRESS : address,
-          address,
-          toWithdraw.negated().toFixed(),
-          toBurn.negated().toFixed(),
-        ],
-      )
-
-      console.log([
-        vaultAddress,
-        tokenAddress,
-        0,
-        toWithdraw.isZero() ? ZERO_ADDRESS : address,
-        address,
-        toWithdraw.negated().toFixed(),
-        toBurn.negated().toFixed(),
-      ])
-
-      const tx = await userProxy.execute(userActions.address, decreaseDebtEncoded, {
-        gasLimit: 1_000_000,
+      await burnFiat({
+        vault: vaultAddress,
+        token: tokenAddress,
+        tokenId: 0,
+        toWithdraw,
+        toBurn,
       })
 
-      await tx.wait()
       await Promise.all([refetch(), updateFiat()])
       form.resetFields()
     } catch (err) {
@@ -131,9 +108,9 @@ export const BurnForm = ({
         <Form.Item name="burn" required>
           <TokenAmount
             disabled={submitting}
-            displayDecimals={fiatInfo?.decimals}
-            max={fiatInfo?.humanValue}
-            maximumFractionDigits={fiatInfo?.decimals}
+            displayDecimals={contracts.FIAT.decimals}
+            max={Number(fiatInfo?.toFixed(2))}
+            maximumFractionDigits={contracts.FIAT.decimals}
             slider
             tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
           />
@@ -146,7 +123,7 @@ export const BurnForm = ({
                 <TokenAmount
                   disabled={submitting}
                   displayDecimals={tokenInfo?.decimals}
-                  max={userBalance}
+                  max={tokenInfo?.humanValue}
                   maximumFractionDigits={tokenInfo?.decimals}
                   slider
                   tokenIcon={<FiatIcon />}

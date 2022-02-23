@@ -35,13 +35,13 @@ export const MintForm = ({
 
   const maxFiatValue = useMemo<BigNumber | undefined>(() => {
     // FixMe: this works when the component is mounted, but needs to be updated after form submit
-    if (userBalance && fiatInfo?.humanValue) {
-      return calculateRemainingFiat(userBalance, fiatInfo.humanValue)
+    if (userBalance && fiatInfo) {
+      return calculateRemainingFiat(userBalance, BigNumber.from(fiatInfo) ?? ZERO_BIG_NUMBER)
     }
   }, [userBalance, fiatInfo])
 
   const handleMint = async ({ mint }: { mint: BigNumber }) => {
-    if (!userProxy || !address || !vaultAddress || !userBalance || !fiatInfo?.humanValue) {
+    if (!userProxy || !address || !vaultAddress || !userBalance || !fiatInfo) {
       return
     }
 

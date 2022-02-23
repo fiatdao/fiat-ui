@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { ethers } from 'ethers'
 import { useEffect, useMemo, useState } from 'react'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
@@ -29,7 +30,6 @@ import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import Success from '@/src/resources/svg/success.svg'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
-import genericSuspense from '@/src/utils/genericSuspense'
 import { getHumanValue } from '@/src/web3/utils'
 import { ERC20 } from '@/types/typechain'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
@@ -344,4 +344,4 @@ const OpenPosition = () => {
   )
 }
 
-export default genericSuspense(OpenPosition)
+export default withRequiredConnection(OpenPosition)

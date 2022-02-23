@@ -3,7 +3,7 @@ import useUserProxy from '@/src/hooks/useUserProxy'
 
 export const usePositionsByUser = () => {
   const { userProxyAddress } = useUserProxy()
-  const { positions = [] } = usePositions(undefined, userProxyAddress ?? '')
+  const { positions = [], loading } = usePositions(undefined, userProxyAddress ?? '')
 
-  return { positions, positionTransactions: [] }
+  return { positions, loading }
 }

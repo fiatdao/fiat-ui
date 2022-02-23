@@ -11,7 +11,7 @@ type SkeletonTableProps = SkeletonProps & {
   rowCount?: number
 }
 
-export default function SkeletonTable({
+export default function Index({
   active = false,
   children,
   className,

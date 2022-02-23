@@ -2,6 +2,7 @@ import { usePositionsByUser } from './usePositionsByUser'
 import useSWR from 'swr'
 import { Web3Provider } from '@ethersproject/providers'
 import _ from 'lodash'
+import isDev from '@/src/utils/isDev'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
 import { ChainsValues } from '@/src/constants/chains'
@@ -36,21 +37,21 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   const { appChainId, web3Provider: provider } = useWeb3Connection()
   const { positions } = usePositionsByUser()
 
-  if (!provider) {
-    throw 'useCollateral without user'
-  }
-
   // TODO Make this more performante avoiding wrangle of positions or the whole query when inMyWallet is false
   const collaterals = inMyWallet ? _.uniq(positions.map((p) => p.collateral.address)) : undefined
 
-  const { data } = useSWR(['collaterals', collaterals?.join(''), protocols?.join('')], () =>
-    fetchCollaterals({
-      protocols: protocols?.length > 0 ? protocols : undefined,
-      collaterals,
-      provider,
-      appChainId,
-    }),
+  const { data, error } = useSWR(['collaterals', collaterals?.join(''), protocols?.join('')], () =>
+    provider
+      ? fetchCollaterals({
+          protocols: protocols?.length > 0 ? protocols : undefined,
+          collaterals,
+          provider,
+          appChainId,
+        })
+      : [],
   )
+
+  if (isDev() && error) console.error(error)
 
   return data
 }

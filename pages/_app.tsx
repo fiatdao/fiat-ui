@@ -1,12 +1,11 @@
 import Head from 'next/head'
 import type { AppProps } from 'next/app'
-import { ErrorBoundary } from 'react-error-boundary'
 import { SWRConfig } from 'swr'
 import { Layout } from 'antd'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
 import GeneralContextProvider from '@/src/providers/generalProvider'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
 import WrongNetwork from '@/src/components/custom/wrong-network'
-import { GeneralError } from '@/src/components/custom/general-error'
 import { Sidebar } from '@/src/components/custom/sidebar'
 import Spin from '@/src/components/antd/spin'
 
@@ -48,21 +47,31 @@ function App({ Component, pageProps }: AppProps) {
         <meta content="#ffffff" name="theme-color" />
       </Head>
       <GeneralContextProvider>
-        <SWRConfig value={{ suspense: false, revalidateOnFocus: false }}>
-          <ErrorBoundary fallbackRender={(props) => <GeneralError {...props} />}>
-            <Web3ConnectionProvider fallback={<Spin />}>
-              <Layout style={{ minHeight: '100vh' }}>
-                <Sidebar />
-                <Layout>
-                  <Header />
-                  <Layout.Content>
+        <SWRConfig
+          value={{
+            suspense: true,
+            revalidateOnFocus: false,
+            errorRetryCount: 0,
+            shouldRetryOnError: false,
+            revalidateOnMount: true,
+            refreshWhenHidden: false,
+            refreshWhenOffline: false,
+          }}
+        >
+          <Web3ConnectionProvider fallback={<Spin />}>
+            <Layout style={{ minHeight: '100vh' }}>
+              <Sidebar />
+              <Layout>
+                <Header />
+                <Layout.Content>
+                  <SafeSuspense fallback={<Spin />}>
                     <Component {...pageProps} />
-                  </Layout.Content>
-                </Layout>
+                  </SafeSuspense>
+                </Layout.Content>
               </Layout>
-              <WrongNetwork />
-            </Web3ConnectionProvider>
-          </ErrorBoundary>
+            </Layout>
+            <WrongNetwork />
+          </Web3ConnectionProvider>
         </SWRConfig>
       </GeneralContextProvider>
     </>

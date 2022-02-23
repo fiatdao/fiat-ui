@@ -1,7 +1,8 @@
 import s from './s.module.scss'
 import cn from 'classnames'
 import { useEffect, useState } from 'react'
-import genericSuspense from '@/src/utils/genericSuspense'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
+import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import {
   ManageFiat,
   ManageFiatProps,
@@ -21,6 +22,9 @@ const PositionManager = () => {
   const [activeTabKey, setActiveTabKey] = useState<
     ManageCollateralProps['activeTabKey'] | ManageFiatProps['activeTabKey']
   >('deposit')
+
+  // Todo add tokenSymbol here
+  useDynamicTitle(`Manage position`)
 
   useEffect(() => {
     setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
@@ -100,4 +104,4 @@ const PositionManager = () => {
   )
 }
 
-export default genericSuspense(PositionManager)
+export default withRequiredConnection(PositionManager)

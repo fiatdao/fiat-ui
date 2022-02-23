@@ -10,6 +10,7 @@ import userActions1155 from '@/src/abis/UserActions1155.json'
 import vault20 from '@/src/abis/Vault20.json'
 import vault1155 from '@/src/abis/Vault1155.json'
 import prbProxy from '@/src/abis/PRBProxy.json'
+import noLossCollateralAuction from '@/src/abis/NoLossCollateralAuction.json'
 
 type BaseAppContractInfo = {
   abi: any[]
@@ -101,15 +102,50 @@ export const contracts = constantContracts({
   USER_ACTIONS_20: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xf88C65e435446ac54F105C508D246649A4FA1BcC',
+      [Chains.goerli]: '0x9372Bf7E30Df8b399eF0b470DCF3C7776C50CFF9',
     },
     abi: userActions20,
   },
   USER_ACTIONS_1155: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x9EF030cEaC5ad9b7c17549f7e4DB33A2a90EA4DE',
+      [Chains.goerli]: '0x91c5f414DfBC8Af76B13d91E0c5EdcF9Ac39DE66',
     },
     abi: userActions1155,
+  },
+  USER_ACTIONS_EPT: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '0xbd0b3533Af1B728e6cc196976D72Cb966f7bB261',
+    },
+    abi: [], //Todo missing ABI here
+  },
+  USER_ACTIONS_FC: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '0xe89917847D5603C046C4E556d9A4afD21fa59EA1',
+    },
+    abi: [], //Todo missing ABI here
+  },
+  USER_ACTIONS_AUCTIONS: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '', // TODO missing deployed contract here
+    },
+    abi: [], // Todo missing ABI here
+  },
+  MONETA: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '0x21ff8FF98fb7F283aD4943400D6e401aFCA80178',
+    },
+    abi: [],
+  },
+  NO_LOSS_COLLATERAL_AUCTION_ACTIONS: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '0x8D01561B5e4f139336dD3275240129c8507ed581',
+    },
+    abi: noLossCollateralAuction, // Todo missing ABI here
   },
 })

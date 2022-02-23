@@ -11,7 +11,7 @@ import { CellAddress } from '@/src/components/custom/cell-address'
 import { Asset } from '@/src/components/custom/asset'
 import { PositionTransaction } from '@/src/utils/data/positionTransaction'
 import { tablePagination } from '@/src/utils/table'
-import SkeletonTable, { SkeletonTableColumnsType } from '@/pages/auctions/skeleton-table'
+import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 
 const Columns: ColumnsType<any> = [
   {

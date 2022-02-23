@@ -34,5 +34,5 @@ export const usePositions = (id?: string, address?: string, protocol?: string) =
   )
 
   // TODO Remove positionTransactions from here
-  return { positions: data, error, refetch: mutate }
+  return { positions: data, error, refetch: mutate, loading: !error && !data }
 }

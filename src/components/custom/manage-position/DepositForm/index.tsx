@@ -146,7 +146,7 @@ export const DepositForm = ({
             }
             buttonText={mintButtonText}
             onClick={toggleMintFiat}
-            top={<Balance title="Mint FIAT" value={`Available: ${fiatInfo?.humanValue}`} />}
+            top={<Balance title="Mint FIAT" value={`Available: ${fiatInfo}`} />}
           />
         )}
         <ButtonsWrapper>

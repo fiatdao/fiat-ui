@@ -40,6 +40,7 @@ export const useERC20Allowance = (tokenAddress: string, spender: string) => {
         .allowance(currentUserAddress, spender)
         // FixMe: more ugh!!
         .then((allowance) => setAllowance(BigNumber.from(allowance.toString()) as BigNumber))
+        .catch((allowance) => console.error(allowance))
     }
   }, [currentUserAddress, erc20, spender])
 

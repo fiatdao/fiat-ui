@@ -1,18 +1,19 @@
 import { usePosition } from './subgraph/usePosition'
-import { ZERO_BIG_NUMBER } from '../constants/misc'
+import { ZERO_ADDRESS } from '../constants/misc'
 import { Contract } from '@ethersproject/contracts'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { ChainsValues } from '@/src/constants/chains'
+import { KeyedMutator } from 'swr'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { contracts } from '@/src/constants/contracts'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getHumanValue } from '@/src/web3/utils'
-import { ERC20, FIAT, UserActions20 } from '@/types/typechain'
+import { ERC20, UserActions20 } from '@/types/typechain'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 
 type ManageForm = {
@@ -68,40 +69,15 @@ const useDecimalsAndTokenValue = ({
   return { tokenInfo, updateToken }
 }
 
-type UseFiatBalance = {
-  fiatInfo?: TokenInfo
-  updateFiat: () => Promise<void>
-}
-
-const useFiatBalance = ({
-  address,
-  appChainId,
-}: {
-  address: string | null
-  appChainId: ChainsValues
-}): UseFiatBalance => {
-  const [FIATBalance, updateFiat] = useContractCall(
-    contracts.FIAT.address[appChainId],
-    contracts.FIAT.abi,
-    'balanceOf',
-    [address],
-  )
-  const fiatInfo: TokenInfo = {
-    decimals: contracts.FIAT.decimals,
-    humanValue: FIATBalance ? getHumanValue(FIATBalance.toString(), 18) : ZERO_BIG_NUMBER,
-  }
-  return { fiatInfo, updateFiat }
-}
-
 type UseDepositForm = ManageForm & {
   tokenInfo?: TokenInfo
-  fiatInfo?: TokenInfo
+  fiatInfo?: BigNumber
   updateFiat: () => Promise<void>
   updateToken: () => Promise<void>
 }
 
 export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }): UseDepositForm => {
-  const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
+  const { address, readOnlyAppProvider } = useWeb3Connection()
   const userActions = useUserActions()
   const { userProxy } = useUserProxy()
   const { tokenInfo, updateToken } = useDecimalsAndTokenValue({
@@ -109,7 +85,8 @@ export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }): UseD
     address,
     readOnlyAppProvider,
   })
-  const { fiatInfo, updateFiat } = useFiatBalance({ address, appChainId })
+
+  const [fiatInfo, updateFiat] = useFIATBalance(true)
 
   return { address, tokenInfo, updateFiat, updateToken, userActions, userProxy, fiatInfo }
 }
@@ -128,23 +105,32 @@ export const useWithdrawForm = ({ tokenAddress }: { tokenAddress?: string }): Us
 }
 
 type UseMintForm = ManageForm & {
-  fiatInfo?: TokenInfo
-  updateFiat: () => Promise<void>
+  fiatInfo?: BigNumber
+  updateFiat: KeyedMutator<any>
 }
 
 export const useMintForm = (): UseMintForm => {
-  const { address, appChainId } = useWeb3Connection()
+  const { address } = useWeb3Connection()
   const userActions = useUserActions()
   const { userProxy } = useUserProxy()
-  const { fiatInfo, updateFiat } = useFiatBalance({ address, appChainId })
+  const [fiatInfo, updateFiat] = useFIATBalance(true)
 
   return { address, userActions, userProxy, fiatInfo, updateFiat }
 }
 
+type BurnFiat = {
+  vault: string
+  token: string
+  tokenId: number
+  toWithdraw: BigNumber
+  toBurn: BigNumber
+}
+
 type UseBurnForm = ManageForm & {
   tokenInfo?: TokenInfo
-  fiatInfo?: TokenInfo
-  updateAllowance: () => Promise<any>
+  fiatInfo?: BigNumber
+  approveToken: () => Promise<any>
+  burnFiat: (arg0: BurnFiat) => Promise<any>
   updateFiat: () => Promise<any>
   fiatAllowance?: BigNumber
 }
@@ -155,7 +141,7 @@ export const useBurnForm = ({ tokenAddress }: { tokenAddress?: string }): UseBur
   const { userProxy, userProxyAddress } = useUserProxy()
 
   const { tokenInfo } = useDecimalsAndTokenValue({ address, readOnlyAppProvider, tokenAddress })
-  const { fiatInfo, updateFiat } = useFiatBalance({ address, appChainId })
+  const [fiatInfo, updateFiat] = useFIATBalance(true)
   const [fiatAllowance] = useContractCall(
     contracts.FIAT.address[appChainId],
     contracts.FIAT.abi,
@@ -163,27 +149,65 @@ export const useBurnForm = ({ tokenAddress }: { tokenAddress?: string }): UseBur
     [address, userProxyAddress],
   )
 
-  const updateAllowance = useCallback(async () => {
-    if (tokenAddress && web3Provider && address && userProxyAddress) {
-      const fiatToken = new Contract(
+  const burnFiat = useCallback(
+    async ({ toBurn, toWithdraw, token, tokenId, vault }: BurnFiat) => {
+      if (!fiatInfo || !userProxy || !address || !token || !vault) {
+        return
+      }
+      const burnEncoded = userActions.interface.encodeFunctionData('modifyCollateralAndDebt', [
+        vault,
+        token,
+        tokenId,
+        toWithdraw.isZero() ? ZERO_ADDRESS : address,
+        address,
+        toWithdraw.negated().toFixed(),
+        toBurn.negated().toFixed(),
+      ])
+
+      const tx = await userProxy.execute(userActions.address, burnEncoded, {
+        gasLimit: 1_000_000,
+      })
+
+      return tx.wait()
+    },
+    [fiatInfo, userProxy, address, userActions.address, userActions.interface],
+  )
+
+  const approveToken = useCallback(async () => {
+    if (tokenAddress && web3Provider && address && userProxy) {
+      const MAX_AVAILABLE_AMOUNT = ethers.constants.MaxUint256
+      const approveToken = userActions.interface.encodeFunctionData('approveToken', [
         contracts.FIAT.address[appChainId],
-        contracts.FIAT.abi,
-        web3Provider.getSigner(),
-      ) as FIAT
-      return fiatToken.approve(userProxyAddress, ethers.constants.MaxUint256)
+        contracts.MONETA.address[appChainId],
+        MAX_AVAILABLE_AMOUNT,
+      ])
+
+      const tx = await userProxy.execute(userActions.address, approveToken, {
+        gasLimit: 1_000_000,
+      })
+      return tx.wait()
     }
     return Promise.resolve(null)
-  }, [tokenAddress, web3Provider, address, userProxyAddress, appChainId])
+  }, [
+    tokenAddress,
+    userProxy,
+    web3Provider,
+    address,
+    appChainId,
+    userActions.address,
+    userActions.interface,
+  ])
 
   return {
     address,
     fiatInfo,
     fiatAllowance,
     updateFiat,
+    burnFiat,
     userActions,
     userProxy,
     tokenInfo,
-    updateAllowance,
+    approveToken,
   }
 }
 
