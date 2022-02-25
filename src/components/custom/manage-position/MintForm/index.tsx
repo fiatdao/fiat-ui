@@ -3,17 +3,17 @@ import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useMemo, useState } from 'react'
-import { WAIT_BLOCKS, ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
-import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { useMintForm } from '@/src/hooks/managePosition'
-import { iconByAddress } from '@/src/utils/managePosition'
-import { getNonHumanValue } from '@/src/web3/utils'
+import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
+import { Position } from '@/src/utils/data/positions'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
 const calculateRemainingFiat = (userBalance: BigNumber, fiatAmount: BigNumber) => {
   // TODO: remove the hardcoded 1.1 factor
@@ -21,52 +21,36 @@ const calculateRemainingFiat = (userBalance: BigNumber, fiatAmount: BigNumber) =
 }
 
 export const MintForm = ({
+  position,
   refetch,
-  userBalance,
-  vaultAddress,
 }: {
   refetch: RefetchPositionById
-  userBalance?: BigNumber
-  vaultAddress?: string
+  position?: Position
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const { address, fiatInfo, updateFiat, userActions, userProxy } = useMintForm()
+  const { fiatInfo, mint: mintFIAT, updateFiat } = useMintForm()
   const [form] = AntdForm.useForm()
 
   const maxFiatValue = useMemo<BigNumber | undefined>(() => {
     // FixMe: this works when the component is mounted, but needs to be updated after form submit
-    if (userBalance && fiatInfo) {
-      return calculateRemainingFiat(userBalance, BigNumber.from(fiatInfo) ?? ZERO_BIG_NUMBER)
+    if (position?.totalCollateral && fiatInfo) {
+      return calculateRemainingFiat(
+        position?.totalCollateral,
+        BigNumber.from(fiatInfo) ?? ZERO_BIG_NUMBER,
+      )
     }
-  }, [userBalance, fiatInfo])
+  }, [position?.totalCollateral, fiatInfo])
 
   const handleMint = async ({ mint }: { mint: BigNumber }) => {
-    if (!userProxy || !address || !vaultAddress || !userBalance || !fiatInfo) {
-      return
-    }
-
-    const toMint = getNonHumanValue(mint, contracts.FIAT.decimals)
-
-    const increaseDebtEncoded = userActions.interface.encodeFunctionData(
-      'modifyCollateralAndDebt',
-      [
-        vaultAddress,
-        ZERO_ADDRESS,
-        0,
-        ZERO_ADDRESS,
-        address,
-        ZERO_BIG_NUMBER.toFixed(),
-        toMint.toFixed(),
-      ],
-    )
-
-    setSubmitting(true)
-
     try {
-      const tx = await userProxy.execute(userActions.address, increaseDebtEncoded, {
-        gasLimit: 1_000_000,
+      const toMint = mint ? getNonHumanValue(mint, 18) : ZERO_BIG_NUMBER
+      setSubmitting(true)
+      await mintFIAT({
+        vault: position?.protocolAddress ?? '',
+        token: position?.collateral.address ?? '',
+        tokenId: 0,
+        toMint,
       })
-      await tx.wait(WAIT_BLOCKS)
       await Promise.all([refetch(), updateFiat()])
       form.resetFields()
     } catch (err) {
@@ -102,10 +86,10 @@ export const MintForm = ({
           <TokenAmount
             disabled={submitting}
             displayDecimals={contracts.FIAT.decimals}
-            max={maxFiatValue}
+            max={Number(getHumanValue(maxFiatValue, WAD_DECIMALS)?.toFixed(2))} // TODO: fails sometimes (use with low numbers)
             maximumFractionDigits={contracts.FIAT.decimals}
             slider
-            tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
+            tokenIcon={<FiatIcon />}
           />
         </Form.Item>
         <ButtonGradient height="lg" htmlType="submit" loading={submitting}>

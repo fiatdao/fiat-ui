@@ -1,10 +1,10 @@
 import React, { Suspense } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { GeneralError } from '@/src/components/custom/general-error'
+import ErrorBoundary from '@/src/components/custom/error-boundary'
 
 type Props = {
   children: React.ReactNode
   fallback?: JSX.Element
-  error?: JSX.Element | null
 }
 
 function DefaultFallback(): JSX.Element {
@@ -14,10 +14,9 @@ function DefaultFallback(): JSX.Element {
 export default function SafeSuspense({
   children,
   fallback = <DefaultFallback />,
-  error = null,
 }: Props): JSX.Element {
   return (
-    <ErrorBoundary fallback={error}>
+    <ErrorBoundary fallbackRender={(props: any) => <GeneralError {...props} />}>
       <Suspense fallback={fallback}>{children}</Suspense>
     </ErrorBoundary>
   )

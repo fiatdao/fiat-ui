@@ -2,15 +2,16 @@ import contractCall from '../contractCall'
 import { BigNumberToDateOrCurrent } from '../dateTime'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber as BigNumberEthers } from 'ethers'
+import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
 
-import { Maybe, TokenData } from '@/types/utils'
+import { Maybe } from '@/types/utils'
+import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
-import { Collybus, ERC20 } from '@/types/typechain'
-import { ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { ERC20 } from '@/types/typechain'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 export type Position = {
   id: string
@@ -28,45 +29,18 @@ export type Position = {
   isAtRisk: boolean
 }
 
+// TODO pass tokenId depends on protocol
+
 const readValue = async (
   position: SubgraphPosition,
-  net: boolean,
+  isFaceValue: boolean,
   appChainId: ChainsValues,
   provider: JsonRpcProvider,
 ): Promise<BigNumber> => {
-  const {
-    abi: collybusAbi,
-    address: { [appChainId]: collybusAddress },
-  } = contracts.COLLYBUS
-  if (
-    position?.collateral?.underlierAddress &&
-    position?.vault?.address &&
-    position.maturity &&
-    position?.collateral?.underlierAddress !== ZERO_ADDRESS
-  ) {
-    try {
-      const readResult = (await contractCall<Collybus, 'read'>(
-        collybusAddress,
-        collybusAbi,
-        provider,
-        'read',
-        [
-          position.vault.address,
-          position.collateral.underlierAddress,
-          0, // FIXME Check protocol if is not an ERC20?
-          position.maturity,
-          net,
-        ],
-      )) as BigNumberEthers
-      return new BigNumber(readResult.toString())
-    } catch (err) {
-      return Promise.resolve(ZERO_BIG_NUMBER)
-    }
-  }
-  return Promise.resolve(ZERO_BIG_NUMBER)
+  return getCurrentValue(provider, appChainId, 0, position?.vault?.address || null, isFaceValue)
 }
 
-const getCurrentValue = (
+const _getCurrentValue = (
   position: SubgraphPosition,
   appChainId: ChainsValues,
   provider: JsonRpcProvider,
@@ -74,7 +48,7 @@ const getCurrentValue = (
   return readValue(position, false, appChainId, provider)
 }
 
-const getFaceValue = (
+const _getFaceValue = (
   position: SubgraphPosition,
   appChainId: ChainsValues,
   provider: JsonRpcProvider,
@@ -117,8 +91,8 @@ const wranglePosition = async (
   const maturity = BigNumberToDateOrCurrent(position.maturity)
 
   const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
-    getCurrentValue(position, appChainId, provider),
-    getFaceValue(position, appChainId, provider),
+    _getCurrentValue(position, appChainId, provider),
+    _getFaceValue(position, appChainId, provider),
     getDecimals(position.collateral?.address, provider), // collateral is an ERC20 token
     getDecimals(position.collateral?.underlierAddress, provider),
   ])

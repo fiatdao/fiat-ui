@@ -15,6 +15,7 @@ export const AUCTION_BY_ID = gql`
         underlierAddress
         symbol
         tokenId
+        underlierSymbol
       }
       vault {
         address

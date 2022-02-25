@@ -18,12 +18,19 @@ import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import Filter from '@/src/resources/svg/filter.svg'
 import { PROTOCOLS, Protocol } from '@/types/protocols'
+import { AuctionData } from '@/src/utils/data/auctions'
 
 const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'protocol',
-    render: (obj: any) => <Asset mainAsset="SBOND" secondaryAsset="DAI" title={obj} />,
+    render: (protocol: AuctionData['protocol'], obj: AuctionData) => (
+      <Asset
+        mainAsset={protocol ?? ''}
+        secondaryAsset={obj.underlier.symbol}
+        title={protocol ?? ''}
+      />
+    ),
     title: 'Protocol',
     width: 200,
   },
@@ -53,9 +60,9 @@ const Columns: ColumnsType<any> = [
   },
   {
     align: 'left',
-    dataIndex: 'profit',
+    dataIndex: 'yield',
     render: (value: string) => <CellValue value={`${value}%`} />,
-    title: 'Profit',
+    title: 'Yield',
   },
   {
     align: 'right',
@@ -161,7 +168,7 @@ const Auctions = () => {
 
   return (
     <>
-      <h2 className={cn(s.title)}>Select an asset to liquidate and get profit</h2>
+      <h2 className={cn(s.title)}>Select an asset to liquidate and get yield</h2>
       <div className={cn(s.filters)}>
         {renderFilters()}
         {clearButton()}

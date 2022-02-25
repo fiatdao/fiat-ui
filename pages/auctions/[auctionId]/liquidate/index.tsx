@@ -18,7 +18,6 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { Form } from '@/src/components/antd'
-import ElementIcon from '@/src/resources/svg/element.svg'
 import TokenAmount from '@/src/components/custom/token-amount'
 
 const SLIPPAGE_VALUE = BigNumber.from(0.02) // 2%
@@ -138,9 +137,9 @@ const LiquidateAuction = () => {
       value: `$${data?.collateralValue}`,
     },
     {
-      title: 'Profit',
+      title: 'Yield',
       tooltip: 'Tooltip text', // TODO tooltip text?
-      value: `${data?.profit}%`,
+      value: `${data?.yield}%`,
     },
   ]
 
@@ -179,10 +178,11 @@ const LiquidateAuction = () => {
                     <TokenAmount
                       disabled={sendingForm}
                       displayDecimals={4}
+                      mainAsset={data?.protocol}
                       max={Number(data?.upForAuction)}
                       maximumFractionDigits={6}
+                      secondaryAsset={data?.underlier.symbol}
                       slider
-                      tokenIcon={<ElementIcon />}
                     />
                   </Form.Item>
                   <ButtonGradient disabled={sendingForm} height="lg" onClick={() => setStep(2)}>

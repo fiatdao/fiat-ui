@@ -7,16 +7,17 @@ import FDAI from '@/src/components/custom/asset-icons/resources/fdai.svg'
 import SBOND from '@/src/components/custom/asset-icons/resources/sbond.svg'
 import USDC from '@/src/components/custom/asset-icons/resources/usdc.svg'
 
-const getAsset = (asset: string) => {
+const getAsset = (_asset?: string) => {
+  const asset = _asset ? _asset.toUpperCase() : ''
   return asset === 'DAI' ? (
     <DAI />
-  ) : asset === 'EPYV' ? (
+  ) : asset.includes('ELEMENT') ? (
     <EPYV />
   ) : asset === 'FDAI' ? (
     <FDAI />
   ) : asset === 'SBOND' ? (
     <SBOND />
-  ) : asset === 'USDC' ? (
+  ) : asset.includes('USDC') ? (
     <USDC />
   ) : null
 }
@@ -24,8 +25,8 @@ const getAsset = (asset: string) => {
 export const AssetIcons: React.FC<{
   className?: string
   dimensions?: string
-  mainAsset: string
-  secondaryAsset: string
+  mainAsset?: string
+  secondaryAsset?: string
 }> = ({ className, dimensions, mainAsset, secondaryAsset, ...restProps }) => {
   return (
     <div

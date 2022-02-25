@@ -71,7 +71,7 @@ const YourPositions = () => {
         ))}
       </Tabs>
       {activeTabKey === TabState.Inventory && <InventoryTable inventory={positions} />}
-      {activeTabKey === TabState.Transactions && <TransactionHistoryTable transactions={[]} />}
+      {activeTabKey === TabState.Transactions && <TransactionHistoryTable />}
     </>
   )
 }

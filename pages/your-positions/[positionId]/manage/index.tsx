@@ -1,6 +1,8 @@
 import s from './s.module.scss'
 import cn from 'classnames'
 import { useEffect, useState } from 'react'
+import Spin from '@/src/components/antd/spin'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import {
@@ -16,50 +18,53 @@ import {
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
+import { useManagePositionInfo } from '@/src/hooks/managePosition'
+import { parseDate } from '@/src/utils/dateTime'
+import { getHumanValue } from '@/src/web3/utils'
+import { WAD_DECIMALS } from '@/src/constants/misc'
 
-const PositionManager = () => {
+const DynamicContent = () => {
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<
     ManageCollateralProps['activeTabKey'] | ManageFiatProps['activeTabKey']
   >('deposit')
 
-  // Todo add tokenSymbol here
-  useDynamicTitle(`Manage position`)
+  const { position, refetch: refetchPosition } = useManagePositionInfo()
 
   useEffect(() => {
     setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
   }, [activeSection])
 
-  const mockedBlocks = [
+  useDynamicTitle(`Manage ${position?.collateral.symbol} position`)
+
+  const infoBlocks = [
     {
       title: 'Bond Name',
-      url: 'https://google.com',
-      value: 'eursCRV',
+      value: position ? position.collateral.symbol : '-',
     },
     {
       title: 'Underlying',
-      url: 'https://google.com',
-      value: 'DAI',
+      value: position ? position.underlier.symbol : '-',
     },
     {
       title: 'Bond Maturity',
       tooltip: 'Tooltip text',
-      value: '16 May, 2021',
+      value: position?.maturity ? parseDate(position?.maturity) : '-',
     },
     {
       title: 'Bond Face Value',
       tooltip: 'Tooltip text',
-      value: '$100.00',
+      value: `$${getHumanValue(position?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
       title: 'Bond Collateral Value',
       tooltip: 'Tooltip text',
-      value: '$150.00',
+      value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
       title: 'Collateralization Ratio',
       tooltip: 'Tooltip text',
-      value: '43%',
+      value: position ? `${position.vaultCollateralizationRatio} %` : '-',
     },
     {
       title: 'Stability fee',
@@ -67,39 +72,54 @@ const PositionManager = () => {
       value: '0',
     },
   ]
+  return (
+    <PositionFormsLayout
+      form={
+        <>
+          <div className={cn(s.top)}>
+            <RadioTabsWrapper>
+              <RadioTab
+                checked={activeSection === 'collateral'}
+                onClick={() => setActiveSection('collateral')}
+              >
+                Collateral
+              </RadioTab>
+              <RadioTab checked={activeSection === 'fiat'} onClick={() => setActiveSection('fiat')}>
+                FIAT
+              </RadioTab>
+            </RadioTabsWrapper>
+          </div>
+          {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
+            <ManageCollateral
+              activeTabKey={activeTabKey}
+              position={position}
+              refetchPosition={refetchPosition}
+              setActiveTabKey={setActiveTabKey}
+            />
+          )}
+          {'fiat' === activeSection && isFiatTab(activeTabKey) && (
+            <ManageFiat
+              activeTabKey={activeTabKey}
+              position={position}
+              refetchPosition={refetchPosition}
+              setActiveTabKey={setActiveTabKey}
+            />
+          )}
+        </>
+      }
+      infoBlocks={infoBlocks}
+    />
+  )
+}
 
+const PositionManager = () => {
   return (
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
-      <PositionFormsLayout
-        form={
-          <>
-            <div className={cn(s.top)}>
-              <RadioTabsWrapper>
-                <RadioTab
-                  checked={activeSection === 'collateral'}
-                  onClick={() => setActiveSection('collateral')}
-                >
-                  Collateral
-                </RadioTab>
-                <RadioTab
-                  checked={activeSection === 'fiat'}
-                  onClick={() => setActiveSection('fiat')}
-                >
-                  FIAT
-                </RadioTab>
-              </RadioTabsWrapper>
-            </div>
-            {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
-              <ManageCollateral activeTabKey={activeTabKey} setActiveTabKey={setActiveTabKey} />
-            )}
-            {'fiat' === activeSection && isFiatTab(activeTabKey) && (
-              <ManageFiat activeTabKey={activeTabKey} setActiveTabKey={setActiveTabKey} />
-            )}
-          </>
-        }
-        infoBlocks={mockedBlocks}
-      />
+
+      <SafeSuspense fallback={<Spin />}>
+        <DynamicContent />
+      </SafeSuspense>
     </>
   )
 }

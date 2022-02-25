@@ -2,13 +2,12 @@ import s from './s.module.scss'
 import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
-import { WAIT_BLOCKS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useDepositForm } from '@/src/hooks/managePosition'
-import { iconByAddress } from '@/src/utils/managePosition'
 import { getNonHumanValue } from '@/src/web3/utils'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
@@ -17,79 +16,66 @@ import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Balance } from '@/src/components/custom/balance'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
+import { Position } from '@/src/utils/data/positions'
 
 type DepositFormFields = {
   deposit: BigNumber
   fiatAmount: BigNumber
 }
 
-export const DepositForm = ({
-  tokenAddress,
-  vaultAddress,
-}: {
-  tokenAddress: string
-  vaultAddress: string
-}) => {
+export const DepositForm = ({ position }: { position: Position }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [maxFiatValue, setMaxFiatValue] = useState<BigNumber | undefined>()
-  const { address, fiatInfo, tokenInfo, updateFiat, updateToken, userActions, userProxy } =
-    useDepositForm({
-      tokenAddress,
-    })
+  const {
+    deposit: depositCollateral,
+    fiatInfo,
+    tokenInfo,
+  } = useDepositForm({
+    tokenAddress: position.collateral.address,
+  })
+
   const [form] = AntdForm.useForm<DepositFormFields>()
 
-  const calculateAndSetMaxFiat = (amountToDeposit: BigNumber) => {
-    setMaxFiatValue(
-      amountToDeposit
-        // TODO: remove the hardcoded 1.1 factor
-        .dividedBy(1.1)
-        .decimalPlaces(contracts.FIAT.decimals),
-    )
-  }
+  const calculateAndSetMaxFiat = useCallback((amountToDeposit?: BigNumber) => {
+    if (amountToDeposit) {
+      const FACTOR = 1.1
+      setMaxFiatValue(
+        amountToDeposit
+          // TODO: remove the hardcoded 1.1 factor
+          .dividedBy(FACTOR)
+          .decimalPlaces(contracts.FIAT.decimals),
+      )
+    }
+  }, [])
 
   const [mintFiat, setMintFiat] = useState(false)
   const toggleMintFiat = () => {
     setMintFiat((prevStatus) => !prevStatus)
+    if (!maxFiatValue) {
+      calculateAndSetMaxFiat(ZERO_BIG_NUMBER)
+    }
   }
   const mintButtonText = 'Mint fiat with this transaction'
 
   const handleDeposit = async ({ deposit, fiatAmount }: DepositFormFields) => {
-    if (!tokenInfo || !userProxy || !address) {
-      return
-    }
-
-    const toDeposit = deposit ? getNonHumanValue(deposit, 18) : ZERO_BIG_NUMBER
-    const toMint = fiatAmount ? getNonHumanValue(fiatAmount, 18) : ZERO_BIG_NUMBER
-
-    const addCollateralEncoded = userActions.interface.encodeFunctionData(
-      'modifyCollateralAndDebt',
-      [
-        vaultAddress,
-        tokenAddress,
-        0,
-        address, // user Address
-        address, // user Address
-        toDeposit.toFixed(),
-        toMint.toFixed(),
-      ],
-    )
-
-    setSubmitting(true)
-
     try {
-      const tx = await userProxy.execute(userActions.address, addCollateralEncoded, {
-        gasLimit: 1_000_000,
+      const toDeposit = deposit ? getNonHumanValue(deposit, 18) : ZERO_BIG_NUMBER
+      const toMint = fiatAmount ? getNonHumanValue(fiatAmount, 18) : ZERO_BIG_NUMBER
+      setSubmitting(true)
+      await depositCollateral({
+        vault: position.protocolAddress,
+        token: position.collateral.address,
+        tokenId: 0,
+        toDeposit,
+        toMint,
       })
-      await tx.wait(WAIT_BLOCKS)
-      // form reset (better with xstate?)
-      await Promise.all([updateToken(), updateFiat()])
-      toggleMintFiat()
-      calculateAndSetMaxFiat(ZERO_BIG_NUMBER)
-      form.resetFields()
     } catch (err) {
       console.error('Failed to Deposit', err)
     } finally {
       setSubmitting(false)
+      toggleMintFiat()
+      calculateAndSetMaxFiat(ZERO_BIG_NUMBER)
+      form.resetFields()
     }
   }
 
@@ -119,15 +105,12 @@ export const DepositForm = ({
           <TokenAmount
             disabled={submitting}
             displayDecimals={tokenInfo?.decimals}
+            mainAsset={position.protocol}
             max={tokenInfo?.humanValue}
             maximumFractionDigits={tokenInfo?.decimals}
-            onChange={(value) => {
-              if (value) {
-                calculateAndSetMaxFiat(value)
-              }
-            }}
+            onChange={(value) => calculateAndSetMaxFiat(value)}
+            secondaryAsset={position.underlier.symbol}
             slider
-            tokenIcon={iconByAddress[tokenAddress]}
           />
         </Form.Item>
         {mintFiat && (

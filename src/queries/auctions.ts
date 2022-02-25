@@ -19,6 +19,7 @@ export const AUCTIONS = gql`
         tokenId
         symbol
         underlierAddress
+        underlierSymbol
       }
       user
     }

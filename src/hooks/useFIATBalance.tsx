@@ -19,6 +19,6 @@ export const useFIATBalance = (asHumanValue = false): [BigNumber, KeyedMutator<a
   const humanValueBalance = FIATBalance
     ? getHumanValue(FIATBalance.toString(), contracts.FIAT.decimals)
     : ZERO_BIG_NUMBER
-  console.log({ FIATBalance })
+
   return [(asHumanValue ? humanValueBalance : FIATBalance) as BigNumber, refetchFIATBalance]
 }

@@ -1,183 +1,17 @@
-import React, { FC, createContext, useContext, useEffect } from 'react'
+import {
+  FDTToken,
+  KNOWN_TOKENS,
+  KnownTokens,
+  gOHMFdtSLPToken,
+  gOHMToken,
+  wsOHMFdtSLPToken,
+  wsOHMToken,
+} from '../constants/knownTokens'
+import React, { FC, createContext, useCallback, useContext, useEffect } from 'react'
 import BigNumber from 'bignumber.js'
 
-import { TokenIconNames } from '@/src/components/custom/icon'
 import { formatUSD } from '@/src/web3/utils'
-
-// FixMe: Create a proper config file
-const config: any = {
-  tokens: {},
-}
-
-export enum KnownTokens {
-  FDT = 'FDT',
-  ETH = 'ETH',
-  USDC = 'USDC',
-  BOND = 'BOND',
-  UMA = 'UMA',
-  MKR = 'MKR',
-  YFI = 'YFI',
-  RGT = 'RGT',
-  wsOHM = 'wsOHM',
-  gOHM = 'gOHM',
-  ETH_FDT_SLP = 'ETH_FDT_SLP',
-  wsOHM_FDT_SLP = 'wsOHM_FDT_SLP',
-  gOHM_FDT_SLP = 'gOHM_FDT_SLP',
-}
-
-export type TokenMeta = {
-  symbol: string
-  name: string
-  address: string
-  decimals: number
-  icon?: TokenIconNames
-  coinGeckoId?: string
-  contract?: any
-  price?: BigNumber
-}
-
-export const FDTToken: TokenMeta = {
-  address: config.tokens.fdt,
-  symbol: KnownTokens.FDT,
-  name: 'FDT Token',
-  decimals: 18,
-  icon: 'png/fiat-dao' as any,
-  contract: {} as any,
-}
-
-export const EthToken: TokenMeta = {
-  symbol: KnownTokens.ETH,
-  name: 'Ether',
-  address: '0x',
-  decimals: 18,
-  icon: 'token-eth',
-  coinGeckoId: 'ethereum',
-}
-
-export const UsdcToken: TokenMeta = {
-  address: config.tokens.usdc,
-  symbol: KnownTokens.USDC,
-  name: 'USD Coin',
-  decimals: 6,
-  icon: 'token-usdc',
-  coinGeckoId: 'usd-coin',
-  contract: {} as any,
-}
-
-export const BondToken: TokenMeta = {
-  address: config.tokens.bond,
-  symbol: KnownTokens.BOND,
-  name: 'BarnBridge',
-  decimals: 18,
-  icon: 'static/token-bond',
-  coinGeckoId: 'barnbridge',
-  contract: {} as any,
-}
-
-export const UMAToken: TokenMeta = {
-  address: config.tokens.uma,
-  symbol: KnownTokens.UMA,
-  name: 'UMA',
-  decimals: 18,
-  icon: 'png/uma',
-  coinGeckoId: 'uma',
-  contract: {} as any,
-}
-
-export const MKRToken: TokenMeta = {
-  address: config.tokens.mkr,
-  symbol: KnownTokens.MKR,
-  name: 'MKR',
-  decimals: 18,
-  icon: 'png/mkr',
-  coinGeckoId: 'maker',
-  contract: {} as any,
-}
-
-export const YFIToken: TokenMeta = {
-  address: config.tokens.yfi,
-  symbol: KnownTokens.YFI,
-  name: 'YFI',
-  decimals: 18,
-  icon: 'png/YFI',
-  coinGeckoId: 'yearn-finance',
-  contract: {} as any,
-}
-
-export const RGTToken: TokenMeta = {
-  address: config.tokens.rgt,
-  symbol: KnownTokens.RGT,
-  name: 'RGT',
-  decimals: 18,
-  icon: 'png/rgt',
-  coinGeckoId: 'rari-governance-token',
-  contract: {} as any,
-}
-
-export const wsOHMToken: TokenMeta = {
-  address: config.tokens.wsOHM,
-  symbol: KnownTokens.wsOHM,
-  name: 'wsOHM',
-  decimals: 18,
-  icon: 'png/wsOHM',
-  coinGeckoId: 'wrapped-staked-olympus',
-  contract: {} as any,
-}
-
-export const gOHMToken: TokenMeta = {
-  address: config.tokens.gOHM,
-  symbol: KnownTokens.gOHM,
-  name: 'gOHM',
-  decimals: 18,
-  icon: 'png/wsOHM',
-  coinGeckoId: 'governance-ohm',
-  contract: {} as any,
-}
-
-export const EthFdtSLPToken: TokenMeta = {
-  address: config.tokens.ethFDTSLP,
-  symbol: KnownTokens.ETH_FDT_SLP,
-  name: 'ETH FDT SUSHI LP',
-  decimals: 18,
-  icon: 'png/ETH_FDT_SLP',
-  contract: {} as any,
-}
-
-export const wsOHMFdtSLPToken: TokenMeta = {
-  address: config.tokens.wsOHMFDTSLP,
-  symbol: KnownTokens.wsOHM_FDT_SLP,
-  name: 'sOHM FDT SUSHI LP',
-  decimals: 18,
-  icon: 'png/wsOHM_FDT_SUSHI_LP',
-  contract: {} as any,
-}
-
-export const gOHMFdtSLPToken: TokenMeta = {
-  address: config.tokens.gOHMFDTSLP,
-  symbol: KnownTokens.gOHM_FDT_SLP,
-  name: 'gOHM FDT SUSHI LP',
-  decimals: 18,
-  icon: 'png/wsOHM_FDT_SUSHI_LP',
-  contract: {} as any,
-}
-
-const KNOWN_TOKENS: TokenMeta[] = [
-  FDTToken,
-  EthToken,
-  UsdcToken,
-  BondToken,
-  UMAToken,
-  MKRToken,
-  YFIToken,
-  RGTToken,
-  wsOHMToken,
-  gOHMToken,
-  EthFdtSLPToken,
-  wsOHMFdtSLPToken,
-  gOHMFdtSLPToken,
-]
-
-;(window as any).KNOWN_TOKENS = KNOWN_TOKENS
+import { TokenMeta } from '@/types/token'
 
 export function getKnownTokens(): TokenMeta[] {
   return [...KNOWN_TOKENS]
@@ -366,62 +200,42 @@ export function convertTokenInUSD(
 const KnownTokensProvider: FC = (props) => {
   const { children } = props
 
-  useEffect(() => {
-    ;(FDTToken.contract as any).loadCommon().catch(Error)
-    ;(async () => {
-      const ids = KNOWN_TOKENS.map((tk) => tk.coinGeckoId)
-        .filter(Boolean)
-        .join(',')
+  const fetchPrices = useCallback(async () => {
+    const ids = KNOWN_TOKENS.map((tk) => tk.coinGeckoId)
+      .filter(Boolean)
+      .join(',')
 
-      try {
-        const prices = await fetch(
-          `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`,
-        ).then((res) => res.json())
+    try {
+      const prices = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`,
+      ).then((res) => res.json())
 
-        KNOWN_TOKENS.forEach((token) => {
-          if (token.coinGeckoId) {
-            const price = prices[token.coinGeckoId]?.usd
+      KNOWN_TOKENS.forEach((token) => {
+        if (token.coinGeckoId) {
+          const price = prices[token.coinGeckoId]?.usd
 
-            if (price) {
-              token.price = new BigNumber(price)
-            }
+          if (price) {
+            token.price = new BigNumber(price)
           }
-        })
+        }
+      })
 
-        FDTToken.price = await getFdtPrice().catch(() => undefined)
-        // EthFdtSLPToken.price = await getEthFdtSLPPrice().catch(() => undefined);
-        wsOHMFdtSLPToken.price = await getWSOHMFdtSLPPrice().catch(() => undefined)
-        gOHMFdtSLPToken.price = await getGOHMFdtSLPTokenPrice().catch(() => undefined)
+      FDTToken.price = await getFdtPrice().catch(() => undefined)
+      // EthFdtSLPToken.price = await getEthFdtSLPPrice().catch(() => undefined);
+      wsOHMFdtSLPToken.price = await getWSOHMFdtSLPPrice().catch(() => undefined)
+      gOHMFdtSLPToken.price = await getGOHMFdtSLPTokenPrice().catch(() => undefined)
 
-        KNOWN_TOKENS.forEach((token) => {
-          console.log(`[Token Price] ${token.symbol} = ${formatUSD(token.price)}`)
-        })
-      } catch (e) {
-        console.error(e)
-      }
-
-      // FixMe: This is a hack to force the price to be updated
-      // reload()
-    })()
+      KNOWN_TOKENS.forEach((token) => {
+        console.log(`[Token Price] ${token.symbol} = ${formatUSD(token.price)}`)
+      })
+    } catch (e) {
+      console.error(e)
+    }
   }, [])
 
-  // TODO: replace with a different implementation
-  // useEffect(() => {
-  //   KNOWN_TOKENS.forEach((token) => {
-  //     token.contract?.setProvider(wallet.provider)
-  //   })
-  // }, [wallet.provider])
-  //
-  // useEffect(() => {
-  //   KNOWN_TOKENS.forEach((token) => {
-  //     token.contract?.setAccount(wallet.account)
-  //   })
-  //
-  //   // load fdt balance for connected wallet
-  //   if (wallet.account) {
-  //     ;(FDTToken.contract as Erc20Contract).loadBalance().then(reload).catch(Error)
-  //   }
-  // }, [wallet.account])
+  useEffect(() => {
+    fetchPrices()
+  }, [fetchPrices])
 
   const value = {
     tokens: [...KNOWN_TOKENS],
@@ -431,6 +245,7 @@ const KnownTokensProvider: FC = (props) => {
     getTokenPriceIn,
     convertTokenIn,
     convertTokenInUSD,
+    refreshPrices: fetchPrices,
   }
 
   return <Context.Provider value={value}>{children}</Context.Provider>

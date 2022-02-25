@@ -6,10 +6,8 @@ import { useState } from 'react'
 import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
-import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { useBurnForm } from '@/src/hooks/managePosition'
-import { iconByAddress } from '@/src/utils/managePosition'
 import { getNonHumanValue } from '@/src/web3/utils'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
@@ -19,6 +17,7 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Balance } from '@/src/components/custom/balance'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { Position } from '@/src/utils/data/positions'
 
 type BurnFormFields = {
   burn: BigNumber
@@ -26,45 +25,35 @@ type BurnFormFields = {
 }
 
 export const BurnForm = ({
+  position,
   refetch,
-  tokenAddress,
-  vaultAddress,
 }: {
   refetch: RefetchPositionById
-  vaultAddress?: string
-  userBalance?: BigNumber
-  tokenAddress?: string
+  position?: Position
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
   const {
-    address,
     approveToken,
-    burnFiat,
+    burn: burnFIAT,
     fiatAllowance,
     fiatInfo,
     tokenInfo,
     updateFiat,
-    userProxy,
-  } = useBurnForm({ tokenAddress })
+  } = useBurnForm({ tokenAddress: position?.collateral.address })
   const [form] = AntdForm.useForm<BurnFormFields>()
 
   const handleBurn = async ({ burn, withdraw }: BurnFormFields) => {
-    if (!fiatInfo || !userProxy || !address || !tokenAddress || !vaultAddress) {
-      return
-    }
-
-    const toBurn = burn ? getNonHumanValue(burn, 18) : ZERO_BIG_NUMBER
-    const toWithdraw = withdraw ? getNonHumanValue(withdraw, 18) : ZERO_BIG_NUMBER
-
     try {
+      const toWithdraw = withdraw ? getNonHumanValue(withdraw, 18) : ZERO_BIG_NUMBER
+      const toBurn = burn ? getNonHumanValue(burn, 18) : ZERO_BIG_NUMBER
       setSubmitting(true)
 
       if (fiatAllowance?.lt(toBurn.toFixed())) {
         await approveToken()
       }
-      await burnFiat({
-        vault: vaultAddress,
-        token: tokenAddress,
+      await burnFIAT({
+        vault: position?.protocolAddress ?? '',
+        token: position?.collateral.address ?? '',
         tokenId: 0,
         toWithdraw,
         toBurn,
@@ -109,10 +98,10 @@ export const BurnForm = ({
           <TokenAmount
             disabled={submitting}
             displayDecimals={contracts.FIAT.decimals}
-            max={Number(fiatInfo?.toFixed(2))}
+            max={Number(fiatInfo?.toFixed(2))} // TODO: fails sometimes (use with low numbers)
             maximumFractionDigits={contracts.FIAT.decimals}
             slider
-            tokenIcon={iconByAddress[contracts.FIAT.address[Chains.goerli]]}
+            tokenIcon={<FiatIcon />}
           />
         </Form.Item>
         {withdrawCollateral && (
@@ -123,10 +112,11 @@ export const BurnForm = ({
                 <TokenAmount
                   disabled={submitting}
                   displayDecimals={tokenInfo?.decimals}
+                  mainAsset={position?.protocol} // TODO: fails sometimes (use with low numbers)
                   max={tokenInfo?.humanValue}
                   maximumFractionDigits={tokenInfo?.decimals}
+                  secondaryAsset={position?.underlier.symbol}
                   slider
-                  tokenIcon={<FiatIcon />}
                 />
               </Form.Item>
             }
