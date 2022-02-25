@@ -18,11 +18,13 @@ import { Subscriptions } from 'bnc-onboard/dist/src/interfaces'
 import nullthrows from 'nullthrows'
 import { Chains, ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/chains'
 import isServer from '@/src/utils/isServer'
+import { RequiredNonNull } from '@/types/utils'
 
 const STORAGE_CONNECTED_WALLET = 'onboard_selectedWallet'
 // give onboard a window to update its internal state after certain actions
 const ONBOARD_STATE_DELAY = 100
-// Defatul chain id from env var
+
+// Default chain id from env var
 const INITAL_APP_CHAIN_ID = Number(
   process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 4,
 ) as ChainsValues
@@ -329,4 +331,14 @@ export function useWeb3Connection() {
     throw new Error('useWeb3Connection must be used within a Web3ConnectionProvider')
   }
   return context
+}
+
+type Web3ConnectedContext = RequiredNonNull<Web3Context>
+
+export function useWeb3Connected() {
+  const context = useWeb3Connection()
+  if (!context.isWalletConnected) {
+    throw new Error('useWeb3Connected must be used within a connected context')
+  }
+  return context as Web3ConnectedContext
 }

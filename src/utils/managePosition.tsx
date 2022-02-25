@@ -1,6 +1,6 @@
 import isDev from './isDev'
 import { ReactNode } from 'react'
-import { useRouter } from 'next/router'
+import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import ElementIcon from '@/src/resources/svg/element.svg'
@@ -40,9 +40,7 @@ export const useExtractPositionIdData = (): {
   tokenId: string
   proxyAddress: string
 } => {
-  const {
-    query: { positionId }, // TODO Query guard.
-  } = useRouter()
+  const positionId = useQueryParam('positionId')
 
   if (!isValidPositionIdType(positionId) || !isValidPositionId(positionId)) {
     if (isDev()) {
@@ -51,7 +49,6 @@ export const useExtractPositionIdData = (): {
   }
 
   const [vaultAddress, tokenId, proxyAddress] = (positionId as string).split('-')
-  // const tokenId = BigInt(tokenIdInHex).toString()
 
   return { vaultAddress, tokenId, proxyAddress }
 }

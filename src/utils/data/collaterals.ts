@@ -8,9 +8,10 @@ import { Collaterals_collaterals as SubgraphCollateral } from '@/types/subgraph/
 import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { contracts } from '@/src/constants/contracts'
-import { ZERO_ADDRESS } from '@/src/constants/misc'
+import { WAD_DECIMALS, ZERO_ADDRESS } from '@/src/constants/misc'
 import { Collybus } from '@/types/typechain/Collybus'
 import { Codex, ERC20, PRBProxy } from '@/types/typechain'
+import { getHumanValue } from '@/src/web3/utils'
 
 export type Collateral = {
   id: string
@@ -24,6 +25,7 @@ export type Collateral = {
   faceValue: Maybe<BigNumber>
   currentValue: Maybe<BigNumber>
   vault: { collateralizationRatio: Maybe<BigNumber>; address: string }
+  collateralizationRatio: number
   hasBalance: boolean
   manageId: Maybe<string>
 }
@@ -86,11 +88,17 @@ const wrangleCollateral = async (
 
   const hasPosition = !position?.collateral.isZero() || !position?.normalDebt.isZero()
 
+  const collateralizationRatio = getHumanValue(
+    collateral?.vault?.collateralizationRatio ?? 0,
+    WAD_DECIMALS,
+  )
+
   return {
     ...collateral,
     maturity: BigNumberToDateOrCurrent(collateral.maturity),
     faceValue: BigNumber.from(collateral.faceValue) ?? null,
     currentValue: BigNumber.from(currentValue?.toString()) ?? null,
+    collateralizationRatio: collateralizationRatio ? collateralizationRatio.toNumber() : 1,
     vault: {
       collateralizationRatio: BigNumber.from(collateral.vault?.collateralizationRatio) ?? null,
       address: collateral.vault?.address ?? '',

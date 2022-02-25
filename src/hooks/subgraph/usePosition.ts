@@ -1,9 +1,9 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
-import useSWR from 'swr'
+import useSWR, { KeyedMutator } from 'swr'
 import { Positions, PositionsVariables } from '@/types/subgraph/__generated__/Positions'
 import { ChainsValues } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { wranglePosition } from '@/src/utils/data/positions'
+import { Position, wranglePosition } from '@/src/utils/data/positions'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { POSITIONS } from '@/src/queries/positions'
 
@@ -15,7 +15,7 @@ export const fetchPosition = async (
 ) => {
   return graphqlFetcher<Positions, PositionsVariables>(POSITIONS, {
     where: {
-      id: positionId,
+      id: positionId.toLowerCase(),
     },
   }).then(({ positions }) => {
     const [position] = positions
@@ -23,13 +23,24 @@ export const fetchPosition = async (
     if (position) {
       return wranglePosition(position, provider, appChainId)
     }
+
+    throw `Position with id ${positionId} not found`
   })
 }
-export const usePosition = (positionId: string) => {
+
+type usePosition = {
+  position?: Position
+  refetch: KeyedMutator<Position>
+  error: any
+}
+
+export const usePosition = (positionId: string): usePosition => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
-  const { data, error, mutate } = useSWR(['position-by-id', positionId, appChainId], () =>
-    fetchPosition(positionId, provider, appChainId),
-  )
+
+  const { data, error, mutate } = useSWR(['position-by-id', positionId, appChainId], async () => {
+    return fetchPosition(positionId, provider, appChainId)
+  })
+
   return { position: data, refetch: mutate, error }
 }
 

@@ -3,68 +3,49 @@ import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useState } from 'react'
-import { WAIT_BLOCKS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useWithdrawForm } from '@/src/hooks/managePosition'
-import { iconByAddress } from '@/src/utils/managePosition'
-import { getNonHumanValue } from '@/src/web3/utils'
+import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
+import { Position } from '@/src/utils/data/positions'
 
 type WithdrawFormFields = {
   withdraw: BigNumber
 }
 
 export const WithdrawForm = ({
+  position,
   refetch,
-  tokenAddress,
-  userBalance,
-  vaultAddress,
 }: {
   refetch: RefetchPositionById
-  tokenAddress: string
-  userBalance?: BigNumber
-  vaultAddress: string
+  position: Position
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const { address, tokenInfo, userActions, userProxy } = useWithdrawForm({ tokenAddress })
+  const { tokenInfo, withdraw: withdrawCollateral } = useWithdrawForm({
+    tokenAddress: position.collateral.address,
+  })
   const [form] = AntdForm.useForm<WithdrawFormFields>()
 
   const handleWithdraw = async ({ withdraw }: WithdrawFormFields) => {
-    if (!userProxy || !address) {
-      return
-    }
-
-    const toWithdraw = withdraw ? getNonHumanValue(withdraw, 18) : ZERO_BIG_NUMBER
-
-    const removeCollateralEncoded = userActions.interface.encodeFunctionData(
-      'modifyCollateralAndDebt',
-      [
-        vaultAddress,
-        tokenAddress,
-        0,
-        address,
-        address,
-        toWithdraw.negated().toFixed(),
-        ZERO_BIG_NUMBER.toFixed(),
-      ],
-    )
-    setSubmitting(true)
     try {
-      const tx = await userProxy.execute(userActions.address, removeCollateralEncoded, {
-        gasLimit: 1_000_000,
+      const toWithdraw = withdraw ? getNonHumanValue(withdraw, 18) : ZERO_BIG_NUMBER
+      setSubmitting(true)
+      await withdrawCollateral({
+        vault: position.protocolAddress,
+        token: position.collateral.address,
+        tokenId: 0, // TODO: depends on the protocol
+        toWithdraw,
       })
-      await tx.wait(WAIT_BLOCKS)
-      // if we `WAIT_BLOCKS` we can prevent false positives due to a fork and may be waiting for the
-      // subgraph to be updated
-      await refetch()
-      form.resetFields()
     } catch (err) {
-      console.log('Failed to Withdraw', err)
+      console.error('Failed to withdraw', err)
     } finally {
       setSubmitting(false)
+      await refetch()
+      form.resetFields()
     }
   }
 
@@ -94,10 +75,11 @@ export const WithdrawForm = ({
           <TokenAmount
             disabled={submitting}
             displayDecimals={tokenInfo?.decimals}
-            max={userBalance}
+            mainAsset={position.protocol} // TODO: fails sometimes (use with low numbers)
+            max={Number(getHumanValue(position.collateralValue, WAD_DECIMALS - 2)?.toFixed(2))}
             maximumFractionDigits={tokenInfo?.decimals}
+            secondaryAsset={position.underlier.symbol}
             slider
-            tokenIcon={iconByAddress[tokenAddress]}
           />
         </Form.Item>
         <ButtonGradient height="lg" htmlType="submit" loading={submitting}>

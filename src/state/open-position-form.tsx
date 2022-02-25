@@ -1,9 +1,5 @@
 import BigNumber from 'bignumber.js'
 import { assign, createMachine } from 'xstate'
-import { getNonHumanValue } from '@/src/web3/utils'
-import { contracts } from '@/src/constants/contracts'
-
-const VAULT_ADDRESS = '0x517cD535B96941758469254484C0c0399Bb7363A'
 
 export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string } } = {
   1: {
@@ -56,6 +52,7 @@ type Events =
   | { type: 'POSITION_CREATED_SUCCESS' }
   | { type: 'POSITION_CREATED_ERROR' }
   | { type: 'USER_REJECTED' }
+  | { type: 'GO_BACK' }
 
 const initialContext: Context = {
   erc20Amount: BigNumber.ZERO,
@@ -86,6 +83,7 @@ const stepperMachine = createMachine<Context, Events>(
       SET_ERC20_AMOUNT: { actions: 'setERC20Amount' },
       SET_FIAT_AMOUNT: { actions: 'setFiatAmount' },
       SET_LOADING: { actions: 'setLoading' },
+      GO_BACK: { target: 'step-1-enteringERC20Amount' },
     },
     states: {
       'step-1-enteringERC20Amount': {
@@ -172,66 +170,28 @@ const stepperMachine = createMachine<Context, Events>(
     services: {
       submitForm:
         (
-          { erc20Amount, fiatAmount, tokenAddress },
+          { erc20Amount, fiatAmount },
           // TODO: types
           {
             // @ts-ignore
-            currentUserAddress,
-            // @ts-ignore
-            isAppConnected,
-            // @ts-ignore
-            refetchErc20Balance,
-            // @ts-ignore
-            userActions,
-            // @ts-ignore
-            userProxy,
-            // @ts-ignore
-            web3Provider,
+            createPosition,
           },
         ) =>
         (callback: any) => {
-          if (isAppConnected && web3Provider && currentUserAddress) {
-            try {
-              // FixMe: Hardcoded decimals
-              const _erc20Amount = getNonHumanValue(erc20Amount, 18) // must be in WAD
-              const _fiatAmount = getNonHumanValue(fiatAmount, contracts.FIAT.decimals) // WAD
-
-              // dividir x collateralizationRatio
-              // max fiat === _erc20Amount / collateralizationRatio
-              const encodedFunctionData = userActions.interface.encodeFunctionData(
-                'modifyCollateralAndDebt',
-                [
-                  VAULT_ADDRESS,
-                  tokenAddress,
-                  0,
-                  currentUserAddress,
-                  currentUserAddress,
-                  _erc20Amount.toFixed(),
-                  _fiatAmount.toFixed(),
-                ],
-              )
-
-              userProxy
-                ?.execute(userActions.address, encodedFunctionData, {
-                  gasLimit: 10_000_000,
-                })
-                .then((tx: any) => tx.wait())
-                .then((receipt: any) => {
-                  console.log({ receipt })
-                  refetchErc20Balance()
-                  callback('POSITION_CREATED_SUCCESS')
-                  console.log('Position created!')
-                })
-                .catch((e: any) => {
-                  if (e.code === 4001) {
-                    callback('USER_REJECTED')
-                  } else {
-                    callback('POSITION_CREATED_ERROR')
-                  }
-                })
-            } catch (e) {
-              callback('POSITION_CREATED_ERROR')
-            }
+          try {
+            createPosition({ erc20Amount, fiatAmount })
+              .then(() => {
+                callback('POSITION_CREATED_SUCCESS')
+              })
+              .catch((e: any) => {
+                if (e.code === 4001) {
+                  callback('USER_REJECTED')
+                } else {
+                  callback('POSITION_CREATED_ERROR')
+                }
+              })
+          } catch (e) {
+            callback('POSITION_CREATED_ERROR')
           }
         },
     },

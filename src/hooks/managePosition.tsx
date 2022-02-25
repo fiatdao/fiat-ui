@@ -1,121 +1,113 @@
 import { usePosition } from './subgraph/usePosition'
-import { ZERO_ADDRESS } from '../constants/misc'
-import { Contract } from '@ethersproject/contracts'
+import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import BigNumber from 'bignumber.js'
-import { ethers } from 'ethers'
-import { useRouter } from 'next/router'
-import { useCallback, useEffect, useState } from 'react'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { useCallback } from 'react'
 import { KeyedMutator } from 'swr'
+import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { contracts } from '@/src/constants/contracts'
-import { useUserActions } from '@/src/hooks/useUserActions'
+import {
+  DepositCollateral,
+  MintFIAT,
+  WithdrawCollateral,
+  useUserActions,
+} from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { getHumanValue } from '@/src/web3/utils'
-import { ERC20, UserActions20 } from '@/types/typechain'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 
-type ManageForm = {
-  address: string | null
-  userActions: UserActions20
-  userProxy: Contract | null
-}
-
-type TokenInfo = {
+export type TokenInfo = {
   decimals?: number
   humanValue?: BigNumber
 }
 
-type UseDecimalsAndTokenValue = {
-  tokenInfo?: TokenInfo
-  updateToken: () => Promise<void>
-}
-
-const useDecimalsAndTokenValue = ({
-  address,
-  readOnlyAppProvider,
-  tokenAddress,
-}: {
-  tokenAddress?: string
-  address: string | null
-  readOnlyAppProvider: JsonRpcProvider
-}): UseDecimalsAndTokenValue => {
-  const [tokenInfo, setTokenInfo] = useState<TokenInfo>()
-
-  const updateToken = useCallback(async () => {
-    if (tokenAddress && readOnlyAppProvider && address) {
-      const collateral = new Contract(
-        tokenAddress,
-        contracts.ERC_20.abi,
-        readOnlyAppProvider,
-      ) as ERC20
-
-      await Promise.all([collateral.decimals(), collateral.balanceOf(address)]).then(
-        ([decimals, balance]) => {
-          setTokenInfo({
-            decimals,
-            humanValue: getHumanValue(BigNumber.from(balance.toString()), decimals),
-          })
-        },
-      )
-    }
-  }, [tokenAddress, readOnlyAppProvider, address])
-
-  useEffect(() => {
-    updateToken()
-  }, [tokenAddress, readOnlyAppProvider, address, updateToken])
-
-  return { tokenInfo, updateToken }
-}
-
-type UseDepositForm = ManageForm & {
+type UseDepositForm = {
   tokenInfo?: TokenInfo
   fiatInfo?: BigNumber
-  updateFiat: () => Promise<void>
-  updateToken: () => Promise<void>
+  deposit: (args: DepositCollateral) => Promise<void>
+  approve: (arg0: string) => Promise<void>
 }
 
 export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }): UseDepositForm => {
-  const { address, readOnlyAppProvider } = useWeb3Connection()
-  const userActions = useUserActions()
-  const { userProxy } = useUserProxy()
-  const { tokenInfo, updateToken } = useDecimalsAndTokenValue({
+  const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
+  const { userProxyAddress } = useUserProxy()
+  const { tokenInfo, updateToken } = useTokenDecimalsAndBalance({
     tokenAddress,
     address,
     readOnlyAppProvider,
   })
-
+  const { approveFIAT, depositCollateral } = useUserActions()
+  const [fiatAllowance] = useContractCall(
+    contracts.FIAT.address[appChainId],
+    contracts.FIAT.abi,
+    'allowance',
+    [address, userProxyAddress],
+  )
   const [fiatInfo, updateFiat] = useFIATBalance(true)
 
-  return { address, tokenInfo, updateFiat, updateToken, userActions, userProxy, fiatInfo }
+  const deposit = useCallback(
+    async (args: DepositCollateral) => {
+      if (!userProxyAddress) return
+      if (fiatAllowance?.lt(args.toDeposit.toFixed())) {
+        await approveFIAT(userProxyAddress)
+      }
+      await depositCollateral(args)
+      await Promise.all([updateToken(), updateFiat()])
+    },
+    [userProxyAddress, approveFIAT, depositCollateral, fiatAllowance, updateFiat, updateToken],
+  )
+
+  return {
+    tokenInfo,
+    fiatInfo,
+    deposit,
+    approve: approveFIAT,
+  }
 }
 
-type UseWithdrawForm = ManageForm & {
+type UseWithdrawForm = {
   tokenInfo?: TokenInfo
+  fiatInfo: BigNumber
+  withdraw: (args: WithdrawCollateral) => Promise<void>
 }
 
 export const useWithdrawForm = ({ tokenAddress }: { tokenAddress?: string }): UseWithdrawForm => {
-  const { address, readOnlyAppProvider } = useWeb3Connection()
-  const userActions = useUserActions()
-  const { userProxy } = useUserProxy()
-  const { tokenInfo } = useDecimalsAndTokenValue({ tokenAddress, address, readOnlyAppProvider })
+  const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
+  const { userProxyAddress } = useUserProxy()
+  const { approveFIAT, withdrawCollateral } = useUserActions()
+  const [fiatInfo] = useFIATBalance(true)
+  const { tokenInfo } = useTokenDecimalsAndBalance({ tokenAddress, address, readOnlyAppProvider })
+  const [fiatAllowance] = useContractCall(
+    contracts.FIAT.address[appChainId],
+    contracts.FIAT.abi,
+    'allowance',
+    [address, userProxyAddress],
+  )
+  const withdraw = useCallback(
+    async (args: WithdrawCollateral) => {
+      if (!userProxyAddress) return
+      if (fiatAllowance?.lt(args.toWithdraw.toFixed())) {
+        await approveFIAT(userProxyAddress)
+      }
+      await withdrawCollateral(args)
+    },
+    [userProxyAddress, approveFIAT, withdrawCollateral, fiatAllowance],
+  )
 
-  return { address, tokenInfo, userActions, userProxy }
+  return { tokenInfo, fiatInfo, withdraw }
 }
 
-type UseMintForm = ManageForm & {
+type UseMintForm = {
   fiatInfo?: BigNumber
   updateFiat: KeyedMutator<any>
+  mint: (args: MintFIAT) => Promise<void>
 }
 
 export const useMintForm = (): UseMintForm => {
-  const { address } = useWeb3Connection()
-  const userActions = useUserActions()
-  const { userProxy } = useUserProxy()
+  const { mintFIAT } = useUserActions()
   const [fiatInfo, updateFiat] = useFIATBalance(true)
 
-  return { address, userActions, userProxy, fiatInfo, updateFiat }
+  return { fiatInfo, updateFiat, mint: mintFIAT }
 }
 
 type BurnFiat = {
@@ -126,21 +118,21 @@ type BurnFiat = {
   toBurn: BigNumber
 }
 
-type UseBurnForm = ManageForm & {
+type UseBurnForm = {
   tokenInfo?: TokenInfo
   fiatInfo?: BigNumber
   approveToken: () => Promise<any>
-  burnFiat: (arg0: BurnFiat) => Promise<any>
+  burn: (args: BurnFiat) => Promise<any>
   updateFiat: () => Promise<any>
   fiatAllowance?: BigNumber
 }
 
 export const useBurnForm = ({ tokenAddress }: { tokenAddress?: string }): UseBurnForm => {
-  const { address, appChainId, readOnlyAppProvider, web3Provider } = useWeb3Connection()
-  const userActions = useUserActions()
-  const { userProxy, userProxyAddress } = useUserProxy()
+  const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
+  const { approveFIAT, burnFIAT } = useUserActions()
+  const { userProxyAddress } = useUserProxy()
 
-  const { tokenInfo } = useDecimalsAndTokenValue({ address, readOnlyAppProvider, tokenAddress })
+  const { tokenInfo } = useTokenDecimalsAndBalance({ address, readOnlyAppProvider, tokenAddress })
   const [fiatInfo, updateFiat] = useFIATBalance(true)
   const [fiatAllowance] = useContractCall(
     contracts.FIAT.address[appChainId],
@@ -148,73 +140,24 @@ export const useBurnForm = ({ tokenAddress }: { tokenAddress?: string }): UseBur
     'allowance',
     [address, userProxyAddress],
   )
-
-  const burnFiat = useCallback(
-    async ({ toBurn, toWithdraw, token, tokenId, vault }: BurnFiat) => {
-      if (!fiatInfo || !userProxy || !address || !token || !vault) {
-        return
-      }
-      const burnEncoded = userActions.interface.encodeFunctionData('modifyCollateralAndDebt', [
-        vault,
-        token,
-        tokenId,
-        toWithdraw.isZero() ? ZERO_ADDRESS : address,
-        address,
-        toWithdraw.negated().toFixed(),
-        toBurn.negated().toFixed(),
-      ])
-
-      const tx = await userProxy.execute(userActions.address, burnEncoded, {
-        gasLimit: 1_000_000,
-      })
-
-      return tx.wait()
-    },
-    [fiatInfo, userProxy, address, userActions.address, userActions.interface],
-  )
-
   const approveToken = useCallback(async () => {
-    if (tokenAddress && web3Provider && address && userProxy) {
-      const MAX_AVAILABLE_AMOUNT = ethers.constants.MaxUint256
-      const approveToken = userActions.interface.encodeFunctionData('approveToken', [
-        contracts.FIAT.address[appChainId],
-        contracts.MONETA.address[appChainId],
-        MAX_AVAILABLE_AMOUNT,
-      ])
-
-      const tx = await userProxy.execute(userActions.address, approveToken, {
-        gasLimit: 1_000_000,
-      })
-      return tx.wait()
-    }
-    return Promise.resolve(null)
-  }, [
-    tokenAddress,
-    userProxy,
-    web3Provider,
-    address,
-    appChainId,
-    userActions.address,
-    userActions.interface,
-  ])
+    const MONETA = contracts.MONETA.address[appChainId]
+    await approveFIAT(MONETA)
+  }, [appChainId, approveFIAT])
 
   return {
-    address,
     fiatInfo,
     fiatAllowance,
     updateFiat,
-    burnFiat,
-    userActions,
-    userProxy,
+    burn: burnFIAT,
     tokenInfo,
     approveToken,
   }
 }
 
 export const useManagePositionInfo = () => {
-  const {
-    query: { positionId }, // TODO Query guard.
-  } = useRouter()
+  const positionId = useQueryParam('positionId')
+
   // const { isWalletConnected } = useWeb3Connection()
   // TODO Pass enabled: isWalletConnected && isValidPositionIdType(positionId) && isValidPositionId(positionId)
 

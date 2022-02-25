@@ -1,5 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
+import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { auctionById_userAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
 import { auctions_userAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
 import { ChainsValues } from '@/src/constants/chains'
@@ -7,56 +8,29 @@ import { contracts } from '@/src/constants/contracts'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import contractCall from '@/src/utils/contractCall'
 import { getHumanValue } from '@/src/web3/utils'
-import { CollateralAuction, Collybus } from '@/types/typechain'
-type AuctionData = {
+import { CollateralAuction } from '@/types/typechain'
+import { TokenData } from '@/types/token'
+
+export type AuctionData = {
   id: string
   protocol?: string
   asset?: string
   upForAuction?: string
   price?: string
   collateralValue?: string
-  profit?: string
+  yield?: string
   action: { isActive: boolean; id: number | string }
   tokenAddress?: string | null
+  collateral: TokenData
+  underlier: TokenData
 }
 
-const calcProfit = (collateralValue: BigNumber | null, auctionPrice: BigNumber | null) => {
+const calcYield = (collateralValue: BigNumber | null, auctionPrice: BigNumber | null) => {
   if (collateralValue === null || auctionPrice === null) {
     return ZERO_BIG_NUMBER
   }
 
   return collateralValue.minus(auctionPrice).dividedBy(auctionPrice)
-}
-
-const getCollateralValueFromCollybus = async (
-  provider: JsonRpcProvider,
-  appChainId: ChainsValues,
-  tokenId: string | null | undefined,
-  underlierAddress: string | null | undefined,
-  vaultAddress: string | null | undefined,
-): Promise<BigNumber> => {
-  const maturity = Math.round(Date.now() / 1000)
-
-  let collateralValue = ZERO_BIG_NUMBER
-  if (
-    typeof vaultAddress === 'string' &&
-    typeof underlierAddress === 'string' &&
-    typeof tokenId === 'string'
-  ) {
-    const _collateralValue = await contractCall<Collybus, 'read'>(
-      contracts.COLLYBUS.address[appChainId],
-      contracts.COLLYBUS.abi,
-      provider,
-      'read',
-      [vaultAddress, underlierAddress, tokenId, maturity, false],
-    )
-
-    if (_collateralValue) {
-      collateralValue = BigNumber.from(_collateralValue.toString()) as BigNumber
-    }
-  }
-
-  return collateralValue as BigNumber
 }
 
 const getAuctionStatus = (
@@ -79,17 +53,11 @@ const wrangleAuction = async (
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
 ) => {
-  const vaultAddress = userAuction.vault?.address
-  const underlierAddress = userAuction.collateral?.underlierAddress
-  const tokenId = userAuction.collateral?.tokenId
+  const vaultAddress = userAuction.vault?.address || null
+  const underlierAddress = userAuction.collateral?.underlierAddress || null
+  const tokenId = userAuction.collateral?.tokenId || 0
 
-  const collateralValue = await getCollateralValueFromCollybus(
-    provider,
-    appChainId,
-    tokenId,
-    underlierAddress,
-    vaultAddress,
-  )
+  const collateralValue = await getCurrentValue(provider, appChainId, tokenId, vaultAddress, false)
 
   const auctionStatus = await getAuctionStatus(appChainId, provider, userAuction.id)
 
@@ -105,11 +73,17 @@ const wrangleAuction = async (
     )?.toFormat(0),
     price: getHumanValue(BigNumber.from(auctionStatus?.price.toString()), 18)?.toFormat(2),
     collateralValue: getHumanValue(BigNumber.from(collateralValue?.toString()), 18)?.toFormat(2),
-    profit: getHumanValue(
-      calcProfit(collateralValue, BigNumber.from(auctionStatus?.price.toString()) ?? null),
+    yield: getHumanValue(
+      calcYield(collateralValue, BigNumber.from(auctionStatus?.price.toString()) ?? null),
     )?.toFormat(2),
     action: { isActive: userAuction.isActive, id: userAuction.id },
     tokenAddress: underlierAddress,
+    collateral: {
+      symbol: userAuction.collateral?.symbol ?? '',
+    },
+    underlier: {
+      symbol: userAuction.collateral?.underlierSymbol ?? '',
+    },
   } as AuctionData
 }
 

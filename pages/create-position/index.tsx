@@ -42,8 +42,12 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'vaultName',
-    render: (obj: Collateral['vaultName']) => (
-      <Asset mainAsset="SBOND" secondaryAsset="DAI" title={obj ?? 'unknown'} />
+    render: (vaultName: Collateral['vaultName'], collateral: Collateral) => (
+      <Asset
+        mainAsset={vaultName ?? ''}
+        secondaryAsset={collateral.underlierSymbol ?? ''}
+        title={vaultName ?? 'unknown'}
+      />
     ),
     title: 'Protocol',
     width: 200,

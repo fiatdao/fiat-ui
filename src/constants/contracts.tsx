@@ -5,7 +5,7 @@ import collybus from '@/src/abis/Collybus.json'
 import erc20 from '@/src/abis/ERC20.json'
 import erc1155 from '@/src/abis/ERC1155.json'
 import fiat from '@/src/abis/FIAT.json'
-import userActions20 from '@/src/abis/UserActions20.json'
+import vaultActions20 from '@/src/abis/Vault20Actions.json'
 import userActions1155 from '@/src/abis/UserActions1155.json'
 import vault20 from '@/src/abis/Vault20.json'
 import vault1155 from '@/src/abis/Vault1155.json'
@@ -104,7 +104,7 @@ export const contracts = constantContracts({
       [Chains.mainnet]: '',
       [Chains.goerli]: '0x9372Bf7E30Df8b399eF0b470DCF3C7776C50CFF9',
     },
-    abi: userActions20,
+    abi: vaultActions20,
   },
   USER_ACTIONS_1155: {
     address: {

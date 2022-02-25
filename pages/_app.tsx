@@ -5,6 +5,7 @@ import { Layout } from 'antd'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import GeneralContextProvider from '@/src/providers/generalProvider'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
+import KnownTokensProvider from '@/src/providers/knownTokensProvider'
 import WrongNetwork from '@/src/components/custom/wrong-network'
 import { Sidebar } from '@/src/components/custom/sidebar'
 import Spin from '@/src/components/antd/spin'
@@ -59,17 +60,19 @@ function App({ Component, pageProps }: AppProps) {
           }}
         >
           <Web3ConnectionProvider fallback={<Spin />}>
-            <Layout style={{ minHeight: '100vh' }}>
-              <Sidebar />
-              <Layout>
-                <Header />
-                <Layout.Content>
-                  <SafeSuspense fallback={<Spin />}>
-                    <Component {...pageProps} />
-                  </SafeSuspense>
-                </Layout.Content>
+            <KnownTokensProvider>
+              <Layout style={{ minHeight: '100vh' }}>
+                <Sidebar />
+                <Layout>
+                  <Header />
+                  <Layout.Content>
+                    <SafeSuspense fallback={<Spin />}>
+                      <Component {...pageProps} />
+                    </SafeSuspense>
+                  </Layout.Content>
+                </Layout>
               </Layout>
-            </Layout>
+            </KnownTokensProvider>
             <WrongNetwork />
           </Web3ConnectionProvider>
         </SWRConfig>

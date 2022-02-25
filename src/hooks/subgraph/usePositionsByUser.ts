@@ -1,9 +1,9 @@
 import { usePositions } from './usePositions'
-import useUserProxy from '@/src/hooks/useUserProxy'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 export const usePositionsByUser = () => {
-  const { userProxyAddress } = useUserProxy()
-  const { positions = [], loading } = usePositions(undefined, userProxyAddress ?? '')
+  const { address } = useWeb3Connection()
+  const { positions = [], loading } = usePositions(undefined, address ?? '')
 
   return { positions, loading }
 }

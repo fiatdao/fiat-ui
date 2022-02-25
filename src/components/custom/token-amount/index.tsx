@@ -25,6 +25,9 @@ export type TokenAmountProps = {
   slider?: boolean | 'healthFactorVariant'
   tokenIcon?: TokenIconNames | React.ReactNode
   value?: number | BigNumber
+  mainAsset?: string
+  secondaryAsset?: string
+  healthFactorValue?: number | string
 }
 
 const TokenAmount: React.FC<TokenAmountProps> = (props) => {
@@ -32,14 +35,15 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     className,
     disabled = false,
     displayDecimals = 4,
+    healthFactorValue = 0,
     hidden,
+    mainAsset,
     max,
     maximumFractionDigits = 4,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    name,
     onChange,
+    secondaryAsset,
     slider = false,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     tokenIcon,
     value,
   } = props
@@ -73,7 +77,15 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
         }
         addonBefore={
           <div className={cn(s.iconsWrapper)}>
-            <AssetIcons dimensions={'32px'} mainAsset={'SBOND'} secondaryAsset={'DAI'} />
+            {tokenIcon ? (
+              tokenIcon
+            ) : (
+              <AssetIcons
+                dimensions={'32px'}
+                mainAsset={mainAsset}
+                secondaryAsset={secondaryAsset}
+              />
+            )}
           </div>
         }
         className={cn(s.component, className)}
@@ -95,7 +107,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               <div className={s.safer}>Safer</div>
               <div className={s.healthFactor}>
                 <span>
-                  Health factor <span className={s.hf}>1.95</span>
+                  Health factor <span className={s.hf}>{healthFactorValue}</span>
                 </span>
                 <Tooltip title={'HF Tooltip'}>
                   <Info />

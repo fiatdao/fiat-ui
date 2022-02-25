@@ -16,8 +16,8 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'protocol',
-    render: (protocol: Position['protocol']) => (
-      <Asset mainAsset="SBOND" secondaryAsset="DAI" title={protocol} />
+    render: (protocol: Position['protocol'], position: Position) => (
+      <Asset mainAsset={protocol} secondaryAsset={position.underlier.symbol} title={protocol} />
     ),
     title: 'Protocol',
     width: 200,
