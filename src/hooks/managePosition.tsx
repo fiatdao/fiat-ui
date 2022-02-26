@@ -1,7 +1,8 @@
 import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
+import { ZERO_BIG_NUMBER } from '../constants/misc'
 import BigNumber from 'bignumber.js'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { KeyedMutator } from 'swr'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
@@ -29,32 +30,21 @@ type UseDepositForm = {
 }
 
 export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }): UseDepositForm => {
-  const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
-  const { userProxyAddress } = useUserProxy()
+  const { address, readOnlyAppProvider } = useWeb3Connection()
   const { tokenInfo, updateToken } = useTokenDecimalsAndBalance({
     tokenAddress,
     address,
     readOnlyAppProvider,
   })
   const { approveFIAT, depositCollateral } = useUserActions()
-  const [fiatAllowance] = useContractCall(
-    contracts.FIAT.address[appChainId],
-    contracts.FIAT.abi,
-    'allowance',
-    [address, userProxyAddress],
-  )
   const [fiatInfo, updateFiat] = useFIATBalance(true)
 
   const deposit = useCallback(
     async (args: DepositCollateral) => {
-      if (!userProxyAddress) return
-      if (fiatAllowance?.lt(args.toDeposit.toFixed())) {
-        await approveFIAT(userProxyAddress)
-      }
       await depositCollateral(args)
       await Promise.all([updateToken(), updateFiat()])
     },
-    [userProxyAddress, approveFIAT, depositCollateral, fiatAllowance, updateFiat, updateToken],
+    [depositCollateral, updateToken, updateFiat],
   )
 
   return {
@@ -72,26 +62,18 @@ type UseWithdrawForm = {
 }
 
 export const useWithdrawForm = ({ tokenAddress }: { tokenAddress?: string }): UseWithdrawForm => {
-  const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
+  const { address, readOnlyAppProvider } = useWeb3Connection()
   const { userProxyAddress } = useUserProxy()
-  const { approveFIAT, withdrawCollateral } = useUserActions()
+  const { withdrawCollateral } = useUserActions()
   const [fiatInfo] = useFIATBalance(true)
   const { tokenInfo } = useTokenDecimalsAndBalance({ tokenAddress, address, readOnlyAppProvider })
-  const [fiatAllowance] = useContractCall(
-    contracts.FIAT.address[appChainId],
-    contracts.FIAT.abi,
-    'allowance',
-    [address, userProxyAddress],
-  )
+
   const withdraw = useCallback(
     async (args: WithdrawCollateral) => {
       if (!userProxyAddress) return
-      if (fiatAllowance?.lt(args.toWithdraw.toFixed())) {
-        await approveFIAT(userProxyAddress)
-      }
       await withdrawCollateral(args)
     },
-    [userProxyAddress, approveFIAT, withdrawCollateral, fiatAllowance],
+    [userProxyAddress, withdrawCollateral],
   )
 
   return { tokenInfo, fiatInfo, withdraw }
@@ -125,25 +107,32 @@ type UseBurnForm = {
   burn: (args: BurnFiat) => Promise<any>
   updateFiat: () => Promise<any>
   fiatAllowance?: BigNumber
+  hasAllowance: boolean
 }
 
 export const useBurnForm = ({ tokenAddress }: { tokenAddress?: string }): UseBurnForm => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { approveFIAT, burnFIAT } = useUserActions()
   const { userProxyAddress } = useUserProxy()
+  const [hasAllowance, setHasAllowance] = useState<boolean>(false)
 
   const { tokenInfo } = useTokenDecimalsAndBalance({ address, readOnlyAppProvider, tokenAddress })
   const [fiatInfo, updateFiat] = useFIATBalance(true)
+  const MONETA = contracts.MONETA.address[appChainId]
   const [fiatAllowance] = useContractCall(
     contracts.FIAT.address[appChainId],
     contracts.FIAT.abi,
     'allowance',
-    [address, userProxyAddress],
+    [userProxyAddress, MONETA],
   )
   const approveToken = useCallback(async () => {
-    const MONETA = contracts.MONETA.address[appChainId]
     await approveFIAT(MONETA)
-  }, [appChainId, approveFIAT])
+    setHasAllowance(true)
+  }, [approveFIAT, MONETA])
+
+  useEffect(() => {
+    setHasAllowance(!!fiatAllowance && fiatAllowance?.gt(ZERO_BIG_NUMBER))
+  }, [fiatAllowance])
 
   return {
     fiatInfo,
@@ -152,6 +141,7 @@ export const useBurnForm = ({ tokenAddress }: { tokenAddress?: string }): UseBur
     burn: burnFIAT,
     tokenInfo,
     approveToken,
+    hasAllowance,
   }
 }
 
