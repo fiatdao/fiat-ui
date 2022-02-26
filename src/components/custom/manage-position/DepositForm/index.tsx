@@ -4,11 +4,11 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useCallback, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { useDepositForm } from '@/src/hooks/managePosition'
-import { getNonHumanValue } from '@/src/web3/utils'
+import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
@@ -36,17 +36,16 @@ export const DepositForm = ({ position }: { position: Position }) => {
 
   const [form] = AntdForm.useForm<DepositFormFields>()
 
-  const calculateAndSetMaxFiat = useCallback((amountToDeposit?: BigNumber) => {
-    if (amountToDeposit) {
-      const FACTOR = 1.1
-      setMaxFiatValue(
-        amountToDeposit
-          // TODO: remove the hardcoded 1.1 factor
-          .dividedBy(FACTOR)
-          .decimalPlaces(contracts.FIAT.decimals),
-      )
-    }
-  }, [])
+  const calculateAndSetMaxFiat = useCallback(
+    (amountToDeposit?: BigNumber) => {
+      if (amountToDeposit) {
+        // TODO: you can mint more FIAT if user have already some collateral deposited
+        const FACTOR = position.vaultCollateralizationRatio || 1
+        setMaxFiatValue(amountToDeposit.dividedBy(FACTOR).decimalPlaces(contracts.FIAT.decimals))
+      }
+    },
+    [position.vaultCollateralizationRatio],
+  )
 
   const [mintFiat, setMintFiat] = useState(false)
   const toggleMintFiat = () => {
@@ -79,22 +78,23 @@ export const DepositForm = ({ position }: { position: Position }) => {
     }
   }
 
+  const fiatAmount = form.getFieldValue('fiatAmount') ? form.getFieldValue('fiatAmount') : 0
   const mockedData = [
     {
       title: 'Current collateral value',
-      value: '$5,000',
+      value: `$${getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3)}`,
     },
     {
       title: 'Outstanding FIAT debt',
-      value: '0',
+      value: `${fiatAmount.toFixed(3)}`,
     },
     {
       title: 'New FIAT debt',
-      value: '0',
+      value: `${getHumanValue(position.totalNormalDebt.plus(fiatAmount), WAD_DECIMALS).toFixed(3)}`,
     },
     {
       title: 'Stability feed',
-      value: '0',
+      value: `0`,
     },
   ]
 
@@ -119,9 +119,9 @@ export const DepositForm = ({ position }: { position: Position }) => {
               <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
                 <TokenAmount
                   disabled={submitting}
-                  displayDecimals={contracts.FIAT.decimals}
+                  displayDecimals={4}
                   max={maxFiatValue}
-                  maximumFractionDigits={contracts.FIAT.decimals}
+                  maximumFractionDigits={6}
                   slider
                   tokenIcon={<FiatIcon />}
                 />
