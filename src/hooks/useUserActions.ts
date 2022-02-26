@@ -54,7 +54,7 @@ type UseUserActions = {
 
 export const useUserActions = (): UseUserActions => {
   const { address, web3Provider } = useWeb3Connection()
-  const { userProxy } = useUserProxy()
+  const { userProxy, userProxyAddress } = useUserProxy()
 
   const userAction = useMemo(() => {
     return new Contract(
@@ -113,14 +113,14 @@ export const useUserActions = (): UseUserActions => {
         vault: args.vault,
         token: args.token,
         tokenId: args.tokenId,
-        position: address ?? '',
+        position: userProxyAddress ?? '',
         collateralizer: address ?? '',
         creditor: address ?? '',
         deltaCollateral: args.toDeposit,
         deltaNormalDebt: args.toMint,
       })
     },
-    [address, modifyCollateralAndDebt],
+    [address, userProxyAddress, modifyCollateralAndDebt],
   )
 
   const withdrawCollateral = useCallback(
@@ -129,14 +129,14 @@ export const useUserActions = (): UseUserActions => {
         vault: args.vault,
         token: args.token,
         tokenId: args.tokenId,
-        position: address ?? '',
+        position: userProxyAddress ?? '',
         collateralizer: address ?? '',
         creditor: address ?? '',
         deltaCollateral: args.toWithdraw.negated(),
         deltaNormalDebt: ZERO_BIG_NUMBER,
       })
     },
-    [address, modifyCollateralAndDebt],
+    [address, userProxyAddress, modifyCollateralAndDebt],
   )
 
   const mintFIAT = useCallback(
@@ -145,14 +145,14 @@ export const useUserActions = (): UseUserActions => {
         vault: args.vault,
         token: args.token,
         tokenId: args.tokenId,
-        position: address ?? '',
+        position: userProxyAddress ?? '',
         collateralizer: address ?? '',
         creditor: address ?? '',
         deltaCollateral: ZERO_BIG_NUMBER,
         deltaNormalDebt: args.toMint,
       })
     },
-    [address, modifyCollateralAndDebt],
+    [address, userProxyAddress, modifyCollateralAndDebt],
   )
 
   const burnFIAT = useCallback(
@@ -161,14 +161,14 @@ export const useUserActions = (): UseUserActions => {
         vault: args.vault,
         token: args.token,
         tokenId: args.tokenId,
-        position: address ?? '',
+        position: userProxyAddress ?? '',
         collateralizer: address ?? '',
         creditor: address ?? '',
         deltaCollateral: args.toWithdraw.negated(), // TODO: should not be negated?
         deltaNormalDebt: args.toBurn.negated(),
       })
     },
-    [address, modifyCollateralAndDebt],
+    [address, userProxyAddress, modifyCollateralAndDebt],
   )
 
   return { userAction, approveFIAT, depositCollateral, withdrawCollateral, mintFIAT, burnFIAT }
