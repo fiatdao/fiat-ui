@@ -12,9 +12,6 @@ type ModifyCollateralAndDebt = {
   vault: string
   token: string
   tokenId: number
-  position: string
-  collateralizer: string
-  creditor: string
   deltaCollateral: BigNumber
   deltaNormalDebt: BigNumber
 }
@@ -54,7 +51,7 @@ type UseUserActions = {
 
 export const useUserActions = (): UseUserActions => {
   const { address, web3Provider } = useWeb3Connection()
-  const { userProxy } = useUserProxy()
+  const { userProxy, userProxyAddress } = useUserProxy()
 
   const userAction = useMemo(() => {
     return new Contract(
@@ -85,16 +82,18 @@ export const useUserActions = (): UseUserActions => {
 
   const modifyCollateralAndDebt = useCallback(
     async (params: ModifyCollateralAndDebt): Promise<void> => {
-      if (!userProxy || !params.position) return
+      // @TODO: it is not possible to use this hook when user is not connected nor have created a Proxy
+      if (!address || !userProxy || !userProxyAddress) return
+
       const modifyCollateralAndDebtEncoded = userAction.interface.encodeFunctionData(
         'modifyCollateralAndDebt',
         [
           params.vault,
           params.token,
           params.tokenId,
-          params.position,
-          params.collateralizer,
-          params.creditor,
+          userProxyAddress,
+          address,
+          address,
           params.deltaCollateral.toFixed(),
           params.deltaNormalDebt.toFixed(),
         ],
@@ -104,7 +103,7 @@ export const useUserActions = (): UseUserActions => {
       })
       await tx.wait()
     },
-    [userProxy, userAction.address, userAction.interface],
+    [address, userProxy, userProxyAddress, userAction.address, userAction.interface],
   )
 
   const depositCollateral = useCallback(
@@ -113,14 +112,11 @@ export const useUserActions = (): UseUserActions => {
         vault: args.vault,
         token: args.token,
         tokenId: args.tokenId,
-        position: address ?? '',
-        collateralizer: address ?? '',
-        creditor: address ?? '',
         deltaCollateral: args.toDeposit,
         deltaNormalDebt: args.toMint,
       })
     },
-    [address, modifyCollateralAndDebt],
+    [modifyCollateralAndDebt],
   )
 
   const withdrawCollateral = useCallback(
@@ -129,14 +125,11 @@ export const useUserActions = (): UseUserActions => {
         vault: args.vault,
         token: args.token,
         tokenId: args.tokenId,
-        position: address ?? '',
-        collateralizer: address ?? '',
-        creditor: address ?? '',
         deltaCollateral: args.toWithdraw.negated(),
         deltaNormalDebt: ZERO_BIG_NUMBER,
       })
     },
-    [address, modifyCollateralAndDebt],
+    [modifyCollateralAndDebt],
   )
 
   const mintFIAT = useCallback(
@@ -145,14 +138,11 @@ export const useUserActions = (): UseUserActions => {
         vault: args.vault,
         token: args.token,
         tokenId: args.tokenId,
-        position: address ?? '',
-        collateralizer: address ?? '',
-        creditor: address ?? '',
         deltaCollateral: ZERO_BIG_NUMBER,
         deltaNormalDebt: args.toMint,
       })
     },
-    [address, modifyCollateralAndDebt],
+    [modifyCollateralAndDebt],
   )
 
   const burnFIAT = useCallback(
@@ -161,14 +151,11 @@ export const useUserActions = (): UseUserActions => {
         vault: args.vault,
         token: args.token,
         tokenId: args.tokenId,
-        position: address ?? '',
-        collateralizer: address ?? '',
-        creditor: address ?? '',
         deltaCollateral: args.toWithdraw.negated(), // TODO: should not be negated?
         deltaNormalDebt: args.toBurn.negated(),
       })
     },
-    [address, modifyCollateralAndDebt],
+    [modifyCollateralAndDebt],
   )
 
   return { userAction, approveFIAT, depositCollateral, withdrawCollateral, mintFIAT, burnFIAT }
