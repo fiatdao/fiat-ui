@@ -49,22 +49,27 @@ export const WithdrawForm = ({
     }
   }
 
+  const normalDebtWithColRatio = position.totalNormalDebt.times(
+    position.vaultCollateralizationRatio || 1,
+  )
+  const newMaxWithdrawAmount = position.totalCollateral.minus(normalDebtWithColRatio)
+
   const mockedData = [
     {
       title: 'Current collateral value',
-      value: '$5,000',
+      value: `$${getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3)}`,
     },
     {
       title: 'Outstanding FIAT debt',
-      value: '0',
+      value: `${getHumanValue(position.totalNormalDebt, WAD_DECIMALS).toFixed(3)}`,
     },
     {
       title: 'New FIAT debt',
-      value: '0',
+      value: `${getHumanValue(position.totalNormalDebt, WAD_DECIMALS).toFixed(3)}`,
     },
     {
       title: 'Stability feed',
-      value: '0',
+      value: `0`,
     },
   ]
 
@@ -76,7 +81,7 @@ export const WithdrawForm = ({
             disabled={submitting}
             displayDecimals={tokenInfo?.decimals}
             mainAsset={position.protocol} // TODO: fails sometimes (use with low numbers)
-            max={Number(getHumanValue(position.collateralValue, WAD_DECIMALS - 2)?.toFixed(2))}
+            max={Number(getHumanValue(newMaxWithdrawAmount, WAD_DECIMALS)?.toFixed(2))}
             maximumFractionDigits={tokenInfo?.decimals}
             secondaryAsset={position.underlier.symbol}
             slider
