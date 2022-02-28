@@ -82,7 +82,10 @@ const LiquidateAuction = () => {
 
   const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
-  const takeCollateralTx = useTransaction(contracts.COLLATERAL_AUCTION, 'takeCollateral')
+  const takeCollateralTx = useTransaction(
+    contracts.NO_LOSS_COLLATERAL_AUCTION_ACTIONS,
+    'takeCollateral',
+  )
 
   useEffect(() => {
     setSendingForm(loadingApprove)
