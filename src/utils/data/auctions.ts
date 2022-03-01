@@ -18,7 +18,9 @@ export type AuctionData = {
   upForAuction?: string
   price?: string
   collateralValue?: string
+  tokenId?: string
   yield?: string
+  vault?: { address: string; name?: string }
   action: { isActive: boolean; id: number | string }
   tokenAddress?: string | null
   collateral: TokenData
@@ -66,6 +68,8 @@ const wrangleAuction = async (
   return {
     id: userAuction.id,
     protocol: userAuction.vault?.name,
+    tokenId: userAuction?.tokenId,
+    vault: { address: userAuction?.vault?.address, name: userAuction?.vault?.name },
     asset: userAuction.collateral?.symbol,
     upForAuction: getHumanValue(
       BigNumber.from(auctionStatus?.collateralToSell.toString()),
