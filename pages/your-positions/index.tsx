@@ -9,9 +9,10 @@ import InventoryTable from '@/src/components/custom/inventory-table'
 import TransactionHistoryTable from '@/src/components/custom/transaction-history-table'
 import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 import { remainingTime } from '@/src/utils/dateTime'
-import { fetchInfoPage } from '@/src/utils/data/yourPositionInfo'
+import { useYourPositionInfoPage } from '@/src/utils/data/yourPositionInfo'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 enum TabState {
   Inventory = 'inventory',
@@ -31,10 +32,11 @@ const tabs = [
 
 const YourPositions = () => {
   const [activeTabKey, setActiveTabKey] = useState<TabState>(TabState.Inventory)
+  const { readOnlyAppProvider } = useWeb3Connection()
 
   const { positions } = usePositionsByUser()
 
-  const pageInformation = fetchInfoPage(positions)
+  const { pageInformation } = useYourPositionInfoPage(positions, readOnlyAppProvider)
 
   // TODO Fix naming if necessary
   return (

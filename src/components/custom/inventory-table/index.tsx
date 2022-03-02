@@ -34,7 +34,7 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'underlier',
     render: (underlier: Position['underlier']) => <CellValue bold value={underlier.symbol} />,
     responsive: ['lg'],
-    title: 'Collateral Value',
+    title: 'Underlying',
   },
   {
     align: 'left',
@@ -76,7 +76,7 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'healthFactor',
     render: (healthFactor: Position['healthFactor']) => (
       <CellValue
-        state={calculateHealthFactor(healthFactor)}
+        state={calculateHealthFactor(getHumanValue(healthFactor, WAD_DECIMALS))}
         value={`${getHumanValue(healthFactor, WAD_DECIMALS).toFixed(2)}`}
       />
     ),
