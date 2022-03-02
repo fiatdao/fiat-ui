@@ -3,7 +3,8 @@ import { useRouter } from 'next/router'
 import { Layout } from 'antd'
 import cn from 'classnames'
 import { Drawer } from 'antd'
-import { useState } from 'react'
+import { FC, useState } from 'react'
+import { chainsConfig } from '@/src/constants/chains'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useGeneral } from '@/src/providers/generalProvider'
@@ -25,9 +26,9 @@ const FiatBalanceInfo = () => {
   return <span style={{ fontSize: '16px' }}>{fiatBalance.toFixed(2)}</span>
 }
 
-export const Header: React.FC = ({ ...restProps }) => {
+export const Header: FC = ({ ...restProps }) => {
   const { title: pageTitle } = useGeneral()
-  const { address, isWalletConnected } = useWeb3Connection()
+  const { address, appChainId, isWalletConnected } = useWeb3Connection()
   const router = useRouter()
   const title: string = pageTitle ?? routesConfig[router.route]?.title ?? '-'
   const [drawerVisible, setDrawerVisible] = useState(false)
@@ -55,7 +56,7 @@ export const Header: React.FC = ({ ...restProps }) => {
             <HeaderInfoButton
               className={cn(s.infoButton)}
               icon={<Ethereum />}
-              text={'Ethereum Mainnet'}
+              text={chainsConfig[appChainId].shortName}
             />
           )}
           {isConnected && <ConnectedWallet />}
