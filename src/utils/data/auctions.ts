@@ -69,7 +69,7 @@ const wrangleAuction = async (
     id: userAuction.id,
     protocol: userAuction.vault?.name,
     tokenId: userAuction?.tokenId,
-    vault: { address: userAuction?.vault?.address, name: userAuction?.vault?.name },
+    vault: { address: userAuction.vault?.address, name: userAuction.vault?.name },
     asset: userAuction.collateral?.symbol,
     upForAuction: getHumanValue(
       BigNumber.from(auctionStatus?.collateralToSell.toString()),
