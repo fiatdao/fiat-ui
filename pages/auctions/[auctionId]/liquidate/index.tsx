@@ -19,7 +19,6 @@ import { InfoBlock } from '@/src/components/custom/info-block'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { Form } from '@/src/components/antd'
 import TokenAmount from '@/src/components/custom/token-amount'
-import { Chains } from '@/src/constants/chains'
 
 const SLIPPAGE_VALUE = BigNumber.from(0.02) // 2%
 
@@ -63,6 +62,7 @@ type FormProps = { liquidateAmount: BigNumber }
 
 const LiquidateAuction = () => {
   const auctionId = useQueryParam('auctionId')
+  const { appChainId } = useWeb3Connection()
 
   const [form] = AntdForm.useForm<FormProps>()
   const [step, setStep] = useState(1)
@@ -106,7 +106,7 @@ const LiquidateAuction = () => {
     takeCollateralTx(
       data?.vault?.address,
       data?.tokenId,
-      contracts.FIAT.address[Chains.goerli],
+      contracts.FIAT.address[appChainId],
       auctionId,
       collateralAmountToSend.toFixed(),
       maxPrice,

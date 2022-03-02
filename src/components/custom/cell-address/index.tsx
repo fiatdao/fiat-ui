@@ -15,9 +15,6 @@ export const CellAddress: React.FC<{
     chainsConfig[appChainId].shortName === 'Goerli'
       ? 'https://goerli.etherscan.io/'
       : 'https://etherscan.io/'
-
-  console.log(chainsConfig[appChainId].name)
-
   return (
     <div
       className={cn(
