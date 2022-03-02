@@ -19,6 +19,7 @@ import { InfoBlock } from '@/src/components/custom/info-block'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { Form } from '@/src/components/antd'
 import TokenAmount from '@/src/components/custom/token-amount'
+import { Chains } from '@/src/constants/chains'
 
 const SLIPPAGE_VALUE = BigNumber.from(0.02) // 2%
 
@@ -70,7 +71,6 @@ const LiquidateAuction = () => {
   const { address: currentUserAddress } = useWeb3Connection()
 
   const { data } = useAuction(auctionId as string)
-
   const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
     data?.tokenAddress as string,
     currentUserAddress as string,
@@ -82,7 +82,10 @@ const LiquidateAuction = () => {
 
   const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
-  const takeCollateralTx = useTransaction(contracts.COLLATERAL_AUCTION, 'takeCollateral')
+  const takeCollateralTx = useTransaction(
+    contracts.NO_LOSS_COLLATERAL_AUCTION_ACTIONS,
+    'takeCollateral',
+  )
 
   useEffect(() => {
     setSendingForm(loadingApprove)
@@ -101,14 +104,13 @@ const LiquidateAuction = () => {
     const maxPrice = getNonHumanValue(FIATBalance.dividedBy(collateralAmountToSend), 18).toFixed(0)
 
     takeCollateralTx(
+      data?.vault?.address,
+      data?.tokenId,
+      contracts.FIAT.address[Chains.goerli],
       auctionId,
       collateralAmountToSend.toFixed(),
       maxPrice,
       currentUserAddress,
-      [],
-      {
-        gasLimit: 10_000_000, //TODO this gasLimit is OK?
-      },
     )
       .then(async () => {
         await refetchFIATBalance()
