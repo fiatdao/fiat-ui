@@ -34,8 +34,12 @@ export const ManageFiat = ({
           Burn
         </Tab>
       </Tabs>
-      {'mint' === activeTabKey && <MintForm position={position} refetch={refetchPosition} />}
-      {'burn' === activeTabKey && <BurnForm position={position} refetch={refetchPosition} />}
+      {'mint' === activeTabKey && position && (
+        <MintForm position={position} refetch={refetchPosition} />
+      )}
+      {'burn' === activeTabKey && position && (
+        <BurnForm position={position} refetch={refetchPosition} />
+      )}
     </div>
   )
 }

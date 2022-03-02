@@ -2,7 +2,7 @@ import s from './s.module.scss'
 import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
@@ -15,31 +15,16 @@ import { SummaryItem } from '@/src/components/custom/summary'
 import { Position } from '@/src/utils/data/positions'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
-const calculateRemainingFiat = (userBalance: BigNumber, fiatAmount: BigNumber) => {
-  // TODO: remove the hardcoded 1.1 factor
-  return userBalance.dividedBy(1.1).decimalPlaces(contracts.FIAT.decimals).minus(fiatAmount)
-}
-
 export const MintForm = ({
   position,
   refetch,
 }: {
   refetch: RefetchPositionById
-  position?: Position
+  position: Position
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const { fiatInfo, mint: mintFIAT, updateFiat } = useMintForm()
+  const { mint: mintFIAT, updateFiat } = useMintForm()
   const [form] = AntdForm.useForm()
-
-  const maxFiatValue = useMemo<BigNumber | undefined>(() => {
-    // FixMe: this works when the component is mounted, but needs to be updated after form submit
-    if (position?.totalCollateral && fiatInfo) {
-      return calculateRemainingFiat(
-        position?.totalCollateral,
-        BigNumber.from(fiatInfo) ?? ZERO_BIG_NUMBER,
-      )
-    }
-  }, [position?.totalCollateral, fiatInfo])
 
   const handleMint = async ({ mint }: { mint: BigNumber }) => {
     try {
@@ -60,22 +45,29 @@ export const MintForm = ({
     }
   }
 
+  const mintAmount = (form.getFieldValue('mint') || ZERO_BIG_NUMBER) as BigNumber
+  const newNormalDebt = mintAmount.plus(position.totalNormalDebt)
+  const normalDebtWithColRatio = position.totalNormalDebt.times(
+    position.vaultCollateralizationRatio || 1,
+  )
+  const newMaxMintAmount = position.totalCollateral.minus(normalDebtWithColRatio)
+
   const mockedData = [
     {
       title: 'Current collateral value',
-      value: '$5,000',
+      value: `$${getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3)}`,
     },
     {
       title: 'Outstanding FIAT debt',
-      value: '0',
+      value: `${getHumanValue(position.totalNormalDebt, WAD_DECIMALS).toFixed(3)}`,
     },
     {
       title: 'New FIAT debt',
-      value: '0',
+      value: `${getHumanValue(newNormalDebt, WAD_DECIMALS).toFixed(3)}`,
     },
     {
       title: 'Stability feed',
-      value: '0',
+      value: `0`,
     },
   ]
 
@@ -86,7 +78,7 @@ export const MintForm = ({
           <TokenAmount
             disabled={submitting}
             displayDecimals={contracts.FIAT.decimals}
-            max={Number(getHumanValue(maxFiatValue, WAD_DECIMALS)?.toFixed(2))} // TODO: fails sometimes (use with low numbers)
+            max={Number(getHumanValue(newMaxMintAmount, WAD_DECIMALS)?.toFixed(2))}
             maximumFractionDigits={contracts.FIAT.decimals}
             slider
             tokenIcon={<FiatIcon />}
