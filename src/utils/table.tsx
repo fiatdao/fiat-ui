@@ -31,7 +31,7 @@ export const tablePagination = (total: number | undefined): any => {
     position: ['bottomCenter'],
     showTotal: (total: number, [from, to]: [number, number]) => (
       <>
-        Showing {from} to {to} the most recent {total}
+        Showing {from} to {to} of the most recent {total}
       </>
     ),
   }
