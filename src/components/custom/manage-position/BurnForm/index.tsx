@@ -95,10 +95,6 @@ export const BurnForm = ({
       title: 'New FIAT debt',
       value: '0',
     },
-    {
-      title: 'Stability feed',
-      value: '0',
-    },
   ]
 
   useEffect(() => {

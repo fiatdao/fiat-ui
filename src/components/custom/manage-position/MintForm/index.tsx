@@ -65,10 +65,6 @@ export const MintForm = ({
       title: 'New FIAT debt',
       value: `${getHumanValue(newNormalDebt, WAD_DECIMALS).toFixed(3)}`,
     },
-    {
-      title: 'Stability feed',
-      value: `0`,
-    },
   ]
 
   return (

@@ -67,10 +67,6 @@ export const WithdrawForm = ({
       title: 'New FIAT debt',
       value: `${getHumanValue(position.totalNormalDebt, WAD_DECIMALS).toFixed(3)}`,
     },
-    {
-      title: 'Stability feed',
-      value: `0`,
-    },
   ]
 
   return (

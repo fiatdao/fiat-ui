@@ -92,10 +92,6 @@ export const DepositForm = ({ position }: { position: Position }) => {
       title: 'New FIAT debt',
       value: `${getHumanValue(position.totalNormalDebt.plus(fiatAmount), WAD_DECIMALS).toFixed(3)}`,
     },
-    {
-      title: 'Stability feed',
-      value: `0`,
-    },
   ]
 
   return (
