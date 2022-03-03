@@ -163,8 +163,7 @@ const FormERC20: React.FC<{
 
   return (
     <>
-      {stateMachine.context.currentStepNumber !== 4 ? (
-        // {stateMachine.context.currentStepNumber !== 7 ? (
+      {stateMachine.context.currentStepNumber !== 7 ? (
         <>
           <StepperTitle
             currentStep={stateMachine.context.currentStepNumber}
