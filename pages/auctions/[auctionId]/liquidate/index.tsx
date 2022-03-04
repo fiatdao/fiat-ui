@@ -125,22 +125,23 @@ const LiquidateAuction = () => {
   const blocksData = [
     {
       title: 'Up for Auction',
-      tooltip: 'Tooltip text', // TODO tooltip text?
+      tooltip: 'Units of this collateral type that are currently being auctioned.',
       value: data?.upForAuction || undefined,
     },
     {
       title: 'Auction Price',
-      tooltip: 'Tooltip text', // TODO tooltip text?
+      tooltip: 'The amount of FIAT required to liquidate this collateral.',
       value: `$${data?.price}`,
     },
     {
       title: 'Collateral Value',
-      tooltip: 'Tooltip text', // TODO tooltip text?
+      tooltip: 'The amount of underlying assets available for redemption at maturity.',
       value: `$${data?.collateralValue}`,
     },
     {
       title: 'Yield',
-      tooltip: 'Tooltip text', // TODO tooltip text?
+      tooltip:
+        'The annualized yield as determined by the difference between Auction Price and Collateral Value.',
       value: `${data?.yield}%`,
     },
   ]
