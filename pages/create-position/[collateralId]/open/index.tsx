@@ -184,8 +184,7 @@ const FormERC20: React.FC<{
             {[1, 4].includes(stateMachine.context.currentStepNumber) && (
               <Balance
                 title={`Deposit ${stateMachine.context.tokenSymbol}`}
-                value={`Available:
-              ${tokenInfo?.humanValue?.toFixed()}`}
+                value={`Available: ${tokenInfo?.humanValue?.toFixed()}`}
               />
             )}
             <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>

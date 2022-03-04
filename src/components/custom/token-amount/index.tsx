@@ -40,7 +40,6 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     mainAsset,
     max,
     maximumFractionDigits = 4,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onChange,
     secondaryAsset,
     slider = false,

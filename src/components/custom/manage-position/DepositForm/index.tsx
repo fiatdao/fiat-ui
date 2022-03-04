@@ -1,50 +1,63 @@
 import s from './s.module.scss'
-import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import cn from 'classnames'
 import { useCallback, useState } from 'react'
+import { Form } from '@/src/components/antd'
+import ButtonGradient from '@/src/components/antd/button-gradient'
+import { TokenAmount } from '@/src/components/custom'
+import { Balance } from '@/src/components/custom/balance'
+import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
+import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
+import { FormExtraAction } from '@/src/components/custom/form-extra-action'
+import { SummaryItem } from '@/src/components/custom/summary'
 import { contracts } from '@/src/constants/contracts'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { Form } from '@/src/components/antd'
-import { TokenAmount } from '@/src/components/custom'
-import { useDepositForm } from '@/src/hooks/managePosition'
-import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
-import ButtonGradient from '@/src/components/antd/button-gradient'
-import { SummaryItem } from '@/src/components/custom/summary'
-import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
-import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
+import { useDepositForm, useDepositFormSummary } from '@/src/hooks/managePosition'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { Balance } from '@/src/components/custom/balance'
-import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { Position } from '@/src/utils/data/positions'
+import { getNonHumanValue } from '@/src/web3/utils'
 
-type DepositFormFields = {
+const DEFAULT_HEALTH_FACTOR = ''
+const MINT_BUTTON_TEXT = 'Mint fiat with this transaction'
+
+export type DepositFormFields = {
   deposit?: BigNumber
   fiatAmount?: BigNumber
 }
 
 export const DepositForm = ({ position }: { position: Position }) => {
+  const [form] = AntdForm.useForm<DepositFormFields>()
+  const { deposit } = form.getFieldsValue()
+  const summary = useDepositFormSummary(position, form.getFieldsValue())
+
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const [maxFiatValue, setMaxFiatValue] = useState<BigNumber | undefined>()
+  const [healthFactor, setHealthFactor] = useState(ZERO_BIG_NUMBER.toFixed())
+
   const {
+    currentValue,
     deposit: depositCollateral,
-    fiatInfo,
     tokenInfo,
   } = useDepositForm({
     tokenAddress: position.collateral.address,
+    vaultAddress: position.protocolAddress,
   })
 
-  const [form] = AntdForm.useForm<DepositFormFields>()
-
+  const [maxFiatValue, setMaxFiatValue] = useState<BigNumber | undefined>()
   const calculateAndSetMaxFiat = useCallback(
     (amountToDeposit?: BigNumber) => {
       if (amountToDeposit) {
-        // TODO: you can mint more FIAT if user have already some collateral deposited
         const FACTOR = position.vaultCollateralizationRatio || 1
-        setMaxFiatValue(amountToDeposit.dividedBy(FACTOR).decimalPlaces(contracts.FIAT.decimals))
+
+        setMaxFiatValue(
+          amountToDeposit
+            .plus(position.totalCollateral.unscaleBy(WAD_DECIMALS))
+            .dividedBy(FACTOR)
+            .decimalPlaces(contracts.FIAT.decimals),
+        )
       }
     },
-    [position.vaultCollateralizationRatio],
+    [position.totalCollateral, position.vaultCollateralizationRatio],
   )
 
   const [mintFiat, setMintFiat] = useState(false)
@@ -54,7 +67,6 @@ export const DepositForm = ({ position }: { position: Position }) => {
       calculateAndSetMaxFiat(ZERO_BIG_NUMBER)
     }
   }
-  const mintButtonText = 'Mint fiat with this transaction'
 
   const handleDeposit = async ({ deposit, fiatAmount }: DepositFormFields) => {
     try {
@@ -78,30 +90,34 @@ export const DepositForm = ({ position }: { position: Position }) => {
     }
   }
 
-  const { deposit = 0, fiatAmount = 0 } = form.getFieldsValue()
+  const handleValuesChange = (...args: any[]) => {
+    const [modifiedField, formFields] = args
+    if (modifiedField.deposit) {
+      calculateAndSetMaxFiat(modifiedField.deposit)
+    }
 
-  const summary = [
-    {
-      title: 'Current collateral deposited',
-      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3),
-    },
-    {
-      title: 'New collateral deposited',
-      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).plus(deposit).toFixed(3),
-    },
-    {
-      title: 'Outstanding FIAT debt',
-      value: fiatAmount.toFixed(3),
-    },
-    {
-      title: 'New FIAT debt',
-      value: getHumanValue(position.totalNormalDebt, WAD_DECIMALS).plus(fiatAmount).toFixed(3),
-    },
-  ]
+    // when any value is updated, and fiatAmount is other than `undefined`
+    if (formFields.fiatAmount) {
+      // this way we ensure the 'healthFactor' is re-calculated when `fiatAmount` is updated
+      setHealthFactor(
+        currentValue
+          .times(position.totalCollateral.unscaleBy(WAD_DECIMALS).plus(args[1].deposit))
+          .div(position.totalNormalDebt.unscaleBy(WAD_DECIMALS).plus(args[1].fiatAmount))
+          .unscaleBy(18)
+          .toFixed(2),
+      )
+    }
+
+    return args
+  }
 
   return (
-    <Form form={form} onFinish={handleDeposit}>
+    <Form form={form} onFinish={handleDeposit} onValuesChange={handleValuesChange}>
       <fieldset disabled={submitting}>
+        <Balance
+          title="Select amount to deposit"
+          value={`Available: ${tokenInfo?.humanValue?.toFixed()}`}
+        />
         <Form.Item name="deposit" required>
           <TokenAmount
             disabled={submitting}
@@ -109,7 +125,6 @@ export const DepositForm = ({ position }: { position: Position }) => {
             mainAsset={position.protocol}
             max={tokenInfo?.humanValue}
             maximumFractionDigits={tokenInfo?.decimals}
-            onChange={(value) => calculateAndSetMaxFiat(value)}
             secondaryAsset={position.underlier.symbol}
             slider
           />
@@ -121,22 +136,30 @@ export const DepositForm = ({ position }: { position: Position }) => {
                 <TokenAmount
                   disabled={submitting}
                   displayDecimals={4}
+                  healthFactorValue={
+                    !isFinite(Number(healthFactor)) ? DEFAULT_HEALTH_FACTOR : healthFactor
+                  }
                   max={maxFiatValue}
                   maximumFractionDigits={6}
-                  slider
+                  slider="healthFactorVariant"
                   tokenIcon={<FiatIcon />}
                 />
               </Form.Item>
             }
-            buttonText={mintButtonText}
+            buttonText={MINT_BUTTON_TEXT}
             onClick={toggleMintFiat}
-            top={<Balance title="Mint FIAT" value={`Available: ${fiatInfo}`} />}
+            top={
+              <Balance
+                title="Mint FIAT"
+                value={`Available: ${maxFiatValue?.toFixed(4, BigNumber.ROUND_DOWN)}`}
+              />
+            }
           />
         )}
         <ButtonsWrapper>
           {!mintFiat && (
-            <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
-              {mintButtonText}
+            <ButtonExtraFormAction disabled={!deposit} onClick={() => toggleMintFiat()}>
+              {MINT_BUTTON_TEXT}
             </ButtonExtraFormAction>
           )}
           <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
