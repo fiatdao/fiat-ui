@@ -14,7 +14,7 @@ import { ACTIONS_TYPES, ActionTransaction, Transaction } from '@/src/utils/data/
 import { tablePagination } from '@/src/utils/table'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import { shortenAddr } from '@/src/web3/utils'
-import { useTransactions } from '@/src/hooks/subgraph/useTransactions'
+import { useTransactionsByUser } from '@/src/hooks/subgraph/useTransactions'
 
 const Columns: ColumnsType<any> = [
   {
@@ -34,17 +34,16 @@ const Columns: ColumnsType<any> = [
   },
   {
     align: 'right',
-    dataIndex: 'amount',
-    render: (amount: Transaction['amount'], row: Transaction) => {
-      const delta = row.deltaAmount || 0
-      const mint = row.action === 'ModifyCollateralAndDebtAction'
-      const diff = mint ? amount - delta : amount
-      const text = mint ? `+${delta}` : `${delta}`
+    dataIndex: 'deltaAmount',
+    render: (delta: Transaction['amount']) => {
+      // collateral is being depositted when delta is greater than 0, otherwise is a withdraw operation
+      const isAdding = delta >= 0
+      const text = isAdding ? `+${delta.toFixed(3)}` : `${delta.toFixed(3)}`
 
       return (
         <CellValue
-          bottomValue={`$${diff.toFixed(2)}`}
-          state={mint ? 'ok' : 'danger'}
+          // bottomValue={`$${delta.toFixed(2)}`} @TODO: show USDC value of collateral! fairPrice * amount
+          state={isAdding ? 'ok' : 'danger'}
           value={text}
         />
       )
@@ -82,7 +81,7 @@ const TransactionHistoryTable = () => {
   // TODO: properly use `assetFilter` and `actionFilter` from the state
   const [assetFilter, setAssetFilter] = useState<string>('all')
   const [actionFilter, setActionFilter] = useState<string>('all')
-  const { data: transactions } = useTransactions() // TODO Add loading and skeleton
+  const { data: transactions, loading } = useTransactionsByUser()
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
 
   const ASSETS_FILTER = [
@@ -154,7 +153,7 @@ const TransactionHistoryTable = () => {
         <Table
           columns={Columns}
           dataSource={filteredTransactions}
-          loading={false}
+          loading={loading}
           pagination={tablePagination(filteredTransactions?.length ?? 0)}
           rowKey="address"
           scroll={{
