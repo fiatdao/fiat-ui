@@ -64,7 +64,7 @@ const DynamicContent = () => {
     {
       title: 'Collateralization Ratio',
       tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
-      value: position ? `${position.vaultCollateralizationRatio} %` : '-',
+      value: position?.vaultCollateralizationRatio?.toFixed() ?? '-',
     },
     {
       title: 'Borrowing Rate',
