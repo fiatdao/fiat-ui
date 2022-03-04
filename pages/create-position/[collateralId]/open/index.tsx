@@ -355,7 +355,7 @@ const OpenPosition = () => {
     },
     {
       title: 'Bond Collateral Value',
-      tooltip: 'The discounted value of the bond currently.',
+      tooltip: 'The currently discounted value of the bond.',
       value: `$${getHumanValue(collateral?.currentValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
