@@ -1,12 +1,14 @@
 import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
-import { ZERO_BIG_NUMBER } from '../constants/misc'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '../constants/misc'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useState } from 'react'
 import { KeyedMutator } from 'swr'
-import { useQueryParam } from '@/src/hooks/useQueryParam'
-import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import { DepositFormFields } from '@/src/components/custom/manage-position/DepositForm'
 import { contracts } from '@/src/constants/contracts'
+import useContractCall from '@/src/hooks/contracts/useContractCall'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import { useQueryParam } from '@/src/hooks/useQueryParam'
 import {
   DepositCollateral,
   MintFIAT,
@@ -15,7 +17,9 @@ import {
 } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import useContractCall from '@/src/hooks/contracts/useContractCall'
+import { Position } from '@/src/utils/data/positions'
+import { getCurrentValue } from '@/src/utils/getCurrentValue'
+import { getHumanValue } from '@/src/web3/utils'
 
 export type TokenInfo = {
   decimals?: number
@@ -23,14 +27,23 @@ export type TokenInfo = {
 }
 
 type UseDepositForm = {
+  currentValue: BigNumber
   tokenInfo?: TokenInfo
   fiatInfo?: BigNumber
   deposit: (args: DepositCollateral) => Promise<void>
   approve: (arg0: string) => Promise<void>
 }
 
-export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }): UseDepositForm => {
-  const { address, readOnlyAppProvider } = useWeb3Connection()
+export const useDepositForm = ({
+  tokenAddress,
+  vaultAddress,
+}: {
+  tokenAddress: string
+  vaultAddress: string
+}): UseDepositForm => {
+  const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
+  const [currentValue, setCurrentValue] = useState(ZERO_BIG_NUMBER)
+
   const { tokenInfo, updateToken } = useTokenDecimalsAndBalance({
     tokenAddress,
     address,
@@ -47,12 +60,41 @@ export const useDepositForm = ({ tokenAddress }: { tokenAddress: string }): UseD
     [depositCollateral, updateToken, updateFiat],
   )
 
+  useEffect(() => {
+    getCurrentValue(readOnlyAppProvider, appChainId, 0, vaultAddress, false).then(setCurrentValue)
+  }, [appChainId, vaultAddress, readOnlyAppProvider, setCurrentValue])
+
   return {
+    currentValue,
     tokenInfo,
     fiatInfo,
     deposit,
     approve: approveFIAT,
   }
+}
+
+export const useDepositFormSummary = (
+  position: Position,
+  { deposit = ZERO_BIG_NUMBER, fiatAmount = ZERO_BIG_NUMBER }: DepositFormFields,
+) => {
+  return [
+    {
+      title: 'Current collateral deposited',
+      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3),
+    },
+    {
+      title: 'New collateral deposited',
+      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).plus(deposit).toFixed(3),
+    },
+    {
+      title: 'Outstanding FIAT debt',
+      value: fiatAmount.toFixed(3),
+    },
+    {
+      title: 'New FIAT debt',
+      value: getHumanValue(position.totalNormalDebt, WAD_DECIMALS).plus(fiatAmount).toFixed(3),
+    },
+  ]
 }
 
 type UseWithdrawForm = {

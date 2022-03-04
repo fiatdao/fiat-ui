@@ -64,12 +64,12 @@ const DynamicContent = () => {
     {
       title: 'Collateralization Ratio',
       tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
-      value: position ? `${position.vaultCollateralizationRatio} %` : '-',
+      value: position?.vaultCollateralizationRatio?.toFixed() ?? '-',
     },
     {
-      title: 'Stability fee',
+      title: 'Borrowing Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: '0',
+      value: getHumanValue(position?.interestPerSecond ?? 0, WAD_DECIMALS).toFixed(2),
     },
   ]
   return (
