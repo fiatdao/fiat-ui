@@ -363,9 +363,9 @@ const OpenPosition = () => {
       value: collateral ? `${collateral.collateralizationRatio} %` : '-',
     },
     {
-      title: 'Stability fee',
+      title: 'Borrowing Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: '0',
+      value: `${getHumanValue(collateral?.vault.interestPerSecond, WAD_DECIMALS)}`,
     },
   ]
 
