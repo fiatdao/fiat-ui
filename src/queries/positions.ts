@@ -18,6 +18,7 @@ export const POSITIONS = gql`
         address
         maxDiscount
         collateralizationRatio
+        interestPerSecond
       }
     }
   }

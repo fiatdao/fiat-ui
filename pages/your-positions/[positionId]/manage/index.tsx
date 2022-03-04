@@ -67,9 +67,9 @@ const DynamicContent = () => {
       value: position ? `${position.vaultCollateralizationRatio} %` : '-',
     },
     {
-      title: 'Stability fee',
+      title: 'Borrowing Rate',
       tooltip: 'Tooltip text',
-      value: '0',
+      value: getHumanValue(position?.interestPerSecond ?? 0, WAD_DECIMALS).toFixed(2),
     },
   ]
   return (
