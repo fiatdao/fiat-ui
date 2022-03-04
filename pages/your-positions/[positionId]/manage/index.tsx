@@ -48,27 +48,27 @@ const DynamicContent = () => {
     },
     {
       title: 'Bond Maturity',
-      tooltip: 'Tooltip text',
+      tooltip: 'The date on which the bond is redeemable for its underlying assets.',
       value: position?.maturity ? parseDate(position?.maturity) : '-',
     },
     {
       title: 'Bond Face Value',
-      tooltip: 'Tooltip text',
+      tooltip: 'The redeemable value of the bond at maturity.',
       value: `$${getHumanValue(position?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
       title: 'Bond Collateral Value',
-      tooltip: 'Tooltip text',
+      tooltip: 'The discounted value of the bond currently.',
       value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
       title: 'Collateralization Ratio',
-      tooltip: 'Tooltip text',
+      tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
       value: position ? `${position.vaultCollateralizationRatio} %` : '-',
     },
     {
       title: 'Stability fee',
-      tooltip: 'Tooltip text',
+      tooltip: 'The annualized cost of interest for minting FIAT.',
       value: '0',
     },
   ]
