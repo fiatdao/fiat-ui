@@ -56,7 +56,7 @@ export const WithdrawForm = ({
 
   const mockedData = [
     {
-      title: 'Current collateral value',
+      title: 'Current collateral deposited',
       value: `$${getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3)}`,
     },
     {

@@ -81,7 +81,7 @@ export const DepositForm = ({ position }: { position: Position }) => {
   const fiatAmount = form.getFieldValue('fiatAmount') ? form.getFieldValue('fiatAmount') : 0
   const mockedData = [
     {
-      title: 'Current collateral value',
+      title: 'Current collateral deposited',
       value: `$${getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3)}`,
     },
     {

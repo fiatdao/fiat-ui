@@ -84,7 +84,7 @@ export const BurnForm = ({
 
   const mockedData = [
     {
-      title: 'Current collateral value',
+      title: 'Current collateral deposited',
       value: '$5,000',
     },
     {
