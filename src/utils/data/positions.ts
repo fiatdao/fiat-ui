@@ -120,7 +120,7 @@ const wranglePosition = async (
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
-    collateralValue: currentValue,
+    collateralValue: currentValue.times(totalCollateral),
     faceValue,
     maturity,
     collateral: {

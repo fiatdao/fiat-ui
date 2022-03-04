@@ -57,13 +57,14 @@ const Columns: ColumnsType<Position> = [
     responsive: ['xl'],
     title: 'FIAT Minted',
   },
-  // @TODO: need to show USD value for this collateral
   {
     align: 'left',
     dataIndex: 'totalCollateral',
     render: (totalCollateral: Position['totalCollateral'], obj: Position) => (
       <CellValue
-        bottomValue={`$${getHumanValue(obj.collateralValue, WAD_DECIMALS).toFixed(2)}`}
+        bottomValue={`$${getHumanValue(obj.collateralValue, WAD_DECIMALS * 2).toFixed(2)}`}
+        // TODO: collateralValue = fairPrice * totalCollateral
+        // (we need to scale by 36 because we are multiplicating 2 BigNumbers with 18 decimals)
         value={`${getHumanValue(totalCollateral, WAD_DECIMALS).toFixed(2)}`}
       />
     ),

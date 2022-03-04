@@ -1,8 +1,6 @@
 import { Position } from './positions'
-import { getCurrentValue } from '../getCurrentValue'
 import BigNumber from 'bignumber.js'
 import { min } from 'date-fns'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { useEffect, useState } from 'react'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
@@ -17,10 +15,7 @@ type UseYourPositionInfoPage = {
   pageInformation?: YourPositionPageInformation
 }
 
-const useYourPositionInfoPage = (
-  positions: Position[],
-  provider: JsonRpcProvider,
-): UseYourPositionInfoPage => {
+const useYourPositionInfoPage = (positions: Position[]): UseYourPositionInfoPage => {
   const [pageInformation, setPageInformation] = useState<YourPositionPageInformation>()
 
   useEffect(() => {
@@ -33,10 +28,8 @@ const useYourPositionInfoPage = (
       }
 
       positions.forEach(async (p) => {
-        // TODO: need to calculate in USD (fair price?)
-        const collateralValue = await getCurrentValue(provider, 1, p.tokenId, p.protocolAddress)
         initialPositionInformation.collateralValue =
-          initialPositionInformation.collateralValue.plus(collateralValue)
+          initialPositionInformation.collateralValue.plus(p.collateralValue)
         initialPositionInformation.fiatDebt = initialPositionInformation.fiatDebt.plus(
           p.totalNormalDebt,
         )
@@ -58,7 +51,7 @@ const useYourPositionInfoPage = (
       setPageInformation(initialPositionInformation)
     }
     fetchInfoPage()
-  }, [positions, provider])
+  }, [positions])
   return { pageInformation }
 }
 

@@ -12,7 +12,7 @@ import { remainingTime } from '@/src/utils/dateTime'
 import { useYourPositionInfoPage } from '@/src/utils/data/yourPositionInfo'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
 enum TabState {
   Inventory = 'inventory',
@@ -32,23 +32,27 @@ const tabs = [
 
 const YourPositions = () => {
   const [activeTabKey, setActiveTabKey] = useState<TabState>(TabState.Inventory)
-  const { readOnlyAppProvider } = useWeb3Connection()
-
   const { positions } = usePositionsByUser()
-
-  const { pageInformation } = useYourPositionInfoPage(positions, readOnlyAppProvider)
+  const { pageInformation } = useYourPositionInfoPage(positions)
 
   // TODO Fix naming if necessary
   return (
     <>
       <InfoBlocksGrid>
         <InfoBlock
-          title="Total Debt"
-          value={(getHumanValue(pageInformation?.fiatDebt, WAD_DECIMALS) || 0).toFixed(3)}
+          title="Collateral Value"
+          value={`$${(
+            getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS * 2) || 0
+          ).toFixed(3)}`}
         />
         <InfoBlock
-          title="Collateral Value"
-          value={(getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS) || 0).toFixed(2)}
+          title={'Debt'}
+          value={
+            <>
+              <FiatIcon />
+              <>{(getHumanValue(pageInformation?.fiatDebt, WAD_DECIMALS) || 0).toFixed(2)}</>
+            </>
+          }
         />
         <InfoBlock
           title="Lowest Health Factor"
