@@ -125,7 +125,7 @@ const LiquidateAuction = () => {
   const blocksData = [
     {
       title: 'Up for Auction',
-      tooltip: 'Units of this collateral type currently being auction.',
+      tooltip: 'Units of this collateral type that are currently being auctioned.',
       value: data?.upForAuction || undefined,
     },
     {
