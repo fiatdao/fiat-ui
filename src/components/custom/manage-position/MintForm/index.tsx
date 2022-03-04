@@ -3,6 +3,7 @@ import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useState } from 'react'
+import { Balance } from '@/src/components/custom/balance'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
@@ -47,10 +48,9 @@ export const MintForm = ({
 
   const mintAmount = (form.getFieldValue('mint') || ZERO_BIG_NUMBER) as BigNumber
   const newNormalDebt = mintAmount.plus(position.totalNormalDebt)
-  const normalDebtWithColRatio = position.totalNormalDebt.times(
-    position.vaultCollateralizationRatio || 1,
-  )
-  const newMaxMintAmount = position.totalCollateral.minus(normalDebtWithColRatio)
+
+  // collateralValue/collateralizationRatio
+  const newMaxMintAmount = position.totalCollateral.div(position.vaultCollateralizationRatio ?? 1)
 
   const mockedData = [
     {
@@ -70,6 +70,13 @@ export const MintForm = ({
   return (
     <Form form={form} onFinish={handleMint}>
       <fieldset disabled={submitting}>
+        <Balance
+          title="Select amount to mint"
+          value={`Available: ${getHumanValue(newMaxMintAmount, WAD_DECIMALS).toFixed(
+            4,
+            BigNumber.ROUND_FLOOR,
+          )}`}
+        />
         <Form.Item name="mint" required>
           <TokenAmount
             disabled={submitting}
