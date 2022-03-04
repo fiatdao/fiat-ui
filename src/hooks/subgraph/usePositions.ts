@@ -22,7 +22,7 @@ export const fetchPositions = ({
   appChainId: ChainsValues
 }) =>
   graphqlFetcher<Positions, PositionsVariables>(POSITIONS, {
-    where: { id, userAddress, vaultName },
+    where: { id, userAddress, vaultName, totalCollateral_not: '0', totalNormalDebt_not: '0' },
   }).then(async ({ positions }) => {
     return Promise.all(positions.map((p) => wranglePosition(p, provider, appChainId)))
   })
