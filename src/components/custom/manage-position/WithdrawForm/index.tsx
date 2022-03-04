@@ -14,7 +14,7 @@ import { SummaryItem } from '@/src/components/custom/summary'
 import { Position } from '@/src/utils/data/positions'
 
 type WithdrawFormFields = {
-  withdraw: BigNumber
+  withdraw?: BigNumber
 }
 
 export const WithdrawForm = ({
@@ -54,18 +54,25 @@ export const WithdrawForm = ({
   )
   const newMaxWithdrawAmount = position.totalCollateral.minus(normalDebtWithColRatio)
 
-  const mockedData = [
+  const { withdraw = 0 } = form.getFieldsValue()
+
+  const summary = [
     {
       title: 'Current collateral deposited',
-      value: `${getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3)}`,
+      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3),
+    },
+    {
+      title: 'New collateral deposited',
+      // FixMe: value not updating on screen like it does on `DepositForm`
+      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).minus(withdraw).toFixed(3),
     },
     {
       title: 'Outstanding FIAT debt',
-      value: `${getHumanValue(position.totalNormalDebt, WAD_DECIMALS).toFixed(3)}`,
+      value: getHumanValue(position.totalNormalDebt, WAD_DECIMALS).toFixed(3),
     },
     {
       title: 'New FIAT debt',
-      value: `${getHumanValue(position.totalNormalDebt, WAD_DECIMALS).toFixed(3)}`,
+      value: getHumanValue(position.totalNormalDebt, WAD_DECIMALS).toFixed(3),
     },
   ]
 
@@ -76,8 +83,8 @@ export const WithdrawForm = ({
           <TokenAmount
             disabled={submitting}
             displayDecimals={tokenInfo?.decimals}
-            mainAsset={position.protocol} // TODO: fails sometimes (use with low numbers)
-            max={Number(getHumanValue(newMaxWithdrawAmount, WAD_DECIMALS)?.toFixed(2))}
+            mainAsset={position.protocol}
+            max={getHumanValue(newMaxWithdrawAmount, WAD_DECIMALS)}
             maximumFractionDigits={tokenInfo?.decimals}
             secondaryAsset={position.underlier.symbol}
             slider
@@ -87,7 +94,7 @@ export const WithdrawForm = ({
           Withdraw
         </ButtonGradient>
         <div className={cn(s.summary)}>
-          {mockedData.map((item, index) => (
+          {summary.map((item, index) => (
             <SummaryItem key={index} title={item.title} value={item.value} />
           ))}
         </div>

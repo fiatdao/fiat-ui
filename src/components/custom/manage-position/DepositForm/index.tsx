@@ -19,8 +19,8 @@ import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { Position } from '@/src/utils/data/positions'
 
 type DepositFormFields = {
-  deposit: BigNumber
-  fiatAmount: BigNumber
+  deposit?: BigNumber
+  fiatAmount?: BigNumber
 }
 
 export const DepositForm = ({ position }: { position: Position }) => {
@@ -78,19 +78,24 @@ export const DepositForm = ({ position }: { position: Position }) => {
     }
   }
 
-  const fiatAmount = form.getFieldValue('fiatAmount') ? form.getFieldValue('fiatAmount') : 0
-  const mockedData = [
+  const { deposit = 0, fiatAmount = 0 } = form.getFieldsValue()
+
+  const summary = [
     {
       title: 'Current collateral deposited',
-      value: `${getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3)}`,
+      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3),
+    },
+    {
+      title: 'New collateral deposited',
+      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).plus(deposit).toFixed(3),
     },
     {
       title: 'Outstanding FIAT debt',
-      value: `${fiatAmount.toFixed(3)}`,
+      value: fiatAmount.toFixed(3),
     },
     {
       title: 'New FIAT debt',
-      value: `${getHumanValue(position.totalNormalDebt.plus(fiatAmount), WAD_DECIMALS).toFixed(3)}`,
+      value: getHumanValue(position.totalNormalDebt, WAD_DECIMALS).plus(fiatAmount).toFixed(3),
     },
   ]
 
@@ -139,7 +144,7 @@ export const DepositForm = ({ position }: { position: Position }) => {
           </ButtonGradient>
         </ButtonsWrapper>
         <div className={cn(s.summary)}>
-          {mockedData.map((item, index) => (
+          {summary.map((item, index) => (
             <SummaryItem key={index} title={item.title} value={item.value} />
           ))}
         </div>
