@@ -58,7 +58,7 @@ const DynamicContent = () => {
     },
     {
       title: 'Bond Collateral Value',
-      tooltip: 'The discounted value of the bond currently.',
+      tooltip: 'The currently discounted value of the bond.',
       value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
