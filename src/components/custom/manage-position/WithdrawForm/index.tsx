@@ -3,6 +3,7 @@ import cn from 'classnames'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useState } from 'react'
+import { Balance } from '@/src/components/custom/balance'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
@@ -25,7 +26,7 @@ export const WithdrawForm = ({
   position: Position
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const { tokenInfo, withdraw: withdrawCollateral } = useWithdrawForm({
+  const { withdraw: withdrawCollateral } = useWithdrawForm({
     tokenAddress: position.collateral.address,
   })
   const [form] = AntdForm.useForm<WithdrawFormFields>()
@@ -52,7 +53,11 @@ export const WithdrawForm = ({
   const normalDebtWithColRatio = position.totalNormalDebt.times(
     position.vaultCollateralizationRatio || 1,
   )
-  const newMaxWithdrawAmount = position.totalCollateral.minus(normalDebtWithColRatio)
+
+  //collateralDeposited - fiatDebt*collateralizationRatio/collateralValue
+  const newMaxWithdrawAmount = position.totalCollateral.minus(
+    normalDebtWithColRatio.div(position.collateralValue),
+  )
 
   const { withdraw = 0 } = form.getFieldsValue()
 
@@ -79,13 +84,20 @@ export const WithdrawForm = ({
   return (
     <Form form={form} onFinish={handleWithdraw}>
       <fieldset disabled={submitting}>
+        <Balance
+          title="Select amount to withdraw"
+          value={`Available: ${getHumanValue(newMaxWithdrawAmount, WAD_DECIMALS).toFixed(
+            4,
+            BigNumber.ROUND_FLOOR,
+          )}`}
+        />
         <Form.Item name="withdraw" required>
           <TokenAmount
             disabled={submitting}
-            displayDecimals={tokenInfo?.decimals}
+            displayDecimals={4}
             mainAsset={position.protocol}
             max={getHumanValue(newMaxWithdrawAmount, WAD_DECIMALS)}
-            maximumFractionDigits={tokenInfo?.decimals}
+            maximumFractionDigits={6}
             secondaryAsset={position.underlier.symbol}
             slider
           />
