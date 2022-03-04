@@ -13,6 +13,7 @@ export const POSITIONS = gql`
         address
         underlierSymbol
         underlierAddress
+        tokenId
       }
       vault {
         address

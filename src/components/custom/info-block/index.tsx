@@ -9,7 +9,7 @@ interface Props {
   title: string
   tooltip?: string
   url?: string
-  value?: string
+  value?: string | React.ReactNode
 }
 
 export const InfoBlock: React.FC<Props> = ({
