@@ -82,7 +82,7 @@ export const DepositForm = ({ position }: { position: Position }) => {
   const mockedData = [
     {
       title: 'Current collateral deposited',
-      value: `$${getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3)}`,
+      value: `${getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3)}`,
     },
     {
       title: 'Outstanding FIAT debt',
