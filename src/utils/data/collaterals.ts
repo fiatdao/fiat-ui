@@ -24,7 +24,7 @@ export type Collateral = {
   address: Maybe<string>
   faceValue: Maybe<BigNumber>
   currentValue: Maybe<BigNumber>
-  vault: { collateralizationRatio: Maybe<BigNumber>; address: string }
+  vault: { collateralizationRatio: Maybe<BigNumber>; address: string; interestPerSecond: string }
   collateralizationRatio: number
   hasBalance: boolean
   manageId: Maybe<string>
@@ -102,9 +102,9 @@ const wrangleCollateral = async (
     vault: {
       collateralizationRatio: BigNumber.from(collateral.vault?.collateralizationRatio) ?? null,
       address: collateral.vault?.address ?? '',
+      interestPerSecond: collateral.vault?.interestPerSecond ?? '',
     },
     hasBalance: !!balance && balance.gt(0),
-    // FixMe: `address` must be user's Proxy Address
     manageId:
       hasPosition && collateral.vault?.address && userProxyAddress !== ZERO_ADDRESS
         ? `${collateral.vault.address}-0x0-${userProxyAddress}`
