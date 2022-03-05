@@ -4,7 +4,6 @@ import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import Link from 'next/link'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
-import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/utils/table'
@@ -253,4 +252,4 @@ const CreatePosition = () => {
   )
 }
 
-export default withRequiredConnection(CreatePosition)
+export default CreatePosition

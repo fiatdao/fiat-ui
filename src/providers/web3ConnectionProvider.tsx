@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react'
 
+import * as ethers from 'ethers'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import Onboard from 'bnc-onboard'
 import { API, Wallet } from 'bnc-onboard/dist/src/interfaces'
@@ -152,7 +153,10 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
   const [appChainId, setAppChainId] = useState<ChainsValues>(INITAL_APP_CHAIN_ID)
   const supportedChainIds = Object.values(Chains)
 
-  const web3Provider = wallet?.provider != null ? new Web3Provider(wallet.provider) : null
+  const web3Provider =
+    wallet?.provider != null
+      ? new Web3Provider(wallet.provider)
+      : (new ethers.providers.JsonRpcProvider(getNetworkConfig(appChainId).rpcUrl) as Web3Provider)
 
   const isWalletConnected = web3Provider != null && address != null
 

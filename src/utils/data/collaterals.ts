@@ -62,21 +62,28 @@ const wrangleCollateral = async (
     )
   }
 
-  const address = await provider.getSigner().getAddress()
+  console.log('[wrangleCollateral]: provider: ', provider)
+  // if (provider.getSigner()) {}
+  // console.log('[wrangleCollateral]: provider.getSigner(): ', provider.getSigner())
+  // const userAddress = await provider.getSigner().getAddress()
   const balance = await contractCall<ERC20, 'balanceOf'>(
     collateral.address ?? ZERO_ADDRESS,
     contracts.ERC_20.abi,
     provider,
     'balanceOf',
-    [address],
+    null,
   )
-  const userProxyAddress = await contractCall<PRBProxy, 'getCurrentProxy'>(
+
+  const userProxyAddress = null
+  const userProxyAddresss = await contractCall<PRBProxy, 'getCurrentProxy'>(
     contracts.PRB_Proxy.address[appChainId],
     contracts.PRB_Proxy.abi,
     provider,
     'getCurrentProxy',
-    [address],
+    null,
+    // [provider],
   )
+  console.log('userProxyAddress: ', userProxyAddresss)
 
   const position = await contractCall<Codex, 'positions'>(
     contracts.CODEX.address[appChainId],
