@@ -52,12 +52,13 @@ export const DepositForm = ({ position }: { position: Position }) => {
         setMaxFiatValue(
           amountToDeposit
             .plus(position.totalCollateral.unscaleBy(WAD_DECIMALS))
+            .minus(position.totalNormalDebt.unscaleBy(WAD_DECIMALS))
             .dividedBy(FACTOR)
             .decimalPlaces(contracts.FIAT.decimals),
         )
       }
     },
-    [position.totalCollateral, position.vaultCollateralizationRatio],
+    [position.totalCollateral, position.totalNormalDebt, position.vaultCollateralizationRatio],
   )
 
   const [mintFiat, setMintFiat] = useState(false)

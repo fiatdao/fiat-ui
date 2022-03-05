@@ -50,7 +50,9 @@ export const MintForm = ({
   const newNormalDebt = mintAmount.plus(position.totalNormalDebt)
 
   // collateralValue/collateralizationRatio
-  const newMaxMintAmount = position.totalCollateral.div(position.vaultCollateralizationRatio ?? 1)
+  const newMaxMintAmount = position.totalCollateral
+    .minus(position.totalNormalDebt)
+    .div(position.vaultCollateralizationRatio ?? 1)
 
   const mockedData = [
     {
