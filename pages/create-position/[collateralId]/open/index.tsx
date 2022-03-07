@@ -4,6 +4,7 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useEffect, useState } from 'react'
+import Lottie from 'lottie-react'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
@@ -26,7 +27,6 @@ import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import Success from '@/src/resources/svg/success.svg'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
@@ -35,6 +35,7 @@ import { parseDate } from '@/src/utils/dateTime'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
+import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
 const DEFAULT_HEALTH_FACTOR = ''
 
@@ -184,8 +185,7 @@ const FormERC20: React.FC<{
             {[1, 4].includes(stateMachine.context.currentStepNumber) && (
               <Balance
                 title={`Deposit ${stateMachine.context.tokenSymbol}`}
-                value={`Available:
-              ${tokenInfo?.humanValue?.toFixed()}`}
+                value={`Available: ${tokenInfo?.humanValue?.toFixed()}`}
               />
             )}
             <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
@@ -314,9 +314,8 @@ const FormERC20: React.FC<{
         </>
       ) : (
         <div className={cn(s.form)}>
-          {/* Note: this will be replaced with the actual animation */}
           <div className={cn(s.lastStepAnimation)}>
-            <Success />
+            <Lottie animationData={SuccessAnimation} autoplay loop />
           </div>
           <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
           <p className={cn(s.lastStepText)}>Your position has been successfully created.</p>
@@ -345,28 +344,28 @@ const OpenPosition = () => {
     },
     {
       title: 'Bond Maturity',
-      tooltip: 'Tooltip text',
+      tooltip: 'The date on which the bond is redeemable for its underlying assets.',
       value: collateral?.maturity ? parseDate(collateral?.maturity) : '-',
     },
     {
       title: 'Bond Face Value',
-      tooltip: 'Tooltip text',
+      tooltip: 'The redeemable value of the bond at maturity.',
       value: `$${getHumanValue(collateral?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
       title: 'Bond Collateral Value',
-      tooltip: 'Tooltip text',
+      tooltip: 'The currently discounted value of the bond.',
       value: `$${getHumanValue(collateral?.currentValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
       title: 'Collateralization Ratio',
-      tooltip: 'Tooltip text',
+      tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
       value: collateral ? `${collateral.collateralizationRatio} %` : '-',
     },
     {
-      title: 'Stability fee',
-      tooltip: 'Tooltip text',
-      value: '0',
+      title: 'Borrowing Rate',
+      tooltip: 'The annualized cost of interest for minting FIAT.',
+      value: `${getHumanValue(collateral?.vault.interestPerSecond, WAD_DECIMALS)}`,
     },
   ]
 

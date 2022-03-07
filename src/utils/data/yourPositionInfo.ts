@@ -1,6 +1,7 @@
 import { Position } from './positions'
 import BigNumber from 'bignumber.js'
 import { min } from 'date-fns'
+import { useEffect, useState } from 'react'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 export type YourPositionPageInformation = {
@@ -10,38 +11,48 @@ export type YourPositionPageInformation = {
   nearestMaturity: Date | null
 }
 
-const fetchInfoPage = (positions: Position[]): YourPositionPageInformation => {
-  const initialPositionInformation: YourPositionPageInformation = {
-    collateralValue: ZERO_BIG_NUMBER,
-    fiatDebt: ZERO_BIG_NUMBER,
-    lowestHealthFactor: null,
-    nearestMaturity: null,
-  }
-
-  positions.forEach((p) => {
-    // TODO: need to calculate in USD
-    initialPositionInformation.collateralValue = initialPositionInformation.collateralValue.plus(
-      p.totalCollateral,
-    )
-    initialPositionInformation.fiatDebt = initialPositionInformation.collateralValue.plus(
-      p.totalNormalDebt,
-    )
-    if (!initialPositionInformation.nearestMaturity) {
-      initialPositionInformation.nearestMaturity = p.maturity
-    } else {
-      initialPositionInformation.nearestMaturity = min([
-        p.maturity,
-        initialPositionInformation.nearestMaturity,
-      ])
-    }
-    if (
-      !initialPositionInformation.lowestHealthFactor ||
-      p.healthFactor.lte(initialPositionInformation.lowestHealthFactor)
-    ) {
-      initialPositionInformation.lowestHealthFactor = p.healthFactor
-    }
-  })
-  return initialPositionInformation
+type UseYourPositionInfoPage = {
+  pageInformation?: YourPositionPageInformation
 }
 
-export { fetchInfoPage }
+const useYourPositionInfoPage = (positions: Position[]): UseYourPositionInfoPage => {
+  const [pageInformation, setPageInformation] = useState<YourPositionPageInformation>()
+
+  useEffect(() => {
+    const fetchInfoPage = async (): Promise<void> => {
+      const initialPositionInformation: YourPositionPageInformation = {
+        collateralValue: ZERO_BIG_NUMBER,
+        fiatDebt: ZERO_BIG_NUMBER,
+        lowestHealthFactor: null,
+        nearestMaturity: null,
+      }
+
+      positions.forEach(async (p) => {
+        initialPositionInformation.collateralValue =
+          initialPositionInformation.collateralValue.plus(p.collateralValue)
+        initialPositionInformation.fiatDebt = initialPositionInformation.fiatDebt.plus(
+          p.totalNormalDebt,
+        )
+        if (!initialPositionInformation.nearestMaturity) {
+          initialPositionInformation.nearestMaturity = p.maturity
+        } else {
+          initialPositionInformation.nearestMaturity = min([
+            p.maturity,
+            initialPositionInformation.nearestMaturity,
+          ])
+        }
+        if (
+          !initialPositionInformation.lowestHealthFactor ||
+          p.healthFactor.lte(initialPositionInformation.lowestHealthFactor)
+        ) {
+          initialPositionInformation.lowestHealthFactor = p.healthFactor
+        }
+      })
+      setPageInformation(initialPositionInformation)
+    }
+    fetchInfoPage()
+  }, [positions])
+  return { pageInformation }
+}
+
+export { useYourPositionInfoPage }

@@ -15,6 +15,7 @@ import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 export type Position = {
   id: string
+  tokenId: string
   protocol: string
   protocolAddress: string
   maturity: Date
@@ -27,6 +28,7 @@ export type Position = {
   faceValue: BigNumber
   healthFactor: BigNumber
   isAtRisk: boolean
+  interestPerSecond: BigNumber
 }
 
 // TODO pass tokenId depends on protocol
@@ -88,6 +90,7 @@ const wranglePosition = async (
   )
   const totalCollateral = BigNumber.from(position.totalCollateral) ?? ZERO_BIG_NUMBER
   const totalNormalDebt = BigNumber.from(position.totalNormalDebt) ?? ZERO_BIG_NUMBER
+  const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
   const maturity = BigNumberToDateOrCurrent(position.maturity)
 
   const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
@@ -99,22 +102,27 @@ const wranglePosition = async (
 
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
-  if (currentValue && !totalNormalDebt?.isZero() && !totalCollateral?.isZero()) {
-    healthFactor = new BigNumber(
-      currentValue.times(totalCollateral.toFixed()).div(totalNormalDebt.toFixed()).toNumber(),
-    )
-    isAtRisk = vaultCollateralizationRatio.gte(healthFactor)
+  if (currentValue && !totalCollateral?.isZero()) {
+    if (totalNormalDebt?.isZero()) {
+      healthFactor = new BigNumber(Number.POSITIVE_INFINITY)
+    } else {
+      healthFactor = new BigNumber(
+        currentValue.times(totalCollateral.toFixed()).div(totalNormalDebt.toFixed()).toNumber(),
+      )
+      isAtRisk = vaultCollateralizationRatio.gte(healthFactor)
+    }
   }
 
   // TODO Borrowing rate
   return {
     id,
+    tokenId: position.collateral?.tokenId ?? '',
     protocolAddress: position.vault?.address ?? '',
     protocol: protocol ?? '',
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
-    collateralValue: currentValue,
+    collateralValue: currentValue.times(totalCollateral),
     faceValue,
     maturity,
     collateral: {
@@ -129,6 +137,7 @@ const wranglePosition = async (
     },
     healthFactor,
     isAtRisk,
+    interestPerSecond,
   }
 }
 export { wranglePosition }
