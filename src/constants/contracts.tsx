@@ -14,7 +14,7 @@ import {
   vaultActions20,
   vaultEptActions,
   vaultFcActions,
-} from '../abis'
+} from '@/src/abis'
 import { Chains, ChainsValues } from '@/src/constants/chains'
 
 type BaseAppContractInfo = {
