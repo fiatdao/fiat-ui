@@ -142,10 +142,6 @@ const FormERC20: React.FC<{
       value: `1 Principal Token = .9949 DAI`,
     },
     {
-      title: 'Trade fee',
-      value: '0.05%',
-    },
-    {
       title: 'Price impact',
       value: '0.00%',
     },
