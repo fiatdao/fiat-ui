@@ -17,6 +17,7 @@ export const COLLATERALS = gql`
         type
         collateralizationRatio
         address
+        interestPerSecond
       }
     }
   }
