@@ -54,32 +54,32 @@
   },
   {
     "inputs": [],
-    "name": "VaultActions_enterVault_zeroTokenAddress",
+    "name": "Vault1155Actions_enterVault_zeroTokenAddress",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "VaultActions_enterVault_zeroVaultAddress",
+    "name": "Vault1155Actions_enterVault_zeroVaultAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155Actions_exitVault_zeroToAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155Actions_exitVault_zeroTokenAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155Actions_exitVault_zeroVaultAddress",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "VaultActions_exitMoneta_zeroUserAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "VaultActions_exitVault_zeroToAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "VaultActions_exitVault_zeroTokenAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "VaultActions_exitVault_zeroVaultAddress",
     "type": "error"
   },
   {
@@ -145,7 +145,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "tokenId",
         "type": "uint256"
       },
       {
@@ -196,7 +196,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "tokenId",
         "type": "uint256"
       },
       {

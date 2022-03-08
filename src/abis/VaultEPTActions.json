@@ -1,0 +1,612 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "codex_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "moneta_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "fiat_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "publican_",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "y",
+        "type": "uint256"
+      }
+    ],
+    "name": "Math__mul_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "y",
+        "type": "uint256"
+      }
+    ],
+    "name": "Math__sub_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
+      }
+    ],
+    "name": "Math__toInt256_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultActions_enterVault_zeroTokenAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultActions_enterVault_zeroVaultAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultActions_exitMoneta_zeroUserAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultActions_exitVault_zeroToAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultActions_exitVault_zeroTokenAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultActions_exitVault_zeroVaultAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultEPTActions__buyCollateralAndModifyDebt_zeroUnderlierAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultEPTActions__redeemCollateralAndModifyDebt_zeroPTokenAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultEPTActions__sellCollateralAndModifyDebt_zeroPTokenAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultEPTActions__solveTradeInvariant_tokenMismatch",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "approveFIAT",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "position",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "collateralizer",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "creditor",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "underlierAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "int256",
+        "name": "deltaNormalDebt",
+        "type": "int256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "balancerVault",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "poolId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "assetIn",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "assetOut",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minOutput",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "deadline",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "approve",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct VaultEPTActions.SwapParams",
+        "name": "swapParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "buyCollateralAndModifyDebt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "codex",
+    "outputs": [
+      {
+        "internalType": "contract ICodex",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "enterMoneta",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "enterVault",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "exitMoneta",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "exitVault",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "fiat",
+    "outputs": [
+      {
+        "internalType": "contract IFIAT",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "position",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "collateralizer",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "creditor",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "deltaCollateral",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "deltaNormalDebt",
+        "type": "int256"
+      }
+    ],
+    "name": "modifyCollateralAndDebt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "moneta",
+    "outputs": [
+      {
+        "internalType": "contract IMoneta",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "balancerVault",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "curvePoolId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pTokenAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "pTokenToUnderlier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "publican",
+    "outputs": [
+      {
+        "internalType": "contract IPublican",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "position",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "collateralizer",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "creditor",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pTokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "int256",
+        "name": "deltaNormalDebt",
+        "type": "int256"
+      }
+    ],
+    "name": "redeemCollateralAndModifyDebt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "position",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "collateralizer",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "creditor",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pTokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "int256",
+        "name": "deltaNormalDebt",
+        "type": "int256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "balancerVault",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "poolId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "assetIn",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "assetOut",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minOutput",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "deadline",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "approve",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct VaultEPTActions.SwapParams",
+        "name": "swapParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "sellCollateralAndModifyDebt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "balancerVault",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "curvePoolId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "underlierAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "underlierToPToken",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
