@@ -1,17 +1,21 @@
+import {
+  codex,
+  collateralAuction,
+  collybus,
+  erc1155,
+  erc20,
+  fiat,
+  moneta,
+  noLossCollateralAuctionActions,
+  prbProxy,
+  userActions1155,
+  vault1155,
+  vault20,
+  vaultActions20,
+  vaultEptActions,
+  vaultFcActions,
+} from '@/src/abis'
 import { Chains, ChainsValues } from '@/src/constants/chains'
-import codex from '@/src/abis/Codex.json'
-import collateralAuction from '@/src/abis/CollateralAuction.json'
-import collybus from '@/src/abis/Collybus.json'
-import erc20 from '@/src/abis/ERC20.json'
-import erc1155 from '@/src/abis/ERC1155.json'
-import fiat from '@/src/abis/FIAT.json'
-import vaultActions20 from '@/src/abis/Vault20Actions.json'
-import userActions1155 from '@/src/abis/UserActions1155.json'
-import vaultActionsEPT from '@/src/abis/VaultEPTActions.json'
-import vault20 from '@/src/abis/Vault20.json'
-import vault1155 from '@/src/abis/Vault1155.json'
-import prbProxy from '@/src/abis/PRBProxy.json'
-import noLossCollateralAuction from '@/src/abis/NoLossCollateralAuction.json'
 
 type BaseAppContractInfo = {
   abi: any[]
@@ -51,7 +55,7 @@ export const contracts = constantContracts({
   FIAT: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xf4054D739592A28559b37D5950B62a18e5ec73DB',
+      [Chains.goerli]: '0xeA8B4F3df3b7628A618a06A372EdC310DBdEd950',
     },
     abi: fiat,
     decimals: 18,
@@ -61,14 +65,14 @@ export const contracts = constantContracts({
   CODEX: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xdB85ee14BD31558C9620da98565622912E725958',
+      [Chains.goerli]: '0x46ae7f3b5B9b32231F1e88df806672a182FbdA0C',
     },
     abi: codex,
   },
   COLLYBUS: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x4B1002aB18D7Ea45125D6F908B3A13f947C3FBF9',
+      [Chains.goerli]: '0xcaF187fBF3137dA36a10A72c77d1A68a6986B710',
     },
     abi: collybus,
   },
@@ -89,7 +93,7 @@ export const contracts = constantContracts({
   COLLATERAL_AUCTION: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xfeba478B1a0CE24B86F064B51e489D8e79a41Cf0',
+      [Chains.goerli]: '0xEeF8e029bA352D90Ffa3b0d85E0bf9f88280a0e5',
     },
     abi: collateralAuction,
   },
@@ -119,14 +123,14 @@ export const contracts = constantContracts({
       [Chains.mainnet]: '',
       [Chains.goerli]: '0x8056d831D6632f3C5E3D8d996371aF402F6D3CD4',
     },
-    abi: vaultActionsEPT,
+    abi: vaultEptActions,
   },
   USER_ACTIONS_FC: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xe89917847D5603C046C4E556d9A4afD21fa59EA1',
+      [Chains.goerli]: '0x3DAe16D9e96413AFCB01324c01f53912A887c289',
     },
-    abi: [], //Todo missing ABI here
+    abi: vaultFcActions,
   },
   USER_ACTIONS_AUCTIONS: {
     address: {
@@ -138,15 +142,15 @@ export const contracts = constantContracts({
   MONETA: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x21ff8FF98fb7F283aD4943400D6e401aFCA80178',
+      [Chains.goerli]: '0x13a60380e65EC30f4d1897204306E10cf890d936',
     },
-    abi: [],
+    abi: moneta,
   },
   NO_LOSS_COLLATERAL_AUCTION_ACTIONS: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x8D01561B5e4f139336dD3275240129c8507ed581',
+      [Chains.goerli]: '0x0978DaA4Bf9AA2A99021b672f955F16d8caD590a',
     },
-    abi: noLossCollateralAuction, // Todo missing ABI here
+    abi: noLossCollateralAuctionActions,
   },
 })

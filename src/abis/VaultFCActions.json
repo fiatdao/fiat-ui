@@ -3,27 +3,89 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "codex_",
+        "name": "codex",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "moneta_",
+        "name": "moneta",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "fiat_",
+        "name": "fiat",
         "type": "address"
       },
       {
         "internalType": "address",
         "name": "publican_",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "notionalV2_",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "DateTime__getMarketIndex_invalidMaxMarketIndex",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DateTime__getMarketIndex_marketNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DateTime__getMarketIndex_zeroMaxMarketIndex",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DateTime__getReferenceTime_invalidBlockTime",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DateTime__getTradedMarket_invalidIndex",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "y",
+        "type": "uint256"
+      }
+    ],
+    "name": "Math__add_overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "y",
+        "type": "uint256"
+      }
+    ],
+    "name": "Math__div_overflow",
+    "type": "error"
   },
   {
     "inputs": [
@@ -47,22 +109,6 @@
         "internalType": "uint256",
         "name": "x",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "y",
-        "type": "uint256"
-      }
-    ],
-    "name": "Math__sub_overflow",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "x",
-        "type": "uint256"
       }
     ],
     "name": "Math__toInt256_overflow",
@@ -70,12 +116,27 @@
   },
   {
     "inputs": [],
-    "name": "VaultActions_enterVault_zeroTokenAddress",
+    "name": "Vault1155Actions_enterVault_zeroTokenAddress",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "VaultActions_enterVault_zeroVaultAddress",
+    "name": "Vault1155Actions_enterVault_zeroVaultAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155Actions_exitVault_zeroToAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155Actions_exitVault_zeroTokenAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Vault1155Actions_exitVault_zeroVaultAddress",
     "type": "error"
   },
   {
@@ -85,37 +146,77 @@
   },
   {
     "inputs": [],
-    "name": "VaultActions_exitVault_zeroToAddress",
+    "name": "VaultFCActions__buyCollateralAndModifyDebt_zeroUnderlierAmount",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "VaultActions_exitVault_zeroTokenAddress",
+    "name": "VaultFCActions__getCToken_invalidAssetTokenType",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "VaultActions_exitVault_zeroVaultAddress",
+    "name": "VaultFCActions__getMarketIndex_invalidMarket",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "VaultEPTActions__buyCollateralAndModifyDebt_zeroUnderlierAmount",
+    "name": "VaultFCActions__getUnderlierToken_invalidUnderlierTokenType",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "VaultEPTActions__redeemCollateralAndModifyDebt_zeroPTokenAmount",
+    "name": "VaultFCActions__onERC1155Received_invalidCaller",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "VaultEPTActions__sellCollateralAndModifyDebt_zeroPTokenAmount",
+    "name": "VaultFCActions__onERC1155Received_invalidValue",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "VaultEPTActions__solveTradeInvariant_tokenMismatch",
+    "name": "VaultFCActions__redeemCollateralAndModifyDebt_notMatured",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultFCActions__redeemCollateralAndModifyDebt_zeroFCashAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultFCActions__redeemfCash_amountOverflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultFCActions__sellCollateralAndModifyDebt_matured",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultFCActions__sellCollateralAndModifyDebt_zeroFCashAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultFCActions__sellfCash_amountOverflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultFCActions__vaultRedeemAndExit_zeroToAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultFCActions__vaultRedeemAndExit_zeroTokenAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VaultFCActions__vaultRedeemAndExit_zeroVaultAddress",
     "type": "error"
   },
   {
@@ -145,6 +246,16 @@
       },
       {
         "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
         "name": "position",
         "type": "address"
       },
@@ -171,33 +282,13 @@
       {
         "components": [
           {
-            "internalType": "address",
-            "name": "balancerVault",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "poolId",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "assetIn",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "assetOut",
-            "type": "address"
+            "internalType": "uint32",
+            "name": "limitRate",
+            "type": "uint32"
           },
           {
             "internalType": "uint256",
-            "name": "minOutput",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "deadline",
+            "name": "fCashAmount",
             "type": "uint256"
           },
           {
@@ -206,8 +297,8 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct VaultEPTActions.SwapParams",
-        "name": "swapParams",
+        "internalType": "struct VaultFCActions.LendParams",
+        "name": "lendParams",
         "type": "tuple"
       }
     ],
@@ -261,7 +352,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "tokenId",
         "type": "uint256"
       },
       {
@@ -312,7 +403,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "tokenId",
         "type": "uint256"
       },
       {
@@ -333,12 +424,154 @@
   },
   {
     "inputs": [],
+    "name": "fCashScale",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "fCashToUnderlier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "fiat",
     "outputs": [
       {
         "internalType": "contract IFIAT",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCToken",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "cToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "cTokenScale",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCurrencyId",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "currencyId",
+        "type": "uint16"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMarketIndex",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMaturity",
+    "outputs": [
+      {
+        "internalType": "uint40",
+        "name": "maturity",
+        "type": "uint40"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getUnderlierToken",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "underlierToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "underlierScale",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -406,34 +639,13 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "balancerVault",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "curvePoolId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "pTokenAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "pTokenToUnderlier",
+    "inputs": [],
+    "name": "notionalV2",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "contract INotional",
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -465,6 +677,11 @@
         "type": "address"
       },
       {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "position",
         "type": "address"
@@ -481,7 +698,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "pTokenAmount",
+        "name": "fCashAmount",
         "type": "uint256"
       },
       {
@@ -504,6 +721,16 @@
       },
       {
         "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
         "name": "position",
         "type": "address"
       },
@@ -519,7 +746,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "pTokenAmount",
+        "name": "fCashAmount",
         "type": "uint256"
       },
       {
@@ -530,33 +757,13 @@
       {
         "components": [
           {
-            "internalType": "address",
-            "name": "balancerVault",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "poolId",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "assetIn",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "assetOut",
-            "type": "address"
+            "internalType": "uint32",
+            "name": "limitRate",
+            "type": "uint32"
           },
           {
             "internalType": "uint256",
-            "name": "minOutput",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "deadline",
+            "name": "fCashAmount",
             "type": "uint256"
           },
           {
@@ -565,8 +772,8 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct VaultEPTActions.SwapParams",
-        "name": "swapParams",
+        "internalType": "struct VaultFCActions.LendParams",
+        "name": "lendParams",
         "type": "tuple"
       }
     ],
@@ -579,26 +786,39 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "vault",
+        "name": "token",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "balancerVault",
+        "name": "spender",
         "type": "address"
       },
       {
-        "internalType": "bytes32",
-        "name": "curvePoolId",
-        "type": "bytes32"
+        "internalType": "bool",
+        "name": "approved",
+        "type": "bool"
+      }
+    ],
+    "name": "setApprovalForAll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "underlierAmount",
+        "name": "amount",
         "type": "uint256"
       }
     ],
-    "name": "underlierToPToken",
+    "name": "underlierToFCash",
     "outputs": [
       {
         "internalType": "uint256",
