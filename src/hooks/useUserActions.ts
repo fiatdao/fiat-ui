@@ -1,12 +1,12 @@
 import useUserProxy from './useUserProxy'
 import { ZERO_BIG_NUMBER } from '../constants/misc'
-import { Contract, ethers } from 'ethers'
+import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
 import { contracts } from '@/src/constants/contracts'
 import { Chains } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { Vault20Actions } from '@/types/typechain'
+import { Vault20Actions, VaultEPTActions } from '@/types/typechain'
 
 type ModifyCollateralAndDebt = {
   vault: string
@@ -14,6 +14,24 @@ type ModifyCollateralAndDebt = {
   tokenId: number
   deltaCollateral: BigNumber
   deltaNormalDebt: BigNumber
+}
+
+type BuyCollateralAndModifyDebt = {
+  vault: string
+  position: string
+  collateralizer: string
+  creditor: string
+  underlierAmount: BigNumberish
+  deltaNormalDebt: BigNumberish
+  swapParams: {
+    balancerVault: string
+    poolId: string
+    assetIn: string
+    assetOut: string
+    minOutput: BigNumberish
+    deadline: BigNumberish
+    approve: BigNumberish
+  }
 }
 
 export type BaseModify = {
@@ -42,6 +60,7 @@ export type BurnFIAT = BaseModify & {
 
 type UseUserActions = {
   userAction: Vault20Actions
+  userActionEPT: VaultEPTActions
   approveFIAT: (to: string) => Promise<void>
   depositCollateral: (arg0: DepositCollateral) => Promise<void>
   withdrawCollateral: (arg0: WithdrawCollateral) => Promise<void>
@@ -60,6 +79,14 @@ export const useUserActions = (): UseUserActions => {
       contracts.USER_ACTIONS_20.abi,
       web3Provider?.getSigner(),
     ) as Vault20Actions
+  }, [web3Provider])
+
+  const userActionEPT = useMemo(() => {
+    return new Contract(
+      contracts.USER_ACTIONS_EPT.address[Chains.goerli],
+      contracts.USER_ACTIONS_EPT.abi,
+      web3Provider?.getSigner(),
+    ) as VaultEPTActions
   }, [web3Provider])
 
   const approveFIAT = useCallback(
@@ -104,6 +131,31 @@ export const useUserActions = (): UseUserActions => {
       await tx.wait()
     },
     [address, userProxy, userProxyAddress, userAction.address, userAction.interface],
+  )
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const buyCollateralAndModifyDebt = useCallback(
+    async (params: BuyCollateralAndModifyDebt): Promise<void> => {
+      if (!address || !userProxy || !userProxyAddress) return
+
+      const buyCollateralAndModifyDebtEncoded = userActionEPT.interface.encodeFunctionData(
+        'buyCollateralAndModifyDebt',
+        [
+          params.vault,
+          params.position,
+          params.collateralizer,
+          params.creditor,
+          params.underlierAmount,
+          params.deltaNormalDebt,
+          params.swapParams,
+        ],
+      )
+      const tx = await userProxy.execute(userActionEPT.address, buyCollateralAndModifyDebtEncoded, {
+        gasLimit: 1_000_000,
+      })
+      await tx.wait()
+    },
+    [address, userProxy, userProxyAddress, userActionEPT.interface, userActionEPT.address],
   )
 
   const depositCollateral = useCallback(
@@ -158,5 +210,13 @@ export const useUserActions = (): UseUserActions => {
     [modifyCollateralAndDebt],
   )
 
-  return { userAction, approveFIAT, depositCollateral, withdrawCollateral, mintFIAT, burnFIAT }
+  return {
+    userActionEPT,
+    userAction,
+    approveFIAT,
+    depositCollateral,
+    withdrawCollateral,
+    mintFIAT,
+    burnFIAT,
+  }
 }

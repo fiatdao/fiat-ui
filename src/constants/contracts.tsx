@@ -7,7 +7,7 @@ import erc1155 from '@/src/abis/ERC1155.json'
 import fiat from '@/src/abis/FIAT.json'
 import vaultActions20 from '@/src/abis/Vault20Actions.json'
 import userActions1155 from '@/src/abis/UserActions1155.json'
-import userActionsEPT from '@/src/abis/UserActionsEPT.json'
+import vaultActionsEPT from '@/src/abis/VaultEPTActions.json'
 import vault20 from '@/src/abis/Vault20.json'
 import vault1155 from '@/src/abis/Vault1155.json'
 import prbProxy from '@/src/abis/PRBProxy.json'
@@ -117,9 +117,9 @@ export const contracts = constantContracts({
   USER_ACTIONS_EPT: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xbd0b3533Af1B728e6cc196976D72Cb966f7bB261',
+      [Chains.goerli]: '0x8056d831D6632f3C5E3D8d996371aF402F6D3CD4',
     },
-    abi: userActionsEPT,
+    abi: vaultActionsEPT,
   },
   USER_ACTIONS_FC: {
     address: {

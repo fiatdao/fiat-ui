@@ -12,6 +12,12 @@ export const COLLATERALS = gql`
       maturity
       address
       faceValue
+      ccp {
+        id
+        balancerVault
+        convergentCurvePool
+        poolId
+      }
       vault {
         id
         type
