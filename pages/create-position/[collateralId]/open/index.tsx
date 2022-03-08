@@ -138,8 +138,20 @@ const FormERC20: React.FC<{
 
   const underlyingData = [
     {
-      title: 'In your wallet',
-      value: `${tokenInfo?.humanValue} ${collateral.symbol}`,
+      title: 'Market rate',
+      value: `1 Principal Token = .9949 DAI`,
+    },
+    {
+      title: 'Trade fee',
+      value: '0.05%',
+    },
+    {
+      title: 'Price impact',
+      value: '0.00%',
+    },
+    {
+      title: 'Slippage tolerance',
+      value: '0.30%',
     },
   ]
 
@@ -190,7 +202,7 @@ const FormERC20: React.FC<{
                 </RadioTab>
               </RadioTabsWrapper>
             )}
-            {[1, 4].includes(stateMachine.context.currentStepNumber) && (
+            {[1, 4].includes(stateMachine.context.currentStepNumber) && tab === 'bond' && (
               <Balance
                 title={`Deposit ${stateMachine.context.tokenSymbol}`}
                 value={`Available: ${tokenInfo?.humanValue?.toFixed()}`}
