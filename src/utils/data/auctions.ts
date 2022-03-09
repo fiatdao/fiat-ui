@@ -51,26 +51,26 @@ const getAuctionStatus = (
 }
 
 const wrangleAuction = async (
-  userAuction: subGraphAuctions | subGraphAuction,
+  collateralAuction: subGraphAuctions | subGraphAuction,
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
 ) => {
-  const vaultAddress = userAuction.vault?.address || null
-  const underlierAddress = userAuction.collateralType?.underlierAddress || null
-  const tokenId = userAuction.collateralType?.tokenId || 0
+  const vaultAddress = collateralAuction.vault?.address || null
+  const underlierAddress = collateralAuction.collateralType?.underlierAddress || null
+  const tokenId = collateralAuction.collateralType?.tokenId || 0
 
   const collateralValue = await getCurrentValue(provider, appChainId, tokenId, vaultAddress, false)
 
-  const auctionStatus = await getAuctionStatus(appChainId, provider, userAuction.id)
+  const auctionStatus = await getAuctionStatus(appChainId, provider, collateralAuction.id)
 
   // TODO is necessary extract decimals places?
 
   return {
-    id: userAuction.id,
-    protocol: userAuction.vault?.name,
-    tokenId: userAuction?.tokenId,
-    vault: { address: userAuction.vault?.address, name: userAuction.vault?.name },
-    asset: userAuction.collateralType?.symbol,
+    id: collateralAuction.id,
+    protocol: collateralAuction.vault?.name,
+    tokenId: collateralAuction?.tokenId,
+    vault: { address: collateralAuction.vault?.address, name: collateralAuction.vault?.name },
+    asset: collateralAuction.collateralType?.symbol,
     upForAuction: getHumanValue(
       BigNumber.from(auctionStatus?.collateralToSell.toString()),
       18,
@@ -80,13 +80,13 @@ const wrangleAuction = async (
     yield: getHumanValue(
       calcYield(collateralValue, BigNumber.from(auctionStatus?.price.toString()) ?? null),
     )?.toFormat(2),
-    action: { isActive: userAuction.isActive, id: userAuction.id },
+    action: { isActive: collateralAuction.isActive, id: collateralAuction.id },
     tokenAddress: underlierAddress,
     collateral: {
-      symbol: userAuction.collateralType?.symbol ?? '',
+      symbol: collateralAuction.collateralType?.symbol ?? '',
     },
     underlier: {
-      symbol: userAuction.collateralType?.underlierSymbol ?? '',
+      symbol: collateralAuction.collateralType?.underlierSymbol ?? '',
     },
   } as AuctionData
 }
