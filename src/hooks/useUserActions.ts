@@ -74,6 +74,8 @@ type UseUserActions = {
   withdrawCollateral: (arg0: WithdrawCollateral) => Promise<void>
   mintFIAT: (arg0: MintFIAT) => Promise<void>
   burnFIAT: (arg0: BurnFIAT) => Promise<void>
+  underlierToPToken: (arg0: UnderlierToPToken) => Promise<void>
+  buyCollateralAndModifyDebt: (arg0: BuyCollateralAndModifyDebt) => Promise<void>
 }
 
 export const useUserActions = (): UseUserActions => {
@@ -141,7 +143,6 @@ export const useUserActions = (): UseUserActions => {
     [address, userProxy, userProxyAddress, userAction.address, userAction.interface],
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const underlierToPToken = useCallback(
     async (params: UnderlierToPToken): Promise<void> => {
       if (!address || !userProxy || !userProxyAddress) return
@@ -152,12 +153,11 @@ export const useUserActions = (): UseUserActions => {
       const tx = await userProxy.execute(userActionEPT.address, underlierToPTokenEncoded, {
         gasLimit: 1_000_000,
       })
-      await tx.wait()
+      console.log(tx)
     },
     [address, userActionEPT.address, userActionEPT.interface, userProxy, userProxyAddress],
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const buyCollateralAndModifyDebt = useCallback(
     async (params: BuyCollateralAndModifyDebt): Promise<void> => {
       if (!address || !userProxy || !userProxyAddress) return
@@ -242,5 +242,7 @@ export const useUserActions = (): UseUserActions => {
     withdrawCollateral,
     mintFIAT,
     burnFIAT,
+    underlierToPToken,
+    buyCollateralAndModifyDebt,
   }
 }

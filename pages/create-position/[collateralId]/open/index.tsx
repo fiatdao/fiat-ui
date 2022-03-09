@@ -120,6 +120,11 @@ const FormERC20: React.FC<{
   }, [hasAllowance, isProxyAvailable, send])
 
   useEffect(() => {
+    console.log('COLL')
+    // await underlierToPToken();
+  }, [])
+
+  useEffect(() => {
     getCurrentValue(readOnlyAppProvider, appChainId, 0, collateral.vault.address, false).then(
       (cv) => setCurrentValue(cv),
     )
