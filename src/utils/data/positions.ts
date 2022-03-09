@@ -96,8 +96,8 @@ const wranglePosition = async (
   const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
     _getCurrentValue(position, appChainId, provider),
     _getFaceValue(position, appChainId, provider),
-    getDecimals(position.collateral?.address, provider), // collateral is an ERC20 token
-    getDecimals(position.collateral?.underlierAddress, provider),
+    getDecimals(position.collateralType?.address, provider), // collateral is an ERC20 token
+    getDecimals(position.collateralType?.underlierAddress, provider),
   ])
 
   let isAtRisk = false
@@ -116,7 +116,7 @@ const wranglePosition = async (
   // TODO Borrowing rate
   return {
     id,
-    tokenId: position.collateral?.tokenId ?? '',
+    tokenId: position.collateralType?.tokenId ?? '',
     protocolAddress: position.vault?.address ?? '',
     protocol: protocol ?? '',
     vaultCollateralizationRatio,
@@ -126,13 +126,13 @@ const wranglePosition = async (
     faceValue,
     maturity,
     collateral: {
-      symbol: position?.collateral?.symbol ?? '',
-      address: position?.collateral?.address ?? '',
+      symbol: position?.collateralType?.symbol ?? '',
+      address: position?.collateralType?.address ?? '',
       decimals: collateralDecimals,
     },
     underlier: {
-      symbol: position?.collateral?.underlierSymbol ?? '',
-      address: position?.collateral?.underlierAddress ?? '',
+      symbol: position?.collateralType?.underlierSymbol ?? '',
+      address: position?.collateralType?.underlierAddress ?? '',
       decimals: underlierDecimals,
     },
     healthFactor,

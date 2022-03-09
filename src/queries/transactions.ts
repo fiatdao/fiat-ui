@@ -16,7 +16,7 @@ export const TRANSACTIONS = gql`
       vault
       position {
         maturity
-        collateral {
+        collateralType {
           address
           underlierAddress
           underlierSymbol

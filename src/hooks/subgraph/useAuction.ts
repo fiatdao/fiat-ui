@@ -6,7 +6,7 @@ import { wrangleAuction } from '@/src/utils/data/auctions'
 import {
   auctionById,
   auctionByIdVariables,
-  auctionById_userAuction,
+  auctionById_collateralAuction,
 } from '@/types/subgraph/__generated__/auctionById'
 
 const getAuctionById = async (auctionId: string): Promise<auctionById> =>
@@ -22,8 +22,12 @@ export const useAuction = (auctionId: string) => {
   const { data, error } = useSWR(
     ['auction', auctionId, currentUserAddress, appChainId, provider],
     async () => {
-      const { userAuction } = await getAuctionById(auctionId)
-      return wrangleAuction(userAuction as auctionById_userAuction, provider, appChainId)
+      const { collateralAuction } = await getAuctionById(auctionId)
+      return wrangleAuction(
+        collateralAuction as auctionById_collateralAuction,
+        provider,
+        appChainId,
+      )
     },
   )
 
