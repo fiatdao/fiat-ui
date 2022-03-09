@@ -1,8 +1,8 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
-import { auctionById_userAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
-import { auctions_userAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
+import { auctionById_collateralAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
+import { auctions_collateralAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
@@ -56,8 +56,8 @@ const wrangleAuction = async (
   appChainId: ChainsValues,
 ) => {
   const vaultAddress = userAuction.vault?.address || null
-  const underlierAddress = userAuction.collateral?.underlierAddress || null
-  const tokenId = userAuction.collateral?.tokenId || 0
+  const underlierAddress = userAuction.collateralType?.underlierAddress || null
+  const tokenId = userAuction.collateralType?.tokenId || 0
 
   const collateralValue = await getCurrentValue(provider, appChainId, tokenId, vaultAddress, false)
 
@@ -70,7 +70,7 @@ const wrangleAuction = async (
     protocol: userAuction.vault?.name,
     tokenId: userAuction?.tokenId,
     vault: { address: userAuction.vault?.address, name: userAuction.vault?.name },
-    asset: userAuction.collateral?.symbol,
+    asset: userAuction.collateralType?.symbol,
     upForAuction: getHumanValue(
       BigNumber.from(auctionStatus?.collateralToSell.toString()),
       18,
@@ -83,10 +83,10 @@ const wrangleAuction = async (
     action: { isActive: userAuction.isActive, id: userAuction.id },
     tokenAddress: underlierAddress,
     collateral: {
-      symbol: userAuction.collateral?.symbol ?? '',
+      symbol: userAuction.collateralType?.symbol ?? '',
     },
     underlier: {
-      symbol: userAuction.collateral?.underlierSymbol ?? '',
+      symbol: userAuction.collateralType?.underlierSymbol ?? '',
     },
   } as AuctionData
 }
