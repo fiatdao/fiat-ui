@@ -1,8 +1,8 @@
 import gql from 'graphql-tag'
 
 export const AUCTIONS = gql`
-  query auctions($where: UserAuction_filter) {
-    userAuctions(where: $where) {
+  query auctions($where: CollateralAuction_filter) {
+    collateralAuctions(where: $where) {
       id
       auctionId
       isActive
@@ -14,7 +14,7 @@ export const AUCTIONS = gql`
         name
         address
       }
-      collateral {
+      collateralType {
         id
         tokenId
         symbol

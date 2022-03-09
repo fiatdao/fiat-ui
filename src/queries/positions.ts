@@ -8,7 +8,7 @@ export const POSITIONS = gql`
       maturity
       totalCollateral
       totalNormalDebt
-      collateral {
+      collateralType {
         symbol
         address
         underlierSymbol

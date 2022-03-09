@@ -24,8 +24,8 @@ export const ACTIONS_TYPES: Record<ActionTransaction, string> = {
 const wrangleTransaction = (transaction: SubgraphTransaction): Transaction => {
   return {
     vaultName: transaction.vaultName ?? '',
-    underlierSymbol: transaction.position.collateral?.underlierSymbol ?? '',
-    asset: transaction.position.collateral?.symbol ?? '',
+    underlierSymbol: transaction.position.collateralType?.underlierSymbol ?? '',
+    asset: transaction.position.collateralType?.symbol ?? '',
     action: transaction.__typename,
     transactionHash: transaction.transactionHash,
     amount: getHumanValue(transaction.collateral, WAD_DECIMALS)?.toNumber() ?? 0,
