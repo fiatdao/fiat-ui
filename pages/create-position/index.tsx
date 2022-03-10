@@ -24,6 +24,7 @@ import { getHumanValue } from '@/src/web3/utils'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { tablePagination } from '@/src/utils/table'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 const getDateState = (maturityDate: Date) => {
   const now = new Date()
@@ -31,91 +32,6 @@ const getDateState = (maturityDate: Date) => {
 
   return diff <= 0 ? 'danger' : diff <= 7 ? 'warning' : 'ok'
 }
-
-const Columns: ColumnsType<any> = [
-  {
-    align: 'left',
-    dataIndex: 'vaultName',
-    render: (vaultName: Collateral['vaultName'], collateral: Collateral) => (
-      <Asset
-        mainAsset={vaultName ?? ''}
-        secondaryAsset={collateral.underlierSymbol ?? ''}
-        title={vaultName ?? 'unknown'}
-      />
-    ),
-    title: 'Protocol',
-    width: 200,
-  },
-  {
-    align: 'left',
-    dataIndex: 'symbol',
-    render: (value: Collateral['symbol']) => <CellValue value={value ?? '-'} />,
-    title: 'Asset',
-  },
-  {
-    align: 'left',
-    dataIndex: 'underlierSymbol',
-    render: (value: Collateral['underlierSymbol']) => <CellValue value={value ?? '-'} />,
-    title: 'Underlying',
-  },
-  {
-    align: 'left',
-    dataIndex: 'maturity',
-    render: (date: Collateral['maturity']) => (
-      <CellValue
-        bottomValue={parseDate(date)}
-        state={getDateState(date)}
-        value={`${remainingTime(date)} Left`}
-      />
-    ),
-    title: 'Maturity',
-  },
-  {
-    align: 'left',
-    dataIndex: 'faceValue',
-    render: (value: Collateral['faceValue']) => (
-      <CellValue
-        tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
-        value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3)}`}
-      />
-    ),
-    title: 'Face Value',
-  },
-  {
-    align: 'left',
-    dataIndex: 'currentValue',
-    render: (value: Collateral['currentValue']) => (
-      <CellValue
-        tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
-        value={`${value ? '$' + getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3) : '-'}`}
-      />
-    ),
-    title: 'Collateral Value',
-  },
-  {
-    align: 'left',
-    dataIndex: 'vault',
-    render: ({ collateralizationRatio: value }: Collateral['vault']) => {
-      return <CellValue value={`${getHumanValue(value ?? 0, WAD_DECIMALS)}%`} />
-    },
-    title: 'Collateralization Ratio',
-  },
-  {
-    align: 'right',
-    render: (value: Collateral) =>
-      value.hasBalance && value.manageId ? (
-        <Link href={`/your-positions/${value.manageId}/manage`} passHref>
-          <ButtonOutlineGradient>Manage</ButtonOutlineGradient>
-        </Link>
-      ) : (
-        <Link href={`/create-position/${value.address}/open`} passHref>
-          <ButtonGradient>Open Position</ButtonGradient>
-        </Link>
-      ),
-    title: '',
-    width: 110,
-  },
-]
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
@@ -126,12 +42,12 @@ const FILTERS: FilterData = {
 }
 
 // TODO fix types here
-const PositionsTable = ({ activeFilters, inMyWallet }: any) => {
+const PositionsTable = ({ activeFilters, columns, inMyWallet }: any) => {
   const data = useCollaterals(inMyWallet, activeFilters)
 
   return (
     <Table
-      columns={Columns}
+      columns={columns}
       dataSource={data}
       pagination={tablePagination(data?.length ?? 0)}
       rowKey="id"
@@ -145,6 +61,92 @@ const PositionsTable = ({ activeFilters, inMyWallet }: any) => {
 const CreatePosition = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
+  const { isWalletConnected } = useWeb3Connection()
+
+  const columns: ColumnsType<any> = [
+    {
+      align: 'left',
+      dataIndex: 'vaultName',
+      render: (vaultName: Collateral['vaultName'], collateral: Collateral) => (
+        <Asset
+          mainAsset={vaultName ?? ''}
+          secondaryAsset={collateral.underlierSymbol ?? ''}
+          title={vaultName ?? 'unknown'}
+        />
+      ),
+      title: 'Protocol',
+      width: 200,
+    },
+    {
+      align: 'left',
+      dataIndex: 'symbol',
+      render: (value: Collateral['symbol']) => <CellValue value={value ?? '-'} />,
+      title: 'Asset',
+    },
+    {
+      align: 'left',
+      dataIndex: 'underlierSymbol',
+      render: (value: Collateral['underlierSymbol']) => <CellValue value={value ?? '-'} />,
+      title: 'Underlying',
+    },
+    {
+      align: 'left',
+      dataIndex: 'maturity',
+      render: (date: Collateral['maturity']) => (
+        <CellValue
+          bottomValue={parseDate(date)}
+          state={getDateState(date)}
+          value={`${remainingTime(date)} Left`}
+        />
+      ),
+      title: 'Maturity',
+    },
+    {
+      align: 'left',
+      dataIndex: 'faceValue',
+      render: (value: Collateral['faceValue']) => (
+        <CellValue
+          tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
+          value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3)}`}
+        />
+      ),
+      title: 'Face Value',
+    },
+    {
+      align: 'left',
+      dataIndex: 'currentValue',
+      render: (value: Collateral['currentValue']) => (
+        <CellValue
+          tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
+          value={`${value ? '$' + getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3) : '-'}`}
+        />
+      ),
+      title: 'Collateral Value',
+    },
+    {
+      align: 'left',
+      dataIndex: 'vault',
+      render: ({ collateralizationRatio: value }: Collateral['vault']) => {
+        return <CellValue value={`${getHumanValue(value ?? 0, WAD_DECIMALS)}%`} />
+      },
+      title: 'Collateralization Ratio',
+    },
+    {
+      align: 'right',
+      render: (value: Collateral) =>
+        value.hasBalance && value.manageId ? (
+          <Link href={`/your-positions/${value.manageId}/manage`} passHref>
+            <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
+          </Link>
+        ) : (
+          <Link href={`/create-position/${value.address}/open`} passHref>
+            <ButtonGradient disabled={!isWalletConnected}>Open Position</ButtonGradient>
+          </Link>
+        ),
+      title: '',
+      width: 110,
+    },
+  ]
 
   const activeFilters = Object.values(filters)
     .filter((f) => f.active)
@@ -213,6 +215,7 @@ const CreatePosition = () => {
         <ToggleSwitch
           checked={inMyWallet}
           className={cn(s.switch)}
+          disabled={!isWalletConnected}
           label="In my wallet"
           onChange={() => {
             setInMyWallet(!inMyWallet)
@@ -238,10 +241,10 @@ const CreatePosition = () => {
 
       <SafeSuspense
         fallback={
-          <SkeletonTable columns={Columns as SkeletonTableColumnsType[]} loading rowCount={2} />
+          <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
         }
       >
-        <PositionsTable activeFilters={activeFilters} inMyWallet={inMyWallet} />
+        <PositionsTable activeFilters={activeFilters} columns={columns} inMyWallet={inMyWallet} />
       </SafeSuspense>
     </>
   )
