@@ -141,7 +141,7 @@ const FormERC20: React.FC<{
       value: `${tokenInfo?.humanValue} ${collateral.symbol}`,
     },
     {
-      title: 'Depositing into position ',
+      title: 'Depositing into position',
       value: `${stateMachine.context.erc20Amount.toFixed(4)} ${collateral.symbol}`,
     },
     {
@@ -360,7 +360,7 @@ const OpenPosition = () => {
     {
       title: 'Collateralization Ratio',
       tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
-      value: collateral ? `${collateral.collateralizationRatio} %` : '-',
+      value: collateral ? `${BigNumber.from(collateral.collateralizationRatio).times(100)}%` : '-',
     },
     {
       title: 'Borrowing Rate',
