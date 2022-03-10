@@ -19,7 +19,7 @@ import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient
 import Filter from '@/src/resources/svg/filter.svg'
 import { PROTOCOLS, Protocol } from '@/types/protocols'
 import { useCollaterals } from '@/src/hooks/subgraph/useCollaterals'
-import { Collateral } from '@/src/utils/data/collaterals'
+import { Collateral, formatColRatio } from '@/src/utils/data/collaterals'
 import { getHumanValue } from '@/src/web3/utils'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -127,7 +127,7 @@ const CreatePosition = () => {
       align: 'left',
       dataIndex: 'vault',
       render: ({ collateralizationRatio: value }: Collateral['vault']) => {
-        return <CellValue value={`${getHumanValue(value ?? 0, WAD_DECIMALS)}%`} />
+        return <CellValue value={value ? formatColRatio(value) : '-'} />
       },
       title: 'Collateralization Ratio',
     },

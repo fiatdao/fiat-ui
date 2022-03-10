@@ -50,7 +50,7 @@ const YourPositions = () => {
           value={
             <>
               <FiatIcon />
-              <>{(getHumanValue(pageInformation?.fiatDebt, WAD_DECIMALS) || 0).toFixed(2)}</>
+              <>{` ${(getHumanValue(pageInformation?.fiatDebt, WAD_DECIMALS) || 0).toFixed(2)}`}</>
             </>
           }
         />
