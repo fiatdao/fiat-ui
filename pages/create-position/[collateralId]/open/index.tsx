@@ -20,7 +20,8 @@ import { PositionFormsLayout } from '@/src/components/custom/position-forms-layo
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
 import { WAD_DECIMALS } from '@/src/constants/misc'
-import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
+// import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -33,7 +34,7 @@ import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
+import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
@@ -329,31 +330,36 @@ const FormERC20: React.FC<{
 
 const OpenPosition = () => {
   const tokenAddress = useQueryParam('collateralId')
-  const { tokenSymbol } = useTokenSymbol(tokenAddress)
-  useDynamicTitle(tokenSymbol && `Create ${tokenSymbol} position`)
+  const tokenSymbol = getTokenByAddress(tokenAddress)?.symbol ?? ''
+  // const { tokenSymbol } = useTokenSymbol(tokenAddress)
+  useDynamicTitle(`Create Position`)
   const { data: collateral } = useCollateral(tokenAddress)
 
   const mockedBlocks = [
     {
-      title: 'Bond Name',
-      value: collateral ? collateral.symbol : '-',
+      title: 'Token',
+      value: tokenSymbol ?? '-',
+      address: tokenAddress,
+      appChainId: useWeb3Connection().appChainId,
     },
     {
-      title: 'Underlying',
+      title: 'Underlying Asset',
       value: collateral ? collateral.underlierSymbol : '-',
+      address: collateral?.underlierAddress,
+      appChainId: useWeb3Connection().appChainId,
     },
     {
-      title: 'Bond Maturity',
+      title: 'Maturity Date',
       tooltip: 'The date on which the bond is redeemable for its underlying assets.',
       value: collateral?.maturity ? parseDate(collateral?.maturity) : '-',
     },
     {
-      title: 'Bond Face Value',
+      title: 'Face Value',
       tooltip: 'The redeemable value of the bond at maturity.',
       value: `$${getHumanValue(collateral?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
-      title: 'Bond Collateral Value',
+      title: 'Price',
       tooltip: 'The currently discounted value of the bond.',
       value: `$${getHumanValue(collateral?.currentValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
@@ -365,7 +371,9 @@ const OpenPosition = () => {
     {
       title: 'Borrowing Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: `${getHumanValue(collateral?.vault.interestPerSecond, WAD_DECIMALS)}`,
+      value: `${perSecondToAPY(
+        getHumanValue(collateral?.vault.interestPerSecond, WAD_DECIMALS),
+      ).toFixed(3)}% APY`,
     },
   ]
 
