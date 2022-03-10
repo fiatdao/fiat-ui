@@ -24,9 +24,9 @@ export const fetchCollaterals = ({
 }) => {
   return graphqlFetcher<Collaterals, CollateralsVariables>(COLLATERALS, {
     where: { vaultName_in: vaultNames, address_in: userCollaterals },
-  }).then(async ({ collaterals }) => {
+  }).then(async ({ collateralTypes }) => {
     return Promise.all(
-      collaterals
+      collateralTypes
         .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
         .map((p) => wrangleCollateral(p, provider, appChainId)),
     )

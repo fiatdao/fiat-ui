@@ -3,6 +3,7 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import Link from 'next/link'
+import { differenceInDays } from 'date-fns'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import Popover from '@/src/components/antd/popover'
@@ -24,17 +25,11 @@ import { WAD_DECIMALS } from '@/src/constants/misc'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { tablePagination } from '@/src/utils/table'
 
-const getDateState = () => {
-  // we sould decide which state to show here
-  const state = 'ok'
+const getDateState = (maturityDate: Date) => {
+  const now = new Date()
+  const diff = differenceInDays(maturityDate, now)
 
-  return state === 'ok'
-    ? 'ok'
-    : state === 'warning'
-    ? 'warning'
-    : state === 'danger'
-    ? 'danger'
-    : undefined
+  return diff <= 0 ? 'danger' : diff <= 7 ? 'warning' : 'ok'
 }
 
 const Columns: ColumnsType<any> = [
@@ -69,7 +64,7 @@ const Columns: ColumnsType<any> = [
     render: (date: Collateral['maturity']) => (
       <CellValue
         bottomValue={parseDate(date)}
-        state={getDateState()}
+        state={getDateState(date)}
         value={`${remainingTime(date)} Left`}
       />
     ),
