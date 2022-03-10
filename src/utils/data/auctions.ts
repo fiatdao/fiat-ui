@@ -1,8 +1,8 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
-import { auctionById_userAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
-import { auctions_userAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
+import { auctionById_collateralAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
+import { auctions_collateralAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
@@ -51,26 +51,26 @@ const getAuctionStatus = (
 }
 
 const wrangleAuction = async (
-  userAuction: subGraphAuctions | subGraphAuction,
+  collateralAuction: subGraphAuctions | subGraphAuction,
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
 ) => {
-  const vaultAddress = userAuction.vault?.address || null
-  const underlierAddress = userAuction.collateral?.underlierAddress || null
-  const tokenId = userAuction.collateral?.tokenId || 0
+  const vaultAddress = collateralAuction.vault?.address || null
+  const underlierAddress = collateralAuction.collateralType?.underlierAddress || null
+  const tokenId = collateralAuction.collateralType?.tokenId || 0
 
   const collateralValue = await getCurrentValue(provider, appChainId, tokenId, vaultAddress, false)
 
-  const auctionStatus = await getAuctionStatus(appChainId, provider, userAuction.id)
+  const auctionStatus = await getAuctionStatus(appChainId, provider, collateralAuction.id)
 
   // TODO is necessary extract decimals places?
 
   return {
-    id: userAuction.id,
-    protocol: userAuction.vault?.name,
-    tokenId: userAuction?.tokenId,
-    vault: { address: userAuction.vault?.address, name: userAuction.vault?.name },
-    asset: userAuction.collateral?.symbol,
+    id: collateralAuction.id,
+    protocol: collateralAuction.vault?.name,
+    tokenId: collateralAuction?.tokenId,
+    vault: { address: collateralAuction.vault?.address, name: collateralAuction.vault?.name },
+    asset: collateralAuction.collateralType?.symbol,
     upForAuction: getHumanValue(
       BigNumber.from(auctionStatus?.collateralToSell.toString()),
       18,
@@ -80,13 +80,13 @@ const wrangleAuction = async (
     yield: getHumanValue(
       calcYield(collateralValue, BigNumber.from(auctionStatus?.price.toString()) ?? null),
     )?.toFormat(2),
-    action: { isActive: userAuction.isActive, id: userAuction.id },
+    action: { isActive: collateralAuction.isActive, id: collateralAuction.id },
     tokenAddress: underlierAddress,
     collateral: {
-      symbol: userAuction.collateral?.symbol ?? '',
+      symbol: collateralAuction.collateralType?.symbol ?? '',
     },
     underlier: {
-      symbol: userAuction.collateral?.underlierSymbol ?? '',
+      symbol: collateralAuction.collateralType?.underlierSymbol ?? '',
     },
   } as AuctionData
 }

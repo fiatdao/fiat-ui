@@ -2,7 +2,7 @@ import gql from 'graphql-tag'
 
 export const AUCTION_BY_ID = gql`
   query auctionById($id: ID!) {
-    userAuction(id: $id) {
+    collateralAuction(id: $id) {
       id
       collateralToSell
       tokenId
@@ -11,7 +11,7 @@ export const AUCTION_BY_ID = gql`
       user
       tokenId
       debt
-      collateral {
+      collateralType {
         underlierAddress
         symbol
         tokenId

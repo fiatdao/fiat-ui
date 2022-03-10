@@ -18,7 +18,7 @@ export const USER_POSITIONS = gql`
           maxDiscount
         }
         vaultName
-        collateral {
+        collateralType {
           id
           tokenId
           address
