@@ -7,10 +7,8 @@ const eyUSDC: TokenMeta = {
   name: 'eyUSDC:10-AUG-22-GMT',
 }
 
-const bondTokens: any = [eyUSDC]
+const bondTokens = [eyUSDC]
 
-export function getTokenByAddress(address: any): TokenMeta | undefined {
-  return bondTokens.find(
-    (token: TokenMeta) => token.address.toLowerCase() === address.toLowerCase(),
-  )
+export function getTokenByAddress(address: string | null) {
+  return bondTokens.find((token) => token.address.toLowerCase() === address?.toLowerCase())
 }

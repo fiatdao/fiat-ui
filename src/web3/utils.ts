@@ -1,3 +1,4 @@
+import { ZERO_BIG_NUMBER } from 'src/constants/misc'
 import BigNumber from 'bignumber.js'
 
 BigNumber.prototype.scaleBy = function (decimals: any = 0): any {
@@ -82,7 +83,7 @@ export function getEtherscanAddressUrl(address?: string, chainId = 42): string |
 export function getHumanValue(value: number | BigNumber, decimals?: number): BigNumber
 export function getHumanValue(value?: BigNumber.Value, decimals?: number): BigNumber
 export function getHumanValue(value: any, decimals: any = 0): any {
-  return value ? BigNumber.from(value)?.unscaleBy(decimals) : 0
+  return value ? BigNumber.from(value)?.unscaleBy(decimals) : ZERO_BIG_NUMBER
 }
 
 export function getNonHumanValue(value: number | BigNumber, decimals?: number): BigNumber
