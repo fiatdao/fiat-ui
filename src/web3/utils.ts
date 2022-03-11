@@ -80,15 +80,20 @@ export function getEtherscanAddressUrl(address?: string, chainId = 42): string |
 }
 
 export function getHumanValue(value: number | BigNumber, decimals?: number): BigNumber
-export function getHumanValue(value?: BigNumber.Value, decimals?: number): BigNumber | undefined
+export function getHumanValue(value?: BigNumber.Value, decimals?: number): BigNumber
 export function getHumanValue(value: any, decimals: any = 0): any {
-  return value ? BigNumber.from(value)?.unscaleBy(decimals) : undefined
+  return value ? BigNumber.from(value)?.unscaleBy(decimals) : 0
 }
 
 export function getNonHumanValue(value: number | BigNumber, decimals?: number): BigNumber
 export function getNonHumanValue(value?: BigNumber.Value, decimals?: number): BigNumber | undefined
 export function getNonHumanValue(value: any, decimals: any = 0): any {
   return value ? BigNumber.from(value)?.scaleBy(decimals) : undefined
+}
+
+// Converts interest rate from "per second return rate" to APY
+export function perSecondToAPY(value: BigNumber): number {
+  return (Math.pow(value.toNumber(), 31536000) - 1) * 100
 }
 
 export function formatBigValue(
