@@ -20,5 +20,8 @@ module.exports = {
       },
     ]
   },
+  env: {
+    commitHash: Buffer.from(require('child_process').execSync('git rev-parse --short HEAD')).toString().trim()
+  },
 }
 
