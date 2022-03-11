@@ -69,6 +69,9 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
           symbol="FDT"
         />
       </div>
+      <h6>
+        <pre>build {process.env.commitHash}</pre>
+      </h6>
     </div>
   )
 }
