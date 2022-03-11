@@ -25,6 +25,7 @@ import { WAD_DECIMALS } from '@/src/constants/misc'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { tablePagination } from '@/src/utils/table'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 const getDateState = (maturityDate: Date) => {
   const now = new Date()
@@ -79,8 +80,10 @@ const CreatePosition = () => {
     },
     {
       align: 'left',
-      dataIndex: 'symbol',
-      render: (value: Collateral['symbol']) => <CellValue value={value ?? '-'} />,
+      dataIndex: 'address',
+      render: (value: Collateral['address']) => (
+        <CellValue value={getTokenByAddress(value)?.symbol ?? '-'} />
+      ),
       title: 'Asset',
     },
     {
