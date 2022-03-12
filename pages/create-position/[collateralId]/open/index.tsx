@@ -5,6 +5,8 @@ import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useEffect, useState } from 'react'
 import Lottie from 'lottie-react'
+import { BytesLike } from '@ethersproject/bytes'
+import { BigNumberish } from 'ethers'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
@@ -77,11 +79,13 @@ const FormERC20: React.FC<{
     readOnlyAppProvider,
   })
 
+  console.log(collateral)
+
   const [currentValue, setCurrentValue] = useState(ZERO_BIG_NUMBER)
 
   const [FIATBalance] = useFIATBalance(true)
 
-  const { depositCollateral } = useUserActions()
+  const { depositCollateral, underlierToPToken } = useUserActions()
   const [stateMachine, send] = useMachine(stepperMachine, {
     context: {
       isProxyAvailable,
@@ -121,8 +125,16 @@ const FormERC20: React.FC<{
 
   useEffect(() => {
     console.log('COLL')
-    // await underlierToPToken();
-  }, [])
+    underlierToPToken({
+      vault: collateral.vault.address,
+      balancerVault: collateral.ccp.balancerVault,
+      curvePoolId: collateral.ccp.poolId,
+      underlierAmount: 400000,
+    }).then((results) => {
+      console.log('results')
+      console.log(results)
+    })
+  }, [underlierToPToken])
 
   useEffect(() => {
     getCurrentValue(readOnlyAppProvider, appChainId, 0, collateral.vault.address, false).then(

@@ -21,6 +21,12 @@ export type Collateral = {
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
   maturity: Date
+  ccp: {
+    balancerVault: string
+    convergentCurvePool: string
+    id: string
+    poolId: string
+  }
   address: Maybe<string>
   faceValue: Maybe<BigNumber>
   currentValue: Maybe<BigNumber>
