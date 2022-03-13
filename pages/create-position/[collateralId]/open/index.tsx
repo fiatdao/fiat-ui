@@ -77,8 +77,6 @@ const FormERC20: React.FC<{
     readOnlyAppProvider,
   })
 
-  console.log(collateral)
-
   const [currentValue, setCurrentValue] = useState(ZERO_BIG_NUMBER)
 
   const [FIATBalance] = useFIATBalance(true)
@@ -291,7 +289,7 @@ const FormERC20: React.FC<{
                     <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
                       Create Proxy
                     </ButtonGradient>
-                    <button className={s.backButton} onClick={() => console.log('go back')}>
+                    <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
                       &#8592; Go back
                     </button>
                   </ButtonsWrapper>
