@@ -110,6 +110,12 @@ const wrangleCollateral = async (
       address: collateral.vault?.address ?? '',
       interestPerSecond: collateral.vault?.interestPerSecond ?? '',
     },
+    ccp: {
+      balancerVault: collateral.ccp?.balancerVault ?? '',
+      convergentCurvePool: collateral.ccp?.convergentCurvePool ?? '',
+      id: collateral.ccp?.id ?? '',
+      poolId: collateral.ccp?.poolId ?? '',
+    },
     hasBalance: !!balance && balance.gt(0),
     manageId:
       hasPosition && collateral.vault?.address && userProxyAddress !== ZERO_ADDRESS

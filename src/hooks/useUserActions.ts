@@ -3,7 +3,6 @@ import { ZERO_BIG_NUMBER } from '../constants/misc'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
-import { BytesLike } from '@ethersproject/bytes'
 import { contracts } from '@/src/constants/contracts'
 import { Chains } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -15,13 +14,6 @@ type ModifyCollateralAndDebt = {
   tokenId: number
   deltaCollateral: BigNumber
   deltaNormalDebt: BigNumber
-}
-
-type UnderlierToPToken = {
-  vault: string
-  balancerVault: string
-  curvePoolId: BytesLike
-  underlierAmount: BigNumberish
 }
 
 type BuyCollateralAndModifyDebt = {
@@ -74,7 +66,6 @@ type UseUserActions = {
   withdrawCollateral: (arg0: WithdrawCollateral) => Promise<void>
   mintFIAT: (arg0: MintFIAT) => Promise<void>
   burnFIAT: (arg0: BurnFIAT) => Promise<void>
-  underlierToPToken: (arg0: UnderlierToPToken) => Promise<void>
   buyCollateralAndModifyDebt: (arg0: BuyCollateralAndModifyDebt) => Promise<void>
 }
 
@@ -141,21 +132,6 @@ export const useUserActions = (): UseUserActions => {
       await tx.wait()
     },
     [address, userProxy, userProxyAddress, userAction.address, userAction.interface],
-  )
-
-  const underlierToPToken = useCallback(
-    async (params: UnderlierToPToken): Promise<void> => {
-      if (!address || !userProxy || !userProxyAddress) return
-      const underlierToPTokenEncoded = userActionEPT.interface.encodeFunctionData(
-        'underlierToPToken',
-        [params.vault, params.balancerVault, params.curvePoolId, params.underlierAmount],
-      )
-      const tx = await userProxy.execute(userActionEPT.address, underlierToPTokenEncoded, {
-        gasLimit: 1_000_000,
-      })
-      console.log(tx)
-    },
-    [address, userActionEPT.address, userActionEPT.interface, userProxy, userProxyAddress],
   )
 
   const buyCollateralAndModifyDebt = useCallback(
@@ -242,7 +218,6 @@ export const useUserActions = (): UseUserActions => {
     withdrawCollateral,
     mintFIAT,
     burnFIAT,
-    underlierToPToken,
     buyCollateralAndModifyDebt,
   }
 }
