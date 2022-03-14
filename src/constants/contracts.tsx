@@ -8,10 +8,8 @@ import {
   moneta,
   noLossCollateralAuctionActions,
   prbProxy,
-  userActions1155,
   vault1155,
   vault20,
-  vaultActions20,
   vaultEptActions,
   vaultFcActions,
 } from '@/src/abis'
@@ -104,20 +102,6 @@ export const contracts = constantContracts({
     },
     abi: prbProxy,
   },
-  USER_ACTIONS_20: {
-    address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0x9372Bf7E30Df8b399eF0b470DCF3C7776C50CFF9',
-    },
-    abi: vaultActions20,
-  },
-  USER_ACTIONS_1155: {
-    address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0x91c5f414DfBC8Af76B13d91E0c5EdcF9Ac39DE66',
-    },
-    abi: userActions1155,
-  },
   USER_ACTIONS_EPT: {
     address: {
       [Chains.mainnet]: '',
@@ -131,13 +115,6 @@ export const contracts = constantContracts({
       [Chains.goerli]: '0x3DAe16D9e96413AFCB01324c01f53912A887c289',
     },
     abi: vaultFcActions,
-  },
-  USER_ACTIONS_AUCTIONS: {
-    address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '', // TODO missing deployed contract here
-    },
-    abi: [], // Todo missing ABI here
   },
   MONETA: {
     address: {
