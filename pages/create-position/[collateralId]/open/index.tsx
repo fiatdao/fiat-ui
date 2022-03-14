@@ -194,7 +194,11 @@ const FormERC20: React.FC<{
                 <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
                   Bond
                 </RadioTab>
-                <RadioTab checked={tab === 'underlying'} onClick={() => setTab('underlying')}>
+                <RadioTab
+                  checked={tab === 'underlying'}
+                  disabled
+                  onClick={() => setTab('underlying')}
+                >
                   Underlying
                 </RadioTab>
               </RadioTabsWrapper>
