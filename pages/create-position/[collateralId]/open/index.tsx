@@ -373,7 +373,7 @@ const OpenPosition = () => {
       tooltip: 'The annualized cost of interest for minting FIAT.',
       value: `${perSecondToAPY(
         getHumanValue(collateral?.vault.interestPerSecond, WAD_DECIMALS),
-      ).toFixed(3)}% APY`,
+      ).toFixed(3)}`,
     },
   ]
 
