@@ -29,7 +29,7 @@ export const fetchPositions = ({
     where: {
       id,
       vaultName,
-      userAddress_in: userAddresses.length > 0 ? userAddresses : undefined,
+      owner_in: userAddresses.length > 0 ? userAddresses : undefined,
       totalCollateral_not: '0',
       totalNormalDebt_not: '0',
     },
