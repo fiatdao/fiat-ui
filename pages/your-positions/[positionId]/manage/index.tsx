@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import { perSecondToAPY } from '../../../../src/web3/utils'
 import cn from 'classnames'
 import { useEffect, useState } from 'react'
 import Spin from '@/src/components/antd/spin'
@@ -67,9 +68,9 @@ const DynamicContent = () => {
       value: position?.vaultCollateralizationRatio?.toFixed() ?? '-',
     },
     {
-      title: 'Borrowing Rate',
+      title: 'Interest Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: getHumanValue(position?.interestPerSecond ?? 0, WAD_DECIMALS).toFixed(2),
+      value: `${perSecondToAPY(getHumanValue(position?.interestPerSecond ?? 0)).toFixed(3)}% APY`,
     },
   ]
   return (

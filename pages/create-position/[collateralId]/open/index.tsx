@@ -369,7 +369,7 @@ const OpenPosition = () => {
       value: collateral ? `${BigNumber.from(collateral.collateralizationRatio).times(100)}%` : '-',
     },
     {
-      title: 'Borrowing Rate',
+      title: 'Interest Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
       value: `${perSecondToAPY(
         getHumanValue(collateral?.vault.interestPerSecond, WAD_DECIMALS),
