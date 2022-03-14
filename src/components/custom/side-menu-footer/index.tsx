@@ -1,11 +1,9 @@
 import s from './s.module.scss'
 import cn from 'classnames'
 import { HTMLAttributes } from 'react'
-import ButtonOutline from '@/src/components/antd/button-outline'
 import { AddTokenButton } from '@/src/components/custom/add-token-button'
-import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
-import isDev from '@/src/utils/isDev'
+import { Chains } from '@/src/constants/chains'
 
 export const FIATTokenImage =
   'data:image/svg+xml;base64,PHN2ZyBmaWxsPSJub25lIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+PGxpbmVhckdyYWRpZW50IGlkPSJhIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjIwLjU3MiIgeDI9IjMuNDI5IiB5MT0iMjAuNTcyIiB5Mj0iMy40MjkiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmNGM4YyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmNzQ3NCIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJiIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjcuODE3IiB4Mj0iMTcuNTI3IiB5MT0iNy4zNSIgeTI9IjE1LjAxOSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmY3NDc0Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY0YzhjIi8+PC9saW5lYXJHcmFkaWVudD48cGF0aCBkPSJtMTIgMjMuMTQyOWM2LjE1NCAwIDExLjE0MjgtNC45ODg4IDExLjE0MjgtMTEuMTQyOSAwLTYuMTU0LTQuOTg4OC0xMS4xNDI4MjItMTEuMTQyOC0xMS4xNDI4MjItNi4xNTQwNCAwLTExLjE0Mjg2IDQuOTg4ODIyLTExLjE0Mjg2IDExLjE0MjgyMiAwIDYuMTU0MSA0Ljk4ODgyIDExLjE0MjkgMTEuMTQyODYgMTEuMTQyOXoiIHN0cm9rZT0idXJsKCNhKSIgc3Ryb2tlLXdpZHRoPSIxLjcxNCIvPjxwYXRoIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0ibTE0LjUxNjkgNy40ODYzNGMtLjI1MDQtLjE0NDkzLS41MzQ3LS4yMjA5Ni0uODI0LS4yMjAzNmgtMi4xODU4djQuMDAzMjJoNC44NTIzdi41MDY1aC04LjcxOTc4di0uNTA3M2gxLjYxODAydi0yLjA2NDA4YzAtLjQ1MjE5LS4wMzYzMS0uNzkyOTUtLjEwNzQtMS4wMTcxMy0uMDcxMS0uMjI0MTktLjE4Nzg3LS40MDI4OS0uMzQ3ODUtLjUzNTE0LS4xNjE1NS0uMTMwODYtLjM5NTYxLS4yNDg5MS0uNzAyMTYtLjM1NDE1bC0uNDYwNjEtLjE1Nzg3di0uMjgyODVoOC43MjAzOHYzLjI0NjMyaC0uMzEwN2MtLjA2OTctLjM3MjY5LS4xNzczLS43MzczMy0uMzIxMS0xLjA4ODE5LS4xMzE4LS4zMjY0OS0uMzA2Ni0uNjM0MDEtLjUxOTUtLjkxNDUxLS4yMDQtLjI2MTg0LS40MzQ2LS40NjY2Ni0uNjkxOC0uNjE0NDZ6bS02Ljg3NzI1IDUuODE1NzZ2LS41MDczaDguNzE5NDV2LjUwNzZoLTQuODUyOXYyLjA2NDFjLS4wMDIxLjI2NjMuMDE1OC41MzIzLjA1MzcuNzk2LjAzNTguMjM2NS4xMDAxLjQyMDIuMTkzLjU1MTQuMDkwMS4xMjkuMjA0OS4yMzg4LjMzNzguMzIzMS4xMzExLjA4NDQuMzIyMy4xNjMyLjU3MzMuMjM2N2wuNTY2OS4xNTc4di4yODI4aC01LjU5MTI1di0uMjgyOGwuNDYwNi0uMTU3OGMuMjE3ODctLjA3MjUuNDI2NDgtLjE3MDIuNjIxNTMtLjI5MTMuMTcxNDMtLjExMDcuMzAzNjgtLjI3NjkuMzk2NTctLjQ5NjkuMDkyODgtLjIyMDYuMTM5MzItLjU5MzYuMTM5MzItMS4xMTkydi0yLjA2NDJ6IiBmaWxsPSJ1cmwoI2IpIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48L3N2Zz4='
@@ -16,43 +14,25 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
   className,
   ...restProps
 }) => {
-  /// For devs only
-  const logContracts = () => {
-    console.log('***** Logging contracts *****')
-    Object.entries(contracts).forEach(([k, v]) => [k, console.log(k, v)])
-    console.log('***** End Contracts *****')
-  }
-
   return (
     <div className={cn(s.sideMenuFooter, className)} {...restProps}>
-      {isDev() ? (
-        <ButtonOutline className={cn(s.item)} onClick={logContracts} type="text">
-          Log Contracts
-        </ButtonOutline>
-      ) : (
-        <></>
-      )}
-
-      {/*
-      <ul className={cn(s.links)}>
-        <li className={cn(s.item)}>
-          <a className={cn(s.link)} href="https://google.com" title="Buy and sell on Matcha">
-            Buy and sell on Matcha
-          </a>
-        </li>
-        <li className={cn(s.item)}>
-          <a className={cn(s.link)} href="https://google.com" title="Borrow and lend on Rari Fuse">
-            Borrow and lend on Rari Fuse <ExternalLink />
-          </a>
-        </li>
-        <li className={cn(s.item)}>
-          <a className={cn(s.link)} href="https://google.com" title="FIAT's Dune Dashboard">
-            FIAT's Dune Dashboard <ExternalLink />
-          </a>
-        </li>
-      </ul>
-      */}
-
+      {/*<ul className={cn(s.links)}>*/}
+      {/*  <li className={cn(s.item)}>*/}
+      {/*    <a className={cn(s.link)} href="https://google.com" title="Buy and sell on Matcha">*/}
+      {/*      Buy and sell on Matcha <ExternalLink />*/}
+      {/*    </a>*/}
+      {/*  </li>*/}
+      {/*  <li className={cn(s.item)}>*/}
+      {/*    <a className={cn(s.link)} href="https://google.com" title="Borrow and lend on Rari Fuse">*/}
+      {/*      Borrow and lend on Rari Fuse <ExternalLink />*/}
+      {/*    </a>*/}
+      {/*  </li>*/}
+      {/*  <li className={cn(s.item)}>*/}
+      {/*    <a className={cn(s.link)} href="https://google.com" title="FIAT's Dune Dashboard">*/}
+      {/*      FIAT's Dune Dashboard <ExternalLink />*/}
+      {/*    </a>*/}
+      {/*  </li>*/}
+      {/*</ul>*/}
       <h5 className={cn(s.title)}>ADD TO WALLET</h5>
       <div className={cn(s.buttons)}>
         <AddTokenButton
@@ -69,9 +49,6 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
           symbol="FDT"
         />
       </div>
-      <h6>
-        <pre>build {process.env.commitHash}</pre>
-      </h6>
     </div>
   )
 }
