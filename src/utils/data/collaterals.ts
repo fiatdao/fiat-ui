@@ -68,20 +68,27 @@ const wrangleCollateral = async (
     )
   }
 
-  const address = await provider.getSigner().getAddress()
+  let userAddress = null
+  try {
+    userAddress = await provider.getSigner().getAddress()
+  } catch (e) {
+    console.warn('Error getting address, likely due to disconnected wallet | ', e)
+  }
+
   const balance = await contractCall<ERC20, 'balanceOf'>(
     collateral.address ?? ZERO_ADDRESS,
     contracts.ERC_20.abi,
     provider,
     'balanceOf',
-    [address],
+    userAddress ? [userAddress] : null,
   )
+
   const userProxyAddress = await contractCall<PRBProxy, 'getCurrentProxy'>(
     contracts.PRB_Proxy.address[appChainId],
     contracts.PRB_Proxy.abi,
     provider,
     'getCurrentProxy',
-    [address],
+    userAddress ? [userAddress] : null,
   )
 
   const position = await contractCall<Codex, 'positions'>(
@@ -123,4 +130,9 @@ const wrangleCollateral = async (
         : null,
   }
 }
-export { wrangleCollateral }
+
+const formatColRatio = (ratio: BigNumber) => {
+  // We want it as 0-100+ value, not a 0-1+
+  return `${getHumanValue(ratio ?? 0, WAD_DECIMALS - 2)}`
+}
+export { wrangleCollateral, formatColRatio }

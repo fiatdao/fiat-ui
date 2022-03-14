@@ -113,7 +113,7 @@ const wranglePosition = async (
     }
   }
 
-  // TODO Borrowing rate
+  // TODO Interest rate
   return {
     id,
     tokenId: position.collateralType?.tokenId ?? '',
