@@ -1,3 +1,6 @@
 export default function isDev(): boolean {
-  return process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID !== '1'
+  return (
+    process.env.NEXT_PUBLIC_VERCEL_ENV === 'development' ||
+    process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview'
+  )
 }
