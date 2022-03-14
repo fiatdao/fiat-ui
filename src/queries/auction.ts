@@ -9,7 +9,6 @@ export const AUCTION_BY_ID = gql`
       vaultName
       isActive
       user
-      tokenId
       debt
       collateralType {
         underlierAddress

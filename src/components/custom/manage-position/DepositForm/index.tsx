@@ -11,7 +11,6 @@ import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { SummaryItem } from '@/src/components/custom/summary'
-import { contracts } from '@/src/constants/contracts'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useDepositForm, useDepositFormSummary } from '@/src/hooks/managePosition'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
@@ -49,16 +48,28 @@ export const DepositForm = ({ position }: { position: Position }) => {
       if (amountToDeposit) {
         const FACTOR = position.vaultCollateralizationRatio || 1
 
+        const depositedInWad = position.totalCollateral.unscaleBy(WAD_DECIMALS)
+        const mintedInWad = position.totalNormalDebt.unscaleBy(WAD_DECIMALS)
+        const facePriceInWad = position.faceValue.unscaleBy(WAD_DECIMALS)
+
+        console.log({ amountToDeposit, depositedInWad, mintedInWad })
+
         setMaxFiatValue(
           amountToDeposit
-            .plus(position.totalCollateral.unscaleBy(WAD_DECIMALS))
-            .minus(position.totalNormalDebt.unscaleBy(WAD_DECIMALS))
+            .plus(depositedInWad)
+            .times(facePriceInWad)
             .dividedBy(FACTOR)
-            .decimalPlaces(contracts.FIAT.decimals),
+            .minus(mintedInWad)
+            .decimalPlaces(WAD_DECIMALS),
         )
       }
     },
-    [position.totalCollateral, position.totalNormalDebt, position.vaultCollateralizationRatio],
+    [
+      position.faceValue,
+      position.totalCollateral,
+      position.totalNormalDebt,
+      position.vaultCollateralizationRatio,
+    ],
   )
 
   const [mintFiat, setMintFiat] = useState(false)

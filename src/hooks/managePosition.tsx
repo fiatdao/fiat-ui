@@ -62,7 +62,7 @@ export const useDepositForm = ({
 
   useEffect(() => {
     getCurrentValue(readOnlyAppProvider, appChainId, 0, vaultAddress, false).then(setCurrentValue)
-  }, [appChainId, vaultAddress, readOnlyAppProvider, setCurrentValue])
+  }, [appChainId, readOnlyAppProvider, vaultAddress])
 
   return {
     currentValue,

@@ -28,7 +28,7 @@ export const fetchCollaterals = ({
     return Promise.all(
       collateralTypes
         .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
-        .map((p) => wrangleCollateral(p, provider, appChainId)),
+        .map((c) => wrangleCollateral(c, provider, appChainId)),
     )
   })
 }
@@ -38,7 +38,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
 
   const { positions } = usePositionsByUser()
 
-  // TODO Make this more performante avoiding wrangle of positions or the whole query when inMyWallet is false
+  // TODO Make this more performant avoiding wrangle of positions or the whole query when inMyWallet is false
   const collaterals = inMyWallet ? _.uniq(positions.map((p) => p.collateral.address)) : undefined
 
   const provider = web3Provider ?? (readOnlyAppProvider as Web3Provider)
