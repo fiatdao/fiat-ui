@@ -2,9 +2,9 @@ import gql from 'graphql-tag'
 
 export const USER_POSITIONS = gql`
   query positionsByUser($user: Bytes) {
-    userPositions(where: { userAddress: $user }) {
+    userPositions(where: { owner: $user }) {
       id
-      userAddress
+      owner
       totalCollateral
       totalFIAT
       positions {
@@ -28,9 +28,9 @@ export const USER_POSITIONS = gql`
           underlierAddress
           vaultName
         }
-        userPosition {
+        userPositions {
           id
-          userAddress
+          owner
           totalCollateral
           totalFIAT
         }
