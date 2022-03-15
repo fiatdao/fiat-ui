@@ -6,6 +6,7 @@ export const POSITIONS = gql`
       id
       vaultName
       maturity
+      owner
       totalCollateral
       totalNormalDebt
       collateralType {
