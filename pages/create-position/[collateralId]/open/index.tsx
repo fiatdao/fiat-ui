@@ -216,8 +216,8 @@ const FormERC20: React.FC<{
                   value={`Balance:
               ${tokenInfo?.humanValue?.toFixed()}`}
                 />
-                <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
-                  <Form.Item name="tokenAmount" required>
+                <Form form={form} initialValues={{ usdcAmount: 0 }}>
+                  <Form.Item name="usdcAmount" required>
                     <TokenAmount
                       displayDecimals={tokenInfo?.decimals}
                       mainAsset={collateral.underlierSymbol as string}
@@ -228,14 +228,14 @@ const FormERC20: React.FC<{
                       }
                       secondaryAsset={tokenSymbol}
                     />
-                    <Summary data={underlyingData} />
-                    <SummaryItem title={'Fixed APR'} value={'2%'} />
-                    <SummaryItem title={'Interest earned'} value={'24.028 USDC'} />
-                    <SummaryItem
-                      title={'Redeemable at maturity | Dec 29 2021'}
-                      value={'10,024.028 USDC'}
-                    />
                   </Form.Item>
+                  <Summary data={underlyingData} />
+                  <SummaryItem title={'Fixed APR'} value={'2%'} />
+                  <SummaryItem title={'Interest earned'} value={'24.028 USDC'} />
+                  <SummaryItem
+                    title={'Redeemable at maturity | Dec 29 2021'}
+                    value={'10,024.028 USDC'}
+                  />
 
                   <ButtonsWrapper>
                     <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_DEPLOY' })}>
