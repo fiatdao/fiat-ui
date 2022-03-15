@@ -70,7 +70,7 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
         />
       </div>
       <h6>
-        <pre>build {process.env.commitHash}</pre>
+        <pre>Build {process.env.commitHash}</pre>
       </h6>
     </div>
   )
