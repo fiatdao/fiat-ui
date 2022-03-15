@@ -196,7 +196,7 @@ const FormERC20: React.FC<{
                 </RadioTab>
                 <RadioTab
                   checked={tab === 'underlying'}
-                  disabled
+                  // disabled
                   onClick={() => setTab('underlying')}
                 >
                   Underlying
@@ -238,11 +238,6 @@ const FormERC20: React.FC<{
                   </Form.Item>
 
                   <ButtonsWrapper>
-                    {!mintFiat && (
-                      <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
-                        Mint FIAT with this transaction
-                      </ButtonExtraFormAction>
-                    )}
                     <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_DEPLOY' })}>
                       Deposit collateral
                     </ButtonGradient>
