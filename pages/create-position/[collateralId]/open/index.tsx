@@ -21,8 +21,6 @@ import { PositionFormsLayout } from '@/src/components/custom/position-forms-layo
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
 import { WAD_DECIMALS } from '@/src/constants/misc'
-// import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -38,6 +36,10 @@ import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+
+// Temporaray Change
+import { getTokenByAddress } from '@/src/constants/bondTokens'
+// import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 
 const DEFAULT_HEALTH_FACTOR = ''
 
@@ -155,17 +157,17 @@ const FormERC20: React.FC<{
   const mockedSummaryData = [
     {
       title: 'In your wallet',
-      value: `${tokenInfo?.humanValue} ${collateral.symbol}`,
+      value: `${tokenInfo?.humanValue} ${tokenSymbol}`,
     },
     {
       title: 'Depositing into position',
-      value: `${stateMachine.context.erc20Amount.toFixed(4)} ${collateral.symbol}`,
+      value: `${stateMachine.context.erc20Amount.toFixed(4)} ${tokenSymbol}`,
     },
     {
       title: 'Remaining in wallet',
-      value: `${tokenInfo?.humanValue?.minus(stateMachine.context.erc20Amount).toFixed(4)} ${
-        collateral.symbol
-      }`,
+      value: `${tokenInfo?.humanValue
+        ?.minus(stateMachine.context.erc20Amount)
+        .toFixed(4)} ${tokenSymbol}`,
     },
     {
       title: 'FIAT to be minted',
@@ -395,10 +397,12 @@ const FormERC20: React.FC<{
 
 const OpenPosition = () => {
   const tokenAddress = useQueryParam('collateralId')
-  const tokenSymbol = getTokenByAddress(tokenAddress)?.symbol ?? ''
-  // const { tokenSymbol } = useTokenSymbol(tokenAddress)
   useDynamicTitle(`Create Position`)
   const { data: collateral } = useCollateral(tokenAddress)
+
+  // Temporary change
+  const tokenSymbol = getTokenByAddress(tokenAddress)?.symbol ?? ''
+  // const { tokenSymbol } = useTokenSymbol(tokenAddress)
 
   const mockedBlocks = [
     {
