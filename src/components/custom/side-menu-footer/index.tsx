@@ -1,6 +1,6 @@
 import s from './s.module.scss'
 import cn from 'classnames'
-import { HTMLAttributes } from 'react'
+import React, { HTMLAttributes } from 'react'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import { AddTokenButton } from '@/src/components/custom/add-token-button'
 import { Chains } from '@/src/constants/chains'
@@ -23,16 +23,18 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
     console.log('***** End Contracts *****')
   }
 
+  const LogContractsSection = () => {
+    return isDev() ? (
+      <ButtonOutline className={cn(s.item)} onClick={logContracts} type="text">
+        <pre className={cn(s.devbuttonText)}>Log Contracts</pre>
+      </ButtonOutline>
+    ) : (
+      <></>
+    )
+  }
+
   return (
     <div className={cn(s.sideMenuFooter, className)} {...restProps}>
-      {isDev() ? (
-        <ButtonOutline className={cn(s.item)} onClick={logContracts} type="text">
-          Log Contracts
-        </ButtonOutline>
-      ) : (
-        <></>
-      )}
-
       {/*
       <ul className={cn(s.links)}>
         <li className={cn(s.item)}>
@@ -69,6 +71,9 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
           symbol="FDT"
         />
       </div>
+
+      <LogContractsSection />
+
       <h6>
         <pre>Build {process.env.commitHash}</pre>
       </h6>
