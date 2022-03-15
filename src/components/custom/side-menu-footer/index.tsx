@@ -70,7 +70,15 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
         />
       </div>
       <h6>
-        <pre>Build {process.env.commitHash}</pre>
+        <pre>
+          <a
+            href={`https://github.com/fiatdao/fiat-ui/commit/${process.env.commitHash}`}
+            rel="noreferrer"
+            target="_blank"
+          >
+            Build {process.env.commitHash}
+          </a>
+        </pre>
       </h6>
     </div>
   )
