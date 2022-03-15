@@ -19,6 +19,7 @@ export type Position = {
   protocol: string
   protocolAddress: string
   maturity: Date
+  owner: string
   collateral: TokenData
   underlier: TokenData
   totalCollateral: BigNumber
@@ -122,6 +123,7 @@ const wranglePosition = async (
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
+    owner: position.owner,
     collateralValue: currentValue.times(totalCollateral),
     faceValue,
     maturity,
