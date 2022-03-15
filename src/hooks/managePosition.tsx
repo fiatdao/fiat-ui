@@ -1,5 +1,6 @@
 import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
+import { useERC20Allowance } from './useERC20Allowance'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '../constants/misc'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useState } from 'react'
@@ -20,6 +21,7 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position } from '@/src/utils/data/positions'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
+import { BurnFormFields } from '@/src/components/custom/manage-position/BurnForm'
 
 export type TokenInfo = {
   decimals?: number
@@ -145,46 +147,84 @@ type BurnFiat = {
 type UseBurnForm = {
   tokenInfo?: TokenInfo
   fiatInfo?: BigNumber
-  approveToken: () => Promise<any>
   burn: (args: BurnFiat) => Promise<any>
   updateFiat: () => Promise<any>
   fiatAllowance?: BigNumber
-  hasAllowance: boolean
+  hasMonetaAllowance: boolean
+  approveMonetaAllowance: () => Promise<any>
+  hasFiatAllowance: boolean
+  approveFiatAllowance: () => Promise<any>
 }
 
 export const useBurnForm = ({ tokenAddress }: { tokenAddress?: string }): UseBurnForm => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { approveFIAT, burnFIAT } = useUserActions()
   const { userProxyAddress } = useUserProxy()
-  const [hasAllowance, setHasAllowance] = useState<boolean>(false)
+  const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
 
   const { tokenInfo } = useTokenDecimalsAndBalance({ address, readOnlyAppProvider, tokenAddress })
   const [fiatInfo, updateFiat] = useFIATBalance(true)
+  const FIAT = contracts.FIAT.address[appChainId]
   const MONETA = contracts.MONETA.address[appChainId]
-  const [fiatAllowance] = useContractCall(
+
+  // UserActionContract: approveFiat Moneta to be able to return FIAT to EOA
+  const [monetaFiatAllowance] = useContractCall(
     contracts.FIAT.address[appChainId],
     contracts.FIAT.abi,
     'allowance',
     [userProxyAddress, MONETA],
   )
-  const approveToken = useCallback(async () => {
+
+  const approveMonetaAllowance = useCallback(async () => {
+    const MONETA = contracts.MONETA.address[appChainId]
     await approveFIAT(MONETA)
-    setHasAllowance(true)
-  }, [approveFIAT, MONETA])
+    setHasMonetaAllowance(true)
+  }, [approveFIAT, appChainId])
+
+  // FIAT Contract: approve Proxy to manage EOA's FIAT
+  const { approve: approveFiatAllowance, hasAllowance: hasFiatAllowance } = useERC20Allowance(
+    FIAT ?? '',
+    userProxyAddress ?? '',
+  )
 
   useEffect(() => {
-    setHasAllowance(!!fiatAllowance && fiatAllowance?.gt(ZERO_BIG_NUMBER))
-  }, [fiatAllowance])
+    setHasMonetaAllowance(!!monetaFiatAllowance && monetaFiatAllowance?.gt(ZERO_BIG_NUMBER))
+  }, [monetaFiatAllowance])
 
   return {
     fiatInfo,
-    fiatAllowance,
     updateFiat,
     burn: burnFIAT,
     tokenInfo,
-    approveToken,
-    hasAllowance,
+    approveMonetaAllowance,
+    hasMonetaAllowance,
+    approveFiatAllowance,
+    hasFiatAllowance,
   }
+}
+
+export const useBurnFormSummary = (
+  position: Position,
+  { burn = ZERO_BIG_NUMBER, withdraw = ZERO_BIG_NUMBER }: BurnFormFields,
+) => {
+  return [
+    {
+      title: 'Current collateral deposited',
+      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3),
+    },
+    {
+      title: 'New collateral deposited',
+      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).minus(withdraw).toFixed(3),
+    },
+    {
+      title: 'Outstanding FIAT debt',
+      value: burn.negated().toFixed(3),
+    },
+    {
+      title: 'New FIAT debt',
+      value: getHumanValue(position.totalNormalDebt, WAD_DECIMALS).minus(burn).toFixed(3),
+    },
+  ]
 }
 
 export const useManagePositionInfo = () => {
