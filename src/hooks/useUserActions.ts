@@ -1,6 +1,6 @@
 import useUserProxy from './useUserProxy'
 import { ZERO_BIG_NUMBER } from '../constants/misc'
-import { Contract, ethers } from 'ethers'
+import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
 import { contracts } from '@/src/constants/contracts'
@@ -14,6 +14,24 @@ type ModifyCollateralAndDebt = {
   tokenId: number
   deltaCollateral: BigNumber
   deltaNormalDebt: BigNumber
+}
+
+type BuyCollateralAndModifyDebt = {
+  vault: string
+  position: string
+  collateralizer: string
+  creditor: string
+  underlierAmount: BigNumberish
+  deltaNormalDebt: BigNumberish
+  swapParams: {
+    balancerVault: string
+    poolId: string
+    assetIn: string
+    assetOut: string
+    minOutput: BigNumberish
+    deadline: BigNumberish
+    approve: BigNumberish
+  }
 }
 
 export type BaseModify = {
@@ -46,6 +64,7 @@ type UseUserActions = {
   withdrawCollateral: (arg0: WithdrawCollateral) => Promise<void>
   mintFIAT: (arg0: MintFIAT) => Promise<void>
   burnFIAT: (arg0: BurnFIAT) => Promise<void>
+  buyCollateralAndModifyDebt: (arg0: BuyCollateralAndModifyDebt) => Promise<void>
 }
 
 export const useUserActions = (): UseUserActions => {
@@ -116,6 +135,30 @@ export const useUserActions = (): UseUserActions => {
     [address, userProxy, userProxyAddress, userActionEPT.address, userActionEPT.interface],
   )
 
+  const buyCollateralAndModifyDebt = useCallback(
+    async (params: BuyCollateralAndModifyDebt): Promise<void> => {
+      if (!address || !userProxy || !userProxyAddress) return
+
+      const buyCollateralAndModifyDebtEncoded = userActionEPT.interface.encodeFunctionData(
+        'buyCollateralAndModifyDebt',
+        [
+          params.vault,
+          params.position,
+          params.collateralizer,
+          params.creditor,
+          params.underlierAmount,
+          params.deltaNormalDebt,
+          params.swapParams,
+        ],
+      )
+      const tx = await userProxy.execute(userActionEPT.address, buyCollateralAndModifyDebtEncoded, {
+        gasLimit: 1_000_000,
+      })
+      await tx.wait()
+    },
+    [address, userProxy, userProxyAddress, userActionEPT.interface, userActionEPT.address],
+  )
+
   const depositCollateral = useCallback(
     async (args: DepositCollateral): Promise<void> => {
       await modifyCollateralAndDebt({
@@ -167,6 +210,5 @@ export const useUserActions = (): UseUserActions => {
     },
     [modifyCollateralAndDebt],
   )
-
-  return { approveFIAT, depositCollateral, withdrawCollateral, mintFIAT, burnFIAT }
+  return { approveFIAT, depositCollateral, withdrawCollateral, mintFIAT, burnFIAT, buyCollateralAndModifyDebt }
 }
