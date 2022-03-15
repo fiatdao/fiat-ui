@@ -157,17 +157,17 @@ const FormERC20: React.FC<{
   const mockedSummaryData = [
     {
       title: 'In your wallet',
-      value: `${tokenInfo?.humanValue} ${collateral.symbol}`,
+      value: `${tokenInfo?.humanValue} ${tokenSymbol}`,
     },
     {
       title: 'Depositing into position',
-      value: `${stateMachine.context.erc20Amount.toFixed(4)} ${collateral.symbol}`,
+      value: `${stateMachine.context.erc20Amount.toFixed(4)} ${tokenSymbol}`,
     },
     {
       title: 'Remaining in wallet',
-      value: `${tokenInfo?.humanValue?.minus(stateMachine.context.erc20Amount).toFixed(4)} ${
-        collateral.symbol
-      }`,
+      value: `${tokenInfo?.humanValue
+        ?.minus(stateMachine.context.erc20Amount)
+        .toFixed(4)} ${tokenSymbol}`,
     },
     {
       title: 'FIAT to be minted',
