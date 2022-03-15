@@ -196,7 +196,7 @@ const FormERC20: React.FC<{
                 </RadioTab>
                 <RadioTab
                   checked={tab === 'underlying'}
-                  // disabled
+                  disabled
                   onClick={() => setTab('underlying')}
                 >
                   Underlying
@@ -216,15 +216,15 @@ const FormERC20: React.FC<{
                   value={`Balance:
               ${tokenInfo?.humanValue?.toFixed()}`}
                 />
-                <Form form={form} initialValues={{ usdcAmount: 0 }}>
-                  <Form.Item name="usdcAmount" required>
+                <Form form={form} initialValues={{ underlierAmount: 0 }}>
+                  <Form.Item name="underlierAmount" required>
                     <TokenAmount
                       displayDecimals={tokenInfo?.decimals}
                       mainAsset={collateral.underlierSymbol as string}
                       max={tokenInfo?.humanValue}
                       maximumFractionDigits={tokenInfo?.decimals}
                       onChange={(val) =>
-                        val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })
+                        val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
                       }
                       secondaryAsset={tokenSymbol}
                     />
