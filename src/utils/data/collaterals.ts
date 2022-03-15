@@ -21,6 +21,12 @@ export type Collateral = {
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
   maturity: Date
+  ccp: {
+    balancerVault: string
+    convergentCurvePool: string
+    id: string
+    poolId: string
+  }
   address: Maybe<string>
   faceValue: Maybe<BigNumber>
   currentValue: Maybe<BigNumber>
@@ -110,6 +116,12 @@ const wrangleCollateral = async (
       collateralizationRatio: BigNumber.from(collateral.vault?.collateralizationRatio) ?? null,
       address: collateral.vault?.address ?? '',
       interestPerSecond: collateral.vault?.interestPerSecond ?? '',
+    },
+    ccp: {
+      balancerVault: collateral.ccp?.balancerVault ?? '',
+      convergentCurvePool: collateral.ccp?.convergentCurvePool ?? '',
+      id: collateral.ccp?.id ?? '',
+      poolId: collateral.ccp?.poolId ?? '',
     },
     hasBalance: !!balance && balance.gt(0),
     manageId:

@@ -26,6 +26,7 @@ export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string 
 
 interface Context {
   erc20Amount: BigNumber
+  underlierAmount: BigNumber
   fiatAmount: BigNumber
   currentStepNumber: number
   totalStepNumber: number
@@ -41,6 +42,7 @@ type Events =
   | { type: 'SET_HAS_ALLOWANCE'; hasAllowance: boolean }
   | { type: 'SET_PROXY_AVAILABLE'; isProxyAvailable: boolean }
   | { type: 'SET_ERC20_AMOUNT'; erc20Amount: BigNumber }
+  | { type: 'SET_UNDERLIER_AMOUNT'; underlierAmount: BigNumber }
   | { type: 'SET_FIAT_AMOUNT'; fiatAmount: BigNumber }
   | { type: 'SET_LOADING'; loading: boolean }
   | { type: 'CLICK_SETUP_PROXY' }
@@ -56,6 +58,7 @@ type Events =
 
 const initialContext: Context = {
   erc20Amount: BigNumber.ZERO,
+  underlierAmount: BigNumber.ZERO,
   fiatAmount: BigNumber.ZERO,
   currentStepNumber: 1,
   totalStepNumber: 5,
