@@ -95,10 +95,10 @@ export const BurnForm = ({
   const toggleWithdrawCollateral = () => setWithdrawCollateral(!withdrawCollateral)
   const withdrawCollateralButtonText = 'Withdraw Collateral'
   const burnButtonText = !hasFiatAllowance
-    ? 'Set Proxy Allowance'
+    ? 'Set allowance for Proxy'
     : !hasMonetaAllowance
-    ? 'Set Moneta Allowance'
-    : 'Repay'
+    ? 'Enable Proxy for FIAT'
+    : 'Repay Debt'
 
   return (
     <Form form={form} onFinish={handleBurn}>
