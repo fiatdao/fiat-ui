@@ -7,19 +7,16 @@ import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { TokenAmount } from '@/src/components/custom'
 import { Balance } from '@/src/components/custom/balance'
-import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
-import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { contracts } from '@/src/constants/contracts'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useDepositForm, useDepositFormSummary } from '@/src/hooks/managePosition'
-import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Position } from '@/src/utils/data/positions'
 import { getNonHumanValue } from '@/src/web3/utils'
 
 const DEFAULT_HEALTH_FACTOR = ''
-const MINT_BUTTON_TEXT = 'Mint fiat with this transaction'
+// const MINT_BUTTON_TEXT = 'Mint fiat with this transaction'
 
 export type DepositFormFields = {
   deposit?: BigNumber
@@ -111,57 +108,30 @@ export const DepositForm = ({ position }: { position: Position }) => {
     return args
   }
 
+  console.log(mintFiat, deposit)
+
   return (
     <Form form={form} onFinish={handleDeposit} onValuesChange={handleValuesChange}>
       <fieldset disabled={submitting}>
         <Balance
           title="Select amount to deposit"
-          value={`Available: ${tokenInfo?.humanValue?.toFixed()}`}
+          value={`Available: ${tokenInfo?.humanValue?.toFixed(4)}`}
         />
         <Form.Item name="deposit" required>
           <TokenAmount
             disabled={submitting}
             displayDecimals={tokenInfo?.decimals}
+            healthFactorValue={
+              !isFinite(Number(healthFactor)) ? DEFAULT_HEALTH_FACTOR : healthFactor
+            }
             mainAsset={position.protocol}
-            max={tokenInfo?.humanValue}
+            max={Number(tokenInfo?.humanValue?.toFixed(4))}
             maximumFractionDigits={tokenInfo?.decimals}
             secondaryAsset={position.underlier.symbol}
-            slider
+            slider={'healthFactorVariant'}
           />
         </Form.Item>
-        {mintFiat && (
-          <FormExtraAction
-            bottom={
-              <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-                <TokenAmount
-                  disabled={submitting}
-                  displayDecimals={4}
-                  healthFactorValue={
-                    !isFinite(Number(healthFactor)) ? DEFAULT_HEALTH_FACTOR : healthFactor
-                  }
-                  max={maxFiatValue}
-                  maximumFractionDigits={6}
-                  slider="healthFactorVariant"
-                  tokenIcon={<FiatIcon />}
-                />
-              </Form.Item>
-            }
-            buttonText={MINT_BUTTON_TEXT}
-            onClick={toggleMintFiat}
-            top={
-              <Balance
-                title="Mint FIAT"
-                value={`Available: ${maxFiatValue?.toFixed(4, BigNumber.ROUND_DOWN)}`}
-              />
-            }
-          />
-        )}
         <ButtonsWrapper>
-          {!mintFiat && (
-            <ButtonExtraFormAction disabled={!deposit} onClick={() => toggleMintFiat()}>
-              {MINT_BUTTON_TEXT}
-            </ButtonExtraFormAction>
-          )}
           <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
             Deposit
           </ButtonGradient>

@@ -81,9 +81,9 @@ export const MintForm = ({
           <TokenAmount
             disabled={submitting}
             displayDecimals={contracts.FIAT.decimals}
-            max={Number(getHumanValue(newMaxMintAmount, WAD_DECIMALS)?.toFixed(2))}
+            max={Number(getHumanValue(newMaxMintAmount, WAD_DECIMALS)?.toFixed(4))}
             maximumFractionDigits={contracts.FIAT.decimals}
-            slider
+            slider={'healthFactorVariant'}
             tokenIcon={<FiatIcon />}
           />
         </Form.Item>
