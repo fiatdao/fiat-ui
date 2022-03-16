@@ -63,7 +63,13 @@ export const useDepositForm = ({
   )
 
   useEffect(() => {
-    getCurrentValue(readOnlyAppProvider, appChainId, 0, vaultAddress, false).then(setCurrentValue)
+    let isMounted = true
+    getCurrentValue(readOnlyAppProvider, appChainId, 0, vaultAddress, false).then((val) => {
+      if (isMounted) setCurrentValue(val)
+    })
+    return () => {
+      isMounted = false
+    }
   }, [appChainId, vaultAddress, readOnlyAppProvider, setCurrentValue])
 
   return {
@@ -225,6 +231,143 @@ export const useBurnFormSummary = (
       value: getHumanValue(position.totalNormalDebt, WAD_DECIMALS).minus(burn).toFixed(3),
     },
   ]
+}
+
+export const useManagePositionForm = (position: Position | undefined) => {
+  const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
+  const { approveFIAT, burnFIAT, depositCollateral } = useUserActions()
+  const { userProxyAddress } = useUserProxy()
+  const [hasAllowance, setHasAllowance] = useState<boolean>(false)
+  const { withdrawCollateral } = useUserActions()
+  const [fairPrice, setFairPrice] = useState(ZERO_BIG_NUMBER)
+  const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
+  console.log(hasMonetaAllowance)
+  const tokenAddress = position?.collateral.address
+  const vaultAddress = position?.protocolAddress
+
+  const { tokenInfo, updateToken } = useTokenDecimalsAndBalance({
+    address,
+    readOnlyAppProvider,
+    tokenAddress,
+  })
+  const [fiatInfo, updateFiat] = useFIATBalance(true)
+  const MONETA = contracts.MONETA.address[appChainId]
+
+  const [fiatAllowance] = useContractCall(
+    contracts.FIAT.address[appChainId],
+    contracts.FIAT.abi,
+    'allowance',
+    [userProxyAddress, MONETA],
+  )
+
+  const approveToken = useCallback(async () => {
+    await approveFIAT(MONETA)
+    setHasAllowance(true)
+  }, [approveFIAT, MONETA])
+
+  useEffect(() => {
+    setHasAllowance(!!fiatAllowance && fiatAllowance?.gt(ZERO_BIG_NUMBER))
+  }, [fiatAllowance])
+
+  const withdraw = useCallback(
+    async (args: WithdrawCollateral) => {
+      if (!userProxyAddress) return
+      await withdrawCollateral(args)
+    },
+    [userProxyAddress, withdrawCollateral],
+  )
+
+  useEffect(() => {
+    let isMounted = true
+    getCurrentValue(readOnlyAppProvider, appChainId, 0, vaultAddress as string, false).then(
+      (val) => {
+        if (isMounted) setFairPrice(val)
+      },
+    )
+    return () => {
+      isMounted = false
+    }
+  }, [appChainId, vaultAddress, readOnlyAppProvider, setFairPrice])
+
+  const deposit = useCallback(
+    async (args: DepositCollateral) => {
+      await depositCollateral(args)
+      await Promise.all([updateToken(), updateFiat()])
+    },
+    [depositCollateral, updateToken, updateFiat],
+  )
+
+  const calculateMaxFiatValue = (amountToDeposit?: BigNumber) => {
+    if (amountToDeposit) {
+      const FACTOR = position?.vaultCollateralizationRatio || 1
+
+      return amountToDeposit
+        .plus(position?.totalCollateral.unscaleBy(WAD_DECIMALS) as BigNumber)
+        .dividedBy(FACTOR)
+        .decimalPlaces(contracts.FIAT.decimals)
+    }
+    return ZERO_BIG_NUMBER
+  }
+
+  console.log(calculateMaxFiatValue)
+
+  const { approve: approveFiatAllowance, hasAllowance: hasFiatAllowance } = useERC20Allowance(
+    contracts.FIAT.address[appChainId] ?? '',
+    userProxyAddress ?? '',
+  )
+
+  const [monetaFiatAllowance] = useContractCall(
+    contracts.FIAT.address[appChainId],
+    contracts.FIAT.abi,
+    'allowance',
+    [userProxyAddress, MONETA],
+  )
+
+  useEffect(() => {
+    setHasMonetaAllowance(!!monetaFiatAllowance && monetaFiatAllowance?.gt(ZERO_BIG_NUMBER))
+  }, [monetaFiatAllowance])
+
+  const approveMonetaAllowance = useCallback(async () => {
+    const MONETA = contracts.MONETA.address[appChainId]
+    await approveFIAT(MONETA)
+    setHasMonetaAllowance(true)
+  }, [approveFIAT, appChainId])
+
+  const handleFormChange = (args: any) => {
+    console.log(args)
+  }
+
+  const maxWithdrawValue = position?.totalCollateral.minus(
+    position?.totalNormalDebt
+      .times(position?.vaultCollateralizationRatio || 1)
+      .div(position.collateralValue),
+  )
+
+  const maxMintValue = position?.totalCollateral.div(position?.vaultCollateralizationRatio ?? 1)
+
+  return {
+    fiatInfo,
+    fiatAllowance,
+    updateFiat,
+    burn: burnFIAT,
+    tokenInfo,
+    approveToken,
+    hasAllowance,
+    withdraw,
+    fairPrice,
+    deposit,
+    approveMonetaAllowance,
+    monetaFiatAllowance,
+    approveFiatAllowance,
+    hasFiatAllowance,
+    maxFiatValue: ZERO_BIG_NUMBER,
+    maxCollateralValue: ZERO_BIG_NUMBER,
+    maxWithdrawValue,
+    maxBurnValue: ZERO_BIG_NUMBER,
+    maxMintValue,
+    healthFactor: 0,
+    handleFormChange,
+  }
 }
 
 export const useManagePositionInfo = () => {

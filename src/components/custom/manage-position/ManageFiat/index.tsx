@@ -18,12 +18,7 @@ export interface ManageFiatProps {
   refetchPosition: KeyedMutator<Position>
 }
 
-export const ManageFiat = ({
-  activeTabKey,
-  position,
-  refetchPosition,
-  setActiveTabKey,
-}: ManageFiatProps) => {
+export const ManageFiat = ({ activeTabKey, position, setActiveTabKey }: ManageFiatProps) => {
   return (
     <div className={cn(s.component)}>
       <Tabs className={cn(s.tabs)}>
@@ -34,12 +29,8 @@ export const ManageFiat = ({
           Burn
         </Tab>
       </Tabs>
-      {'mint' === activeTabKey && position && (
-        <MintForm position={position} refetch={refetchPosition} />
-      )}
-      {'burn' === activeTabKey && position && (
-        <BurnForm position={position} refetch={refetchPosition} />
-      )}
+      {'mint' === activeTabKey && position && <MintForm position={position} />}
+      {'burn' === activeTabKey && position && <BurnForm position={position} />}
     </div>
   )
 }

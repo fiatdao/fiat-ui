@@ -22,7 +22,6 @@ export interface ManageCollateralProps {
 export const ManageCollateral = ({
   activeTabKey,
   position,
-  refetchPosition,
   setActiveTabKey,
 }: ManageCollateralProps) => {
   return (
@@ -36,9 +35,8 @@ export const ManageCollateral = ({
         </Tab>
       </Tabs>
       {'deposit' === activeTabKey && position && <DepositForm position={position} />}
-      {'withdraw' === activeTabKey && position && (
-        <WithdrawForm position={position} refetch={refetchPosition} />
-      )}
+
+      {'withdraw' === activeTabKey && position && <WithdrawForm position={position} />}
     </div>
   )
 }

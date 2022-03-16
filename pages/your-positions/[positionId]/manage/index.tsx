@@ -1,9 +1,8 @@
 import s from './s.module.scss'
 import { perSecondToAPY } from '../../../../src/web3/utils'
 import cn from 'classnames'
-import { useEffect, useState } from 'react'
-import Spin from '@/src/components/antd/spin'
-import SafeSuspense from '@/src/components/custom/safe-suspense'
+import React, { useEffect, useState } from 'react'
+import AntdForm from 'antd/lib/form'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import {
@@ -19,12 +18,15 @@ import {
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
-import { useManagePositionInfo } from '@/src/hooks/managePosition'
+import { useManagePositionForm, useManagePositionInfo } from '@/src/hooks/managePosition'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue } from '@/src/web3/utils'
 import { WAD_DECIMALS } from '@/src/constants/misc'
+import { Form } from '@/src/components/antd'
+import { Position } from '@/src/utils/data/positions'
 
-const DynamicContent = () => {
+const PositionManager = () => {
+  const [form] = AntdForm.useForm()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<
     ManageCollateralProps['activeTabKey'] | ManageFiatProps['activeTabKey']
@@ -37,6 +39,9 @@ const DynamicContent = () => {
   }, [activeSection])
 
   useDynamicTitle(`Manage ${position?.collateral.symbol} position`)
+
+  // // Call burnForm hook here to prevent loading on change tab
+  // useBurnForm({ tokenAddress: position?.collateral.address })
 
   const infoBlocks = [
     {
@@ -73,54 +78,60 @@ const DynamicContent = () => {
       value: `${perSecondToAPY(getHumanValue(position?.interestPerSecond ?? 0)).toFixed(3)}%`,
     },
   ]
-  return (
-    <PositionFormsLayout
-      form={
-        <>
-          <div className={cn(s.top)}>
-            <RadioTabsWrapper>
-              <RadioTab
-                checked={activeSection === 'collateral'}
-                onClick={() => setActiveSection('collateral')}
-              >
-                Collateral
-              </RadioTab>
-              <RadioTab checked={activeSection === 'fiat'} onClick={() => setActiveSection('fiat')}>
-                FIAT
-              </RadioTab>
-            </RadioTabsWrapper>
-          </div>
-          {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
-            <ManageCollateral
-              activeTabKey={activeTabKey}
-              position={position}
-              refetchPosition={refetchPosition}
-              setActiveTabKey={setActiveTabKey}
-            />
-          )}
-          {'fiat' === activeSection && isFiatTab(activeTabKey) && (
-            <ManageFiat
-              activeTabKey={activeTabKey}
-              position={position}
-              refetchPosition={refetchPosition}
-              setActiveTabKey={setActiveTabKey}
-            />
-          )}
-        </>
-      }
-      infoBlocks={infoBlocks}
-    />
-  )
-}
 
-const PositionManager = () => {
+  const { handleFormChange } = useManagePositionForm(position as Position)
+
   return (
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
 
-      <SafeSuspense fallback={<Spin />}>
-        <DynamicContent />
-      </SafeSuspense>
+      <PositionFormsLayout
+        form={
+          <>
+            <div className={cn(s.top)}>
+              <RadioTabsWrapper>
+                <RadioTab
+                  checked={activeSection === 'collateral'}
+                  onClick={() => setActiveSection('collateral')}
+                >
+                  Collateral
+                </RadioTab>
+                <RadioTab
+                  checked={activeSection === 'fiat'}
+                  onClick={() => setActiveSection('fiat')}
+                >
+                  FIAT
+                </RadioTab>
+              </RadioTabsWrapper>
+            </div>
+
+            <Form
+              form={form}
+              onFinish={(vals) => console.log(vals)}
+              onValuesChange={handleFormChange}
+            >
+              {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
+                <ManageCollateral
+                  activeTabKey={activeTabKey}
+                  position={position}
+                  refetchPosition={refetchPosition}
+                  setActiveTabKey={setActiveTabKey}
+                />
+              )}
+
+              {'fiat' === activeSection && isFiatTab(activeTabKey) && (
+                <ManageFiat
+                  activeTabKey={activeTabKey}
+                  position={position}
+                  refetchPosition={refetchPosition}
+                  setActiveTabKey={setActiveTabKey}
+                />
+              )}
+            </Form>
+          </>
+        }
+        infoBlocks={infoBlocks}
+      />
     </>
   )
 }
