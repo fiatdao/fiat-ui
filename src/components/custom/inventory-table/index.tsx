@@ -81,11 +81,7 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
     {
       align: 'left',
       dataIndex: 'owner',
-      render: (owner: string) => {
-        // console.log('[inventoryTable] position: ', obj)
-        console.log('[inventoryTable] owner: ', owner)
-        return <p>{shortenAddr(owner)}</p>
-      },
+      render: (owner: string) => <p>{shortenAddr(owner)}</p>,
       responsive: ['md'],
       title: 'Owner',
     },
