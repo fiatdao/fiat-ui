@@ -7,7 +7,7 @@ import { RefetchPositionById } from '@/src/hooks/subgraph/usePosition'
 import { Form } from '@/src/components/antd'
 import { TokenAmount } from '@/src/components/custom'
 import { contracts } from '@/src/constants/contracts'
-import { useBurnForm } from '@/src/hooks/managePosition'
+import { useBurnForm, useBurnFormSummary } from '@/src/hooks/managePosition'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
@@ -19,7 +19,7 @@ import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Position } from '@/src/utils/data/positions'
 
-type BurnFormFields = {
+export type BurnFormFields = {
   burn: BigNumber
   withdraw: BigNumber
 }
@@ -34,13 +34,16 @@ export const BurnForm = ({
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [maxWithdrawValue, setMaxWithdrawValue] = useState<BigNumber>()
   const {
-    approveToken,
+    approveFiatAllowance,
+    approveMonetaAllowance,
     burn: burnFIAT,
-    hasAllowance,
+    hasFiatAllowance,
+    hasMonetaAllowance,
     tokenInfo,
     updateFiat,
   } = useBurnForm({ tokenAddress: position?.collateral.address })
   const [form] = AntdForm.useForm<BurnFormFields>()
+  const summary = useBurnFormSummary(position, form.getFieldsValue())
 
   const calculateAndSetMaxWithdrawValue = useCallback(
     (burnAmount: BigNumber) => {
@@ -62,8 +65,10 @@ export const BurnForm = ({
       const toBurn = burn ? getNonHumanValue(burn, WAD_DECIMALS) : ZERO_BIG_NUMBER
       setSubmitting(true)
 
-      if (!hasAllowance) {
-        await approveToken()
+      if (!hasFiatAllowance) {
+        await approveFiatAllowance()
+      } else if (!hasMonetaAllowance) {
+        await approveMonetaAllowance()
       } else {
         await burnFIAT({
           vault: position?.protocolAddress ?? '',
@@ -82,21 +87,6 @@ export const BurnForm = ({
     }
   }
 
-  const mockedData = [
-    {
-      title: 'Current collateral deposited',
-      value: '5,000',
-    },
-    {
-      title: 'Outstanding FIAT debt',
-      value: '0',
-    },
-    {
-      title: 'New FIAT debt',
-      value: '0',
-    },
-  ]
-
   useEffect(() => {
     calculateAndSetMaxWithdrawValue(ZERO_BIG_NUMBER)
   }, [calculateAndSetMaxWithdrawValue])
@@ -104,6 +94,11 @@ export const BurnForm = ({
   const [withdrawCollateral, setWithdrawCollateral] = useState(false)
   const toggleWithdrawCollateral = () => setWithdrawCollateral(!withdrawCollateral)
   const withdrawCollateralButtonText = 'Withdraw Collateral'
+  const burnButtonText = !hasFiatAllowance
+    ? 'Set allowance for Proxy'
+    : !hasMonetaAllowance
+    ? 'Enable Proxy for FIAT'
+    : 'Repay Debt'
 
   return (
     <Form form={form} onFinish={handleBurn}>
@@ -146,11 +141,11 @@ export const BurnForm = ({
             </ButtonExtraFormAction>
           )}
           <ButtonGradient height="lg" htmlType="submit" loading={submitting}>
-            {hasAllowance ? 'Burn' : 'Set Allowance'}
+            {burnButtonText}
           </ButtonGradient>
         </ButtonsWrapper>
         <div className={cn(s.summary)}>
-          {mockedData.map((item, index) => (
+          {summary.map((item, index) => (
             <SummaryItem key={index} title={item.title} value={item.value} />
           ))}
         </div>
