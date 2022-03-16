@@ -15,12 +15,17 @@ import { tablePagination } from '@/src/utils/table'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import { shortenAddr } from '@/src/web3/utils'
 import { useTransactionsByUser } from '@/src/hooks/subgraph/useTransactions'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 const Columns: ColumnsType<any> = [
   {
     align: 'left',
     render: (obj: Transaction) => (
-      <Asset mainAsset={obj.vaultName} secondaryAsset={obj.underlierSymbol} title={obj.asset} />
+      <Asset
+        mainAsset={obj.vaultName}
+        secondaryAsset={obj.underlierSymbol}
+        title={getTokenByAddress(obj.assetAddress)?.symbol ?? '-'}
+      />
     ),
     title: 'Asset',
     width: 200,

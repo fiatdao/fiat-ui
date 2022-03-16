@@ -23,6 +23,7 @@ import { useManagePositionInfo } from '@/src/hooks/managePosition'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue } from '@/src/web3/utils'
 import { WAD_DECIMALS } from '@/src/constants/misc'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 const DynamicContent = () => {
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
@@ -36,31 +37,32 @@ const DynamicContent = () => {
     setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
   }, [activeSection])
 
-  useDynamicTitle(`Manage ${position?.collateral.symbol} position`)
+  const tokenSymbol = getTokenByAddress(position?.collateral.address ?? null)?.symbol ?? ''
+  useDynamicTitle(`Manage position`)
 
   const infoBlocks = [
     {
-      title: 'Bond Name',
-      value: position ? position.collateral.symbol : '-',
+      title: 'Token',
+      value: position ? tokenSymbol : '-',
     },
     {
-      title: 'Underlying',
+      title: 'Underlying Asset',
       value: position ? position.underlier.symbol : '-',
     },
     {
-      title: 'Bond Maturity',
+      title: 'Maturity Date',
       tooltip: 'The date on which the bond is redeemable for its underlying assets.',
       value: position?.maturity ? parseDate(position?.maturity) : '-',
     },
     {
-      title: 'Bond Face Value',
+      title: 'Face Value',
       tooltip: 'The redeemable value of the bond at maturity.',
       value: `$${getHumanValue(position?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
-      title: 'Bond Collateral Value',
+      title: 'Price',
       tooltip: 'The currently discounted value of the bond.',
-      value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
+      value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS * 2)?.toFixed(3)}`,
     },
     {
       title: 'Collateralization Ratio',
@@ -70,7 +72,9 @@ const DynamicContent = () => {
     {
       title: 'Interest Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: `${perSecondToAPY(getHumanValue(position?.interestPerSecond ?? 0)).toFixed(3)}%`,
+      value: `${perSecondToAPY(getHumanValue(position?.interestPerSecond, WAD_DECIMALS)).toFixed(
+        3,
+      )}%`,
     },
   ]
   return (
