@@ -293,6 +293,19 @@ export const useManageFormSummary = (
     mint = ZERO_BIG_NUMBER,
   }: PositionManageFormFields,
 ) => {
+  const newCollateral = getHumanValue(position.totalCollateral, WAD_DECIMALS)
+    .plus(deposit)
+    .minus(withdraw)
+  const newFiat = getHumanValue(position.totalNormalDebt, WAD_DECIMALS)
+    .plus(mint)
+    .plus(burn.negated())
+  const { healthFactor } = calculateHealthFactor(
+    position.currentValue,
+    newCollateral,
+    newFiat,
+    position?.vaultCollateralizationRatio as BigNumber,
+  )
+
   return [
     {
       title: 'Current collateral deposited',
@@ -300,10 +313,7 @@ export const useManageFormSummary = (
     },
     {
       title: 'New collateral deposited',
-      value: getHumanValue(position.totalCollateral, WAD_DECIMALS)
-        .plus(deposit)
-        .minus(withdraw)
-        .toFixed(3),
+      value: newCollateral.toFixed(3),
     },
     {
       title: 'Current FIAT debt',
@@ -311,10 +321,15 @@ export const useManageFormSummary = (
     },
     {
       title: 'New FIAT debt',
-      value: getHumanValue(position.totalNormalDebt, WAD_DECIMALS)
-        .plus(mint)
-        .plus(burn.negated())
-        .toFixed(3),
+      value: newFiat.toFixed(3),
+    },
+    {
+      title: 'Current Health Factor',
+      value: getHumanValue(position.healthFactor, WAD_DECIMALS).toFixed(3),
+    },
+    {
+      title: 'New Health Factor',
+      value: getHumanValue(healthFactor, WAD_DECIMALS).toFixed(3),
     },
   ]
 }
