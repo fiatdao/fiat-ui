@@ -13,7 +13,7 @@ export type DepositFormFields = {
 }
 
 export const DepositForm = ({ position }: { position: Position }) => {
-  const { healthFactor, maxDepositValue, tokenInfo } = useManagePositionForm(position)
+  const { healthFactor, maxDepositValue, tokenInfo } = useManagePositionForm(position, undefined)
 
   return (
     <>
@@ -21,7 +21,7 @@ export const DepositForm = ({ position }: { position: Position }) => {
         title="Select amount to deposit"
         value={`Available: ${tokenInfo?.humanValue?.toFixed(4)}`}
       />
-      <Form.Item name="deposit" required>
+      <Form.Item name="deposit" preserve={true} required>
         <TokenAmount
           displayDecimals={tokenInfo?.decimals}
           healthFactorValue={Number(getHumanValue(healthFactor, WAD_DECIMALS)?.toFixed(4))}

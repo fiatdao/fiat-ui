@@ -10,7 +10,7 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { useManagePositionForm } from '@/src/hooks/managePosition'
 
 export const MintForm = ({ position }: { position: Position }) => {
-  const { healthFactor, maxMintValue } = useManagePositionForm(position)
+  const { healthFactor, maxMintValue } = useManagePositionForm(position, undefined)
 
   return (
     <>
@@ -21,7 +21,7 @@ export const MintForm = ({ position }: { position: Position }) => {
           BigNumber.ROUND_FLOOR,
         )}`}
       />
-      <Form.Item name="mint" required>
+      <Form.Item name="mint" preserve={true} required>
         <TokenAmount
           displayDecimals={contracts.FIAT.decimals}
           healthFactorValue={Number(getHumanValue(healthFactor, WAD_DECIMALS)?.toFixed(4))}

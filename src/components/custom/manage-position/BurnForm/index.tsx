@@ -15,7 +15,7 @@ export type BurnFormFields = {
 }
 
 export const BurnForm = ({ position }: { position: Position }) => {
-  const { healthFactor, maxBurnValue } = useManagePositionForm(position)
+  const { healthFactor, maxBurnValue } = useManagePositionForm(position, undefined)
 
   return (
     <>
@@ -25,7 +25,7 @@ export const BurnForm = ({ position }: { position: Position }) => {
           getHumanValue(maxBurnValue, WAD_DECIMALS).toFixed(4, BigNumber.ROUND_FLOOR),
         )}`}
       />
-      <Form.Item name="burn" required>
+      <Form.Item name="burn" preserve={true} required>
         <TokenAmount
           displayDecimals={contracts.FIAT.decimals}
           healthFactorValue={Number(getHumanValue(healthFactor, WAD_DECIMALS)?.toFixed(4))}
