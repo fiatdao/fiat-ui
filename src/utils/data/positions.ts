@@ -11,7 +11,7 @@ import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { ERC20 } from '@/types/typechain'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 export type Position = {
   id: string
@@ -29,6 +29,7 @@ export type Position = {
   healthFactor: BigNumber
   isAtRisk: boolean
   interestPerSecond: BigNumber
+  currentValue: BigNumber
 }
 
 // TODO pass tokenId depends on protocol
@@ -77,6 +78,33 @@ const getDecimals = async (
   return decimals ?? 18
 }
 
+const calculateHealthFactor = (
+  currentValue: BigNumber | undefined,
+  collateral: BigNumber | undefined,
+  normalDebt: BigNumber | undefined,
+  collateralizationRatio: BigNumber,
+): {
+  healthFactor: BigNumber
+  isAtRisk: boolean
+} => {
+  let isAtRisk = false
+  let healthFactor = ZERO_BIG_NUMBER
+  if (currentValue && collateral && !collateral?.isZero() && normalDebt && collateralizationRatio) {
+    if (normalDebt?.isZero()) {
+      healthFactor = new BigNumber(Number.POSITIVE_INFINITY)
+    } else {
+      healthFactor = new BigNumber(
+        currentValue.times(collateral.toFixed()).div(normalDebt.toFixed()).toNumber(),
+      )
+      isAtRisk = collateralizationRatio.gte(healthFactor)
+    }
+  }
+  return {
+    healthFactor,
+    isAtRisk,
+  }
+}
+
 const wranglePosition = async (
   position: SubgraphPosition,
   provider: JsonRpcProvider,
@@ -86,7 +114,7 @@ const wranglePosition = async (
   // we use 18 decimals, as values stored are stored in WAD in the FIAT protocol
   const vaultCollateralizationRatio = getHumanValue(
     BigNumber.from(position.vault?.collateralizationRatio ?? 1e18) as BigNumber,
-    18,
+    WAD_DECIMALS,
   )
   const totalCollateral = BigNumber.from(position.totalCollateral) ?? ZERO_BIG_NUMBER
   const totalNormalDebt = BigNumber.from(position.totalNormalDebt) ?? ZERO_BIG_NUMBER
@@ -100,18 +128,12 @@ const wranglePosition = async (
     getDecimals(position.collateralType?.underlierAddress, provider),
   ])
 
-  let isAtRisk = false
-  let healthFactor = ZERO_BIG_NUMBER
-  if (currentValue && !totalCollateral?.isZero()) {
-    if (totalNormalDebt?.isZero()) {
-      healthFactor = new BigNumber(Number.POSITIVE_INFINITY)
-    } else {
-      healthFactor = new BigNumber(
-        currentValue.times(totalCollateral.toFixed()).div(totalNormalDebt.toFixed()).toNumber(),
-      )
-      isAtRisk = vaultCollateralizationRatio.gte(healthFactor)
-    }
-  }
+  const { healthFactor, isAtRisk } = calculateHealthFactor(
+    currentValue,
+    totalCollateral,
+    totalNormalDebt,
+    vaultCollateralizationRatio,
+  )
 
   // TODO Interest rate
   return {
@@ -122,6 +144,7 @@ const wranglePosition = async (
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
+    currentValue,
     collateralValue: currentValue.times(totalCollateral),
     faceValue,
     maturity,
@@ -140,4 +163,4 @@ const wranglePosition = async (
     interestPerSecond,
   }
 }
-export { wranglePosition }
+export { wranglePosition, calculateHealthFactor }

@@ -25,7 +25,7 @@ export const ManageCollateral = ({
   setActiveTabKey,
 }: ManageCollateralProps) => {
   return (
-    <div className={cn(s.component)}>
+    <>
       <Tabs className={cn(s.tabs)}>
         <Tab isActive={'deposit' === activeTabKey} onClick={() => setActiveTabKey('deposit')}>
           Deposit
@@ -37,6 +37,6 @@ export const ManageCollateral = ({
       {'deposit' === activeTabKey && position && <DepositForm position={position} />}
 
       {'withdraw' === activeTabKey && position && <WithdrawForm position={position} />}
-    </div>
+    </>
   )
 }

@@ -20,7 +20,7 @@ export interface ManageFiatProps {
 
 export const ManageFiat = ({ activeTabKey, position, setActiveTabKey }: ManageFiatProps) => {
   return (
-    <div className={cn(s.component)}>
+    <>
       <Tabs className={cn(s.tabs)}>
         <Tab isActive={'mint' === activeTabKey} onClick={() => setActiveTabKey('mint')}>
           Mint
@@ -31,6 +31,6 @@ export const ManageFiat = ({ activeTabKey, position, setActiveTabKey }: ManageFi
       </Tabs>
       {'mint' === activeTabKey && position && <MintForm position={position} />}
       {'burn' === activeTabKey && position && <BurnForm position={position} />}
-    </div>
+    </>
   )
 }

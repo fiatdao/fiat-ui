@@ -1,3 +1,11 @@
 .top {
   padding: var(--theme-common-card-padding) var(--theme-common-card-padding) 28px;
 }
+.summary {
+  padding: 24px 0 0 0;
+}
+
+.component {
+  padding: 0 var(--theme-common-card-padding) var(--theme-common-card-padding)
+    var(--theme-common-card-padding);
+}

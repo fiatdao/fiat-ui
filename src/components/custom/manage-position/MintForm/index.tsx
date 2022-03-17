@@ -10,7 +10,7 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { useManagePositionForm } from '@/src/hooks/managePosition'
 
 export const MintForm = ({ position }: { position: Position }) => {
-  const { maxMintValue } = useManagePositionForm(position)
+  const { healthFactor, maxMintValue } = useManagePositionForm(position)
 
   return (
     <>
@@ -24,6 +24,7 @@ export const MintForm = ({ position }: { position: Position }) => {
       <Form.Item name="mint" required>
         <TokenAmount
           displayDecimals={contracts.FIAT.decimals}
+          healthFactorValue={Number(getHumanValue(healthFactor, WAD_DECIMALS)?.toFixed(4))}
           max={Number(getHumanValue(maxMintValue, WAD_DECIMALS)?.toFixed(4))}
           maximumFractionDigits={contracts.FIAT.decimals}
           slider={'healthFactorVariant'}
