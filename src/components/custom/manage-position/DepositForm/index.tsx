@@ -13,7 +13,11 @@ export type DepositFormFields = {
 }
 
 export const DepositForm = ({ position }: { position: Position }) => {
-  const { healthFactor, maxDepositValue, tokenInfo } = useManagePositionForm(position, undefined)
+  const { healthFactor, maxDepositValue, tokenInfo } = useManagePositionForm(
+    position,
+    undefined,
+    undefined,
+  )
 
   return (
     <>

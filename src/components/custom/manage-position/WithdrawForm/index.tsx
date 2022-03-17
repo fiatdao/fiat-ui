@@ -8,7 +8,7 @@ import { Position } from '@/src/utils/data/positions'
 import { useManagePositionForm } from '@/src/hooks/managePosition'
 
 export const WithdrawForm = ({ position }: { position: Position }) => {
-  const { healthFactor, maxWithdrawValue } = useManagePositionForm(position, undefined)
+  const { healthFactor, maxWithdrawValue } = useManagePositionForm(position, undefined, undefined)
 
   return (
     <>

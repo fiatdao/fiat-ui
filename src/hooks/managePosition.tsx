@@ -22,11 +22,10 @@ export type TokenInfo = {
   humanValue?: BigNumber
 }
 
-// @TODO: we might need to use the values from the different forms
-// eslint-disable-next-line
 export const useManagePositionForm = (
   position: Position | undefined,
   positionFormFields: PositionManageFormFields | undefined,
+  onSuccess: (() => void) | undefined,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { approveFIAT, burnFIAT, depositCollateral, modifyCollateralAndDebt } = useUserActions()
@@ -158,7 +157,6 @@ export const useManagePositionForm = (
     const args = positionFormFields as PositionManageFormFields
     if (!position?.totalCollateral || !position.totalNormalDebt) return
     const { burn, deposit, mint, withdraw } = args
-    // @TODO: need to recalculate max amounts?
 
     const toDeposit = deposit ? deposit : ZERO_BIG_NUMBER
     const toWithdraw = withdraw ? withdraw : ZERO_BIG_NUMBER
@@ -174,30 +172,44 @@ export const useManagePositionForm = (
       .minus(toBurn)
 
     const withdrawValue = calculateMaxWithdrawValue(newCollateral, newFiat)
-
     const mintValue = newCollateral.div(position?.vaultCollateralizationRatio ?? ONE_BIG_NUMBER)
-
     const depositValue = tokenInfo?.humanValue
-
     const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS).plus(toMint)
 
     setMaxDepositValue(depositValue)
-
     setMaxWithdrawValue(withdrawValue)
     setMaxMintValue(mintValue)
     setMaxBurnValue(burnValue)
 
     setHealthFactor(calculateHF(toDeposit.minus(toWithdraw), toMint.minus(toBurn)))
+    if (toBurn.isGreaterThan(ZERO_BIG_NUMBER)) {
+      const text = !hasFiatAllowance
+        ? 'Set allowance for Proxy'
+        : !hasMonetaAllowance
+        ? 'Enable Proxy for FIAT'
+        : 'Execute'
+      setButtonText(text)
+    } else {
+      setButtonText('Execute')
+    }
   }
 
   useEffect(() => {
-    const text = !hasFiatAllowance
-      ? 'Set allowance for Proxy'
-      : !hasMonetaAllowance
-      ? 'Enable Proxy for FIAT'
-      : 'Execute'
-    setButtonText(text)
-  }, [hasFiatAllowance, hasMonetaAllowance])
+    const args = positionFormFields as PositionManageFormFields
+    const { burn } = args
+    const toBurn = burn ? burn : ZERO_BIG_NUMBER
+
+    if (toBurn.isGreaterThan(ZERO_BIG_NUMBER)) {
+      const text = !hasFiatAllowance
+        ? 'Set allowance for Proxy'
+        : !hasMonetaAllowance
+        ? 'Enable Proxy for FIAT'
+        : 'Execute'
+      setButtonText(text)
+    } else {
+      setButtonText('Execute')
+    }
+  }, [hasFiatAllowance, hasMonetaAllowance, positionFormFields])
 
   const handleManage = async ({
     burn,
@@ -212,23 +224,31 @@ export const useManagePositionForm = (
       const toWithdraw = withdraw ? getNonHumanValue(withdraw, WAD_DECIMALS) : ZERO_BIG_NUMBER
       const toMint = mint ? getNonHumanValue(mint, WAD_DECIMALS) : ZERO_BIG_NUMBER
       const toBurn = burn ? getNonHumanValue(burn, WAD_DECIMALS) : ZERO_BIG_NUMBER
-
-      console.log({ position })
-      console.log({ toDeposit: toDeposit.toString() })
-      console.log({ toWithdraw: toWithdraw.toString() })
-      console.log({ toMint: toMint.toString() })
-      console.log({ toBurn: toBurn.toString() })
-
       setIsLoading(true)
-      // @TODO: we should use the new values into a single call the modify method
-      // modifyCollateralAndDebt(....) not working ATM
-      await modifyCollateralAndDebt({
-        vault: position?.protocolAddress,
-        token: position?.collateral.address,
-        tokenId: 0,
-        deltaCollateral: toDeposit || toWithdraw,
-        deltaNormalDebt: toMint || toBurn,
-      })
+      if (!hasFiatAllowance) {
+        await approveFiatAllowance()
+      } else if (!hasMonetaAllowance) {
+        await approveMonetaAllowance()
+      } else {
+        await modifyCollateralAndDebt({
+          vault: position?.protocolAddress,
+          token: position?.collateral.address,
+          tokenId: 0,
+          deltaCollateral: !toDeposit.isZero()
+            ? toDeposit
+            : !toWithdraw.isZero()
+            ? toWithdraw.negated()
+            : ZERO_BIG_NUMBER,
+          deltaNormalDebt: !toMint.isZero()
+            ? toMint
+            : !toBurn.isZero()
+            ? toBurn.negated()
+            : ZERO_BIG_NUMBER,
+        })
+        if (onSuccess) {
+          onSuccess()
+        }
+      }
     } catch (err) {
       console.error('Failed to Deposit', err)
     } finally {
@@ -286,14 +306,14 @@ export const useManageFormSummary = (
         .toFixed(3),
     },
     {
-      title: 'Outstanding FIAT debt',
-      value: mint.plus(burn.negated()).toFixed(3),
+      title: 'Current FIAT debt',
+      value: getHumanValue(position.totalNormalDebt, WAD_DECIMALS).toFixed(3),
     },
     {
       title: 'New FIAT debt',
       value: getHumanValue(position.totalNormalDebt, WAD_DECIMALS)
         .plus(mint)
-        .minus(burn)
+        .plus(burn.negated())
         .toFixed(3),
     },
   ]

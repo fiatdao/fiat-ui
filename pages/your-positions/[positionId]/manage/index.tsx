@@ -27,7 +27,7 @@ import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
 import { Balance } from '@/src/components/custom/balance'
 import { Form } from '@/src/components/antd'
 import { getHumanValue } from '@/src/web3/utils'
-import { WAD_DECIMALS } from '@/src/constants/misc'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
@@ -45,7 +45,6 @@ const PositionManage = () => {
     ManageCollateralProps['activeTabKey'] | ManageFiatProps['activeTabKey']
   >('deposit')
 
-  // eslint-disable-next-line
   const { position, refetch: refetchPosition } = useManagePositionInfo()
 
   useEffect(() => {
@@ -55,7 +54,12 @@ const PositionManage = () => {
   useDynamicTitle(`Manage ${position?.collateral.symbol} position`)
 
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
-  const formValues = form.getFieldsValue(true)
+  const formValues = form.getFieldsValue(true) as PositionManageFormFields
+
+  const onSuccess = () => {
+    form.resetFields()
+    refetchPosition()
+  }
 
   const {
     buttonText,
@@ -67,9 +71,9 @@ const PositionManage = () => {
     maxDepositValue,
     maxMintValue,
     maxWithdrawValue,
-  } = useManagePositionForm(position as Position, formValues)
+  } = useManagePositionForm(position as Position, formValues, onSuccess)
 
-  const summary = useManageFormSummary(position as Position, form.getFieldsValue())
+  const summary = useManageFormSummary(position as Position, formValues)
 
   const healthFactorNumber = Number(getHumanValue(healthFactor, WAD_DECIMALS)?.toFixed(4))
 
@@ -99,7 +103,12 @@ const PositionManage = () => {
 
             <Form
               form={form}
-              initialValues={{ deposit: 0, withdraw: 0, burn: 0, mint: 0 }}
+              initialValues={{
+                deposit: ZERO_BIG_NUMBER,
+                withdraw: ZERO_BIG_NUMBER,
+                burn: ZERO_BIG_NUMBER,
+                mint: ZERO_BIG_NUMBER,
+              }}
               onValuesChange={handleFormChange}
             >
               <fieldset>
@@ -108,16 +117,20 @@ const PositionManage = () => {
                     <>
                       <Tabs className={cn(s.tabs)}>
                         <Tab
-                          disabled={formValues.withdraw > 0}
                           isActive={'deposit' === activeTabKey}
-                          onClick={() => setActiveTabKey('deposit')}
+                          onClick={() => {
+                            form.setFieldsValue({ withdraw: ZERO_BIG_NUMBER })
+                            setActiveTabKey('deposit')
+                          }}
                         >
                           Deposit
                         </Tab>
                         <Tab
-                          disabled={formValues.deposit > 0}
                           isActive={'withdraw' === activeTabKey}
-                          onClick={() => setActiveTabKey('withdraw')}
+                          onClick={() => {
+                            form.setFieldsValue({ deposit: ZERO_BIG_NUMBER })
+                            setActiveTabKey('withdraw')
+                          }}
                         >
                           Withdraw
                         </Tab>
@@ -167,16 +180,20 @@ const PositionManage = () => {
                     <>
                       <Tabs className={cn(s.tabs)}>
                         <Tab
-                          disabled={formValues.burn > 0}
                           isActive={'mint' === activeTabKey}
-                          onClick={() => setActiveTabKey('mint')}
+                          onClick={() => {
+                            form.setFieldsValue({ burn: ZERO_BIG_NUMBER })
+                            setActiveTabKey('mint')
+                          }}
                         >
                           Mint
                         </Tab>
                         <Tab
-                          disabled={formValues.mint > 0}
                           isActive={'burn' === activeTabKey}
-                          onClick={() => setActiveTabKey('burn')}
+                          onClick={() => {
+                            form.setFieldsValue({ mint: ZERO_BIG_NUMBER })
+                            setActiveTabKey('burn')
+                          }}
                         >
                           Burn
                         </Tab>

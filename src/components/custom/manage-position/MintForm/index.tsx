@@ -10,7 +10,7 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { useManagePositionForm } from '@/src/hooks/managePosition'
 
 export const MintForm = ({ position }: { position: Position }) => {
-  const { healthFactor, maxMintValue } = useManagePositionForm(position, undefined)
+  const { healthFactor, maxMintValue } = useManagePositionForm(position, undefined, undefined)
 
   return (
     <>

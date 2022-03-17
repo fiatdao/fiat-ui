@@ -15,7 +15,7 @@ export type BurnFormFields = {
 }
 
 export const BurnForm = ({ position }: { position: Position }) => {
-  const { healthFactor, maxBurnValue } = useManagePositionForm(position, undefined)
+  const { healthFactor, maxBurnValue } = useManagePositionForm(position, undefined, undefined)
 
   return (
     <>
