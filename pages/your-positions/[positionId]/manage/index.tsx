@@ -23,10 +23,9 @@ import { Position } from '@/src/utils/data/positions'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
-import { Tab, Tabs } from '@/src/components/custom'
+import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
 import { Balance } from '@/src/components/custom/balance'
 import { Form } from '@/src/components/antd'
-import { TokenAmount } from '@/src/components/custom'
 import { getHumanValue } from '@/src/web3/utils'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { contracts } from '@/src/constants/contracts'
@@ -56,7 +55,8 @@ const PositionManage = () => {
   useDynamicTitle(`Manage ${position?.collateral.symbol} position`)
 
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
-  const formValues = form.getFieldsValue()
+  const formValues = form.getFieldsValue(true)
+
   const {
     buttonText,
     handleFormChange,
@@ -71,16 +71,6 @@ const PositionManage = () => {
 
   const summary = useManageFormSummary(position as Position, form.getFieldsValue())
 
-  const maxAvailableDeposit = Number(maxDepositValue?.toFixed(4))
-  const maxAvailableWithdraw = Number(
-    getHumanValue(maxWithdrawValue, WAD_DECIMALS).toFixed(4, BigNumber.ROUND_FLOOR),
-  )
-  const maxAvailableMint = Number(
-    getHumanValue(maxMintValue, WAD_DECIMALS).toFixed(4, BigNumber.ROUND_FLOOR),
-  )
-  const maxAvailableBurn = Number(
-    getHumanValue(maxBurnValue, WAD_DECIMALS).toFixed(4, BigNumber.ROUND_FLOOR),
-  )
   const healthFactorNumber = Number(getHumanValue(healthFactor, WAD_DECIMALS)?.toFixed(4))
 
   return (
@@ -109,9 +99,8 @@ const PositionManage = () => {
 
             <Form
               form={form}
-              onFinish={handleManage}
+              initialValues={{ deposit: 0, withdraw: 0, burn: 0, mint: 0 }}
               onValuesChange={handleFormChange}
-              preserve={true}
             >
               <fieldset>
                 <div className={cn(s.component)}>
@@ -119,12 +108,14 @@ const PositionManage = () => {
                     <>
                       <Tabs className={cn(s.tabs)}>
                         <Tab
+                          disabled={formValues.withdraw > 0}
                           isActive={'deposit' === activeTabKey}
                           onClick={() => setActiveTabKey('deposit')}
                         >
                           Deposit
                         </Tab>
                         <Tab
+                          disabled={formValues.deposit > 0}
                           isActive={'withdraw' === activeTabKey}
                           onClick={() => setActiveTabKey('withdraw')}
                         >
@@ -135,14 +126,14 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to deposit"
-                            value={`Available: ${maxAvailableDeposit}`}
+                            value={`Available: ${Number(maxDepositValue?.toFixed(4))}`}
                           />
-                          <Form.Item name="deposit" preserve={true} required>
+                          <Form.Item name="deposit" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorNumber}
                               mainAsset={position.protocol}
-                              max={maxAvailableDeposit}
+                              max={Number(maxDepositValue?.toFixed(4))}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
@@ -154,14 +145,14 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to withdraw"
-                            value={`Available: ${maxAvailableWithdraw}`}
+                            value={`Available: ${Number(maxWithdrawValue?.toFixed(4))}`}
                           />
                           <Form.Item name="withdraw" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorNumber}
                               mainAsset={position.protocol}
-                              max={maxAvailableWithdraw}
+                              max={Number(maxWithdrawValue?.toFixed(4))}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariant'}
@@ -176,12 +167,14 @@ const PositionManage = () => {
                     <>
                       <Tabs className={cn(s.tabs)}>
                         <Tab
+                          disabled={formValues.burn > 0}
                           isActive={'mint' === activeTabKey}
                           onClick={() => setActiveTabKey('mint')}
                         >
                           Mint
                         </Tab>
                         <Tab
+                          disabled={formValues.mint > 0}
                           isActive={'burn' === activeTabKey}
                           onClick={() => setActiveTabKey('burn')}
                         >
@@ -192,13 +185,13 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to mint"
-                            value={`Available: ${maxAvailableMint}`}
+                            value={`Available: ${Number(maxMintValue?.toFixed(4))}`}
                           />
-                          <Form.Item name="mint" preserve={true} required>
+                          <Form.Item name="mint" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorNumber}
-                              max={maxAvailableMint}
+                              max={Number(maxMintValue?.toFixed(4))}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariant'}
                               tokenIcon={<FiatIcon />}
@@ -210,13 +203,13 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to burn"
-                            value={`Available: ${maxAvailableBurn}`}
+                            value={`Available: ${Number(maxBurnValue?.toFixed(4))}`}
                           />
-                          <Form.Item name="burn" preserve={true} required>
+                          <Form.Item name="burn" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorNumber}
-                              max={maxAvailableBurn}
+                              max={Number(maxBurnValue?.toFixed(4))}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}
                               tokenIcon={<FiatIcon />}
@@ -228,7 +221,11 @@ const PositionManage = () => {
                   )}
 
                   <ButtonsWrapper>
-                    <ButtonGradient height="lg" htmlType="submit" loading={isLoading}>
+                    <ButtonGradient
+                      height="lg"
+                      loading={isLoading}
+                      onClick={() => handleManage(formValues)}
+                    >
                       {buttonText}
                     </ButtonGradient>
                   </ButtonsWrapper>
