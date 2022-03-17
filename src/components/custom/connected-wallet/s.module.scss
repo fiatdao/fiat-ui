@@ -51,6 +51,24 @@
   }
 }
 
+.proxyCard {
+  background: var(--gradient-red-opacity);
+  border-radius: 4px;
+  padding: 12px;
+  width: 100%;
+}
+
+.proxyCardHeader {
+  color: var(--theme-secondary-color);
+  font-size: 12px;
+}
+
+.proxyCardAddress {
+  color: var(--theme-text-color);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .itemIcon {
   color: var(--theme-icon-color);
 }
