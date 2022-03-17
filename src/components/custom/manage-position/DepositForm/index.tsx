@@ -19,7 +19,7 @@ import { Position } from '@/src/utils/data/positions'
 import { getNonHumanValue } from '@/src/web3/utils'
 
 const DEFAULT_HEALTH_FACTOR = ''
-const MINT_BUTTON_TEXT = 'Mint fiat with this transaction'
+const MINT_BUTTON_TEXT = 'Mint FIAT with this transaction'
 
 export type DepositFormFields = {
   deposit?: BigNumber
