@@ -13,4 +13,5 @@ export type TokenMeta = TokenData & {
   coinGeckoId?: string
   contract?: any
   price?: BigNumber
+  protocol?: string
 }

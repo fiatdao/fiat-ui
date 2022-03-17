@@ -11,7 +11,7 @@ import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { ERC20 } from '@/types/typechain'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 export type Position = {
   id: string
@@ -122,7 +122,7 @@ const wranglePosition = async (
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
-    collateralValue: currentValue.times(totalCollateral),
+    collateralValue: getHumanValue(currentValue.times(totalCollateral), WAD_DECIMALS),
     faceValue,
     maturity,
     collateral: {
