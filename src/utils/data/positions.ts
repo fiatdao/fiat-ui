@@ -94,7 +94,11 @@ const calculateHealthFactor = (
       healthFactor = new BigNumber(Number.POSITIVE_INFINITY)
     } else {
       healthFactor = new BigNumber(
-        currentValue.times(collateral.toFixed()).div(normalDebt.toFixed()).toNumber(),
+        currentValue
+          .times(collateral.toFixed())
+          .div(normalDebt.toFixed())
+          .div(collateralizationRatio)
+          .toNumber(),
       )
       isAtRisk = collateralizationRatio.gte(healthFactor)
     }
