@@ -20,13 +20,19 @@ import Wallet from '@/src/resources/svg/wallet.svg'
 import { getEtherscanAddressUrl, shortenAddr } from '@/src/web3/utils'
 
 const ProxyAddressCard = () => {
+  const { appChainId } = useWeb3Connection()
   const { userProxyAddress } = useUserProxy()
 
   return userProxyAddress !== ZERO_ADDRESS ? (
     <SafeSuspense>
       <div className={s.proxyCard}>
         <p className={s.proxyCardHeader}>Proxy Address</p>
-        <p className={s.proxyCardAddress}>{shortenAddr(userProxyAddress!, 18, 8)}</p>
+        <ExternalLink
+          className={s.proxyCardAddress}
+          href={getEtherscanAddressUrl(userProxyAddress!, appChainId)}
+        >
+          {shortenAddr(userProxyAddress!, 18, 8)}
+        </ExternalLink>
       </div>
     </SafeSuspense>
   ) : (
