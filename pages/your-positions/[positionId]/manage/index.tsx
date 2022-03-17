@@ -5,11 +5,6 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
-import { ManageFiatProps, isFiatTab } from '@/src/components/custom/manage-position/ManageFiat'
-import {
-  ManageCollateralProps,
-  isCollateralTab,
-} from '@/src/components/custom/manage-position/ManageCollateral'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
@@ -31,6 +26,20 @@ import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
+const FIAT_KEYS = ['burn', 'mint'] as const
+type FiatTabKey = typeof FIAT_KEYS[number]
+
+export const isFiatTab = (key: string): key is FiatTabKey => {
+  return FIAT_KEYS.includes(key as FiatTabKey)
+}
+
+const COLLATERAL_KEYS = ['deposit', 'withdraw'] as const
+type CollateralTabKey = typeof COLLATERAL_KEYS[number]
+
+export const isCollateralTab = (key: string): key is CollateralTabKey => {
+  return COLLATERAL_KEYS.includes(key as CollateralTabKey)
+}
+
 export type PositionManageFormFields = {
   burn: BigNumber
   withdraw: BigNumber
@@ -41,9 +50,7 @@ export type PositionManageFormFields = {
 const PositionManage = () => {
   const [form] = AntdForm.useForm<PositionManageFormFields>()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
-  const [activeTabKey, setActiveTabKey] = useState<
-    ManageCollateralProps['activeTabKey'] | ManageFiatProps['activeTabKey']
-  >('deposit')
+  const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
 
   const { position, refetch: refetchPosition } = useManagePositionInfo()
 
