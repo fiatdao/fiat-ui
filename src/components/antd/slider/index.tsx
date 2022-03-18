@@ -5,14 +5,22 @@ import cn from 'classnames'
 
 export interface SliderProps extends SliderSingleProps {
   healthFactorVariant?: boolean
+  healthFactorVariantReverse?: boolean
 }
 
 const Slider: React.FC<SliderProps> = (props) => {
-  const { className, healthFactorVariant, ...restProps } = props
+  const { className, healthFactorVariant, healthFactorVariantReverse, ...restProps } = props
 
   return (
     <AntdSlider
-      className={cn(s.component, { [s.healthFactorVariant]: healthFactorVariant }, className)}
+      className={cn(
+        s.component,
+        {
+          [s.healthFactorVariant]: healthFactorVariant,
+          [s.healthFactorVariantReverse]: healthFactorVariantReverse,
+        },
+        className,
+      )}
       tooltipPlacement="bottom"
       {...restProps}
     />

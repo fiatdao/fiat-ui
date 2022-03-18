@@ -3,6 +3,7 @@ import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import Lottie from 'lottie-react'
 import { SummaryItem } from '@/src/components/custom/summary'
@@ -42,6 +43,8 @@ import { getTokenByAddress } from '@/src/constants/bondTokens'
 // import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 
 const DEFAULT_HEALTH_FACTOR = ''
+
+const LAST_STEP = 7
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -182,7 +185,7 @@ const FormERC20: React.FC<{
 
   return (
     <>
-      {stateMachine.context.currentStepNumber !== 7 ? (
+      {stateMachine.context.currentStepNumber !== LAST_STEP ? (
         <>
           <StepperTitle
             currentStep={stateMachine.context.currentStepNumber}
@@ -388,7 +391,9 @@ const FormERC20: React.FC<{
           <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
           <p className={cn(s.lastStepText)}>Your position has been successfully created.</p>
           <Summary data={mockedSummaryData} />
-          <ButtonGradient height="lg">Go to bb_sBond_cDAI position</ButtonGradient>
+          <Link href={`/your-positions/`} passHref>
+            <ButtonGradient height="lg">Go to Your Positions</ButtonGradient>
+          </Link>
         </div>
       )}
     </>

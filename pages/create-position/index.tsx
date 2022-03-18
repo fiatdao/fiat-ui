@@ -143,7 +143,7 @@ const CreatePosition = () => {
           </Link>
         ) : (
           <Link href={`/create-position/${value.address}/open`} passHref>
-            <ButtonGradient disabled={!isWalletConnected}>Open Position</ButtonGradient>
+            <ButtonGradient disabled={!isWalletConnected}>Create Position</ButtonGradient>
           </Link>
         ),
       title: '',

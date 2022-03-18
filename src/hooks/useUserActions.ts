@@ -4,7 +4,6 @@ import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
 import { contracts } from '@/src/constants/contracts'
-import { Chains } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { VaultEPTActions } from '@/types/typechain'
 
@@ -64,26 +63,27 @@ type UseUserActions = {
   withdrawCollateral: (arg0: WithdrawCollateral) => Promise<void>
   mintFIAT: (arg0: MintFIAT) => Promise<void>
   burnFIAT: (arg0: BurnFIAT) => Promise<void>
+  modifyCollateralAndDebt: (arg0: ModifyCollateralAndDebt) => Promise<void>
   buyCollateralAndModifyDebt: (arg0: BuyCollateralAndModifyDebt) => Promise<void>
 }
 
 export const useUserActions = (): UseUserActions => {
-  const { address, web3Provider } = useWeb3Connection()
+  const { address, appChainId, web3Provider } = useWeb3Connection()
   const { userProxy, userProxyAddress } = useUserProxy()
 
   // Element User Action: ERC20
   const userActionEPT = useMemo(() => {
     return new Contract(
-      contracts.USER_ACTIONS_EPT.address[Chains.goerli],
+      contracts.USER_ACTIONS_EPT.address[appChainId],
       contracts.USER_ACTIONS_EPT.abi,
       web3Provider?.getSigner(),
     ) as VaultEPTActions
-  }, [web3Provider])
+  }, [web3Provider, appChainId])
 
   // Notional User Action: ERC1155
   // const userActionFC = useMemo(() => {
   //   return new Contract(
-  //     contracts.USER_ACTIONS_FC.address[Chains.goerli],
+  //     contracts.USER_ACTIONS_FC.address[appChainId],
   //     contracts.USER_ACTIONS_FC.abi,
   //     web3Provider?.getSigner(),
   //   ) as VaultFCActions
@@ -210,5 +210,13 @@ export const useUserActions = (): UseUserActions => {
     },
     [modifyCollateralAndDebt],
   )
-  return { approveFIAT, depositCollateral, withdrawCollateral, mintFIAT, burnFIAT, buyCollateralAndModifyDebt }
+  return {
+    approveFIAT,
+    modifyCollateralAndDebt,
+    depositCollateral,
+    withdrawCollateral,
+    mintFIAT,
+    burnFIAT,
+    buyCollateralAndModifyDebt,
+  }
 }
