@@ -1,7 +1,13 @@
 import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useERC20Allowance } from './useERC20Allowance'
-import { ONE_BIG_NUMBER, VIRTUAL_RATE, WAD_DECIMALS, ZERO_BIG_NUMBER } from '../constants/misc'
+import {
+  INFINITE_BIG_NUMBER,
+  ONE_BIG_NUMBER,
+  VIRTUAL_RATE,
+  WAD_DECIMALS,
+  ZERO_BIG_NUMBER,
+} from '../constants/misc'
 import { parseDate } from '../utils/dateTime'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useState } from 'react'
@@ -76,6 +82,9 @@ export const useManagePositionForm = (
       newFiat,
       collateralizationRatio,
     )
+    if (newHF?.isNegative()) {
+      return INFINITE_BIG_NUMBER
+    }
     return newHF
   }
 
@@ -232,26 +241,31 @@ export const useManagePositionForm = (
       const toBurn = (burn ? getNonHumanValue(burn, WAD_DECIMALS) : ZERO_BIG_NUMBER).negated()
 
       setIsLoading(true)
-      if (!hasFiatAllowance) {
-        await approveFiatAllowance()
-      } else if (!hasMonetaAllowance) {
-        await approveMonetaAllowance()
-      } else {
-        await modifyCollateralAndDebt({
-          vault: position?.protocolAddress,
-          token: position?.collateral.address,
-          tokenId: 0,
-          deltaCollateral: !toDeposit.isZero()
-            ? toDeposit
-            : !toWithdraw.isZero()
-            ? toWithdraw
-            : ZERO_BIG_NUMBER,
-          deltaNormalDebt: !toMint.isZero() ? toMint : !toBurn.isZero() ? toBurn : ZERO_BIG_NUMBER,
-        })
-        await updateToken()
-        if (onSuccess) {
-          onSuccess()
+      if (!toBurn.isZero()) {
+        if (!hasFiatAllowance) {
+          await approveFiatAllowance()
+          setIsLoading(false)
+          return
+        } else if (!hasMonetaAllowance) {
+          await approveMonetaAllowance()
+          setIsLoading(false)
+          return
         }
+      }
+      await modifyCollateralAndDebt({
+        vault: position?.protocolAddress,
+        token: position?.collateral.address,
+        tokenId: 0,
+        deltaCollateral: !toDeposit.isZero()
+          ? toDeposit
+          : !toWithdraw.isZero()
+          ? toWithdraw
+          : ZERO_BIG_NUMBER,
+        deltaNormalDebt: !toMint.isZero() ? toMint : !toBurn.isZero() ? toBurn : ZERO_BIG_NUMBER,
+      })
+      await updateToken()
+      if (onSuccess) {
+        onSuccess()
       }
     } catch (err) {
       console.error('Failed to Deposit', err)

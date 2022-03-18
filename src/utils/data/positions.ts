@@ -12,6 +12,7 @@ import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { ERC20 } from '@/types/typechain'
 import {
+  INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
   VIRTUAL_RATE,
   WAD_DECIMALS,
@@ -95,7 +96,7 @@ const calculateHealthFactor = (
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
   if (normalDebt && normalDebt?.isZero()) {
-    healthFactor = new BigNumber(Number.POSITIVE_INFINITY)
+    healthFactor = INFINITE_BIG_NUMBER
   } else {
     if (
       currentValue &&
@@ -114,7 +115,7 @@ const calculateHealthFactor = (
       isAtRisk = collateralizationRatio.gte(healthFactor)
 
       if (healthFactor.isGreaterThan(INFINITE_HEALTH_FACTOR_NUMBER)) {
-        healthFactor = new BigNumber(Number.POSITIVE_INFINITY)
+        healthFactor = INFINITE_BIG_NUMBER
       }
     }
   }

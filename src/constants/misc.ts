@@ -13,3 +13,5 @@ export const WAD_DECIMALS = 18
 export const WAIT_BLOCKS = 8
 // @TODO use virtualRate method from publican contract
 export const VIRTUAL_RATE = new BigNumber(1.01)
+
+export const INFINITE_BIG_NUMBER = new BigNumber(Number.POSITIVE_INFINITY)
