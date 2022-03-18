@@ -13,7 +13,6 @@ import { DepositCollateral, WithdrawCollateral, useUserActions } from '@/src/hoo
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, calculateHealthFactor } from '@/src/utils/data/positions'
-import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 
@@ -28,24 +27,33 @@ export const useManagePositionForm = (
   onSuccess: (() => void) | undefined,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
-  const { approveFIAT, burnFIAT, depositCollateral, modifyCollateralAndDebt } = useUserActions()
+  const { approveFIAT, depositCollateral, modifyCollateralAndDebt } = useUserActions()
   const { userProxyAddress } = useUserProxy()
-  const [hasAllowance, setHasAllowance] = useState<boolean>(false)
   const { withdrawCollateral } = useUserActions()
-  const [fairPrice, setFairPrice] = useState(ZERO_BIG_NUMBER)
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const [maxDepositValue, setMaxDepositValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
+  const [availableDepositValue, setAvailableDepositValue] = useState<BigNumber | undefined>(
+    ZERO_BIG_NUMBER,
+  )
   const [maxWithdrawValue, setMaxWithdrawValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [maxBurnValue, setMaxBurnValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
+  const [availableWithdrawValue, setAvailableWithdrawValue] = useState<BigNumber | undefined>(
+    ZERO_BIG_NUMBER,
+  )
   const [maxMintValue, setMaxMintValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
+  const [availableMintValue, setAvailableMintValue] = useState<BigNumber | undefined>(
+    ZERO_BIG_NUMBER,
+  )
+  const [maxBurnValue, setMaxBurnValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
+  const [availableBurnValue, setAvailableBurnValue] = useState<BigNumber | undefined>(
+    ZERO_BIG_NUMBER,
+  )
 
   const [healthFactor, setHealthFactor] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
   const [buttonText, setButtonText] = useState<string>('Execute')
 
   const tokenAddress = position?.collateral.address
-  const vaultAddress = position?.protocolAddress
 
   const { tokenInfo, updateToken } = useTokenDecimalsAndBalance({
     address,
@@ -62,15 +70,6 @@ export const useManagePositionForm = (
     [userProxyAddress, MONETA],
   )
 
-  const approveToken = useCallback(async () => {
-    await approveFIAT(MONETA)
-    setHasAllowance(true)
-  }, [approveFIAT, MONETA])
-
-  useEffect(() => {
-    setHasAllowance(!!fiatAllowance && fiatAllowance?.gt(ZERO_BIG_NUMBER))
-  }, [fiatAllowance])
-
   const withdraw = useCallback(
     async (args: WithdrawCollateral) => {
       if (!userProxyAddress) return
@@ -78,18 +77,6 @@ export const useManagePositionForm = (
     },
     [userProxyAddress, withdrawCollateral],
   )
-
-  useEffect(() => {
-    let isMounted = true
-    getCurrentValue(readOnlyAppProvider, appChainId, 0, vaultAddress as string, false).then(
-      (val) => {
-        if (isMounted) setFairPrice(val)
-      },
-    )
-    return () => {
-      isMounted = false
-    }
-  }, [appChainId, vaultAddress, readOnlyAppProvider, setFairPrice])
 
   const deposit = useCallback(
     async (args: DepositCollateral) => {
@@ -138,10 +125,11 @@ export const useManagePositionForm = (
 
   const calculateMaxWithdrawValue = useCallback(
     (totalCollateral: BigNumber, totalNormalDebt: BigNumber) => {
+      const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
+      const collateralValue = position?.collateralValue || ONE_BIG_NUMBER
+
       return totalCollateral.minus(
-        totalNormalDebt
-          .times(position?.vaultCollateralizationRatio || 1)
-          .div(position?.collateralValue || 1),
+        collateralizationRatio.times(totalNormalDebt).div(collateralValue),
       )
     },
     [position?.vaultCollateralizationRatio, position?.collateralValue],
@@ -163,23 +151,28 @@ export const useManagePositionForm = (
     const toMint = mint ? mint : ZERO_BIG_NUMBER
     const toBurn = burn ? burn : ZERO_BIG_NUMBER
 
-    const newCollateral = getHumanValue(position?.totalCollateral, WAD_DECIMALS)
-      .plus(toDeposit)
-      .minus(toWithdraw)
+    const totalCollateral = getHumanValue(position?.totalCollateral, WAD_DECIMALS)
+    const newCollateral = totalCollateral.plus(toDeposit).minus(toWithdraw)
 
-    const newFiat = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
-      .plus(toMint)
-      .minus(toBurn)
+    const totalNormalDebt = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
+    const newFiat = totalNormalDebt.plus(toMint).minus(toBurn)
 
     const withdrawValue = calculateMaxWithdrawValue(newCollateral, newFiat)
+    let newAvailableWithdrawValue = withdrawValue.minus(toWithdraw)
+    newAvailableWithdrawValue = newAvailableWithdrawValue.isPositive()
+      ? newAvailableWithdrawValue
+      : ZERO_BIG_NUMBER
     const mintValue = newCollateral.div(position?.vaultCollateralizationRatio ?? ONE_BIG_NUMBER)
-    const depositValue = tokenInfo?.humanValue
     const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS).plus(toMint)
 
-    setMaxDepositValue(depositValue)
+    setMaxDepositValue(tokenInfo?.humanValue)
+    setAvailableDepositValue(tokenInfo?.humanValue?.minus(toDeposit))
     setMaxWithdrawValue(withdrawValue)
+    setAvailableWithdrawValue(newAvailableWithdrawValue)
     setMaxMintValue(mintValue)
+    setAvailableMintValue(mintValue.minus(toMint))
     setMaxBurnValue(burnValue)
+    setAvailableBurnValue(burnValue.minus(toBurn))
 
     setHealthFactor(calculateHF(toDeposit.minus(toWithdraw), toMint.minus(toBurn)))
     if (toBurn.isGreaterThan(ZERO_BIG_NUMBER)) {
@@ -260,21 +253,20 @@ export const useManagePositionForm = (
     fiatInfo,
     fiatAllowance,
     updateFiat,
-    burn: burnFIAT,
-    tokenInfo,
-    approveToken,
-    hasAllowance,
     withdraw,
-    fairPrice,
     deposit,
     approveMonetaAllowance,
     monetaFiatAllowance,
     approveFiatAllowance,
     hasFiatAllowance,
+    availableDepositValue,
     maxDepositValue,
+    availableWithdrawValue,
     maxWithdrawValue,
     maxBurnValue,
+    availableBurnValue,
     maxMintValue,
+    availableMintValue,
     healthFactor,
     handleFormChange,
     buttonText,

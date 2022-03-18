@@ -69,6 +69,10 @@ const PositionManage = () => {
   }
 
   const {
+    availableBurnValue,
+    availableDepositValue,
+    availableMintValue,
+    availableWithdrawValue,
     buttonText,
     handleFormChange,
     handleManage,
@@ -146,7 +150,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to deposit"
-                            value={`Available: ${Number(maxDepositValue?.toFixed(4))}`}
+                            value={`Available: ${Number(availableDepositValue?.toFixed(4))}`}
                           />
                           <Form.Item name="deposit" required>
                             <TokenAmount
@@ -165,7 +169,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to withdraw"
-                            value={`Available: ${Number(maxWithdrawValue?.toFixed(4))}`}
+                            value={`Available: ${Number(availableWithdrawValue?.toFixed(4))}`}
                           />
                           <Form.Item name="withdraw" required>
                             <TokenAmount
@@ -209,7 +213,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to mint"
-                            value={`Available: ${Number(maxMintValue?.toFixed(4))}`}
+                            value={`Available: ${Number(availableMintValue?.toFixed(4))}`}
                           />
                           <Form.Item name="mint" required>
                             <TokenAmount
@@ -227,7 +231,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to burn"
-                            value={`Available: ${Number(maxBurnValue?.toFixed(4))}`}
+                            value={`Available: ${Number(availableBurnValue?.toFixed(4))}`}
                           />
                           <Form.Item name="burn" required>
                             <TokenAmount
