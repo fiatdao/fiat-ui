@@ -197,7 +197,7 @@ const PositionManage = () => {
                             setActiveTabKey('mint')
                           }}
                         >
-                          Mint
+                          Borrow
                         </Tab>
                         <Tab
                           isActive={'burn' === activeTabKey}
@@ -206,13 +206,13 @@ const PositionManage = () => {
                             setActiveTabKey('burn')
                           }}
                         >
-                          Burn
+                          Repay
                         </Tab>
                       </Tabs>
                       {'mint' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to mint"
+                            title="Select amount to borrow"
                             value={`Available: ${Number(availableMintValue?.toFixed(4))}`}
                           />
                           <Form.Item name="mint" required>
@@ -230,7 +230,7 @@ const PositionManage = () => {
                       {'burn' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to burn"
+                            title="Select amount to repay"
                             value={`Available: ${Number(availableBurnValue?.toFixed(4))}`}
                           />
                           <Form.Item name="burn" required>

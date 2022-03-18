@@ -123,16 +123,17 @@ export const useManagePositionForm = (
     setHasMonetaAllowance(!!monetaFiatAllowance && monetaFiatAllowance?.gt(ZERO_BIG_NUMBER))
   }, [monetaFiatAllowance])
 
+  // maxWithdraw = totalCollateral-collateralizationRatio*totalFIAT/collateralValue
   const calculateMaxWithdrawValue = useCallback(
     (totalCollateral: BigNumber, totalNormalDebt: BigNumber) => {
       const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
-      const collateralValue = position?.collateralValue || ONE_BIG_NUMBER
+      const currentValue = position?.currentValue
+        ? getHumanValue(position?.currentValue, WAD_DECIMALS)
+        : 1
 
-      return totalCollateral.minus(
-        collateralizationRatio.times(totalNormalDebt).div(collateralValue),
-      )
+      return totalCollateral.minus(collateralizationRatio.times(totalNormalDebt).div(currentValue))
     },
-    [position?.vaultCollateralizationRatio, position?.collateralValue],
+    [position?.vaultCollateralizationRatio, position?.currentValue],
   )
 
   const approveMonetaAllowance = useCallback(async () => {
@@ -158,15 +159,17 @@ export const useManagePositionForm = (
     const newFiat = totalNormalDebt.plus(toMint).minus(toBurn)
 
     // maxWithdraw = totalCollateral-collateralizationRatio*totalFIAT/collateralValue
-    const withdrawValue = calculateMaxWithdrawValue(newCollateral, newFiat)
+    const withdrawValue = calculateMaxWithdrawValue(totalCollateral, newFiat)
     let newAvailableWithdrawValue = withdrawValue.minus(toWithdraw)
     newAvailableWithdrawValue = newAvailableWithdrawValue.isPositive()
       ? newAvailableWithdrawValue
       : ZERO_BIG_NUMBER
     // maxMint = totalCollateral*collateralValue/collateralizationRatio-totalFIAT
-    const mintValue = newCollateral
-      .times(position.currentValue)
-      .div(position?.vaultCollateralizationRatio ?? ONE_BIG_NUMBER)
+    const currentValue = position.currentValue
+      ? getHumanValue(position.currentValue, WAD_DECIMALS)
+      : 1
+    const collateralizationRatio = position?.vaultCollateralizationRatio || 1
+    const mintValue = newCollateral.times(currentValue).div(collateralizationRatio)
     const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS).plus(toMint)
 
     setMaxDepositValue(tokenInfo?.humanValue)
