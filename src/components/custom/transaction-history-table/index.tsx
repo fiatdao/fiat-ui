@@ -38,6 +38,13 @@ const Columns: ColumnsType<any> = [
     title: 'Action',
   },
   {
+    align: 'left',
+    dataIndex: 'vaultName',
+    render: (value: Transaction['vaultName']) => <CellValue value={value} />,
+    responsive: ['md'],
+    title: 'Protocol',
+  },
+  {
     align: 'right',
     dataIndex: 'deltaAmount',
     render: (delta: Transaction['amount']) => {
@@ -88,6 +95,8 @@ const TransactionHistoryTable = () => {
   const [actionFilter, setActionFilter] = useState<string>('all')
   const { data: transactions, loading } = useTransactionsByUser()
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
+
+  console.log(transactions)
 
   const ASSETS_FILTER = [
     { label: 'All Assets', value: 'all' },
