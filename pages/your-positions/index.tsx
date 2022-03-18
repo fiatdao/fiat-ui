@@ -43,7 +43,7 @@ const YourPositions = () => {
           title="Total Collateral Value"
           value={`$${(
             getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS * 2) || 0
-          ).toFixed(3)}`}
+          ).toFixed(2)}`}
         />
         <InfoBlock
           title={'Total Debt'}
