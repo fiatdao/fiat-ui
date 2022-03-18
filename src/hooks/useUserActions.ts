@@ -63,6 +63,7 @@ type UseUserActions = {
   withdrawCollateral: (arg0: WithdrawCollateral) => Promise<void>
   mintFIAT: (arg0: MintFIAT) => Promise<void>
   burnFIAT: (arg0: BurnFIAT) => Promise<void>
+  modifyCollateralAndDebt: (arg0: ModifyCollateralAndDebt) => Promise<void>
   buyCollateralAndModifyDebt: (arg0: BuyCollateralAndModifyDebt) => Promise<void>
 }
 
@@ -211,6 +212,7 @@ export const useUserActions = (): UseUserActions => {
   )
   return {
     approveFIAT,
+    modifyCollateralAndDebt,
     depositCollateral,
     withdrawCollateral,
     mintFIAT,
