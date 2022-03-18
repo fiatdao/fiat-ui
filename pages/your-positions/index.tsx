@@ -42,7 +42,7 @@ const YourPositions = () => {
         <InfoBlock
           title="Total Collateral Value"
           value={`$${(
-            getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS * 2) || 0
+            getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS * 2) ?? 0
           ).toFixed(2)}`}
         />
         <InfoBlock
