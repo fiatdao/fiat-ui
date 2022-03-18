@@ -34,7 +34,6 @@ const YourPositions = () => {
   const [activeTabKey, setActiveTabKey] = useState<TabState>(TabState.Inventory)
   const { positions } = usePositionsByUser()
   const { pageInformation } = useYourPositionInfoPage(positions)
-  console.log(pageInformation)
 
   // TODO Fix naming if necessary
   return (
