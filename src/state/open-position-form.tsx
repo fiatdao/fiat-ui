@@ -146,7 +146,9 @@ const stepperMachine = createMachine<Context, Events>(
           },
         },
       },
-      'step-final-congrats': {},
+      'step-final-congrats': {
+        entry: [assign({ currentStepNumber: (_) => 7 })],
+      },
       'step-final-error': {},
     },
   },

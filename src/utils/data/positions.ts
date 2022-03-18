@@ -11,7 +11,13 @@ import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { ERC20 } from '@/types/typechain'
-import { INFINITE_HEALTH_FACTOR_NUMBER, WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import {
+  INFINITE_BIG_NUMBER,
+  INFINITE_HEALTH_FACTOR_NUMBER,
+  VIRTUAL_RATE,
+  WAD_DECIMALS,
+  ZERO_BIG_NUMBER,
+} from '@/src/constants/misc'
 
 export type Position = {
   id: string
@@ -90,7 +96,7 @@ const calculateHealthFactor = (
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
   if (normalDebt && normalDebt?.isZero()) {
-    healthFactor = new BigNumber(Number.POSITIVE_INFINITY)
+    healthFactor = INFINITE_BIG_NUMBER
   } else {
     if (
       currentValue &&
@@ -102,14 +108,14 @@ const calculateHealthFactor = (
       healthFactor = new BigNumber(
         currentValue
           .times(collateral.toFixed())
-          .div(normalDebt.toFixed())
+          .div(normalDebt.times(VIRTUAL_RATE).toFixed())
           .div(collateralizationRatio)
           .toNumber(),
       )
       isAtRisk = collateralizationRatio.gte(healthFactor)
 
       if (healthFactor.isGreaterThan(INFINITE_HEALTH_FACTOR_NUMBER)) {
-        healthFactor = new BigNumber(Number.POSITIVE_INFINITY)
+        healthFactor = INFINITE_BIG_NUMBER
       }
     }
   }

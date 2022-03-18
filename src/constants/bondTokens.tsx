@@ -18,11 +18,11 @@ const goerliEyUSDC: AddressMappedToken = {
 const ethEyUSDC: AddressMappedToken = {
   address: '', // ETH Mainnet token address
   token: eyUSDC,
-  chain: 'Etherium',
+  chain: 'Ethereum',
 }
 
 const addressMap: AddressMappedToken[] = [goerliEyUSDC, ethEyUSDC]
 
 export function getTokenByAddress(address: string | null | undefined) {
-  return addressMap.find((token) => token.address.toLowerCase() === address?.toLowerCase())?.token
+  return addressMap.find((token) => token?.address?.toLowerCase() === address?.toLowerCase())?.token
 }

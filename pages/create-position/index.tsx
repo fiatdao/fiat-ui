@@ -137,8 +137,8 @@ const CreatePosition = () => {
     {
       align: 'right',
       render: (value: Collateral) =>
-        value.hasBalance && value.manageId ? (
-          <Link href={`/your-positions/${value.manageId}/manage`} passHref>
+        value.manageId ? (
+          <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
         ) : (
