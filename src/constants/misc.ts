@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js'
 export const ZERO_BIG_NUMBER = new BigNumber(0)
 export const ONE_BIG_NUMBER = new BigNumber(1)
 export const TWO_BIG_NUMBER = new BigNumber(2)
+export const INFINITE_HEALTH_FACTOR_NUMBER = new BigNumber(10000000000000000000)
 export const MAX_UINT_256 = TWO_BIG_NUMBER.pow(256).minus(1)
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
