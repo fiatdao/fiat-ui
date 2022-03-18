@@ -22,7 +22,7 @@ import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
 import { Balance } from '@/src/components/custom/balance'
 import { Form } from '@/src/components/antd'
 import { getHumanValue } from '@/src/web3/utils'
-import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { WAD_DECIMALS } from '@/src/constants/misc'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
@@ -112,16 +112,7 @@ const PositionManage = () => {
               </RadioTabsWrapper>
             </div>
 
-            <Form
-              form={form}
-              initialValues={{
-                deposit: ZERO_BIG_NUMBER,
-                withdraw: ZERO_BIG_NUMBER,
-                burn: ZERO_BIG_NUMBER,
-                mint: ZERO_BIG_NUMBER,
-              }}
-              onValuesChange={handleFormChange}
-            >
+            <Form form={form} onValuesChange={handleFormChange}>
               <fieldset>
                 <div className={cn(s.component)}>
                   {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
@@ -130,7 +121,7 @@ const PositionManage = () => {
                         <Tab
                           isActive={'deposit' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ withdraw: ZERO_BIG_NUMBER })
+                            form.setFieldsValue({ withdraw: undefined })
                             setActiveTabKey('deposit')
                           }}
                         >
@@ -139,7 +130,7 @@ const PositionManage = () => {
                         <Tab
                           isActive={'withdraw' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ deposit: ZERO_BIG_NUMBER })
+                            form.setFieldsValue({ deposit: undefined })
                             setActiveTabKey('withdraw')
                           }}
                         >
@@ -193,7 +184,7 @@ const PositionManage = () => {
                         <Tab
                           isActive={'mint' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ burn: ZERO_BIG_NUMBER })
+                            form.setFieldsValue({ burn: undefined })
                             setActiveTabKey('mint')
                           }}
                         >
@@ -202,7 +193,7 @@ const PositionManage = () => {
                         <Tab
                           isActive={'burn' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ mint: ZERO_BIG_NUMBER })
+                            form.setFieldsValue({ mint: undefined })
                             setActiveTabKey('burn')
                           }}
                         >
