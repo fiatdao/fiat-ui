@@ -15,3 +15,9 @@ export type TokenMeta = TokenData & {
   price?: BigNumber
   protocol?: string
 }
+
+export type AddressMappedToken = {
+  address: string
+  token: any
+  chain: string
+}
