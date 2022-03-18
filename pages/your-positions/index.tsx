@@ -34,6 +34,7 @@ const YourPositions = () => {
   const [activeTabKey, setActiveTabKey] = useState<TabState>(TabState.Inventory)
   const { positions } = usePositionsByUser()
   const { pageInformation } = useYourPositionInfoPage(positions)
+  console.log(pageInformation)
 
   // TODO Fix naming if necessary
   return (
@@ -41,9 +42,7 @@ const YourPositions = () => {
       <InfoBlocksGrid>
         <InfoBlock
           title="Total Collateral Value"
-          value={`$${(
-            getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS * 2) ?? 0
-          ).toFixed(2)}`}
+          value={`$${getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS).toFixed(2)}`}
         />
         <InfoBlock
           title={'Total Debt'}
