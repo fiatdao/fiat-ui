@@ -24,5 +24,5 @@ const ethEyUSDC: AddressMappedToken = {
 const addressMap: AddressMappedToken[] = [goerliEyUSDC, ethEyUSDC]
 
 export function getTokenByAddress(address: string | null | undefined) {
-  return addressMap.find((token) => token.address.toLowerCase() === address?.toLowerCase())?.token
+  return addressMap.find((token) => token?.address?.toLowerCase() === address?.toLowerCase())?.token
 }
