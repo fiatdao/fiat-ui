@@ -160,10 +160,6 @@ export const useManagePositionForm = (
 
     // maxWithdraw = totalCollateral-collateralizationRatio*totalFIAT/collateralValue
     const withdrawValue = calculateMaxWithdrawValue(totalCollateral, newFiat)
-    let newAvailableWithdrawValue = withdrawValue.minus(toWithdraw)
-    newAvailableWithdrawValue = newAvailableWithdrawValue.isPositive()
-      ? newAvailableWithdrawValue
-      : ZERO_BIG_NUMBER
     // maxMint = totalCollateral*collateralValue/collateralizationRatio-totalFIAT
     const currentValue = position.currentValue
       ? getHumanValue(position.currentValue, WAD_DECIMALS)
@@ -173,13 +169,9 @@ export const useManagePositionForm = (
     const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS).plus(toMint)
 
     setMaxDepositValue(tokenInfo?.humanValue)
-    setAvailableDepositValue(tokenInfo?.humanValue?.minus(toDeposit))
     setMaxWithdrawValue(withdrawValue)
-    setAvailableWithdrawValue(newAvailableWithdrawValue)
     setMaxMintValue(mintValue)
-    setAvailableMintValue(mintValue.minus(toMint))
     setMaxBurnValue(burnValue)
-    setAvailableBurnValue(burnValue.minus(toBurn))
 
     setHealthFactor(calculateHF(toDeposit.minus(toWithdraw), toMint.minus(toBurn)))
     if (toBurn.isGreaterThan(ZERO_BIG_NUMBER)) {
@@ -193,6 +185,29 @@ export const useManagePositionForm = (
       setButtonText('Execute')
     }
   }
+
+  useEffect(() => {
+    const totalCollateral = getHumanValue(position?.totalCollateral, WAD_DECIMALS)
+    const totalNormalDebt = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
+    const withdrawValue = calculateMaxWithdrawValue(totalCollateral, totalNormalDebt)
+    const currentValue = position?.currentValue
+      ? getHumanValue(position?.currentValue, WAD_DECIMALS)
+      : 1
+    const collateralizationRatio = position?.vaultCollateralizationRatio || 1
+    const mintValue = totalCollateral.times(currentValue).div(collateralizationRatio)
+
+    setAvailableDepositValue(tokenInfo?.humanValue)
+    setAvailableWithdrawValue(withdrawValue)
+    setAvailableBurnValue(totalNormalDebt)
+    setAvailableMintValue(mintValue)
+  }, [
+    position?.totalCollateral,
+    position?.totalNormalDebt,
+    tokenInfo?.humanValue,
+    position?.currentValue,
+    position?.vaultCollateralizationRatio,
+    calculateMaxWithdrawValue,
+  ])
 
   useEffect(() => {
     const args = positionFormFields as PositionManageFormFields
