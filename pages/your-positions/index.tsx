@@ -42,7 +42,9 @@ const YourPositions = () => {
       <InfoBlocksGrid>
         <InfoBlock
           title="Total Collateral Value"
-          value={`$${getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS).toFixed(2)}`}
+          value={`$${getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS || 0).toFixed(
+            2,
+          )}`}
         />
         <InfoBlock
           title={'Total Debt'}
