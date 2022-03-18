@@ -13,4 +13,11 @@ export type TokenMeta = TokenData & {
   coinGeckoId?: string
   contract?: any
   price?: BigNumber
+  protocol?: string
+}
+
+export type AddressMappedToken = {
+  address: string
+  token: any
+  chain: string
 }

@@ -15,6 +15,7 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, calculateHealthFactor } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 export type TokenInfo = {
   decimals?: number
@@ -355,27 +356,28 @@ export const useManageFormSummary = (
 }
 
 export const useManagePositionsInfoBlock = (position: Position) => {
+  const tokenSymbol = getTokenByAddress(position?.collateral.address ?? null)?.symbol ?? ''
   return [
     {
-      title: 'Bond Name',
-      value: position ? position.collateral.symbol : '-',
+      title: 'Token',
+      value: position ? tokenSymbol : '-',
     },
     {
-      title: 'Underlying',
+      title: 'Underlying Asset',
       value: position ? position.underlier.symbol : '-',
     },
     {
-      title: 'Bond Maturity',
+      title: 'Maturity Date',
       tooltip: 'The date on which the bond is redeemable for its underlying assets.',
       value: position?.maturity ? parseDate(position?.maturity) : '-',
     },
     {
-      title: 'Bond Face Value',
+      title: 'Face Value',
       tooltip: 'The redeemable value of the bond at maturity.',
       value: `$${getHumanValue(position?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
-      title: 'Bond Collateral Value',
+      title: 'Price',
       tooltip: 'The currently discounted value of the bond.',
       value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
@@ -387,7 +389,9 @@ export const useManagePositionsInfoBlock = (position: Position) => {
     {
       title: 'Interest Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: `${perSecondToAPY(getHumanValue(position?.interestPerSecond ?? 0)).toFixed(3)}%`,
+      value: `${perSecondToAPY(getHumanValue(position?.interestPerSecond, WAD_DECIMALS)).toFixed(
+        3,
+      )}%`,
     },
   ]
 }

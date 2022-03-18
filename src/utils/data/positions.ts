@@ -159,7 +159,7 @@ const wranglePosition = async (
     totalCollateral,
     totalNormalDebt,
     currentValue,
-    collateralValue: currentValue.times(totalCollateral),
+    collateralValue: getHumanValue(currentValue.times(totalCollateral), WAD_DECIMALS),
     faceValue,
     maturity,
     collateral: {

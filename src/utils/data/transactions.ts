@@ -13,6 +13,7 @@ export type Transaction = {
   deltaAmount: number
   transactionHash: string
   date: Date
+  assetAddress: string
 }
 
 export const ACTIONS_TYPES: Record<ActionTransaction, string> = {
@@ -31,6 +32,7 @@ const wrangleTransaction = (transaction: SubgraphTransaction): Transaction => {
     amount: getHumanValue(transaction.collateral, WAD_DECIMALS)?.toNumber() ?? 0,
     deltaAmount: getHumanValue(transaction.deltaCollateral, WAD_DECIMALS)?.toNumber() ?? 0,
     date: BigNumberToDateOrCurrent(transaction.position.maturity),
+    assetAddress: transaction.position.collateralType?.address ?? '',
   }
 }
 export { wrangleTransaction }
