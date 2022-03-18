@@ -87,13 +87,15 @@ const TransactionHistoryTable = () => {
   const [assetFilter, setAssetFilter] = useState<string>('all')
   const [actionFilter, setActionFilter] = useState<string>('all')
   const { data: transactions, loading } = useTransactionsByUser()
+
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
 
   const ASSETS_FILTER = [
     { label: 'All Assets', value: 'all' },
     ..._.uniqBy(
       transactions.map((s) => {
-        return { label: s.asset, value: s.asset }
+        const tokenMetadata = getTokenByAddress(s.assetAddress)
+        return { label: tokenMetadata?.symbol ?? s.asset, value: s.asset }
       }),
       'value',
     ),
