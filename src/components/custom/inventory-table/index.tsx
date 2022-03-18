@@ -11,6 +11,7 @@ import { Position } from '@/src/utils/data/positions'
 import { tablePagination } from '@/src/utils/table'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 const Columns: ColumnsType<Position> = [
   {
@@ -25,7 +26,9 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'collateral',
-    render: (collateral: Position['collateral']) => <CellValue bold value={collateral.symbol} />,
+    render: (collateral: Position['collateral']) => (
+      <CellValue bold value={getTokenByAddress(collateral.address)?.symbol ?? '-'} />
+    ),
     title: 'Asset',
     width: 200,
   },

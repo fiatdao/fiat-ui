@@ -1,20 +1,26 @@
 import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useERC20Allowance } from './useERC20Allowance'
-import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_BIG_NUMBER } from '../constants/misc'
+import {
+  INFINITE_BIG_NUMBER,
+  ONE_BIG_NUMBER,
+  VIRTUAL_RATE,
+  WAD_DECIMALS,
+  ZERO_BIG_NUMBER,
+} from '../constants/misc'
 import { parseDate } from '../utils/dateTime'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
-import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
-import { DepositCollateral, WithdrawCollateral, useUserActions } from '@/src/hooks/useUserActions'
+import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, calculateHealthFactor } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 export type TokenInfo = {
   decimals?: number
@@ -27,9 +33,8 @@ export const useManagePositionForm = (
   onSuccess: (() => void) | undefined,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
-  const { approveFIAT, depositCollateral, modifyCollateralAndDebt } = useUserActions()
+  const { approveFIAT, modifyCollateralAndDebt } = useUserActions()
   const { userProxyAddress } = useUserProxy()
-  const { withdrawCollateral } = useUserActions()
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -52,7 +57,6 @@ export const useManagePositionForm = (
 
   const [healthFactor, setHealthFactor] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
   const [buttonText, setButtonText] = useState<string>('Execute')
-
   const tokenAddress = position?.collateral.address
 
   const { tokenInfo, updateToken } = useTokenDecimalsAndBalance({
@@ -60,33 +64,7 @@ export const useManagePositionForm = (
     readOnlyAppProvider,
     tokenAddress,
   })
-  const [fiatInfo, updateFiat] = useFIATBalance(true)
-  const MONETA = contracts.MONETA.address[appChainId]
 
-  const [fiatAllowance] = useContractCall(
-    contracts.FIAT.address[appChainId],
-    contracts.FIAT.abi,
-    'allowance',
-    [userProxyAddress, MONETA],
-  )
-
-  const withdraw = useCallback(
-    async (args: WithdrawCollateral) => {
-      if (!userProxyAddress) return
-      await withdrawCollateral(args)
-    },
-    [userProxyAddress, withdrawCollateral],
-  )
-
-  const deposit = useCallback(
-    async (args: DepositCollateral) => {
-      await depositCollateral(args)
-      await Promise.all([updateToken(), updateFiat()])
-    },
-    [depositCollateral, updateToken, updateFiat],
-  )
-
-  // @TODO: component is not re-rendering after updating HF
   const calculateHF = (deltaCollateral: BigNumber, deltaFiat: BigNumber) => {
     let newCollateral = getHumanValue(position?.totalCollateral, WAD_DECIMALS)
     let newFiat = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
@@ -104,6 +82,9 @@ export const useManagePositionForm = (
       newFiat,
       collateralizationRatio,
     )
+    if (newHF?.isNegative()) {
+      return INFINITE_BIG_NUMBER
+    }
     return newHF
   }
 
@@ -112,6 +93,7 @@ export const useManagePositionForm = (
     userProxyAddress ?? '',
   )
 
+  const MONETA = contracts.MONETA.address[appChainId]
   const [monetaFiatAllowance] = useContractCall(
     contracts.FIAT.address[appChainId],
     contracts.FIAT.abi,
@@ -131,24 +113,33 @@ export const useManagePositionForm = (
         ? getHumanValue(position?.currentValue, WAD_DECIMALS)
         : 1
 
-      return totalCollateral.minus(collateralizationRatio.times(totalNormalDebt).div(currentValue))
+      const normalDebt = totalNormalDebt.times(VIRTUAL_RATE)
+      const withdrawValue = totalCollateral.minus(
+        collateralizationRatio.times(normalDebt).div(currentValue),
+      )
+      if (withdrawValue.isNegative()) {
+        return ZERO_BIG_NUMBER
+      }
+      return withdrawValue
     },
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )
-  // maxWithdraw = totalCollateral-collateralizationRatio*totalFIAT/collateralValue
-  // 1100*1.0/1.1-990.038.. = 9.962
+  // maxFIAT = totalCollateral*collateralValue/collateralizationRatio-totalFIAT =
   const calculateMaxMintValue = useCallback(
     (totalCollateral: BigNumber, totalNormalDebt: BigNumber) => {
       const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
       const currentValue = position?.currentValue
         ? getHumanValue(position?.currentValue, WAD_DECIMALS)
         : 1
-      const mintValue = totalCollateral
+      const normalDebt = totalNormalDebt.times(VIRTUAL_RATE)
+      const minValue = totalCollateral
         .times(currentValue)
         .div(collateralizationRatio)
-        .minus(totalNormalDebt)
-
-      return mintValue
+        .minus(normalDebt)
+      if (minValue.isNegative()) {
+        return ZERO_BIG_NUMBER
+      }
+      return minValue
     },
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )
@@ -176,7 +167,7 @@ export const useManagePositionForm = (
 
     const withdrawValue = calculateMaxWithdrawValue(totalCollateral, newFiat)
     const mintValue = calculateMaxMintValue(newCollateral, totalNormalDebt)
-    const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS).plus(toMint)
+    const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
 
     setMaxDepositValue(tokenInfo?.humanValue)
     setMaxWithdrawValue(withdrawValue)
@@ -250,25 +241,31 @@ export const useManagePositionForm = (
       const toBurn = (burn ? getNonHumanValue(burn, WAD_DECIMALS) : ZERO_BIG_NUMBER).negated()
 
       setIsLoading(true)
-      if (!hasFiatAllowance) {
-        await approveFiatAllowance()
-      } else if (!hasMonetaAllowance) {
-        await approveMonetaAllowance()
-      } else {
-        await modifyCollateralAndDebt({
-          vault: position?.protocolAddress,
-          token: position?.collateral.address,
-          tokenId: 0,
-          deltaCollateral: !toDeposit.isZero()
-            ? toDeposit
-            : !toWithdraw.isZero()
-            ? toWithdraw
-            : ZERO_BIG_NUMBER,
-          deltaNormalDebt: !toMint.isZero() ? toMint : !toBurn.isZero() ? toBurn : ZERO_BIG_NUMBER,
-        })
-        if (onSuccess) {
-          onSuccess()
+      if (!toBurn.isZero()) {
+        if (!hasFiatAllowance) {
+          await approveFiatAllowance()
+          setIsLoading(false)
+          return
+        } else if (!hasMonetaAllowance) {
+          await approveMonetaAllowance()
+          setIsLoading(false)
+          return
         }
+      }
+      await modifyCollateralAndDebt({
+        vault: position?.protocolAddress,
+        token: position?.collateral.address,
+        tokenId: 0,
+        deltaCollateral: !toDeposit.isZero()
+          ? toDeposit
+          : !toWithdraw.isZero()
+          ? toWithdraw
+          : ZERO_BIG_NUMBER,
+        deltaNormalDebt: !toMint.isZero() ? toMint : !toBurn.isZero() ? toBurn : ZERO_BIG_NUMBER,
+      })
+      await updateToken()
+      if (onSuccess) {
+        onSuccess()
       }
     } catch (err) {
       console.error('Failed to Deposit', err)
@@ -278,15 +275,6 @@ export const useManagePositionForm = (
   }
 
   return {
-    fiatInfo,
-    fiatAllowance,
-    updateFiat,
-    withdraw,
-    deposit,
-    approveMonetaAllowance,
-    monetaFiatAllowance,
-    approveFiatAllowance,
-    hasFiatAllowance,
     availableDepositValue,
     maxDepositValue,
     availableWithdrawValue,
@@ -355,27 +343,32 @@ export const useManageFormSummary = (
 }
 
 export const useManagePositionsInfoBlock = (position: Position) => {
+  const tokenSymbol = getTokenByAddress(position?.collateral.address ?? null)?.symbol ?? ''
   return [
     {
-      title: 'Bond Name',
-      value: position ? position.collateral.symbol : '-',
+      title: 'Token',
+      value: position ? tokenSymbol : '-',
+      address: position ? position.collateral.address : '-',
+      appChainId: useWeb3Connection().appChainId,
     },
     {
-      title: 'Underlying',
+      title: 'Underlying Asset',
       value: position ? position.underlier.symbol : '-',
+      address: position ? position.underlier.address : '-',
+      appChainId: useWeb3Connection().appChainId,
     },
     {
-      title: 'Bond Maturity',
+      title: 'Maturity Date',
       tooltip: 'The date on which the bond is redeemable for its underlying assets.',
       value: position?.maturity ? parseDate(position?.maturity) : '-',
     },
     {
-      title: 'Bond Face Value',
+      title: 'Face Value',
       tooltip: 'The redeemable value of the bond at maturity.',
       value: `$${getHumanValue(position?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
     {
-      title: 'Bond Collateral Value',
+      title: 'Price',
       tooltip: 'The currently discounted value of the bond.',
       value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
     },
@@ -387,7 +380,9 @@ export const useManagePositionsInfoBlock = (position: Position) => {
     {
       title: 'Interest Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: `${perSecondToAPY(getHumanValue(position?.interestPerSecond ?? 0)).toFixed(3)}%`,
+      value: `${perSecondToAPY(getHumanValue(position?.interestPerSecond, WAD_DECIMALS)).toFixed(
+        3,
+      )}%`,
     },
   ]
 }

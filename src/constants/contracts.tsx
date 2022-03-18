@@ -105,7 +105,7 @@ export const contracts = constantContracts({
   USER_ACTIONS_EPT: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x8056d831D6632f3C5E3D8d996371aF402F6D3CD4',
+      [Chains.goerli]: '0x23F41333D9816B6f1e170204e233722a4689deee',
     },
     abi: vaultEptActions,
   },
