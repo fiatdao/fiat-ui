@@ -11,3 +11,5 @@ export const SUBGRAPH_API = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_API || ''
 export const WAD_DECIMALS = 18
 
 export const WAIT_BLOCKS = 8
+// @TODO use virtualRate method from publican contract
+export const VIRTUAL_RATE = new BigNumber(1.01)
