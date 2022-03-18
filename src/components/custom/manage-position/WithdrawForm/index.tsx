@@ -26,6 +26,7 @@ export const WithdrawForm = ({
   position: Position
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false)
+
   const { withdraw: withdrawCollateral } = useWithdrawForm({
     tokenAddress: position.collateral.address,
   })
@@ -59,7 +60,7 @@ export const WithdrawForm = ({
     normalDebtWithColRatio.div(position.collateralValue),
   )
 
-  const { withdraw = 0 } = form.getFieldsValue()
+  const { withdraw = ZERO_BIG_NUMBER } = form.getFieldsValue()
 
   const summary = [
     {
@@ -95,11 +96,14 @@ export const WithdrawForm = ({
           <TokenAmount
             disabled={submitting}
             displayDecimals={4}
+            healthFactorValue={0}
             mainAsset={position.protocol}
-            max={getHumanValue(newMaxWithdrawAmount, WAD_DECIMALS)}
+            max={Number(
+              getHumanValue(newMaxWithdrawAmount, WAD_DECIMALS).toFixed(4, BigNumber.ROUND_FLOOR),
+            )}
             maximumFractionDigits={6}
             secondaryAsset={position.underlier.symbol}
-            slider
+            slider={'healthFactorVariantReverse'}
           />
         </Form.Item>
         <ButtonGradient height="lg" htmlType="submit" loading={submitting}>

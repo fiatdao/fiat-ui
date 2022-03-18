@@ -2,6 +2,7 @@ import s from './s.module.scss'
 import React from 'react'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
+import classNames from 'classnames'
 import { MAX_UINT_256 } from '@/src/constants/misc'
 import Slider from '@/src/components/antd/slider'
 import { formatBigValue } from '@/src/web3/utils'
@@ -22,7 +23,7 @@ export type TokenAmountProps = {
   maximumFractionDigits?: number
   name?: string
   onChange?: (value?: BigNumber) => void
-  slider?: boolean | 'healthFactorVariant'
+  slider?: boolean | 'healthFactorVariant' | 'healthFactorVariantReverse'
   tokenIcon?: TokenIconNames | React.ReactNode
   value?: number | BigNumber
   mainAsset?: string
@@ -115,9 +116,24 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               <div className={s.riskier}>Riskier</div>
             </div>
           )}
+          {slider === 'healthFactorVariantReverse' && (
+            <div className={classNames(s.healthFactorWrapper, s.reverse)}>
+              <div className={s.safer}>Safer</div>
+              <div className={s.healthFactor}>
+                <span>
+                  Health factor <span className={s.hf}>{healthFactorValue}</span>
+                </span>
+                <Tooltip title={'HF Tooltip'}>
+                  <Info />
+                </Tooltip>
+              </div>
+              <div className={s.riskier}>Riskier</div>
+            </div>
+          )}
           <Slider
             disabled={disabled}
             healthFactorVariant={slider === 'healthFactorVariant'}
+            healthFactorVariantReverse={slider === 'healthFactorVariantReverse'}
             max={bnMaxValue.toNumber()}
             min={0}
             onChange={onSliderChange}

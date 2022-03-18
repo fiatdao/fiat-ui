@@ -45,9 +45,25 @@
   font-weight: 500;
   line-height: 1.2;
   margin-bottom: 6px;
+
+  &.reverse{
+    flex-direction: row-reverse;
+    .riskier {
+      margin-left: 0;
+      margin-right: auto;
+    }
+    .safer {
+      margin-left: auto;
+      margin-right: 0;
+    }
+  }
 }
 
 .safer {
+  .reserve & {
+    margin-left: auto;
+    margin-right: 0;
+  }
   color: var(--theme-color-10);
   margin-right: auto;
 }
