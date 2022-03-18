@@ -135,7 +135,23 @@ export const useManagePositionForm = (
     },
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )
+  // maxWithdraw = totalCollateral-collateralizationRatio*totalFIAT/collateralValue
+  // 1100*1.0/1.1-990.038.. = 9.962
+  const calculateMaxMintValue = useCallback(
+    (totalCollateral: BigNumber, totalNormalDebt: BigNumber) => {
+      const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
+      const currentValue = position?.currentValue
+        ? getHumanValue(position?.currentValue, WAD_DECIMALS)
+        : 1
+      const mintValue = totalCollateral
+        .times(currentValue)
+        .div(collateralizationRatio)
+        .minus(totalNormalDebt)
 
+      return mintValue
+    },
+    [position?.vaultCollateralizationRatio, position?.currentValue],
+  )
   const approveMonetaAllowance = useCallback(async () => {
     const MONETA = contracts.MONETA.address[appChainId]
     await approveFIAT(MONETA)
@@ -158,14 +174,8 @@ export const useManagePositionForm = (
     const totalNormalDebt = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
     const newFiat = totalNormalDebt.plus(toMint).minus(toBurn)
 
-    // maxWithdraw = totalCollateral-collateralizationRatio*totalFIAT/collateralValue
     const withdrawValue = calculateMaxWithdrawValue(totalCollateral, newFiat)
-    // maxMint = totalCollateral*collateralValue/collateralizationRatio-totalFIAT
-    const currentValue = position.currentValue
-      ? getHumanValue(position.currentValue, WAD_DECIMALS)
-      : 1
-    const collateralizationRatio = position?.vaultCollateralizationRatio || 1
-    const mintValue = newCollateral.times(currentValue).div(collateralizationRatio)
+    const mintValue = calculateMaxMintValue(newCollateral, totalNormalDebt)
     const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS).plus(toMint)
 
     setMaxDepositValue(tokenInfo?.humanValue)
@@ -190,11 +200,7 @@ export const useManagePositionForm = (
     const totalCollateral = getHumanValue(position?.totalCollateral, WAD_DECIMALS)
     const totalNormalDebt = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
     const withdrawValue = calculateMaxWithdrawValue(totalCollateral, totalNormalDebt)
-    const currentValue = position?.currentValue
-      ? getHumanValue(position?.currentValue, WAD_DECIMALS)
-      : 1
-    const collateralizationRatio = position?.vaultCollateralizationRatio || 1
-    const mintValue = totalCollateral.times(currentValue).div(collateralizationRatio)
+    const mintValue = calculateMaxMintValue(totalCollateral, totalNormalDebt)
 
     setAvailableDepositValue(tokenInfo?.humanValue)
     setAvailableWithdrawValue(withdrawValue)
@@ -207,6 +213,7 @@ export const useManagePositionForm = (
     position?.currentValue,
     position?.vaultCollateralizationRatio,
     calculateMaxWithdrawValue,
+    calculateMaxMintValue,
   ])
 
   useEffect(() => {
@@ -236,9 +243,12 @@ export const useManagePositionForm = (
       if (!position || !position.protocolAddress || !position.collateral.address) return
 
       const toDeposit = deposit ? getNonHumanValue(deposit, WAD_DECIMALS) : ZERO_BIG_NUMBER
-      const toWithdraw = withdraw ? getNonHumanValue(withdraw, WAD_DECIMALS) : ZERO_BIG_NUMBER
+      const toWithdraw = (
+        withdraw ? getNonHumanValue(withdraw, WAD_DECIMALS) : ZERO_BIG_NUMBER
+      ).negated()
       const toMint = mint ? getNonHumanValue(mint, WAD_DECIMALS) : ZERO_BIG_NUMBER
-      const toBurn = burn ? getNonHumanValue(burn, WAD_DECIMALS) : ZERO_BIG_NUMBER
+      const toBurn = (burn ? getNonHumanValue(burn, WAD_DECIMALS) : ZERO_BIG_NUMBER).negated()
+
       setIsLoading(true)
       if (!hasFiatAllowance) {
         await approveFiatAllowance()
@@ -252,13 +262,9 @@ export const useManagePositionForm = (
           deltaCollateral: !toDeposit.isZero()
             ? toDeposit
             : !toWithdraw.isZero()
-            ? toWithdraw.negated()
+            ? toWithdraw
             : ZERO_BIG_NUMBER,
-          deltaNormalDebt: !toMint.isZero()
-            ? toMint
-            : !toBurn.isZero()
-            ? toBurn.negated()
-            : ZERO_BIG_NUMBER,
+          deltaNormalDebt: !toMint.isZero() ? toMint : !toBurn.isZero() ? toBurn : ZERO_BIG_NUMBER,
         })
         if (onSuccess) {
           onSuccess()
