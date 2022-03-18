@@ -98,8 +98,6 @@ const TransactionHistoryTable = () => {
   const { data: transactions, loading } = useTransactionsByUser()
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
 
-  console.log(transactions)
-
   const ASSETS_FILTER = [
     { label: 'All Assets', value: 'all' },
     ..._.uniqBy(
