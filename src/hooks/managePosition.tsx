@@ -157,12 +157,16 @@ export const useManagePositionForm = (
     const totalNormalDebt = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
     const newFiat = totalNormalDebt.plus(toMint).minus(toBurn)
 
+    // maxWithdraw = totalCollateral-collateralizationRatio*totalFIAT/collateralValue
     const withdrawValue = calculateMaxWithdrawValue(newCollateral, newFiat)
     let newAvailableWithdrawValue = withdrawValue.minus(toWithdraw)
     newAvailableWithdrawValue = newAvailableWithdrawValue.isPositive()
       ? newAvailableWithdrawValue
       : ZERO_BIG_NUMBER
-    const mintValue = newCollateral.div(position?.vaultCollateralizationRatio ?? ONE_BIG_NUMBER)
+    // maxMint = totalCollateral*collateralValue/collateralizationRatio-totalFIAT
+    const mintValue = newCollateral
+      .times(position.currentValue)
+      .div(position?.vaultCollateralizationRatio ?? ONE_BIG_NUMBER)
     const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS).plus(toMint)
 
     setMaxDepositValue(tokenInfo?.humanValue)
