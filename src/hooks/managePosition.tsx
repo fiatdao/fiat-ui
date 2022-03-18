@@ -334,10 +334,14 @@ export const useManagePositionsInfoBlock = (position: Position) => {
     {
       title: 'Token',
       value: position ? tokenSymbol : '-',
+      address: position ? position.protocolAddress : '-',
+      appChainId: useWeb3Connection().appChainId,
     },
     {
       title: 'Underlying Asset',
       value: position ? position.underlier.symbol : '-',
+      address: position ? position.underlier.address : '-',
+      appChainId: useWeb3Connection().appChainId,
     },
     {
       title: 'Maturity Date',

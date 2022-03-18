@@ -18,7 +18,7 @@ const goerliEyUSDC: AddressMappedToken = {
 const ethEyUSDC: AddressMappedToken = {
   address: '', // ETH Mainnet token address
   token: eyUSDC,
-  chain: 'Etherium',
+  chain: 'Ethereum',
 }
 
 const addressMap: AddressMappedToken[] = [goerliEyUSDC, ethEyUSDC]
