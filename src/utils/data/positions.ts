@@ -22,6 +22,7 @@ import {
 export type Position = {
   id: string
   tokenId: string
+  owner: string
   protocol: string
   protocolAddress: string
   maturity: Date
@@ -136,6 +137,7 @@ const wranglePosition = async (
     BigNumber.from(position.vault?.collateralizationRatio ?? 1e18) as BigNumber,
     WAD_DECIMALS,
   )
+
   const totalCollateral = BigNumber.from(position.totalCollateral) ?? ZERO_BIG_NUMBER
   const totalNormalDebt = BigNumber.from(position.totalNormalDebt) ?? ZERO_BIG_NUMBER
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
@@ -165,6 +167,7 @@ const wranglePosition = async (
     totalCollateral,
     totalNormalDebt,
     currentValue,
+    owner: position.owner,
     collateralValue: getHumanValue(currentValue.times(totalCollateral), WAD_DECIMALS),
     faceValue,
     maturity,

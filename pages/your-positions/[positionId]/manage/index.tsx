@@ -58,7 +58,7 @@ const PositionManage = () => {
     setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
   }, [activeSection])
 
-  useDynamicTitle(`Manage position`)
+  useDynamicTitle(`Manage Position`)
 
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
