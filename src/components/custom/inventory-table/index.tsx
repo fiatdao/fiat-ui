@@ -1,6 +1,6 @@
-import { getDateState } from '../../../utils/data/positions'
 import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
+import { getDateState } from '@/src/utils/data/positions'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { calculateHealthFactor, parseDate, remainingTime } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'

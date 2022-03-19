@@ -1,7 +1,7 @@
 import s from './s.module.scss'
-import { getDateState } from '../../src/utils/data/positions'
 import cn from 'classnames'
 import { useState } from 'react'
+import { getDateState } from '@/src/utils/data/positions'
 import { calculateHealthFactor } from '@/src/utils/table'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Tab, Tabs } from '@/src/components/custom'
