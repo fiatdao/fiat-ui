@@ -1,19 +1,42 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import s from './s.module.scss'
 import cn from 'classnames'
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { getEtherscanAddressUrl, shortenAddr } from '@/src/web3/utils'
+import React from 'react'
+import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Divider from '@/src/components/antd/divider'
 import Popover from '@/src/components/antd/popover'
 import ExternalLink from '@/src/components/custom/externalLink'
 import Grid from '@/src/components/custom/grid'
 import Identicon from '@/src/components/custom/identicon'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
+import { ZERO_ADDRESS } from '@/src/constants/misc'
+import useUserProxy from '@/src/hooks/useUserProxy'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import AccountImage from '@/src/resources/svg/account_img.svg'
 import ChevronDown from '@/src/resources/svg/chevron-down.svg'
+import Network from '@/src/resources/svg/network.svg'
 import Status from '@/src/resources/svg/node-status.svg'
 import Wallet from '@/src/resources/svg/wallet.svg'
-import Network from '@/src/resources/svg/network.svg'
-import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
+import { getEtherscanAddressUrl, shortenAddr } from '@/src/web3/utils'
+
+const ProxyAddressCard = () => {
+  const { appChainId } = useWeb3Connection()
+  const { userProxyAddress } = useUserProxy()
+
+  return userProxyAddress !== ZERO_ADDRESS ? (
+    <div className={s.proxyCard}>
+      <p className={s.proxyCardHeader}>Proxy Address</p>
+      <ExternalLink
+        className={s.proxyCardAddress}
+        href={getEtherscanAddressUrl(userProxyAddress!, appChainId)}
+      >
+        {shortenAddr(userProxyAddress!, 18, 8)}
+      </ExternalLink>
+    </div>
+  ) : (
+    <></>
+  )
+}
 
 const ConnectedWallet: React.FC = () => {
   const { address, appChainId, disconnectWallet, wallet } = useWeb3Connection()
@@ -25,15 +48,22 @@ const ConnectedWallet: React.FC = () => {
         className={s.popover}
         content={
           <>
-            <Grid align="center" className="card-header" flow="col" gap={16} justify="start">
-              <Identicon address={address!} height={40} width={40} />
-              <ExternalLink
-                className={s.addressStr}
-                href={getEtherscanAddressUrl(address!, appChainId)}
-              >
-                {shortenAddr(address!, 8, 8)}
-              </ExternalLink>
+            <Grid align="start" className="card-header" flow="row" gap={16} justify="start">
+              <Grid align="center" flow="col" gap={16} justify="start">
+                <Identicon address={address!} height={40} width={40} />
+                <ExternalLink
+                  className={s.addressStr}
+                  href={getEtherscanAddressUrl(address!, appChainId)}
+                >
+                  {shortenAddr(address!, 12, 8)}
+                </ExternalLink>
+              </Grid>
+
+              <SafeSuspense>
+                <ProxyAddressCard />
+              </SafeSuspense>
             </Grid>
+
             <Grid flow="row" gap={32} padding={[32, 24]}>
               <Grid colsTemplate={colstTemplate} flow="col" gap={16}>
                 <Status className={cn(s.itemIcon)} />
