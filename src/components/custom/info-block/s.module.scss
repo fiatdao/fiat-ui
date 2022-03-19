@@ -36,6 +36,34 @@
   line-height: 1.2;
   margin: 0 0 5px;
 
+  &.bold {
+    font-weight: 500;
+  }
+
+  &.ok {
+    color: var(--theme-ok-color);
+  }
+
+  &.warning {
+    color: var(--theme-warning-color);
+  }
+
+  &.danger {
+    color: var(--theme-danger-color);
+  }
+
+  &.left {
+    text-align: left;
+  }
+
+  &.center {
+    text-align: center;
+  }
+
+  &.right {
+    text-align: right;
+  }
+
   &:last-child {
     margin-bottom: 0;
   }

@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import { calculateHealthFactor } from '../../src/utils/table'
 import cn from 'classnames'
 import { useState } from 'react'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
@@ -55,6 +56,9 @@ const YourPositions = () => {
           }
         />
         <InfoBlock
+          state={calculateHealthFactor(
+            getHumanValue(pageInformation?.lowestHealthFactor || 0, WAD_DECIMALS),
+          )}
           title="Lowest Health Factor"
           value={(
             getHumanValue(pageInformation?.lowestHealthFactor || 0, WAD_DECIMALS) || 0

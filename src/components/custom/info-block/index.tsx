@@ -5,22 +5,30 @@ import Info from '@/src/resources/svg/info.svg'
 
 interface Props {
   className?: string
+  bold?: boolean
   footer?: string | React.ReactNode
   title: string
   tooltip?: string
+  state?: 'danger' | 'ok' | 'warning'
+  textAlign?: 'left' | 'right' | 'center'
   url?: string
   value?: string | React.ReactNode
 }
 
 export const InfoBlock: React.FC<Props> = ({
+  bold,
   className,
   footer,
+  state,
+  textAlign,
   title,
   tooltip,
   url,
   value = '',
   ...restProps
 }: Props) => {
+  console.log(state)
+  console.log(s)
   return (
     <div className={cn(s.component, className)} {...restProps}>
       <div className={s.titleWrapper}>
@@ -41,7 +49,20 @@ export const InfoBlock: React.FC<Props> = ({
           </Tooltip>
         )}
       </div>
-      <p className={s.value}>{value}</p>
+      <p
+        className={cn(
+          s.value,
+          { [s.bold]: bold },
+          { [s.ok]: state === 'ok' },
+          { [s.warning]: state === 'warning' },
+          { [s.danger]: state === 'danger' },
+          { [s.left]: textAlign === 'left' },
+          { [s.center]: textAlign === 'center' },
+          { [s.right]: textAlign === 'right' },
+        )}
+      >
+        {value}
+      </p>
       {footer && <div className={s.footer}>{footer}</div>}
     </div>
   )
