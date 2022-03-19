@@ -97,7 +97,7 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'id', // FIXME Check on chain this
     render: (id) => (
       <Link href={`/your-positions/${id}/manage`} passHref>
-        <ButtonGradient>Manage</ButtonGradient>
+        <ButtonGradient>Manage Position</ButtonGradient>
       </Link>
     ),
     title: '',
