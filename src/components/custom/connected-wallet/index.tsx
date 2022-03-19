@@ -24,17 +24,15 @@ const ProxyAddressCard = () => {
   const { userProxyAddress } = useUserProxy()
 
   return userProxyAddress !== ZERO_ADDRESS ? (
-    <SafeSuspense>
-      <div className={s.proxyCard}>
-        <p className={s.proxyCardHeader}>Proxy Address</p>
-        <ExternalLink
-          className={s.proxyCardAddress}
-          href={getEtherscanAddressUrl(userProxyAddress!, appChainId)}
-        >
-          {shortenAddr(userProxyAddress!, 18, 8)}
-        </ExternalLink>
-      </div>
-    </SafeSuspense>
+    <div className={s.proxyCard}>
+      <p className={s.proxyCardHeader}>Proxy Address</p>
+      <ExternalLink
+        className={s.proxyCardAddress}
+        href={getEtherscanAddressUrl(userProxyAddress!, appChainId)}
+      >
+        {shortenAddr(userProxyAddress!, 18, 8)}
+      </ExternalLink>
+    </div>
   ) : (
     <></>
   )
@@ -61,7 +59,9 @@ const ConnectedWallet: React.FC = () => {
                 </ExternalLink>
               </Grid>
 
-              <ProxyAddressCard />
+              <SafeSuspense>
+                <ProxyAddressCard />
+              </SafeSuspense>
             </Grid>
 
             <Grid flow="row" gap={32} padding={[32, 24]}>
