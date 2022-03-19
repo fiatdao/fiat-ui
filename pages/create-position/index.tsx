@@ -114,7 +114,7 @@ const CreatePosition = () => {
       render: (value: Collateral['currentValue']) => (
         <CellValue
           tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
-          value={`${value ? '$' + getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(2) : '-'}`}
+          value={`${value ? '$' + getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3) : '-'}`}
         />
       ),
       title: 'Collateral Value',
