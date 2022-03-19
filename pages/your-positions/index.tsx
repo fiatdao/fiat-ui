@@ -1,7 +1,7 @@
 import s from './s.module.scss'
-import { calculateHealthFactor } from '@/src/utils/table'
 import cn from 'classnames'
 import { useState } from 'react'
+import { calculateHealthFactor } from '@/src/utils/table'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
