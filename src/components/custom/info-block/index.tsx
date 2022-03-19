@@ -27,8 +27,6 @@ export const InfoBlock: React.FC<Props> = ({
   value = '',
   ...restProps
 }: Props) => {
-  console.log(state)
-  console.log(s)
   return (
     <div className={cn(s.component, className)} {...restProps}>
       <div className={s.titleWrapper}>
