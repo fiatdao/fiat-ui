@@ -372,12 +372,12 @@ export const useManagePositionsInfoBlock = (position: Position) => {
     {
       title: 'Face Value',
       tooltip: 'The redeemable value of the bond at maturity.',
-      value: `$${getHumanValue(position?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
+      value: `$${getHumanValue(position?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {
       title: 'Price',
       tooltip: 'The currently discounted value of the bond.',
-      value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
+      value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {
       title: 'Collateralization Ratio',
