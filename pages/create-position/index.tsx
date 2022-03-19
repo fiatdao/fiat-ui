@@ -1,9 +1,9 @@
 import s from './s.module.scss'
+import { getDateState } from '../../src/utils/data/positions'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import Link from 'next/link'
-import { differenceInDays } from 'date-fns'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import Popover from '@/src/components/antd/popover'
@@ -26,13 +26,6 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { tablePagination } from '@/src/utils/table'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
-
-const getDateState = (maturityDate: Date) => {
-  const now = new Date()
-  const diff = differenceInDays(maturityDate, now)
-
-  return diff <= 0 ? 'danger' : diff <= 7 ? 'warning' : 'ok'
-}
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 

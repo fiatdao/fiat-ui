@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import { getDateState } from '../../src/utils/data/positions'
 import cn from 'classnames'
 import { useState } from 'react'
 import { calculateHealthFactor } from '@/src/utils/table'
@@ -65,6 +66,11 @@ const YourPositions = () => {
           ).toFixed(2)}
         />
         <InfoBlock
+          state={
+            pageInformation?.nearestMaturity
+              ? getDateState(pageInformation?.nearestMaturity)
+              : undefined
+          }
           title="Next Maturity"
           value={
             pageInformation?.nearestMaturity
