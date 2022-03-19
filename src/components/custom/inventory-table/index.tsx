@@ -45,9 +45,9 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'maturity',
     render: (maturity: Position['maturity']) => (
       <CellValue
-        bottomValue={remainingTime(maturity)}
+        bottomValue={parseDate(maturity)}
         state={getDateState(maturity)}
-        value={parseDate(maturity)}
+        value={remainingTime(maturity)}
       />
     ),
     responsive: ['xl'],
