@@ -2,6 +2,7 @@ import contractCall from '../contractCall'
 import { BigNumberToDateOrCurrent } from '../dateTime'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { differenceInDays } from 'date-fns'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
@@ -83,6 +84,13 @@ const getDecimals = async (
   )
 
   return decimals ?? 18
+}
+
+export const getDateState = (maturityDate: Date) => {
+  const now = new Date()
+  const diff = differenceInDays(maturityDate, now)
+
+  return diff <= 0 ? 'danger' : diff <= 7 ? 'warning' : 'ok'
 }
 
 const calculateHealthFactor = (
