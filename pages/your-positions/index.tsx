@@ -1,5 +1,4 @@
 import s from './s.module.scss'
-import { parseDate } from '../../src/utils/dateTime'
 import cn from 'classnames'
 import { useState } from 'react'
 import { getDateState } from '@/src/utils/data/positions'
@@ -67,9 +66,6 @@ const YourPositions = () => {
           ).toFixed(2)}
         />
         <InfoBlock
-          footer={
-            pageInformation?.nearestMaturity ? parseDate(pageInformation?.nearestMaturity) : '-'
-          }
           state={
             pageInformation?.nearestMaturity
               ? getDateState(pageInformation?.nearestMaturity)
