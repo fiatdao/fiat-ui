@@ -9,6 +9,7 @@ import {
   ZERO_BIG_NUMBER,
 } from '../constants/misc'
 import { parseDate } from '../utils/dateTime'
+import { shortenAddr } from '../web3/utils'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
@@ -355,6 +356,12 @@ export const useManagePositionsInfoBlock = (position: Position) => {
       title: 'Underlying Asset',
       value: position ? position.underlier.symbol : '-',
       address: position ? position.underlier.address : '-',
+      appChainId: useWeb3Connection().appChainId,
+    },
+    {
+      title: 'Owner',
+      value: position ? shortenAddr(position.owner, 8, 8) : '-',
+      address: position ? position.owner : '-',
       appChainId: useWeb3Connection().appChainId,
     },
     {
