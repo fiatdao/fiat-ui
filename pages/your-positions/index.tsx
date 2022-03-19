@@ -1,5 +1,5 @@
 import s from './s.module.scss'
-import { calculateHealthFactor } from '../../src/utils/table'
+import { calculateHealthFactor } from '@/src/utils/table'
 import cn from 'classnames'
 import { useState } from 'react'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
