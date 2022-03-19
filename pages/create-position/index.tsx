@@ -38,8 +38,8 @@ type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactN
 
 const FILTERS: FilterData = {
   // BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
-  Notional: { active: false, name: 'Notional', icon: <Notional /> },
   Element: { active: false, name: 'Element', icon: <Element /> },
+  Notional: { active: false, name: 'Notional', icon: <Notional /> },
 }
 
 // TODO fix types here
