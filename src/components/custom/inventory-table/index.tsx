@@ -1,6 +1,5 @@
 import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
-import { getDateState } from '@/src/utils/data/positions'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { calculateHealthFactor, parseDate, remainingTime } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
@@ -44,11 +43,7 @@ const Columns: ColumnsType<Position> = [
     align: 'left',
     dataIndex: 'maturity',
     render: (maturity: Position['maturity']) => (
-      <CellValue
-        bottomValue={parseDate(maturity)}
-        state={getDateState(maturity)}
-        value={remainingTime(maturity)}
-      />
+      <CellValue bottomValue={parseDate(maturity)} value={remainingTime(maturity)} />
     ),
     responsive: ['xl'],
     title: 'Maturity',
