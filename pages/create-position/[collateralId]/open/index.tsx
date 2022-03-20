@@ -430,12 +430,12 @@ const OpenPosition = () => {
     {
       title: 'Face Value',
       tooltip: 'The redeemable value of the bond at maturity.',
-      value: `$${getHumanValue(collateral?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
+      value: `$${getHumanValue(collateral?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {
       title: 'Price',
       tooltip: 'The currently discounted value of the bond.',
-      value: `$${getHumanValue(collateral?.currentValue ?? 0, WAD_DECIMALS)?.toFixed(3)}`,
+      value: `$${getHumanValue(collateral?.currentValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {
       title: 'Collateralization Ratio',

@@ -45,9 +45,9 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'maturity',
     render: (maturity: Position['maturity']) => (
       <CellValue
-        bottomValue={remainingTime(maturity)}
+        bottomValue={parseDate(maturity)}
         state={getDateState(maturity)}
-        value={parseDate(maturity)}
+        value={remainingTime(maturity)}
       />
     ),
     responsive: ['xl'],
@@ -72,8 +72,8 @@ const Columns: ColumnsType<Position> = [
       <CellValue
         bottomValue={`$${getHumanValue(obj.collateralValue, WAD_DECIMALS).toFixed(2)}`}
         // TODO: collateralValue = fairPrice * totalCollateral
-        // (we need to scale by 36 because we are multiplicating 2 BigNumbers with 18 decimals)
-        value={`${getHumanValue(totalCollateral, WAD_DECIMALS).toFixed(2)}`}
+        // (we need to scale by 36 because we are multiplying 2 BigNumbers with 18 decimals)
+        value={`${getHumanValue(totalCollateral, WAD_DECIMALS).toFixed(3)}`}
       />
     ),
     responsive: ['lg', 'xl'],
@@ -97,7 +97,7 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'id', // FIXME Check on chain this
     render: (id) => (
       <Link href={`/your-positions/${id}/manage`} passHref>
-        <ButtonGradient>Manage</ButtonGradient>
+        <ButtonGradient>Manage Position</ButtonGradient>
       </Link>
     ),
     title: '',

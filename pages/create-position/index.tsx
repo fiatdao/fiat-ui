@@ -103,7 +103,7 @@ const CreatePosition = () => {
       render: (value: Collateral['faceValue']) => (
         <CellValue
           tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
-          value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3)}`}
+          value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(2)}`}
         />
       ),
       title: 'Face Value',
@@ -114,7 +114,7 @@ const CreatePosition = () => {
       render: (value: Collateral['currentValue']) => (
         <CellValue
           tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
-          value={`${value ? '$' + getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3) : '-'}`}
+          value={`${value ? '$' + getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(2) : '-'}`}
         />
       ),
       title: 'Collateral Value',
