@@ -109,7 +109,11 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
                 <span>
                   Health factor <span className={s.hf}>{healthFactorValue}</span>
                 </span>
-                <Tooltip title={'HF Tooltip'}>
+                <Tooltip
+                  title={
+                    'A score representing your risk of collateral liquidation, with scores of 1 or below triggering collateral auction.'
+                  }
+                >
                   <Info />
                 </Tooltip>
               </div>
@@ -123,7 +127,11 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
                 <span>
                   Health factor <span className={s.hf}>{healthFactorValue}</span>
                 </span>
-                <Tooltip title={'HF Tooltip'}>
+                <Tooltip
+                  title={
+                    'A score representing your risk of collateral liquidation, with scores of 1 or below triggering collateral auction.'
+                  }
+                >
                   <Info />
                 </Tooltip>
               </div>
