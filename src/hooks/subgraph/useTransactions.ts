@@ -15,7 +15,7 @@ export const useTransactions = (
   action?: ActionTransaction,
   user?: Maybe<string>,
 ): SwrResponse<Transaction> => {
-  const { data, error } = useSWR(['transactions', protocol, action], async () => {
+  const { data, error } = useSWR(['transactions', protocol, action, user], async () => {
     const where: Maybe<PositionTransactionAction_filter> = {}
     if (protocol) {
       where['vaultName'] = protocol
