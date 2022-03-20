@@ -1,4 +1,4 @@
-# Fiat UI
+# FIAT UI
 
 ## Getting Started Instructions
 1. Clone the project: `git clone git@github.com:fiatdao/fiat-dapp.git`
