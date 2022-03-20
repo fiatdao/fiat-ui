@@ -1,4 +1,4 @@
-# fiat-ui
+# FIAT UI
 
 ## Getting Started Instructions
 1. Clone the project: `git clone git@github.com:fiatdao/fiat-dapp.git`
@@ -203,6 +203,7 @@ https://github.com/vercel/next.js/tree/master/examples/with-xstate
 https://xstate-catalogue.com/
 
 ### Web3
+
 
 ### Forms
 

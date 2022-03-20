@@ -15,12 +15,26 @@ import { tablePagination } from '@/src/utils/table'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import { shortenAddr } from '@/src/web3/utils'
 import { useTransactionsByUser } from '@/src/hooks/subgraph/useTransactions'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 const Columns: ColumnsType<any> = [
   {
     align: 'left',
-    render: (obj: Transaction) => (
-      <Asset mainAsset={obj.vaultName} secondaryAsset={obj.underlierSymbol} title={obj.asset} />
+    dataIndex: 'protocol',
+    render: (protocol: Transaction['vaultName'], transaction: Transaction) => (
+      <Asset
+        mainAsset={transaction.vaultName}
+        secondaryAsset={transaction.underlierSymbol}
+        title={transaction.vaultName}
+      />
+    ),
+    title: 'Protocol',
+    width: 200,
+  },
+  {
+    align: 'left',
+    render: (transaction: Transaction) => (
+      <CellValue bold value={getTokenByAddress(transaction.assetAddress)?.symbol ?? '-'} />
     ),
     title: 'Asset',
     width: 200,
@@ -82,13 +96,15 @@ const TransactionHistoryTable = () => {
   const [assetFilter, setAssetFilter] = useState<string>('all')
   const [actionFilter, setActionFilter] = useState<string>('all')
   const { data: transactions, loading } = useTransactionsByUser()
+
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
 
   const ASSETS_FILTER = [
     { label: 'All Assets', value: 'all' },
     ..._.uniqBy(
       transactions.map((s) => {
-        return { label: s.asset, value: s.asset }
+        const tokenMetadata = getTokenByAddress(s.assetAddress)
+        return { label: tokenMetadata?.symbol ?? s.asset, value: s.asset }
       }),
       'value',
     ),

@@ -1,9 +1,9 @@
 import s from './s.module.scss'
+import { getDateState } from '../../src/utils/data/positions'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import Link from 'next/link'
-import { differenceInDays } from 'date-fns'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import Popover from '@/src/components/antd/popover'
@@ -26,13 +26,6 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { tablePagination } from '@/src/utils/table'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
-
-const getDateState = (maturityDate: Date) => {
-  const now = new Date()
-  const diff = differenceInDays(maturityDate, now)
-
-  return diff <= 0 ? 'danger' : diff <= 7 ? 'warning' : 'ok'
-}
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
@@ -110,7 +103,7 @@ const CreatePosition = () => {
       render: (value: Collateral['faceValue']) => (
         <CellValue
           tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
-          value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3)}`}
+          value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(2)}`}
         />
       ),
       title: 'Face Value',
@@ -121,7 +114,7 @@ const CreatePosition = () => {
       render: (value: Collateral['currentValue']) => (
         <CellValue
           tooltip={`$${getHumanValue(value ?? 0, WAD_DECIMALS)}`}
-          value={`${value ? '$' + getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(3) : '-'}`}
+          value={`${value ? '$' + getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(2) : '-'}`}
         />
       ),
       title: 'Collateral Value',
@@ -137,13 +130,13 @@ const CreatePosition = () => {
     {
       align: 'right',
       render: (value: Collateral) =>
-        value.hasBalance && value.manageId ? (
-          <Link href={`/your-positions/${value.manageId}/manage`} passHref>
+        value.manageId ? (
+          <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
         ) : (
           <Link href={`/create-position/${value.address}/open`} passHref>
-            <ButtonGradient disabled={!isWalletConnected}>Open Position</ButtonGradient>
+            <ButtonGradient disabled={!isWalletConnected}>Create Position</ButtonGradient>
           </Link>
         ),
       title: '',

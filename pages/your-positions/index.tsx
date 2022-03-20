@@ -1,6 +1,8 @@
 import s from './s.module.scss'
 import cn from 'classnames'
 import { useState } from 'react'
+import { getDateState } from '@/src/utils/data/positions'
+import { calculateHealthFactor } from '@/src/utils/table'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
@@ -40,13 +42,13 @@ const YourPositions = () => {
     <>
       <InfoBlocksGrid>
         <InfoBlock
-          title="Collateral Value"
-          value={`$${(
-            getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS * 2) || 0
-          ).toFixed(3)}`}
+          title="Total Collateral Value"
+          value={`$${getHumanValue(pageInformation?.collateralValue, WAD_DECIMALS || 0).toFixed(
+            2,
+          )}`}
         />
         <InfoBlock
-          title={'Debt'}
+          title={'Total Debt'}
           value={
             <>
               <FiatIcon />
@@ -55,12 +57,20 @@ const YourPositions = () => {
           }
         />
         <InfoBlock
+          state={calculateHealthFactor(
+            getHumanValue(pageInformation?.lowestHealthFactor || 0, WAD_DECIMALS),
+          )}
           title="Lowest Health Factor"
           value={(
             getHumanValue(pageInformation?.lowestHealthFactor || 0, WAD_DECIMALS) || 0
           ).toFixed(2)}
         />
         <InfoBlock
+          state={
+            pageInformation?.nearestMaturity
+              ? getDateState(pageInformation?.nearestMaturity)
+              : undefined
+          }
           title="Next Maturity"
           value={
             pageInformation?.nearestMaturity

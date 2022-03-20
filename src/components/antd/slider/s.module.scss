@@ -44,12 +44,22 @@
     }
   }
 
-  &.healthFactorVariant {
+  &.healthFactorVariantReverse{
+    :global(.ant-slider-rail),
+    &:global(.ant-slider:hover .ant-slider-rail) {
+      background-image: linear-gradient(90deg, #ff4c8c 0%, #67d772 100%);
+    }
+  }
+
+  &.healthFactorVariant{
     :global(.ant-slider-rail),
     &:global(.ant-slider:hover .ant-slider-rail) {
       background-image: linear-gradient(90deg, #67d772 0%, #ff4c8c 100%);
     }
+  }
 
+  &.healthFactorVariant,
+  &.healthFactorVariantReverse {
     :global(.ant-slider-track),
     &:global(.ant-slider:hover .ant-slider-track) {
       background-color: transparent;

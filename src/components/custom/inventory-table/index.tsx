@@ -1,5 +1,6 @@
 import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
+import { getDateState } from '@/src/utils/data/positions'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { calculateHealthFactor, parseDate, remainingTime } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
@@ -11,6 +12,7 @@ import { Position } from '@/src/utils/data/positions'
 import { tablePagination } from '@/src/utils/table'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 const Columns: ColumnsType<Position> = [
   {
@@ -25,7 +27,9 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'collateral',
-    render: (collateral: Position['collateral']) => <CellValue bold value={collateral.symbol} />,
+    render: (collateral: Position['collateral']) => (
+      <CellValue bold value={getTokenByAddress(collateral.address)?.symbol ?? '-'} />
+    ),
     title: 'Asset',
     width: 200,
   },
@@ -40,7 +44,11 @@ const Columns: ColumnsType<Position> = [
     align: 'left',
     dataIndex: 'maturity',
     render: (maturity: Position['maturity']) => (
-      <CellValue bottomValue={remainingTime(maturity)} value={parseDate(maturity)} />
+      <CellValue
+        bottomValue={parseDate(maturity)}
+        state={getDateState(maturity)}
+        value={remainingTime(maturity)}
+      />
     ),
     responsive: ['xl'],
     title: 'Maturity',
@@ -62,10 +70,10 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'totalCollateral',
     render: (totalCollateral: Position['totalCollateral'], obj: Position) => (
       <CellValue
-        bottomValue={`$${getHumanValue(obj.collateralValue, WAD_DECIMALS * 2).toFixed(2)}`}
+        bottomValue={`$${getHumanValue(obj.collateralValue, WAD_DECIMALS).toFixed(2)}`}
         // TODO: collateralValue = fairPrice * totalCollateral
-        // (we need to scale by 36 because we are multiplicating 2 BigNumbers with 18 decimals)
-        value={`${getHumanValue(totalCollateral, WAD_DECIMALS).toFixed(2)}`}
+        // (we need to scale by 36 because we are multiplying 2 BigNumbers with 18 decimals)
+        value={`${getHumanValue(totalCollateral, WAD_DECIMALS).toFixed(3)}`}
       />
     ),
     responsive: ['lg', 'xl'],
@@ -89,7 +97,7 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'id', // FIXME Check on chain this
     render: (id) => (
       <Link href={`/your-positions/${id}/manage`} passHref>
-        <ButtonGradient>Manage</ButtonGradient>
+        <ButtonGradient>Manage Position</ButtonGradient>
       </Link>
     ),
     title: '',
