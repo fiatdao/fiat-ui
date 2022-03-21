@@ -65,7 +65,7 @@ export const useManagePositionForm = (
     tokenAddress,
   })
 
-  const calculateHF = (deltaCollateral: BigNumber, deltaFiat: BigNumber) => {
+  const calculateHealthFactorWithDeltas = (deltaCollateral: BigNumber, deltaFiat: BigNumber) => {
     let newCollateral = getHumanValue(position?.totalCollateral, WAD_DECIMALS)
     let newFiat = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
     const currentValue = position?.currentValue
@@ -171,7 +171,9 @@ export const useManagePositionForm = (
     setMaxMintValue(mintValue)
     setMaxBurnValue(burnValue)
 
-    setHealthFactor(calculateHF(toDeposit.minus(toWithdraw), toMint.minus(toBurn)))
+    setHealthFactor(
+      calculateHealthFactorWithDeltas(toDeposit.minus(toWithdraw), toMint.minus(toBurn)),
+    )
     if (toBurn.isGreaterThan(ZERO_BIG_NUMBER)) {
       const text = !hasFiatAllowance
         ? 'Set allowance for Proxy'
@@ -285,7 +287,7 @@ export const useManagePositionForm = (
     buttonText,
     isLoading,
     handleManage,
-    calculateHF,
+    calculateHealthFactorWithDeltas,
   }
 }
 

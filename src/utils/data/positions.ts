@@ -111,16 +111,14 @@ const calculateHealthFactor = (
 } => {
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
-  if (normalDebt && normalDebt?.isZero()) {
+  if (!normalDebt || normalDebt?.isZero()) {
     healthFactor = INFINITE_BIG_NUMBER
+    return {
+      healthFactor,
+      isAtRisk,
+    }
   } else {
-    if (
-      currentValue &&
-      collateral &&
-      normalDebt &&
-      !collateral?.isZero() &&
-      collateralizationRatio
-    ) {
+    if (currentValue && collateral && !collateral?.isZero() && collateralizationRatio) {
       const debt = calculateDebt(normalDebt)
       healthFactor = new BigNumber(
         currentValue.times(collateral).div(debt).div(collateralizationRatio),
