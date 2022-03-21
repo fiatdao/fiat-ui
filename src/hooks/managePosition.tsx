@@ -4,7 +4,6 @@ import { useERC20Allowance } from './useERC20Allowance'
 import {
   INFINITE_BIG_NUMBER,
   ONE_BIG_NUMBER,
-  VIRTUAL_RATE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '../constants/misc'
@@ -18,7 +17,7 @@ import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { Position, calculateHealthFactor } from '@/src/utils/data/positions'
+import { Position, calculateDebt, calculateHealthFactor } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
@@ -114,9 +113,9 @@ export const useManagePositionForm = (
         ? getHumanValue(position?.currentValue, WAD_DECIMALS)
         : 1
 
-      const normalDebt = totalNormalDebt.times(VIRTUAL_RATE)
+      const debt = calculateDebt(totalNormalDebt)
       const withdrawValue = totalCollateral.minus(
-        collateralizationRatio.times(normalDebt).div(currentValue),
+        collateralizationRatio.times(debt).div(currentValue),
       )
       if (withdrawValue.isNegative()) {
         return ZERO_BIG_NUMBER
@@ -132,11 +131,8 @@ export const useManagePositionForm = (
       const currentValue = position?.currentValue
         ? getHumanValue(position?.currentValue, WAD_DECIMALS)
         : 1
-      const normalDebt = totalNormalDebt.times(VIRTUAL_RATE)
-      const minValue = totalCollateral
-        .times(currentValue)
-        .div(collateralizationRatio)
-        .minus(normalDebt)
+      const debt = calculateDebt(totalNormalDebt)
+      const minValue = totalCollateral.times(currentValue).div(collateralizationRatio).minus(debt)
       if (minValue.isNegative()) {
         return ZERO_BIG_NUMBER
       }

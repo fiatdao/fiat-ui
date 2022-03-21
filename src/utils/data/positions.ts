@@ -93,6 +93,13 @@ export const getDateState = (maturityDate: Date) => {
   return diff <= 0 ? 'danger' : diff <= 7 ? 'warning' : 'ok'
 }
 
+// @TODO: we need to use debt instead of normalDebt to calculate HF
+//        replace hardcoded value for Publican virtualRate value
+//        https://github.com/fiatdao/fiat-ui/issues/292
+const calculateDebt = (normalDebt: BigNumber) => {
+  return normalDebt.times(VIRTUAL_RATE)
+}
+
 const calculateHealthFactor = (
   currentValue: BigNumber | undefined,
   collateral: BigNumber | undefined,
@@ -114,12 +121,9 @@ const calculateHealthFactor = (
       !collateral?.isZero() &&
       collateralizationRatio
     ) {
+      const debt = calculateDebt(normalDebt)
       healthFactor = new BigNumber(
-        currentValue
-          .times(collateral.toFixed())
-          .div(normalDebt.times(VIRTUAL_RATE).toFixed())
-          .div(collateralizationRatio)
-          .toNumber(),
+        currentValue.times(collateral).div(debt).div(collateralizationRatio),
       )
       isAtRisk = collateralizationRatio.gte(healthFactor)
 
@@ -194,4 +198,4 @@ const wranglePosition = async (
     interestPerSecond,
   }
 }
-export { wranglePosition, calculateHealthFactor }
+export { wranglePosition, calculateHealthFactor, calculateDebt }
