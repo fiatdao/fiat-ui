@@ -199,13 +199,14 @@ const FormERC20: React.FC<{
                 <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
                   Bond
                 </RadioTab>
-                <RadioTab
+                {/* Temporary comment untill underlying is ready for production */}
+                {/* <RadioTab
                   checked={tab === 'underlying'}
                   disabled
                   onClick={() => setTab('underlying')}
                 >
                   Underlying
-                </RadioTab>
+                </RadioTab> */}
               </RadioTabsWrapper>
             )}
             {[1, 4].includes(stateMachine.context.currentStepNumber) && tab === 'bond' && (
