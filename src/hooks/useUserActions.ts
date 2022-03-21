@@ -113,6 +113,9 @@ export const useUserActions = (): UseUserActions => {
       // @TODO: it is not possible to use this hook when user is not connected nor have created a Proxy
       if (!address || !userProxy || !userProxyAddress) return
 
+      // @TODO: toFixed(0, ROUNDED) transforms BigNumber into String without decimals
+      const deltaCollateral = params.deltaCollateral.toFixed(0, 8)
+      const deltaNormalDebt = params.deltaNormalDebt.toFixed(0, 8)
       // TODO: check if vault/protocol type so we can use EPT or FC
       const modifyCollateralAndDebtEncoded = userActionEPT.interface.encodeFunctionData(
         'modifyCollateralAndDebt',
@@ -123,8 +126,8 @@ export const useUserActions = (): UseUserActions => {
           userProxyAddress,
           address,
           address,
-          params.deltaCollateral.toFixed(),
-          params.deltaNormalDebt.toFixed(),
+          deltaCollateral,
+          deltaNormalDebt,
         ],
       )
       const tx = await userProxy.execute(userActionEPT.address, modifyCollateralAndDebtEncoded, {

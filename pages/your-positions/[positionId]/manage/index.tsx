@@ -148,7 +148,7 @@ const PositionManage = () => {
                               displayDecimals={4}
                               healthFactorValue={healthFactorNumber}
                               mainAsset={position.protocol}
-                              max={Number(maxDepositValue?.toFixed(4))}
+                              max={maxDepositValue}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
@@ -167,7 +167,7 @@ const PositionManage = () => {
                               displayDecimals={4}
                               healthFactorValue={healthFactorNumber}
                               mainAsset={position.protocol}
-                              max={Number(maxWithdrawValue?.toFixed(4))}
+                              max={maxWithdrawValue}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariant'}
@@ -210,7 +210,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorNumber}
-                              max={Number(maxMintValue?.toFixed(4))}
+                              max={maxMintValue}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariant'}
                               tokenIcon={<FiatIcon />}
@@ -228,7 +228,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorNumber}
-                              max={Number(maxBurnValue?.toFixed(4))}
+                              max={maxBurnValue}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}
                               tokenIcon={<FiatIcon />}
