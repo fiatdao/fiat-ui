@@ -439,7 +439,7 @@ const OpenPosition = () => {
       value: `$${getHumanValue(collateral?.currentValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {
-      title: 'Collateralization Ratio',
+      title: 'Collateralization Threshold',
       tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
       value: collateral ? `${BigNumber.from(collateral.collateralizationRatio).times(100)}%` : '-',
     },

@@ -380,7 +380,7 @@ export const useManagePositionsInfoBlock = (position: Position) => {
       value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {
-      title: 'Collateralization Ratio',
+      title: 'Collateralization Threshold',
       tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
       value: position?.vaultCollateralizationRatio?.toFixed() ?? '-',
     },
