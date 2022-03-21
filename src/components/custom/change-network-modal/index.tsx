@@ -24,9 +24,7 @@ const ChangeNetworkModal: React.FC<ChangeNetworkModalProps> = (props) => {
             Wrong network
           </Text>
           <Text color="secondary" type="p1" weight="semibold">
-            Please switch your wallet network to
-            {/* {ethWeb3.networkName ?? '<!>'}  */}
-            to use the app
+            Please switch your wallet network to Etherium to use the app
           </Text>
           <Text color="secondary" type="p1">
             If you still encounter problems, you may want to switch to a different wallet
