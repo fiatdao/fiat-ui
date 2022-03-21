@@ -1,14 +1,10 @@
 import React from 'react'
-
-import Modal, { ModalProps } from '@/src/components/antd/modal'
+import Modal from '@/src/components/antd/modal'
 import Grid from '@/src/components/custom/grid'
 import { Text } from '@/src/components/custom/typography'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
-export type ChangeNetworkModalProps = ModalProps
-
-const ChangeNetworkModal: React.FC<ChangeNetworkModalProps> = (props) => {
-  const { ...modalProps } = props
+const ChangeNetworkModal: React.FC = () => {
   const { changeNetworkModalOpen, connectWallet, setChangeNetworkModalOpen } = useWeb3Connection()
 
   const handleClick = () => {
@@ -17,7 +13,7 @@ const ChangeNetworkModal: React.FC<ChangeNetworkModalProps> = (props) => {
   }
 
   return (
-    <Modal visible={changeNetworkModalOpen} width={568} {...modalProps}>
+    <Modal onCancel={() => null} visible={changeNetworkModalOpen} width={568}>
       <Grid align="start" flow="row" gap={24}>
         <Grid flow="row" gap={16}>
           <Text color="primary" type="h2" weight="bold">

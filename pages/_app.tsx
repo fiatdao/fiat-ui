@@ -73,7 +73,7 @@ function App({ Component, pageProps }: AppProps) {
                 </Layout>
               </Layout>
             </KnownTokensProvider>
-            <ChangeNetworkModal onCancel={() => null} />
+            <ChangeNetworkModal />
           </Web3ConnectionProvider>
         </SWRConfig>
       </GeneralContextProvider>
