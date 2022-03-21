@@ -3,6 +3,7 @@ import cn from 'classnames'
 import React, { useEffect, useState } from 'react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import { useRouter } from 'next/router'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
@@ -49,10 +50,11 @@ export type PositionManageFormFields = {
 
 const PositionManage = () => {
   const [form] = AntdForm.useForm<PositionManageFormFields>()
+  const router = useRouter()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
 
-  const { position, refetch: refetchPosition } = useManagePositionInfo()
+  const { position } = useManagePositionInfo()
 
   useEffect(() => {
     setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
@@ -64,8 +66,11 @@ const PositionManage = () => {
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
 
   const onSuccess = () => {
-    form.resetFields()
-    refetchPosition()
+    // @TODO: reload page after finish tx, instead of resetting values
+    //        because the Fiat Amount header does not update after this tx
+    // form.resetFields()
+    // refetchPosition()
+    router.reload()
   }
 
   const {
