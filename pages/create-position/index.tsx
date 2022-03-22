@@ -26,6 +26,7 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { tablePagination } from '@/src/utils/table'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
+import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
@@ -36,14 +37,12 @@ const FILTERS: FilterData = {
 }
 
 // TODO fix types here
-const PositionsTable = ({ activeFilters, columns, inMyWallet }: any) => {
-  const data = useCollaterals(inMyWallet, activeFilters)
-
+const PositionsTable = ({ collaterals, columns }: any) => {
   return (
     <Table
       columns={columns}
-      dataSource={data}
-      pagination={tablePagination(data?.length ?? 0)}
+      dataSource={collaterals}
+      pagination={tablePagination(collaterals?.length ?? 0)}
       rowKey="id"
       scroll={{
         x: true,
@@ -56,6 +55,12 @@ const CreatePosition = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
   const { isWalletConnected } = useWeb3Connection()
+  const { positions } = usePositionsByUser()
+
+  const activeFilters = Object.values(filters)
+    .filter((f) => f.active)
+    .map((f) => f.name)
+  const collaterals = useCollaterals(inMyWallet, activeFilters)
 
   const columns: ColumnsType<any> = [
     {
@@ -129,24 +134,24 @@ const CreatePosition = () => {
     },
     {
       align: 'right',
-      render: (value: Collateral) =>
-        value.manageId ? (
+      render: (collateral: Collateral) => {
+        const positionExistsForCollateral =
+          collateral.hasBalance ||
+          positions.filter((position) => collateral.id === position.collateral.address)
+        return positionExistsForCollateral ? (
           <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
         ) : (
-          <Link href={`/create-position/${value.address}/open`} passHref>
+          <Link href={`/create-position/${collateral.address}/open`} passHref>
             <ButtonGradient disabled={!isWalletConnected}>Create Position</ButtonGradient>
           </Link>
-        ),
+        )
+      },
       title: '',
       width: 110,
     },
   ]
-
-  const activeFilters = Object.values(filters)
-    .filter((f) => f.active)
-    .map((f) => f.name)
 
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
@@ -240,7 +245,7 @@ const CreatePosition = () => {
           <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
         }
       >
-        <PositionsTable activeFilters={activeFilters} columns={columns} inMyWallet={inMyWallet} />
+        <PositionsTable collaterals={collaterals} columns={columns} />
       </SafeSuspense>
     </>
   )
