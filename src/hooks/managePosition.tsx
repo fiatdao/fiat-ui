@@ -193,8 +193,9 @@ export const useManagePositionForm = (
   }
 
   useEffect(() => {
-    const { collateral, normalDebt } = getPositionValues()
     const depositValue = tokenInfo?.humanValue
+    const collateral = position?.totalCollateral ?? ZERO_BIG_NUMBER
+    const normalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
     const withdrawValue = calculateMaxWithdrawValue(collateral, normalDebt)
     const mintValue = calculateMaxMintValue(collateral, normalDebt)
     const burnValue = getHumanValue(normalDebt, WAD_DECIMALS)
@@ -207,8 +208,6 @@ export const useManagePositionForm = (
     position?.totalCollateral,
     position?.totalNormalDebt,
     tokenInfo?.humanValue,
-    position?.currentValue,
-    position?.vaultCollateralizationRatio,
     calculateMaxWithdrawValue,
     calculateMaxMintValue,
     getPositionValues,
