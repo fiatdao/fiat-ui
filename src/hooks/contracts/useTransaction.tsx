@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
-
 import { Contract, ContractTransaction } from '@ethersproject/contracts'
-import { useGeneral } from '@/src/providers/generalProvider'
-
+import { useNotifications } from '@/src/hooks/useNotifications'
 import { AppContractInfo } from '@/src/constants/contracts'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
@@ -16,7 +14,7 @@ export default function useTransaction<
   Params extends Parameters<MyContract[Method]>,
 >(contractInfo: AppContractInfo, method: Method) {
   const { appChainId, isAppConnected, web3Provider } = useWeb3Connection()
-  const { notification } = useGeneral()
+  const notification = useNotifications()
 
   return useCallback(
     async (...params: Params) => {

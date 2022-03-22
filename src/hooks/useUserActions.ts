@@ -2,8 +2,8 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
+import { useNotifications } from '@/src/hooks/useNotifications'
 import { TransactionError } from '@/src/utils/TransactionError'
-import { useGeneral } from '@/src/providers/generalProvider'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { contracts } from '@/src/constants/contracts'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -60,7 +60,7 @@ export type UseUserActions = {
 export const useUserActions = (): UseUserActions => {
   const { address, appChainId, web3Provider } = useWeb3Connection()
   const { userProxy, userProxyAddress } = useUserProxy()
-  const { notification } = useGeneral()
+  const notification = useNotifications()
 
   // Element User Action: ERC20
   const userActionEPT = useMemo(() => {

@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction, createContext, useContext, useEffect, useState } from 'react'
 import { useLocalStorage } from 'react-use-storage'
-import { useNotifications } from '@/src/hooks/useNotifications'
 
 export type GeneralContextType = {
   navOpen: boolean
@@ -11,7 +10,6 @@ export type GeneralContextType = {
   toggleDarkTheme: () => void
   setTitle: Dispatch<SetStateAction<GeneralContextType['title']>>
   resetTitle: () => void
-  notification: ReturnType<typeof useNotifications>
 }
 
 const GeneralContext = createContext<GeneralContextType>({} as any)
@@ -22,7 +20,6 @@ const GeneralContextProvider: React.FC = ({ children }) => {
   const [navOpen, setNavOpen] = useState(false)
   const [theme, setTheme] = useLocalStorage('bb_theme', defaultTheme)
   const [title, setTitle] = useState<GeneralContextType['title']>()
-  const notification = useNotifications()
 
   useEffect(() => {
     if (theme) {
@@ -55,7 +52,6 @@ const GeneralContextProvider: React.FC = ({ children }) => {
         resetTitle: () => {
           setTitle(undefined)
         },
-        notification,
       }}
     >
       {children}
