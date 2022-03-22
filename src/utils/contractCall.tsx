@@ -22,10 +22,12 @@ export default async function contractCall<
       //Convert ethersjs bignumber to bignumber.js
       result = BigNumber.from(result.toString())
     }
-    if (isDev()) console.log(`result of ${method} with ${params} from contract ${address}`, result)
+    if (isDev()) console.log(`Result of ${method} with ${params} from contract ${address}.`, result)
     return result
   } catch (e) {
-    if (isDev()) console.error(`contract is not deployed`, e)
+    if (isDev()) {
+      console.error(`Error calling method ${method} on contract with address ${address}.`, e)
+    }
     return null
   }
 }
