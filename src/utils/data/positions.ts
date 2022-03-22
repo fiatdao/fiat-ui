@@ -126,7 +126,7 @@ const calculateHealthFactor = (
       if (healthFactor.isGreaterThan(INFINITE_HEALTH_FACTOR_NUMBER)) {
         healthFactor = INFINITE_BIG_NUMBER
       }
-      isAtRisk = collateralizationRatio.gte(healthFactor)
+      isAtRisk = getHumanValue(collateralizationRatio, WAD_DECIMALS).gte(healthFactor)
     }
   }
   return {
