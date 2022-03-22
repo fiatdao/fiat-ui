@@ -1,5 +1,5 @@
 export class TransactionError extends Error {
-  code?: number
+  code?: number | string
   data?: string
   constructor(message?: string, code?: number, data?: any) {
     super(message)

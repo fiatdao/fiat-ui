@@ -11,33 +11,58 @@ export const useNotifications = () => {
     placement: 'topLeft',
   })
 
-  const handleTxError = useCallback((e: any) => {
-    const error = new TransactionError(
-      e.data?.message || e.message || 'Unable to decode revert reason',
-      e.data?.code || e.code,
-      e.data,
-    )
+  const handleTxError = useCallback(
+    (e: any) => {
+      const error = new TransactionError(
+        e.data?.message || e.message || 'Unable to decode revert reason',
+        e.data?.code || e.code,
+        e.data,
+      )
 
-    // user rejected
-    if (error.code === 4001) {
-      antdNotification.warning({
-        description: 'User denied signature',
-        message: 'Transaction rejected',
+      // failed to execute tx
+      // exception triggered by ethers-js
+      if (e.code === 'CALL_EXCEPTION') {
+        antdNotification.error({
+          message: 'Transaction error',
+          description: (
+            <a
+              href={getExplorerUrl(e.transactionHash)}
+              referrerPolicy="no-referrer"
+              rel="noreferrer"
+              target="_blank"
+            >
+              view on explorer
+            </a>
+          ),
+        })
+
+        return error
+      }
+
+      // user rejected
+      if (error.code === 4001) {
+        antdNotification.warning({
+          message: 'Transaction rejected',
+          description: 'User denied signature',
+        })
+
+        return error
+      }
+
+      antdNotification.error({
+        message: 'Transaction creation failed',
+        description: error.message.substring(0, 200),
       })
-    }
 
-    // error on transaction
-    antdNotification.error({
-      description: error.message,
-      message: 'Transaction error',
-    })
-
-    return error
-  }, [])
+      return error
+    },
+    [getExplorerUrl],
+  )
 
   const awaitingTx = useCallback(
     (txHash: string) => {
       antdNotification.info({
+        message: 'Awaiting tx execution',
         description: (
           <a
             href={getExplorerUrl(txHash)}
@@ -48,7 +73,6 @@ export const useNotifications = () => {
             view on explorer
           </a>
         ),
-        message: 'Awaiting tx execution',
       })
     },
     [getExplorerUrl],
@@ -57,6 +81,7 @@ export const useNotifications = () => {
   const successfulTx = useCallback(
     (txHash: string) => {
       antdNotification.success({
+        message: 'Transaction success',
         description: (
           <a
             href={getExplorerUrl(txHash)}
@@ -67,7 +92,6 @@ export const useNotifications = () => {
             view on explorer
           </a>
         ),
-        message: 'Transaction success',
       })
     },
     [getExplorerUrl],
@@ -75,8 +99,8 @@ export const useNotifications = () => {
 
   const requestSign = () => {
     antdNotification.info({
-      description: 'Please sign the transaction.',
       message: 'Sign',
+      description: 'Please sign the transaction.',
     })
   }
 
