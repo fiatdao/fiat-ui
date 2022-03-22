@@ -200,9 +200,17 @@ export const useManagePositionForm = (
     const mintValue = calculateMaxMintValue(collateral, normalDebt)
     const burnValue = getHumanValue(normalDebt, WAD_DECIMALS)
 
+    // TODO: useReducer?
+    setMaxDepositValue(depositValue)
     setAvailableDepositValue(depositValue)
+
+    setMaxWithdrawValue(withdrawValue)
     setAvailableWithdrawValue(withdrawValue)
+
+    setMaxMintValue(mintValue)
     setAvailableMintValue(mintValue)
+
+    setMaxBurnValue(burnValue)
     setAvailableBurnValue(burnValue)
   }, [
     position?.totalCollateral,
@@ -266,7 +274,7 @@ export const useManagePositionForm = (
         tokenId: 0,
         deltaCollateral,
         deltaNormalDebt,
-        wait: undefined,
+        wait: 3,
       })
 
       await updateToken()
