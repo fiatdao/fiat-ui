@@ -388,7 +388,9 @@ export const useManagePositionsInfoBlock = (position: Position) => {
     {
       title: 'Collateralization Threshold',
       tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
-      value: position?.vaultCollateralizationRatio?.toFixed() ?? '-',
+      value: position?.vaultCollateralizationRatio
+        ? `${getHumanValue(position?.vaultCollateralizationRatio.times(100), WAD_DECIMALS)}%`
+        : '-',
     },
     {
       title: 'Interest Rate',
