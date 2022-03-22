@@ -52,7 +52,7 @@ const PositionManage = () => {
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
 
-  const { position } = useManagePositionInfo()
+  const { position, refetch: refetchPosition } = useManagePositionInfo()
 
   useEffect(() => {
     setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
@@ -66,8 +66,8 @@ const PositionManage = () => {
   const onSuccess = () => {
     // @TODO: reload page after finish tx, instead of resetting values
     //        because the Fiat Amount header does not update after this tx
-    // form.resetFields()
-    // refetchPosition()
+    form.resetFields()
+    refetchPosition()
     router.reload()
   }
 
