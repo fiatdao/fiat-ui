@@ -26,7 +26,7 @@ const ONBOARD_STATE_DELAY = 100
 
 // Default chain id from env var
 const INITAL_APP_CHAIN_ID = Number(
-  process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 4,
+  process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 5,
 ) as ChainsValues
 
 nullthrows(
@@ -136,6 +136,7 @@ export type Web3Context = {
   getExplorerUrl: (hash: string) => string
   changeNetworkModalOpen: boolean
   setChangeNetworkModalOpen: Dispatch<SetStateAction<Web3Context['changeNetworkModalOpen']>>
+  setNetwork: () => void
 }
 
 const Web3ContextConnection = createContext<Web3Context | undefined>(undefined)
@@ -276,6 +277,17 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     }
   }
 
+  const setNetwork = () => {
+    window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [
+        {
+          chainId: getNetworkConfig(appChainId).chainIdHex,
+        },
+      ],
+    })
+  }
+
   const pushNetwork = async (): Promise<void> => {
     if (!onboard || !wallet || wallet.name !== 'MetaMask') {
       console.warn('Unable to push network')
@@ -337,6 +349,7 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     setAppChainId: setAppChainId,
     changeNetworkModalOpen,
     setChangeNetworkModalOpen,
+    setNetwork: setNetwork,
   }
 
   if (isInitializing) {
