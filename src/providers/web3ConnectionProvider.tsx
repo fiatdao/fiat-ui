@@ -169,8 +169,8 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     [appChainId],
   )
 
-  const checkForValidChain = (network: number | null) => {
-    return network === 1 || network === 5
+  const checkForValidChain = (chain: any) => {
+    return Object.values(Chains).includes(chain)
   }
 
   const _reconnectWallet = async (): Promise<void> => {
