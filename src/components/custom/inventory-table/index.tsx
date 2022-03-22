@@ -79,10 +79,7 @@ const Columns: ColumnsType<Position> = [
     align: 'left',
     dataIndex: 'healthFactor',
     render: (healthFactor: Position['healthFactor']) => (
-      <CellValue
-        state={calculateHealthFactor(getHumanValue(healthFactor, WAD_DECIMALS))}
-        value={`${getHumanValue(healthFactor, WAD_DECIMALS).toFixed(2)}`}
-      />
+      <CellValue state={calculateHealthFactor(healthFactor)} value={`${healthFactor.toFixed(2)}`} />
     ),
     responsive: ['md'],
     title: 'Health Factor',

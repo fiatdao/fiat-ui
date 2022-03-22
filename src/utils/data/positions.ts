@@ -7,7 +7,6 @@ import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
 
-import { Maybe } from '@/types/utils'
 import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
@@ -15,6 +14,7 @@ import { ERC20 } from '@/types/typechain'
 import {
   INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
+  ONE_BIG_NUMBER,
   VIRTUAL_RATE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
@@ -31,7 +31,7 @@ export type Position = {
   underlier: TokenData
   totalCollateral: BigNumber
   totalNormalDebt: BigNumber
-  vaultCollateralizationRatio: Maybe<BigNumber>
+  vaultCollateralizationRatio: BigNumber
   collateralValue: BigNumber
   faceValue: BigNumber
   healthFactor: BigNumber
@@ -100,13 +100,14 @@ const calculateDebt = (normalDebt: BigNumber) => {
   return normalDebt.times(VIRTUAL_RATE)
 }
 
+// @TODO: healthFactor = totalCollateral*collateralValue/totalFIAT/collateralizationRatio
 const calculateHealthFactor = (
-  currentValue: BigNumber | undefined,
+  currentValue: BigNumber | undefined, // collateralValue
+  collateralizationRatio: BigNumber | undefined,
   collateral: BigNumber | undefined,
   normalDebt: BigNumber | undefined,
-  collateralizationRatio: BigNumber,
 ): {
-  healthFactor: BigNumber
+  healthFactor: BigNumber // NonHumanBigNumber
   isAtRisk: boolean
 } => {
   let isAtRisk = false
@@ -120,14 +121,12 @@ const calculateHealthFactor = (
   } else {
     if (currentValue && collateral && !collateral?.isZero() && collateralizationRatio) {
       const debt = calculateDebt(normalDebt)
-      healthFactor = new BigNumber(
-        currentValue.times(collateral).div(debt).div(collateralizationRatio),
-      )
-      isAtRisk = collateralizationRatio.gte(healthFactor)
+      healthFactor = collateral.times(currentValue).div(debt).div(collateralizationRatio)
 
       if (healthFactor.isGreaterThan(INFINITE_HEALTH_FACTOR_NUMBER)) {
         healthFactor = INFINITE_BIG_NUMBER
       }
+      isAtRisk = collateralizationRatio.gte(healthFactor)
     }
   }
   return {
@@ -142,12 +141,8 @@ const wranglePosition = async (
   appChainId: ChainsValues,
 ): Promise<Position> => {
   const { id, vaultName: protocol } = position
-  // we use 18 decimals, as values stored are stored in WAD in the FIAT protocol
-  const vaultCollateralizationRatio = getHumanValue(
-    BigNumber.from(position.vault?.collateralizationRatio ?? 1e18) as BigNumber,
-    WAD_DECIMALS,
-  )
-
+  const vaultCollateralizationRatio =
+    BigNumber.from(position.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER
   const totalCollateral = BigNumber.from(position.totalCollateral) ?? ZERO_BIG_NUMBER
   const totalNormalDebt = BigNumber.from(position.totalNormalDebt) ?? ZERO_BIG_NUMBER
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
@@ -162,9 +157,9 @@ const wranglePosition = async (
 
   const { healthFactor, isAtRisk } = calculateHealthFactor(
     currentValue,
+    vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
-    vaultCollateralizationRatio,
   )
 
   // TODO Interest rate
