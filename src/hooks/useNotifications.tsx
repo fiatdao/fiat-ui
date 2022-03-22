@@ -1,6 +1,6 @@
-import { notification as antdNotification } from 'antd'
+import { Button, notification as antdNotification } from 'antd'
+import { useRouter } from 'next/router'
 import { useCallback } from 'react'
-import Link from 'next/link'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { TransactionError } from '@/src/utils/TransactionError'
 
@@ -81,36 +81,49 @@ export const useNotifications = () => {
 
   const awaitingTxBlocks = useCallback(
     (txHash: string, blocks: number) => {
-      antdNotification.info({
-        message: `Awaiting tx execution`,
+      if (blocks === 1) {
+        awaitingTx(txHash)
+      } else {
+        antdNotification.info({
+          message: `Awaiting tx execution`,
+          description: (
+            <>
+              <p>Waiting {blocks} blocks confirmation.</p>
+              <a
+                href={getExplorerUrl(txHash)}
+                referrerPolicy="no-referrer"
+                rel="noreferrer"
+                target="_blank"
+              >
+                View on explorer
+              </a>
+            </>
+          ),
+        })
+      }
+    },
+    [awaitingTx, getExplorerUrl],
+  )
+
+  const { push } = useRouter()
+
+  const successfulTx = useCallback(
+    (txHash: string) => {
+      antdNotification.success({
+        message: 'Transaction successful',
         description: (
-          <>
-            <p>Waiting {blocks} blocks confirmation.</p>
-            <a
-              href={getExplorerUrl(txHash)}
-              referrerPolicy="no-referrer"
-              rel="noreferrer"
-              target="_blank"
-            >
-              View on explorer
-            </a>
-          </>
+          <Button
+            onClick={() => push(`/your-positions/?transaction=${txHash}`)}
+            style={{ padding: 0 }}
+            type="link"
+          >
+            View on Transaction History
+          </Button>
         ),
       })
     },
-    [getExplorerUrl],
+    [push],
   )
-
-  const successfulTx = useCallback((txHash: string) => {
-    antdNotification.success({
-      message: 'Transaction successful',
-      description: (
-        <Link href={`/your-positions/?transaction=${txHash}`} passHref>
-          <a>View on Transaction History</a>
-        </Link>
-      ),
-    })
-  }, [])
 
   const requestSign = () => {
     antdNotification.info({
