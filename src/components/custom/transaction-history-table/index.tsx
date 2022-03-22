@@ -4,7 +4,7 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import { useState } from 'react'
 import { SelectValue } from 'antd/lib/select'
 import _ from 'lodash'
-import { parseDate, remainingTime } from '@/src/utils/table'
+import { elapsedTime, parseDate } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
 import Select from '@/src/components/antd/select'
 import { CellValue } from '@/src/components/custom/cell-value'
@@ -49,7 +49,7 @@ const Columns: ColumnsType<any> = [
     align: 'right',
     dataIndex: 'deltaAmount',
     render: (delta: Transaction['amount']) => {
-      // collateral is being depositted when delta is greater than 0, otherwise is a withdraw operation
+      // collateral is being deposited when delta is greater than 0, otherwise is a withdrawal operation
       const isAdding = delta >= 0
       const text = isAdding ? `+${delta.toFixed(3)}` : `${delta.toFixed(3)}`
 
@@ -74,7 +74,7 @@ const Columns: ColumnsType<any> = [
     align: 'left',
     dataIndex: 'date',
     render: (date: Transaction['date']) => (
-      <CellValue bottomValue={remainingTime(date)} value={parseDate(date)} />
+      <CellValue bottomValue={elapsedTime(date)} value={parseDate(date)} />
     ),
     responsive: ['lg'],
     title: 'Date',
