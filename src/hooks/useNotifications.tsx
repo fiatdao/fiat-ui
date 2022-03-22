@@ -1,5 +1,6 @@
 import { notification as antdNotification } from 'antd'
 import { useCallback } from 'react'
+import Link from 'next/link'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { TransactionError } from '@/src/utils/TransactionError'
 
@@ -100,24 +101,16 @@ export const useNotifications = () => {
     [getExplorerUrl],
   )
 
-  const successfulTx = useCallback(
-    (txHash: string) => {
-      antdNotification.success({
-        message: 'Transaction successful',
-        description: (
-          <a
-            href={getExplorerUrl(txHash)}
-            referrerPolicy="no-referrer"
-            rel="noreferrer"
-            target="_blank"
-          >
-            view on explorer
-          </a>
-        ),
-      })
-    },
-    [getExplorerUrl],
-  )
+  const successfulTx = useCallback((txHash: string) => {
+    antdNotification.success({
+      message: 'Transaction successful',
+      description: (
+        <Link href={`/your-positions/?transaction=${txHash}`} passHref>
+          <a>View on Transaction History</a>
+        </Link>
+      ),
+    })
+  }, [])
 
   const requestSign = () => {
     antdNotification.info({
