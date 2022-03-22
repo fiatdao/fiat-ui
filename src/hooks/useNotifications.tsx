@@ -78,10 +78,32 @@ export const useNotifications = () => {
     [getExplorerUrl],
   )
 
+  const awaitingTxBlocks = useCallback(
+    (txHash: string, blocks: number) => {
+      antdNotification.info({
+        message: `Awaiting tx execution`,
+        description: (
+          <>
+            <p>Waiting {blocks} blocks confirmation.</p>
+            <a
+              href={getExplorerUrl(txHash)}
+              referrerPolicy="no-referrer"
+              rel="noreferrer"
+              target="_blank"
+            >
+              View on explorer
+            </a>
+          </>
+        ),
+      })
+    },
+    [getExplorerUrl],
+  )
+
   const successfulTx = useCallback(
     (txHash: string) => {
       antdNotification.success({
-        message: 'Transaction success',
+        message: 'Transaction successful',
         description: (
           <a
             href={getExplorerUrl(txHash)}
@@ -122,6 +144,7 @@ export const useNotifications = () => {
     ...antdNotification,
     handleTxError,
     awaitingTx,
+    awaitingTxBlocks,
     successfulTx,
     requestSign,
     noSigner,

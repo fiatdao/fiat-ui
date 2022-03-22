@@ -9,10 +9,19 @@ import { contracts } from '@/src/constants/contracts'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { VaultEPTActions } from '@/types/typechain'
 
-type ModifyCollateralAndDebt = {
+type BaseModify = {
   vault: string
   token: string
   tokenId: number
+  wait?: number
+}
+
+type DepositCollateral = BaseModify & {
+  toDeposit: BigNumber
+  toMint: BigNumber
+}
+
+type ModifyCollateralAndDebt = BaseModify & {
   deltaCollateral: BigNumber
   deltaNormalDebt: BigNumber
 }
@@ -33,17 +42,6 @@ type BuyCollateralAndModifyDebt = {
     deadline: BigNumberish
     approve: BigNumberish
   }
-}
-
-type BaseModify = {
-  vault: string
-  token: string
-  tokenId: number
-}
-
-type DepositCollateral = BaseModify & {
-  toDeposit: BigNumber
-  toMint: BigNumber
 }
 
 export type UseUserActions = {
@@ -151,9 +149,13 @@ export const useUserActions = (): UseUserActions => {
       }
 
       // awaiting exec
-      notification.awaitingTx(tx.hash)
+      if (params.wait) {
+        notification.awaitingTxBlocks(tx.hash, params.wait)
+      } else {
+        notification.awaitingTx(tx.hash)
+      }
 
-      const receipt = await tx.wait().catch(notification.handleTxError)
+      const receipt = await tx.wait(params.wait).catch(notification.handleTxError)
 
       if (receipt instanceof TransactionError) {
         throw receipt
@@ -233,9 +235,7 @@ export const useUserActions = (): UseUserActions => {
   const depositCollateral = useCallback(
     (params: DepositCollateral) => {
       return modifyCollateralAndDebt({
-        vault: params.vault,
-        token: params.token,
-        tokenId: params.tokenId,
+        ...params,
         deltaCollateral: params.toDeposit,
         deltaNormalDebt: params.toMint,
       })

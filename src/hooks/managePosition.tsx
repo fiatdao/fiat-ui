@@ -259,14 +259,18 @@ export const useManagePositionForm = (
           return
         }
       }
+
       await modifyCollateralAndDebt({
         vault: position?.protocolAddress,
         token: position?.collateral.address,
         tokenId: 0,
         deltaCollateral,
         deltaNormalDebt,
+        wait: undefined,
       })
+
       await updateToken()
+
       if (onSuccess) {
         onSuccess()
       }
