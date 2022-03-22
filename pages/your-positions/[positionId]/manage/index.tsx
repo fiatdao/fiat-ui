@@ -3,6 +3,7 @@ import cn from 'classnames'
 import React, { useEffect, useState } from 'react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import { useRouter } from 'next/router'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
@@ -21,8 +22,6 @@ import { SummaryItem } from '@/src/components/custom/summary'
 import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
 import { Balance } from '@/src/components/custom/balance'
 import { Form } from '@/src/components/antd'
-import { getHumanValue } from '@/src/web3/utils'
-import { WAD_DECIMALS } from '@/src/constants/misc'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
@@ -49,6 +48,7 @@ export type PositionManageFormFields = {
 
 const PositionManage = () => {
   const [form] = AntdForm.useForm<PositionManageFormFields>()
+  const router = useRouter()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
 
@@ -64,8 +64,11 @@ const PositionManage = () => {
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
 
   const onSuccess = () => {
+    // @TODO: reload page after finish tx, instead of resetting values
+    //        because the Fiat Amount header does not update after this tx
     form.resetFields()
     refetchPosition()
+    router.reload()
   }
 
   const {
@@ -85,8 +88,7 @@ const PositionManage = () => {
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
-
-  const healthFactorNumber = Number(getHumanValue(healthFactor, WAD_DECIMALS)?.toFixed(4))
+  const healthFactorNumber = healthFactor?.toFixed(3)
 
   return (
     <>
@@ -141,14 +143,14 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to deposit"
-                            value={`Available: ${Number(availableDepositValue?.toFixed(4))}`}
+                            value={`Available: ${availableDepositValue?.toFixed(4)}`}
                           />
                           <Form.Item name="deposit" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorNumber}
                               mainAsset={position.protocol}
-                              max={Number(maxDepositValue?.toFixed(4))}
+                              max={maxDepositValue}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
@@ -160,14 +162,14 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to withdraw"
-                            value={`Available: ${Number(availableWithdrawValue?.toFixed(4))}`}
+                            value={`Available: ${availableWithdrawValue?.toFixed(4)}`}
                           />
                           <Form.Item name="withdraw" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorNumber}
                               mainAsset={position.protocol}
-                              max={Number(maxWithdrawValue?.toFixed(4))}
+                              max={maxWithdrawValue}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariant'}
@@ -204,13 +206,13 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to borrow"
-                            value={`Available: ${Number(availableMintValue?.toFixed(4))}`}
+                            value={`Available: ${availableMintValue?.toFixed(4)}`}
                           />
                           <Form.Item name="mint" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorNumber}
-                              max={Number(maxMintValue?.toFixed(4))}
+                              max={maxMintValue}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariant'}
                               tokenIcon={<FiatIcon />}
@@ -222,13 +224,13 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to repay"
-                            value={`Available: ${Number(availableBurnValue?.toFixed(4))}`}
+                            value={`Available: ${availableBurnValue?.toFixed(4)}`}
                           />
                           <Form.Item name="burn" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorNumber}
-                              max={Number(maxBurnValue?.toFixed(4))}
+                              max={maxBurnValue}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}
                               tokenIcon={<FiatIcon />}
