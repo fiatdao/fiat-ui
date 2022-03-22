@@ -136,8 +136,9 @@ const CreatePosition = () => {
       align: 'right',
       render: (collateral: Collateral) => {
         const positionExistsForCollateral =
-          collateral.hasBalance ||
-          positions.filter((position) => collateral.id === position.collateral.address)
+          isWalletConnected &&
+          (collateral.hasBalance ||
+            positions.filter((position) => collateral.id === position.collateral.address))
         return positionExistsForCollateral ? (
           <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
