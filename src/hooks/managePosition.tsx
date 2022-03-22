@@ -271,7 +271,7 @@ export const useManagePositionForm = (
         onSuccess()
       }
     } catch (err) {
-      console.error('Failed to Deposit', err)
+      console.error('Failed to Deposit:', err)
     } finally {
       setIsLoading(false)
     }

@@ -152,11 +152,11 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
   const [appChainId, setAppChainId] = useState<ChainsValues>(INITAL_APP_CHAIN_ID)
   const supportedChainIds = Object.values(Chains)
 
-  const web3Provider = wallet?.provider != null ? new Web3Provider(wallet.provider) : null
+  const web3Provider = wallet?.provider ? new Web3Provider(wallet.provider) : null
 
-  const isWalletConnected = web3Provider != null && address != null
+  const isWalletConnected = web3Provider !== null && address !== null
 
-  const isAppConnected = walletChainId === appChainId && address !== null && web3Provider !== null
+  const isAppConnected = isWalletConnected && walletChainId === appChainId
 
   const isWalletNetworkSupported = supportedChainIds.includes(walletChainId as any)
 

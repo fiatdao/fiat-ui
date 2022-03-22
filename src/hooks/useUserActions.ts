@@ -2,8 +2,9 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
+import { TransactionError } from '@/src/utils/TransactionError'
+import { useGeneral } from '@/src/providers/generalProvider'
 import useUserProxy from '@/src/hooks/useUserProxy'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { contracts } from '@/src/constants/contracts'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { VaultEPTActions } from '@/types/typechain'
@@ -34,36 +35,20 @@ type BuyCollateralAndModifyDebt = {
   }
 }
 
-export type BaseModify = {
+type BaseModify = {
   vault: string
   token: string
   tokenId: number
 }
 
-export type DepositCollateral = BaseModify & {
+type DepositCollateral = BaseModify & {
   toDeposit: BigNumber
   toMint: BigNumber
-}
-
-export type WithdrawCollateral = BaseModify & {
-  toWithdraw: BigNumber
-}
-
-type MintFIAT = BaseModify & {
-  toMint: BigNumber
-}
-
-type BurnFIAT = BaseModify & {
-  toBurn: BigNumber
-  toWithdraw: BigNumber
 }
 
 export type UseUserActions = {
   approveFIAT: (to: string) => ReturnType<TransactionResponse['wait']>
   depositCollateral: (params: DepositCollateral) => ReturnType<TransactionResponse['wait']>
-  withdrawCollateral: (params: WithdrawCollateral) => ReturnType<TransactionResponse['wait']>
-  mintFIAT: (params: MintFIAT) => ReturnType<TransactionResponse['wait']>
-  burnFIAT: (params: BurnFIAT) => ReturnType<TransactionResponse['wait']>
   modifyCollateralAndDebt: (
     params: ModifyCollateralAndDebt,
   ) => ReturnType<TransactionResponse['wait']>
@@ -75,6 +60,7 @@ export type UseUserActions = {
 export const useUserActions = (): UseUserActions => {
   const { address, appChainId, web3Provider } = useWeb3Connection()
   const { userProxy, userProxyAddress } = useUserProxy()
+  const { notification } = useGeneral()
 
   // Element User Action: ERC20
   const userActionEPT = useMemo(() => {
@@ -97,13 +83,33 @@ export const useUserActions = (): UseUserActions => {
         ethers.constants.MaxUint256, // Max available amount
       ])
 
-      const tx: TransactionResponse = await userProxy.execute(userActionEPT.address, approveFIAT, {
-        gasLimit: 1_000_000,
-      })
+      notification.requestSign()
 
-      return tx.wait()
+      const tx: TransactionResponse | TransactionError = await userProxy
+        .execute(userActionEPT.address, approveFIAT, {
+          gasLimit: 1_000_000,
+        })
+        .catch(notification.handleTxError)
+
+      if (tx instanceof TransactionError) {
+        throw tx
+      }
+
+      // awaiting exec
+      notification.awaitingTx(tx.hash)
+
+      const receipt = await tx.wait().catch(notification.handleTxError)
+
+      if (receipt instanceof TransactionError) {
+        throw receipt
+      }
+
+      // tx successful
+      notification.successfulTx(tx.hash)
+
+      return receipt
     },
-    [userProxy, userActionEPT.address, userActionEPT.interface],
+    [userProxy, userActionEPT.interface, userActionEPT.address, notification],
   )
 
   const modifyCollateralAndDebt = useCallback(
@@ -130,17 +136,42 @@ export const useUserActions = (): UseUserActions => {
           deltaNormalDebt,
         ],
       )
-      const tx: TransactionResponse = await userProxy.execute(
-        userActionEPT.address,
-        modifyCollateralAndDebtEncoded,
-        {
-          gasLimit: 1_000_000,
-        },
-      )
 
-      return tx.wait()
+      // please sign
+      notification.requestSign()
+
+      const tx: TransactionResponse | TransactionError = await userProxy
+        .execute(userActionEPT.address, modifyCollateralAndDebtEncoded, {
+          gasLimit: 1_000_000,
+        })
+        .catch(notification.handleTxError)
+
+      if (tx instanceof TransactionError) {
+        throw tx
+      }
+
+      // awaiting exec
+      notification.awaitingTx(tx.hash)
+
+      const receipt = await tx.wait().catch(notification.handleTxError)
+
+      if (receipt instanceof TransactionError) {
+        throw receipt
+      }
+
+      // tx successful
+      notification.successfulTx(tx.hash)
+
+      return receipt
     },
-    [address, userProxy, userProxyAddress, userActionEPT.address, userActionEPT.interface],
+    [
+      address,
+      userProxy,
+      userProxyAddress,
+      userActionEPT.interface,
+      userActionEPT.address,
+      notification,
+    ],
   )
 
   const buyCollateralAndModifyDebt = useCallback(
@@ -161,17 +192,42 @@ export const useUserActions = (): UseUserActions => {
           params.swapParams,
         ],
       )
-      const tx: TransactionResponse = await userProxy.execute(
-        userActionEPT.address,
-        buyCollateralAndModifyDebtEncoded,
-        {
-          gasLimit: 1_000_000,
-        },
-      )
 
-      return tx.wait()
+      // please sign
+      notification.requestSign()
+
+      const tx: TransactionResponse | TransactionError = await userProxy
+        .execute(userActionEPT.address, buyCollateralAndModifyDebtEncoded, {
+          gasLimit: 1_000_000,
+        })
+        .catch(notification.handleTxError)
+
+      if (tx instanceof TransactionError) {
+        throw tx
+      }
+
+      // awaiting exec
+      notification.awaitingTx(tx.hash)
+
+      const receipt = await tx.wait().catch(notification.handleTxError)
+
+      if (receipt instanceof TransactionError) {
+        throw receipt
+      }
+
+      // tx successful
+      notification.successfulTx(tx.hash)
+
+      return receipt
     },
-    [address, userProxy, userProxyAddress, userActionEPT.interface, userActionEPT.address],
+    [
+      address,
+      userProxy,
+      userProxyAddress,
+      userActionEPT.interface,
+      userActionEPT.address,
+      notification,
+    ],
   )
 
   const depositCollateral = useCallback(
@@ -187,51 +243,10 @@ export const useUserActions = (): UseUserActions => {
     [modifyCollateralAndDebt],
   )
 
-  const withdrawCollateral = useCallback(
-    (params: WithdrawCollateral) => {
-      return modifyCollateralAndDebt({
-        vault: params.vault,
-        token: params.token,
-        tokenId: params.tokenId,
-        deltaCollateral: params.toWithdraw.negated(),
-        deltaNormalDebt: ZERO_BIG_NUMBER,
-      })
-    },
-    [modifyCollateralAndDebt],
-  )
-
-  const mintFIAT = useCallback(
-    (params: MintFIAT) => {
-      return modifyCollateralAndDebt({
-        vault: params.vault,
-        token: params.token,
-        tokenId: params.tokenId,
-        deltaCollateral: ZERO_BIG_NUMBER,
-        deltaNormalDebt: params.toMint,
-      })
-    },
-    [modifyCollateralAndDebt],
-  )
-
-  const burnFIAT = useCallback(
-    (params: BurnFIAT) => {
-      return modifyCollateralAndDebt({
-        vault: params.vault,
-        token: params.token,
-        tokenId: params.tokenId,
-        deltaCollateral: params.toWithdraw.negated(), // TODO: should not be negated?
-        deltaNormalDebt: params.toBurn.negated(),
-      })
-    },
-    [modifyCollateralAndDebt],
-  )
   return {
     approveFIAT,
-    modifyCollateralAndDebt,
     depositCollateral,
-    withdrawCollateral,
-    mintFIAT,
-    burnFIAT,
+    modifyCollateralAndDebt,
     buyCollateralAndModifyDebt,
   }
 }
