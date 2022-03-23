@@ -2,7 +2,7 @@ import { AddressMappedToken } from '@/types/token'
 
 // Tokens
 const eyUSDC = {
-  protocol: 'Element Finance',
+  protocol: 'Element',
   symbol: 'USDC Principal Token',
   decimals: 6,
   name: 'eyUSDC:10-AUG-22-GMT',
