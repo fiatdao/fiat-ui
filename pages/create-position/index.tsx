@@ -120,7 +120,7 @@ const CreatePosition = () => {
       render: ({ collateralizationRatio: value }: Collateral['vault']) => {
         return <CellValue value={value ? `${formatColRatio(value)}%` : '-'} />
       },
-      title: 'Collateralization Ratio',
+      title: 'Collateralization Threshold',
     },
     {
       align: 'right',
