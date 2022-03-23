@@ -1,7 +1,6 @@
 import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useERC20Allowance } from './useERC20Allowance'
-import { useFIATBalance } from './useFIATBalance'
 import {
   INFINITE_BIG_NUMBER,
   ONE_BIG_NUMBER,
@@ -48,13 +47,7 @@ export const useManagePositionForm = (
     ZERO_BIG_NUMBER,
   )
   const [maxMintValue, setMaxMintValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [availableMintValue, setAvailableMintValue] = useState<BigNumber | undefined>(
-    ZERO_BIG_NUMBER,
-  )
   const [maxBurnValue, setMaxBurnValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [availableBurnValue, setAvailableBurnValue] = useState<BigNumber | undefined>(
-    ZERO_BIG_NUMBER,
-  )
 
   const [healthFactor, setHealthFactor] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
   const [buttonText, setButtonText] = useState<string>('Execute')
@@ -65,7 +58,6 @@ export const useManagePositionForm = (
     readOnlyAppProvider,
     tokenAddress,
   })
-  const [FIATBalance] = useFIATBalance(true)
 
   const calculateHealthFactorFromPosition = useCallback(
     (collateral: BigNumber, normalDebt: BigNumber) => {
@@ -201,17 +193,7 @@ export const useManagePositionForm = (
 
     setAvailableDepositValue(collateralBalance)
     setAvailableWithdrawValue(collateralBalance)
-    setAvailableMintValue(FIATBalance)
-    setAvailableBurnValue(FIATBalance)
-  }, [
-    position?.totalCollateral,
-    position?.totalNormalDebt,
-    tokenInfo?.humanValue,
-    calculateMaxWithdrawValue,
-    calculateMaxMintValue,
-    getPositionValues,
-    FIATBalance,
-  ])
+  }, [tokenInfo?.humanValue])
 
   useEffect(() => {
     const args = positionFormFields as PositionManageFormFields
@@ -287,9 +269,7 @@ export const useManagePositionForm = (
     availableWithdrawValue,
     maxWithdrawValue,
     maxBurnValue,
-    availableBurnValue,
     maxMintValue,
-    availableMintValue,
     healthFactor,
     handleFormChange,
     buttonText,
