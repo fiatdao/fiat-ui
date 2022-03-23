@@ -2,23 +2,20 @@ import s from './s.module.scss'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useEffect, useState } from 'react'
-import withRequiredConnection from '@/src/hooks/RequiredConnection'
-import { useFIATBalance } from '@/src/hooks/useFIATBalance'
-import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
-import { useAuction } from '@/src/hooks/subgraph/useAuction'
-import useTransaction from '@/src/hooks/contracts/useTransaction'
-import { useQueryParam } from '@/src/hooks/useQueryParam'
-import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
-import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
-import { contracts } from '@/src/constants/contracts'
-import { getNonHumanValue } from '@/src/web3/utils'
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import ButtonGradient from '@/src/components/antd/button-gradient'
-import { InfoBlock } from '@/src/components/custom/info-block'
-import { ButtonBack } from '@/src/components/custom/button-back'
+import { useState } from 'react'
 import { Form } from '@/src/components/antd'
+import ButtonGradient from '@/src/components/antd/button-gradient'
+import { ButtonBack } from '@/src/components/custom/button-back'
+import { InfoBlock } from '@/src/components/custom/info-block'
 import TokenAmount from '@/src/components/custom/token-amount'
+import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
+import { useAuction } from '@/src/hooks/subgraph/useAuction'
+import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import { useLiquidateForm } from '@/src/hooks/useLiquidateForm'
+import { useQueryParam } from '@/src/hooks/useQueryParam'
+import { getNonHumanValue } from '@/src/web3/utils'
 
 const SLIPPAGE_VALUE = BigNumber.from(0.02) // 2%
 
@@ -62,38 +59,20 @@ type FormProps = { liquidateAmount: BigNumber }
 
 const LiquidateAuction = () => {
   const auctionId = useQueryParam('auctionId')
-  const { appChainId } = useWeb3Connection()
 
   const [form] = AntdForm.useForm<FormProps>()
   const [step, setStep] = useState(1)
-  const [sendingForm, setSendingForm] = useState(false)
-
-  const { address: currentUserAddress } = useWeb3Connection()
 
   const { data } = useAuction(auctionId as string)
-  const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
-    data?.tokenAddress as string,
-    currentUserAddress as string,
-  )
-
   const { tokenSymbol } = useTokenSymbol(data?.tokenAddress as string)
 
   useDynamicTitle(tokenSymbol && `Liquidate ${tokenSymbol} position`)
 
   const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
-  const takeCollateralTx = useTransaction(
-    contracts.NO_LOSS_COLLATERAL_AUCTION_ACTIONS,
-    'takeCollateral',
-  )
+  const { approve, hasAllowance, liquidate, loading } = useLiquidateForm(data)
 
-  useEffect(() => {
-    setSendingForm(loadingApprove)
-  }, [loadingApprove])
-
-  const onSubmit = () => {
-    setSendingForm(true)
-
+  const onSubmit = async () => {
     // TODO SUM slippage fixed value
     const collateralAmountToSend = getNonHumanValue(
       form.getFieldValue('liquidateAmount').multipliedBy(SLIPPAGE_VALUE.plus(BigNumber.from(1))),
@@ -101,25 +80,13 @@ const LiquidateAuction = () => {
     )
 
     // maxPrice parameter calc TODO must be in USD?
-    const maxPrice = getNonHumanValue(FIATBalance.dividedBy(collateralAmountToSend), 18).toFixed(0)
-
-    takeCollateralTx(
-      data?.vault?.address,
-      data?.tokenId,
-      contracts.FIAT.address[appChainId],
-      auctionId,
-      collateralAmountToSend.toFixed(),
-      maxPrice,
-      currentUserAddress,
+    const maxPrice = getNonHumanValue(
+      FIATBalance.dividedBy(collateralAmountToSend).decimalPlaces(18),
+      18,
     )
-      .then(async () => {
-        await refetchFIATBalance()
-        setSendingForm(false)
-      })
-      .catch((err) => {
-        console.log(err)
-        setSendingForm(false)
-      })
+
+    await liquidate({ collateralAmountToSend, maxPrice })
+    await refetchFIATBalance()
   }
 
   const blocksData = [
@@ -179,7 +146,7 @@ const LiquidateAuction = () => {
                 <Form form={form} initialValues={{ liquidateAmount: 0 }} onFinish={onSubmit}>
                   <Form.Item name="liquidateAmount" required>
                     <TokenAmount
-                      disabled={sendingForm}
+                      disabled={loading}
                       displayDecimals={4}
                       mainAsset={data?.protocol}
                       max={Number(data?.upForAuction)}
@@ -188,7 +155,7 @@ const LiquidateAuction = () => {
                       slider
                     />
                   </Form.Item>
-                  <ButtonGradient disabled={sendingForm} height="lg" onClick={() => setStep(2)}>
+                  <ButtonGradient disabled={loading} height="lg" onClick={() => setStep(2)}>
                     Liquidate
                   </ButtonGradient>
                 </Form>
@@ -200,16 +167,12 @@ const LiquidateAuction = () => {
                 <div className={s.buttonsWrapper}>
                   <ButtonGradient
                     height="lg"
-                    loading={sendingForm}
+                    loading={loading}
                     onClick={() => (hasAllowance ? form.submit() : approve())}
                   >
                     {hasAllowance ? 'Confirm' : `Set Allowance for ${tokenSymbol}`}
                   </ButtonGradient>
-                  <button
-                    className={s.backButton}
-                    disabled={sendingForm}
-                    onClick={() => setStep(1)}
-                  >
+                  <button className={s.backButton} disabled={loading} onClick={() => setStep(1)}>
                     &#8592; Go back
                   </button>
                 </div>
