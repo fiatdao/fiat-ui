@@ -13,7 +13,6 @@ import { Asset } from '@/src/components/custom/asset'
 import { ACTIONS_TYPES, ActionTransaction, Transaction } from '@/src/utils/data/transactions'
 import { tablePagination } from '@/src/utils/table'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
-import { shortenAddr } from '@/src/web3/utils'
 import { useTransactionsByUser } from '@/src/hooks/subgraph/useTransactions'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 
@@ -68,9 +67,7 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'transactionHash',
-    render: (obj: Transaction['transactionHash']) => (
-      <CellAddress value={shortenAddr(obj) ?? '-'} />
-    ),
+    render: (obj: Transaction['transactionHash']) => <CellAddress value={obj ?? '-'} />,
     title: 'Transaction Hash',
   },
   {
