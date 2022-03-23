@@ -32,7 +32,7 @@ export const useNotifications = () => {
               rel="noreferrer"
               target="_blank"
             >
-              view on explorer
+              View on explorer
             </a>
           ),
         })
@@ -42,7 +42,7 @@ export const useNotifications = () => {
 
       // user rejected
       if (error.code === 4001) {
-        antdNotification.warning({
+        antdNotification.error({
           message: 'Transaction rejected',
           description: 'User denied signature',
         })
