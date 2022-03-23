@@ -137,6 +137,7 @@ const CreatePosition = () => {
       render: (collateral: Collateral) => {
         const positionExistsForCollateral =
           isWalletConnected &&
+          positions.length > 0 &&
           (collateral.hasBalance ||
             positions.filter((position) => collateral.id === position.collateral.address))
         return positionExistsForCollateral ? (
