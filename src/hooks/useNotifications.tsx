@@ -71,7 +71,7 @@ export const useNotifications = () => {
             rel="noreferrer"
             target="_blank"
           >
-            view on explorer
+            View on explorer
           </a>
         ),
       })
