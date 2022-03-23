@@ -22,7 +22,7 @@ const ChangeNetworkModal: React.FC = () => {
             Wrong network
           </Text>
           <Text color="secondary" type="p1" weight="semibold">
-            Please switch your wallet network to Etherium to use the app
+            Please switch your wallet network to Ethereum to use the app
           </Text>
           <Text color="secondary" type="p1">
             If you still encounter problems, you may want to switch to a different wallet
@@ -30,7 +30,7 @@ const ChangeNetworkModal: React.FC = () => {
         </Grid>
 
         <button className="button-ghost" onClick={handleClick} type="button">
-          <span>Switch wallet</span>
+          <span>Switch Network</span>
         </button>
       </Grid>
     </Modal>

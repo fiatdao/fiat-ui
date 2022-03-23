@@ -225,6 +225,9 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
 
   useEffect(() => {
     setValidNetwork(checkForValidChain(walletChainId))
+    if (!checkForValidChain(walletChainId) && walletChainId !== null) {
+      setChangeNetworkModalOpen(true)
+    }
   }, [walletChainId])
 
   // efectively connect wallet

@@ -4,7 +4,7 @@ import { Layout } from 'antd'
 import cn from 'classnames'
 import { Drawer } from 'antd'
 import { FC, useState } from 'react'
-import { chainsConfig } from '@/src/constants/chains'
+import { ChainsValues, chainsConfig } from '@/src/constants/chains'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useGeneral } from '@/src/providers/generalProvider'
@@ -28,7 +28,7 @@ const FiatBalanceInfo = () => {
 
 export const Header: FC = ({ ...restProps }) => {
   const { title: pageTitle } = useGeneral()
-  const { address, appChainId, isWalletConnected } = useWeb3Connection()
+  const { address, isWalletConnected, walletChainId } = useWeb3Connection()
   const router = useRouter()
   const title: string = pageTitle ?? routesConfig[router.route]?.title ?? '-'
   const [drawerVisible, setDrawerVisible] = useState(false)
@@ -56,7 +56,7 @@ export const Header: FC = ({ ...restProps }) => {
             <HeaderInfoButton
               className={cn(s.infoButton)}
               icon={<Ethereum />}
-              text={chainsConfig[appChainId].shortName}
+              text={chainsConfig[walletChainId as ChainsValues]?.shortName}
             />
           )}
           {isConnected && <ConnectedWallet />}
