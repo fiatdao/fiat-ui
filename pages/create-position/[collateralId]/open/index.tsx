@@ -111,6 +111,7 @@ const FormERC20: React.FC<{
         toDeposit: _erc20Amount,
         toMint: _fiatAmount,
       })
+      setLoading(false)
     } catch (err) {
       setLoading(false)
       throw err
@@ -131,7 +132,7 @@ const FormERC20: React.FC<{
 
   // @TODO: not working max amount
   // maxFIAT = totalCollateral*collateralValue/collateralizationRatio
-  const calculateMaxDeposit = useMemo(() => {
+  const maxDepositCalculated = useMemo(() => {
     const totalCollateral = stateMachine.context.erc20Amount ?? ZERO_BIG_NUMBER
     const collateralValue = getHumanValue(collateral.currentValue || ONE_BIG_NUMBER, WAD_DECIMALS)
     const collateralizationRatio = getHumanValue(
@@ -326,7 +327,7 @@ const FormERC20: React.FC<{
                               disabled={false}
                               displayDecimals={4}
                               healthFactorValue={healthFactorNumber}
-                              max={calculateMaxDeposit}
+                              max={maxDepositCalculated}
                               maximumFractionDigits={6}
                               onChange={(val) =>
                                 val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
@@ -400,11 +401,8 @@ const OpenPosition = () => {
   // Temporary change
   const tokenSymbol = getTokenByAddress(tokenAddress)?.symbol ?? ''
   // const { tokenSymbol } = useTokenSymbol(tokenAddress)
-  const collateralizationRatio = collateral ? collateral.vault.collateralizationRatio : null
-  const interestPerSecond =
-    collateral && collateral.vault.interestPerSecond
-      ? collateral.vault.interestPerSecond
-      : ZERO_BIG_NUMBER
+  const collateralizationRatio = collateral?.vault.collateralizationRatio ?? null
+  const interestPerSecond = collateral?.vault.interestPerSecond ?? ZERO_BIG_NUMBER
 
   const mockedBlocks = [
     {
