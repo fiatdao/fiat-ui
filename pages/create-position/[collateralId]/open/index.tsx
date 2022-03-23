@@ -42,7 +42,7 @@ import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 // import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 
-const DEFAULT_HEALTH_FACTOR = ''
+const DEFAULT_HEALTH_FACTOR = '∞'
 
 const LAST_STEP = 7
 

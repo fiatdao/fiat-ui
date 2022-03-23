@@ -78,9 +78,10 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'healthFactor',
-    render: (healthFactor: Position['healthFactor']) => (
-      <CellValue state={calculateHealthFactor(healthFactor)} value={`${healthFactor.toFixed(2)}`} />
-    ),
+    render: (healthFactor: Position['healthFactor']) => {
+      const healthFactorToRender = healthFactor.isFinite() ? healthFactor.toFixed(2) : '∞'
+      return <CellValue state={calculateHealthFactor(healthFactor)} value={healthFactorToRender} />
+    },
     responsive: ['md'],
     title: 'Health Factor',
   },

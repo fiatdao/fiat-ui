@@ -352,11 +352,11 @@ export const useManageFormSummary = (
     },
     {
       title: 'Current Health Factor',
-      value: position.healthFactor.toFixed(3),
+      value: position.healthFactor.isFinite() ? healthFactor?.toFixed(3) : '∞',
     },
     {
       title: 'New Health Factor',
-      value: healthFactor.toFixed(3),
+      value: healthFactor.isFinite() ? healthFactor?.toFixed(3) : '∞',
     },
   ]
 }
