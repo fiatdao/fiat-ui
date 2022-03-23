@@ -200,9 +200,17 @@ export const useManagePositionForm = (
     const mintValue = calculateMaxMintValue(collateral, normalDebt)
     const burnValue = getHumanValue(normalDebt, WAD_DECIMALS)
 
+    // TODO: useReducer?
+    setMaxDepositValue(depositValue)
     setAvailableDepositValue(depositValue)
+
+    setMaxWithdrawValue(withdrawValue)
     setAvailableWithdrawValue(withdrawValue)
+
+    setMaxMintValue(mintValue)
     setAvailableMintValue(mintValue)
+
+    setMaxBurnValue(burnValue)
     setAvailableBurnValue(burnValue)
   }, [
     position?.totalCollateral,
@@ -259,19 +267,23 @@ export const useManagePositionForm = (
           return
         }
       }
+
       await modifyCollateralAndDebt({
         vault: position?.protocolAddress,
         token: position?.collateral.address,
         tokenId: 0,
         deltaCollateral,
         deltaNormalDebt,
+        wait: 3,
       })
+
       await updateToken()
+
       if (onSuccess) {
         onSuccess()
       }
     } catch (err) {
-      console.error('Failed to Deposit', err)
+      console.error('Failed to Deposit:', err)
     } finally {
       setIsLoading(false)
     }

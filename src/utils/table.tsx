@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { addDays, addHours, addMinutes, formatWithOptions } from 'date-fns/fp'
+import { addDays, addHours, addMinutes, formatWithOptions, subDays, subHours } from 'date-fns/fp'
 import { enUS } from 'date-fns/locale'
 import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInHours from 'date-fns/differenceInHours'
@@ -22,6 +22,16 @@ export const remainingTime = (d: Date) => {
   const diffInMinutes = differenceInMinutes(d, today)
   today = addMinutes(diffInMinutes, today)
   return `${diffInDays}d:${diffInHours}h:${diffInMinutes}m`
+}
+
+export const elapsedTime = (d: Date) => {
+  let today = new Date()
+  const diffInDays = differenceInDays(today, d)
+  today = subDays(diffInDays, today)
+  const diffInHours = differenceInHours(today, d)
+  today = subHours(diffInHours, today)
+  const diffInMinutes = differenceInMinutes(today, d)
+  return `${diffInDays}d:${diffInHours}h:${diffInMinutes}m ago`
 }
 
 export const tablePagination = (total: number | undefined): any => {
