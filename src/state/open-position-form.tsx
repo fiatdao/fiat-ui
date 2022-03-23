@@ -119,7 +119,8 @@ const stepperMachine = createMachine<Context, Events>(
           cond: (ctx) => !ctx.erc20Amount.gt(0),
         },
         on: {
-          CLICK_DEPLOY: [{ target: 'step-5-addCollateral' }],
+          // CLICK_DEPLOY: [{ target: 'step-5-addCollateral' }],
+          CONFIRM: 'confirming-position',
         },
       },
       'step-5-addCollateral': {
@@ -137,12 +138,12 @@ const stepperMachine = createMachine<Context, Events>(
             target: 'step-final-congrats',
           },
           POSITION_CREATED_ERROR: {
-            target: 'step-final-error',
+            target: 'step-4-enteringFIATAmount', // @TODO: error page?
           },
           USER_REJECTED: {
             // @ts-ignore TODO types
             actions: assign({ error: (_) => 'User rejected transaction' }),
-            target: 'step-5-addCollateral',
+            target: 'step-4-enteringFIATAmount',
           },
         },
       },

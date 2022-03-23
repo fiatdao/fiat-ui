@@ -4,10 +4,9 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Lottie from 'lottie-react'
 import { SummaryItem } from '@/src/components/custom/summary'
-import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Form } from '@/src/components/antd'
@@ -33,16 +32,14 @@ import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { ONE_BIG_NUMBER, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
 // Temporaray Change
 import { getTokenByAddress } from '@/src/constants/bondTokens'
-// import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
-
-const DEFAULT_HEALTH_FACTOR = ''
+import { calculateHealthFactor } from '@/src/utils/data/positions'
 
 const LAST_STEP = 7
 
@@ -71,8 +68,9 @@ const FormERC20: React.FC<{
   collateral: Collateral
 }> = ({ collateral, tokenAddress, tokenSymbol }) => {
   const [form] = AntdForm.useForm<FormProps>()
-  const { address: currentUserAddress, appChainId, readOnlyAppProvider } = useWeb3Connection()
+  const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
+  const [loading, setLoading] = useState(false)
   const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
     tokenAddress,
     userProxyAddress ?? '',
@@ -83,8 +81,6 @@ const FormERC20: React.FC<{
     readOnlyAppProvider,
   })
 
-  const [currentValue, setCurrentValue] = useState(ZERO_BIG_NUMBER)
-
   const [FIATBalance] = useFIATBalance(true)
 
   const { depositCollateral } = useUserActions()
@@ -94,27 +90,31 @@ const FormERC20: React.FC<{
       hasAllowance,
       tokenAddress,
       tokenSymbol,
-      loading: true,
     },
   })
 
-  const createPosition = ({
+  const createPosition = async ({
     erc20Amount,
     fiatAmount,
   }: {
     erc20Amount: BigNumber
     fiatAmount: BigNumber
-  }) => {
-    const _erc20Amount = erc20Amount ? getNonHumanValue(erc20Amount, 18) : ZERO_BIG_NUMBER
-    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, 18) : ZERO_BIG_NUMBER
-
-    return depositCollateral({
-      vault: collateral.vault.address,
-      token: tokenAddress,
-      tokenId: 0,
-      toDeposit: _erc20Amount,
-      toMint: _fiatAmount,
-    })
+  }): Promise<void> => {
+    const _erc20Amount = erc20Amount ? getNonHumanValue(erc20Amount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+    try {
+      setLoading(true)
+      await depositCollateral({
+        vault: collateral.vault.address,
+        token: tokenAddress,
+        tokenId: 0,
+        toDeposit: _erc20Amount,
+        toMint: _fiatAmount,
+      })
+    } catch (err) {
+      setLoading(false)
+      throw err
+    }
   }
 
   // hasAllowance comes in false on init.
@@ -122,25 +122,36 @@ const FormERC20: React.FC<{
   useEffect(() => {
     send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
     send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
-    send({ type: 'SET_LOADING', loading: false })
   }, [hasAllowance, isProxyAvailable, send])
-
-  useEffect(() => {
-    getCurrentValue(readOnlyAppProvider, appChainId, 0, collateral.vault.address, false).then(
-      (cv) => setCurrentValue(cv),
-    )
-  }, [appChainId, collateral.vault.address, readOnlyAppProvider, setCurrentValue, tokenAddress])
 
   const [tab, setTab] = useState('bond')
   const [mintFiat, setMintFiat] = useState(false)
 
   const toggleMintFiat = () => setMintFiat(!mintFiat)
 
-  const healthFactor = currentValue
-    .times(stateMachine.context.erc20Amount)
-    .div(stateMachine.context.fiatAmount)
-    .unscaleBy(18)
-    .toFixed(2)
+  // @TODO: not working max amount
+  // maxFIAT = totalCollateral*collateralValue/collateralizationRatio
+  const calculateMaxDeposit = useMemo(() => {
+    const totalCollateral = stateMachine.context.erc20Amount ?? ZERO_BIG_NUMBER
+    const collateralValue = getHumanValue(collateral.currentValue || ONE_BIG_NUMBER, WAD_DECIMALS)
+    const collateralizationRatio = getHumanValue(
+      collateral.vault.collateralizationRatio || ONE_BIG_NUMBER,
+      WAD_DECIMALS,
+    )
+    const maxDeposit = totalCollateral.div(collateralValue).div(collateralizationRatio)
+
+    return maxDeposit
+  }, [stateMachine.context.erc20Amount, collateral])
+
+  const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
+  const deltaNormalDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
+  const { healthFactor: hf } = calculateHealthFactor(
+    collateral.currentValue,
+    collateral.vault.collateralizationRatio,
+    deltaCollateral,
+    deltaNormalDebt,
+  )
+  const healthFactorNumber = hf?.toFixed(3)
 
   const underlyingData = [
     {
@@ -179,7 +190,7 @@ const FormERC20: React.FC<{
     {
       state: 'ok',
       title: 'Updated health factor',
-      value: healthFactor,
+      value: healthFactorNumber,
     },
   ]
 
@@ -212,7 +223,7 @@ const FormERC20: React.FC<{
             {[1, 4].includes(stateMachine.context.currentStepNumber) && tab === 'bond' && (
               <Balance
                 title={`Deposit ${stateMachine.context.tokenSymbol}`}
-                value={`Available: ${tokenInfo?.humanValue?.toFixed()}`}
+                value={`Balance: ${tokenInfo?.humanValue?.toFixed()}`}
               />
             )}
             {tab === 'underlying' && (
@@ -314,15 +325,8 @@ const FormERC20: React.FC<{
                             <TokenAmount
                               disabled={false}
                               displayDecimals={4}
-                              healthFactorValue={
-                                !isFinite(Number(healthFactor))
-                                  ? DEFAULT_HEALTH_FACTOR
-                                  : healthFactor
-                              }
-                              max={
-                                stateMachine.context.erc20Amount.toNumber() /
-                                (collateral?.collateralizationRatio || 1)
-                              }
+                              healthFactorValue={healthFactorNumber}
+                              max={calculateMaxDeposit}
                               maximumFractionDigits={6}
                               onChange={(val) =>
                                 val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
@@ -337,7 +341,7 @@ const FormERC20: React.FC<{
                         top={
                           <Balance
                             title={`Mint FIAT`}
-                            value={`Available: ${FIATBalance.toFixed(4)}`}
+                            value={`Balance: ${FIATBalance.toFixed(4)}`}
                           />
                         }
                       />
@@ -348,18 +352,8 @@ const FormERC20: React.FC<{
                           Mint FIAT with this transaction
                         </ButtonExtraFormAction>
                       )}
-                      <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_DEPLOY' })}>
-                        Deposit collateral
-                      </ButtonGradient>
-                    </ButtonsWrapper>
-                  </>
-                )}
-                {stateMachine.context.currentStepNumber === 5 && (
-                  <>
-                    <Summary data={mockedSummaryData} />
-                    <ButtonsWrapper>
                       <ButtonGradient
-                        disabled={!hasAllowance || !isProxyAvailable}
+                        disabled={!hasAllowance || !isProxyAvailable || loading}
                         height="lg"
                         onClick={() =>
                           send({
@@ -369,15 +363,12 @@ const FormERC20: React.FC<{
                           })
                         }
                       >
-                        Confirm
+                        Deposit collateral
                       </ButtonGradient>
-                      <button
-                        className={cn(s.backButton)}
-                        onClick={() => send({ type: 'GO_BACK' })}
-                      >
-                        &#8592; Go back
-                      </button>
                     </ButtonsWrapper>
+                    <div className={cn(s.summary)}>
+                      <Summary data={mockedSummaryData} />
+                    </div>
                   </>
                 )}
               </Form>
@@ -409,6 +400,11 @@ const OpenPosition = () => {
   // Temporary change
   const tokenSymbol = getTokenByAddress(tokenAddress)?.symbol ?? ''
   // const { tokenSymbol } = useTokenSymbol(tokenAddress)
+  const collateralizationRatio = collateral ? collateral.vault.collateralizationRatio : null
+  const interestPerSecond =
+    collateral && collateral.vault.interestPerSecond
+      ? collateral.vault.interestPerSecond
+      : ZERO_BIG_NUMBER
 
   const mockedBlocks = [
     {
@@ -441,14 +437,14 @@ const OpenPosition = () => {
     {
       title: 'Collateralization Threshold',
       tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
-      value: collateral ? `${BigNumber.from(collateral.collateralizationRatio).times(100)}%` : '-',
+      value: collateralizationRatio
+        ? `${getHumanValue(collateralizationRatio.times(100), WAD_DECIMALS)}%`
+        : '-',
     },
     {
       title: 'Interest Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: `${perSecondToAPY(
-        getHumanValue(collateral?.vault.interestPerSecond, WAD_DECIMALS),
-      ).toFixed(3)}%`,
+      value: `${perSecondToAPY(getHumanValue(interestPerSecond, WAD_DECIMALS)).toFixed(3)}%`,
     },
   ]
 

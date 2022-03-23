@@ -1,6 +1,7 @@
 import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useERC20Allowance } from './useERC20Allowance'
+import { useFIATBalance } from './useFIATBalance'
 import {
   INFINITE_BIG_NUMBER,
   ONE_BIG_NUMBER,
@@ -64,6 +65,7 @@ export const useManagePositionForm = (
     readOnlyAppProvider,
     tokenAddress,
   })
+  const [FIATBalance] = useFIATBalance(true)
 
   const calculateHealthFactorFromPosition = useCallback(
     (collateral: BigNumber, normalDebt: BigNumber) => {
@@ -119,6 +121,7 @@ export const useManagePositionForm = (
     },
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )
+  // @TODO: not working max amount
   // maxFIAT = totalCollateral*collateralValue/collateralizationRatio-totalFIAT =
   const calculateMaxMintValue = useCallback(
     (totalCollateral: BigNumber, totalNormalDebt: BigNumber) => {
@@ -192,26 +195,14 @@ export const useManagePositionForm = (
     }
   }
 
+  // @TODO: available -> balance
   useEffect(() => {
-    const depositValue = tokenInfo?.humanValue
-    const collateral = position?.totalCollateral ?? ZERO_BIG_NUMBER
-    const normalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
-    const withdrawValue = calculateMaxWithdrawValue(collateral, normalDebt)
-    const mintValue = calculateMaxMintValue(collateral, normalDebt)
-    const burnValue = getHumanValue(normalDebt, WAD_DECIMALS)
+    const collateralBalance = tokenInfo?.humanValue
 
-    // TODO: useReducer?
-    setMaxDepositValue(depositValue)
-    setAvailableDepositValue(depositValue)
-
-    setMaxWithdrawValue(withdrawValue)
-    setAvailableWithdrawValue(withdrawValue)
-
-    setMaxMintValue(mintValue)
-    setAvailableMintValue(mintValue)
-
-    setMaxBurnValue(burnValue)
-    setAvailableBurnValue(burnValue)
+    setAvailableDepositValue(collateralBalance)
+    setAvailableWithdrawValue(collateralBalance)
+    setAvailableMintValue(FIATBalance)
+    setAvailableBurnValue(FIATBalance)
   }, [
     position?.totalCollateral,
     position?.totalNormalDebt,
@@ -219,6 +210,7 @@ export const useManagePositionForm = (
     calculateMaxWithdrawValue,
     calculateMaxMintValue,
     getPositionValues,
+    FIATBalance,
   ])
 
   useEffect(() => {
