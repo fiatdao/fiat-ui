@@ -80,20 +80,6 @@ const CreatePosition = () => {
     },
     {
       align: 'left',
-      dataIndex: 'underlierSymbol',
-      render: (value: Collateral['underlierSymbol']) => <CellValue value={value ?? '-'} />,
-      title: 'Underlying',
-    },
-    {
-      align: 'left',
-      dataIndex: 'maturity',
-      render: (date: Collateral['maturity']) => (
-        <CellValue bottomValue={parseDate(date)} value={`${remainingTime(date)} Left`} />
-      ),
-      title: 'Maturity',
-    },
-    {
-      align: 'left',
       dataIndex: 'faceValue',
       render: (value: Collateral['faceValue']) => (
         <CellValue
@@ -121,6 +107,14 @@ const CreatePosition = () => {
         return <CellValue value={value ? `${formatColRatio(value)}%` : '-'} />
       },
       title: 'Collateralization Threshold',
+    },
+    {
+      align: 'left',
+      dataIndex: 'maturity',
+      render: (date: Collateral['maturity']) => (
+        <CellValue bottomValue={parseDate(date)} value={`${remainingTime(date)} Left`} />
+      ),
+      title: 'Maturity',
     },
     {
       align: 'right',

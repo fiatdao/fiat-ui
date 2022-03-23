@@ -8,7 +8,7 @@ export const CellValue: React.FC<{
   state?: 'danger' | 'ok' | 'warning'
   textAlign?: 'left' | 'right' | 'center'
   tooltip?: string
-  value: string
+  value: string | JSX.Element
 }> = ({ bold, bottomValue, className, state, textAlign, tooltip, value, ...restProps }) => {
   return (
     <div className={cn(s.component, className)} title={tooltip} {...restProps}>
