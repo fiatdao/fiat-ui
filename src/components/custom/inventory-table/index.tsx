@@ -1,6 +1,5 @@
 import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
-import { getDateState } from '@/src/utils/data/positions'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { calculateHealthFactor, parseDate, remainingTime } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
@@ -44,11 +43,7 @@ const Columns: ColumnsType<Position> = [
     align: 'left',
     dataIndex: 'maturity',
     render: (maturity: Position['maturity']) => (
-      <CellValue
-        bottomValue={parseDate(maturity)}
-        state={getDateState(maturity)}
-        value={remainingTime(maturity)}
-      />
+      <CellValue bottomValue={parseDate(maturity)} value={remainingTime(maturity)} />
     ),
     responsive: ['xl'],
     title: 'Maturity',
@@ -84,10 +79,7 @@ const Columns: ColumnsType<Position> = [
     align: 'left',
     dataIndex: 'healthFactor',
     render: (healthFactor: Position['healthFactor']) => (
-      <CellValue
-        state={calculateHealthFactor(getHumanValue(healthFactor, WAD_DECIMALS))}
-        value={`${getHumanValue(healthFactor, WAD_DECIMALS).toFixed(2)}`}
-      />
+      <CellValue state={calculateHealthFactor(healthFactor)} value={`${healthFactor.toFixed(2)}`} />
     ),
     responsive: ['md'],
     title: 'Health Factor',
@@ -111,6 +103,7 @@ type InventoryProps = {
 
 const InventoryTable = ({ inventory }: InventoryProps) => {
   const riskPositions = inventory?.filter((p) => p.isAtRisk)
+  const healthyPositions = inventory?.filter((p) => !p.isAtRisk)
 
   return (
     <>
@@ -121,14 +114,14 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
       )}
       <SkeletonTable
         columns={Columns as SkeletonTableColumnsType[]}
-        loading={!inventory}
+        loading={!healthyPositions}
         rowCount={2}
       >
         <Table
           columns={Columns}
-          dataSource={inventory}
+          dataSource={healthyPositions}
           loading={false}
-          pagination={tablePagination(inventory?.length ?? 0)}
+          pagination={tablePagination(healthyPositions?.length ?? 0)}
           rowKey="name"
           scroll={{
             x: true,

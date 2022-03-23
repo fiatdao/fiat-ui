@@ -22,7 +22,9 @@ export const ACTIONS_TYPES: Record<ActionTransaction, string> = {
   ModifyCollateralAndDebtAction: 'Modify',
 }
 
-const wrangleTransaction = (transaction: SubgraphTransaction): Transaction => {
+const wrangleTransaction = (
+  transaction: SubgraphTransaction & { timestamp: number },
+): Transaction => {
   return {
     vaultName: transaction.vaultName ?? '',
     underlierSymbol: transaction.position.collateralType?.underlierSymbol ?? '',
@@ -31,7 +33,7 @@ const wrangleTransaction = (transaction: SubgraphTransaction): Transaction => {
     transactionHash: transaction.transactionHash,
     amount: getHumanValue(transaction.collateral, WAD_DECIMALS)?.toNumber() ?? 0,
     deltaAmount: getHumanValue(transaction.deltaCollateral, WAD_DECIMALS)?.toNumber() ?? 0,
-    date: BigNumberToDateOrCurrent(transaction.position.maturity),
+    date: BigNumberToDateOrCurrent(transaction.timestamp.toString()),
     assetAddress: transaction.position.collateralType?.address ?? '',
   }
 }

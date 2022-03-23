@@ -8,7 +8,7 @@ import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { POSITIONS } from '@/src/queries/positions'
 
 // FIXME Use fragment or find a way to unify queries
-export const fetchPosition = async (
+export const fetchPosition = (
   positionId: string,
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
@@ -37,9 +37,9 @@ type usePosition = {
 export const usePosition = (positionId: string): usePosition => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
 
-  const { data, error, mutate } = useSWR(['position-by-id', positionId, appChainId], async () => {
-    return fetchPosition(positionId, provider, appChainId)
-  })
+  const { data, error, mutate } = useSWR(['position-by-id', positionId, appChainId, provider], () =>
+    fetchPosition(positionId, provider, appChainId),
+  )
 
   return { position: data, refetch: mutate, error }
 }

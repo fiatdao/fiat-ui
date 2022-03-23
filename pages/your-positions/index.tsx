@@ -1,7 +1,7 @@
 import s from './s.module.scss'
+import { useRouter } from 'next/router'
 import cn from 'classnames'
 import { useState } from 'react'
-import { getDateState } from '@/src/utils/data/positions'
 import { calculateHealthFactor } from '@/src/utils/table'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Tab, Tabs } from '@/src/components/custom'
@@ -12,7 +12,7 @@ import TransactionHistoryTable from '@/src/components/custom/transaction-history
 import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 import { remainingTime } from '@/src/utils/dateTime'
 import { useYourPositionInfoPage } from '@/src/utils/data/yourPositionInfo'
-import { WAD_DECIMALS } from '@/src/constants/misc'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
@@ -33,7 +33,14 @@ const tabs = [
 ]
 
 const YourPositions = () => {
-  const [activeTabKey, setActiveTabKey] = useState<TabState>(TabState.Inventory)
+  const { query } = useRouter()
+  const [activeTabKey, setActiveTabKey] = useState<TabState>(() => {
+    if (query.transaction) {
+      return TabState.Transactions
+    }
+
+    return TabState.Inventory
+  })
   const { positions } = usePositionsByUser()
   const { pageInformation } = useYourPositionInfoPage(positions)
 
@@ -57,20 +64,11 @@ const YourPositions = () => {
           }
         />
         <InfoBlock
-          state={calculateHealthFactor(
-            getHumanValue(pageInformation?.lowestHealthFactor || 0, WAD_DECIMALS),
-          )}
+          state={calculateHealthFactor(pageInformation?.lowestHealthFactor ?? ZERO_BIG_NUMBER)}
           title="Lowest Health Factor"
-          value={(
-            getHumanValue(pageInformation?.lowestHealthFactor || 0, WAD_DECIMALS) || 0
-          ).toFixed(2)}
+          value={pageInformation?.lowestHealthFactor?.toFixed(2)}
         />
         <InfoBlock
-          state={
-            pageInformation?.nearestMaturity
-              ? getDateState(pageInformation?.nearestMaturity)
-              : undefined
-          }
           title="Next Maturity"
           value={
             pageInformation?.nearestMaturity

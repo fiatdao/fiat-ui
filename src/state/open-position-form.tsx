@@ -12,7 +12,7 @@ export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string 
   },
   3: {
     title: 'Set Collateral Allowance',
-    subtitle: 'Give permission to the FIAT protocol to manager your Collateral',
+    subtitle: 'Give permission to the FIAT protocol to manage your collateral.',
   },
   4: {
     title: 'Configure your positions',
@@ -20,7 +20,7 @@ export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string 
   },
   5: {
     title: 'Confirm your new position',
-    subtitle: 'Review and verify the details of your new position',
+    subtitle: 'Review and verify the details of your new position.',
   },
 }
 

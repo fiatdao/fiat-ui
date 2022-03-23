@@ -1,7 +1,6 @@
 import s from './s.module.scss'
 import cn from 'classnames'
 import { HTMLAttributes } from 'react'
-import ButtonOutline from '@/src/components/antd/button-outline'
 import { AddTokenButton } from '@/src/components/custom/add-token-button'
 import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
@@ -25,14 +24,6 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
 
   return (
     <div className={cn(s.sideMenuFooter, className)} {...restProps}>
-      {isDev() ? (
-        <ButtonOutline className={cn(s.item)} onClick={logContracts} type="text">
-          Log Contracts
-        </ButtonOutline>
-      ) : (
-        <></>
-      )}
-
       {/*
       <ul className={cn(s.links)}>
         <li className={cn(s.item)}>
@@ -72,13 +63,18 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
       <h6>
         <pre>
           <a
-            className={cn(s.sha)}
+            className={cn(s.metadata)}
             href={`https://github.com/fiatdao/fiat-ui/commit/${process.env.commitHash}`}
             rel="noreferrer"
             target="_blank"
           >
             Build {process.env.commitHash}
           </a>
+          {isDev() && (
+            <button className={cn(s.metadataButton)} onClick={logContracts}>
+              Log Contracts
+            </button>
+          )}
         </pre>
       </h6>
     </div>

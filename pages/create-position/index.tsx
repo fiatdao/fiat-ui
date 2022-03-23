@@ -1,5 +1,4 @@
 import s from './s.module.scss'
-import { getDateState } from '../../src/utils/data/positions'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
@@ -94,11 +93,7 @@ const CreatePosition = () => {
       align: 'left',
       dataIndex: 'maturity',
       render: (date: Collateral['maturity']) => (
-        <CellValue
-          bottomValue={parseDate(date)}
-          state={getDateState(date)}
-          value={`${remainingTime(date)} Left`}
-        />
+        <CellValue bottomValue={parseDate(date)} value={`${remainingTime(date)} Left`} />
       ),
       title: 'Maturity',
     },
@@ -130,7 +125,7 @@ const CreatePosition = () => {
       render: ({ collateralizationRatio: value }: Collateral['vault']) => {
         return <CellValue value={value ? `${formatColRatio(value)}%` : '-'} />
       },
-      title: 'Collateralization Ratio',
+      title: 'Collateralization Threshold',
     },
     {
       align: 'right',
