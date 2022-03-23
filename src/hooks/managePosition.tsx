@@ -190,10 +190,25 @@ export const useManagePositionForm = (
   // @TODO: available -> balance
   useEffect(() => {
     const collateralBalance = tokenInfo?.humanValue
+    const totalCollateral = position?.totalCollateral ?? ZERO_BIG_NUMBER
+    const normalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
+    const withdrawValue = calculateMaxWithdrawValue(totalCollateral, normalDebt)
+    const mintValue = calculateMaxMintValue(totalCollateral, normalDebt)
+    const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
 
+    setMaxDepositValue(collateralBalance)
+    setMaxWithdrawValue(withdrawValue)
+    setMaxMintValue(mintValue)
+    setMaxBurnValue(burnValue)
     setAvailableDepositValue(collateralBalance)
     setAvailableWithdrawValue(collateralBalance)
-  }, [tokenInfo?.humanValue])
+  }, [
+    tokenInfo?.humanValue,
+    position?.totalCollateral,
+    position?.totalNormalDebt,
+    calculateMaxWithdrawValue,
+    calculateMaxMintValue,
+  ])
 
   useEffect(() => {
     const args = positionFormFields as PositionManageFormFields
