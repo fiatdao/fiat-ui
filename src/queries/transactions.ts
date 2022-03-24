@@ -13,7 +13,6 @@ export const TRANSACTIONS = gql`
       transactionHash
       tokenId
       user
-      vault
       position {
         maturity
         collateralType {

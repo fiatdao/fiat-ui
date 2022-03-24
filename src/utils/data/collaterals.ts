@@ -21,7 +21,7 @@ export type Collateral = {
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
   maturity: Date
-  ccp: {
+  eptData: {
     balancerVault: string
     convergentCurvePool: string
     id: string
@@ -48,10 +48,10 @@ const wrangleCollateral = async (
 
   let currentValue = null
   if (
-    collateral?.underlierAddress &&
+    collateral.underlierAddress &&
     collateral.vault?.address &&
     collateral.maturity &&
-    collateral?.underlierAddress !== ZERO_ADDRESS
+    collateral.underlierAddress !== ZERO_ADDRESS
   ) {
     currentValue = await contractCall<Collybus, 'read'>(
       collybusAddress,
@@ -117,11 +117,11 @@ const wrangleCollateral = async (
       address: collateral.vault?.address ?? '',
       interestPerSecond: collateral.vault?.interestPerSecond ?? '',
     },
-    ccp: {
-      balancerVault: collateral.ccp?.balancerVault ?? '',
-      convergentCurvePool: collateral.ccp?.convergentCurvePool ?? '',
-      id: collateral.ccp?.id ?? '',
-      poolId: collateral.ccp?.poolId ?? '',
+    eptData: {
+      balancerVault: collateral.eptData?.balancerVault ?? '',
+      convergentCurvePool: collateral.eptData?.convergentCurvePool ?? '',
+      id: collateral.eptData?.id ?? '',
+      poolId: collateral.eptData?.poolId ?? '',
     },
     hasBalance: !!balance && balance.gt(0),
     manageId:
