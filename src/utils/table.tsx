@@ -14,6 +14,9 @@ export const calculateHealthFactor = (hf: BigNumber): 'danger' | 'ok' | 'warning
 export const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
 
 export const remainingTime = (d: Date) => {
+  if (d.getTime() <= Date.now()) {
+    return 'Expired'
+  }
   let today = new Date()
   const diffInDays = differenceInDays(d, today)
   today = addDays(diffInDays, today)
