@@ -88,7 +88,7 @@ const CreatePosition = () => {
       align: 'left',
       dataIndex: 'maturity',
       render: (date: Collateral['maturity']) => (
-        <CellValue bottomValue={parseDate(date)} value={`${remainingTime(date)} Left`} />
+        <CellValue bottomValue={parseDate(date)} value={remainingTime(date)} />
       ),
       title: 'Maturity',
     },
