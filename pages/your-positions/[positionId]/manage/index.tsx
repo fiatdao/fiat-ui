@@ -62,7 +62,7 @@ const PositionManage = () => {
 
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
-  const [, refetchFiatBalance] = useFIATBalance()
+  const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
 
   const onSuccess = async () => {
     form.resetFields()
@@ -70,9 +70,7 @@ const PositionManage = () => {
   }
 
   const {
-    availableBurnValue,
     availableDepositValue,
-    availableMintValue,
     availableWithdrawValue,
     buttonText,
     handleFormChange,
@@ -206,7 +204,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to borrow"
-                            value={`Available: ${availableMintValue?.toFixed(4)}`}
+                            value={`Available: ${fiatBalance?.toFixed(4)}`}
                           />
                           <Form.Item name="mint" required>
                             <TokenAmount
@@ -224,7 +222,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to repay"
-                            value={`Available: ${availableBurnValue?.toFixed(4)}`}
+                            value={`Available: ${fiatBalance?.toFixed(4)}`}
                           />
                           <Form.Item name="burn" required>
                             <TokenAmount

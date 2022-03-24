@@ -81,7 +81,7 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'healthFactor',
     render: (healthFactor: Position['healthFactor']) => {
       const healthFactorToRender = healthFactor.isFinite()
-        ? healthFactor.toFixed(2)
+        ? healthFactor.toFixed(3)
         : DEFAULT_HEALTH_FACTOR
       return <CellValue state={calculateHealthFactor(healthFactor)} value={healthFactorToRender} />
     },

@@ -19,6 +19,7 @@ import {
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
+import { Maybe } from '@/types/utils'
 
 export type Position = {
   id: string
@@ -102,8 +103,8 @@ const calculateDebt = (normalDebt: BigNumber) => {
 
 // @TODO: healthFactor = totalCollateral*collateralValue/totalFIAT/collateralizationRatio
 const calculateHealthFactor = (
-  currentValue: BigNumber | undefined, // collateralValue
-  collateralizationRatio: BigNumber | undefined,
+  currentValue: BigNumber | Maybe<BigNumber> | undefined, // collateralValue
+  collateralizationRatio: BigNumber | Maybe<BigNumber> | undefined,
   collateral: BigNumber | undefined,
   normalDebt: BigNumber | undefined,
 ): {

@@ -48,13 +48,7 @@ export const useManagePositionForm = (
     ZERO_BIG_NUMBER,
   )
   const [maxMintValue, setMaxMintValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [availableMintValue, setAvailableMintValue] = useState<BigNumber | undefined>(
-    ZERO_BIG_NUMBER,
-  )
   const [maxBurnValue, setMaxBurnValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [availableBurnValue, setAvailableBurnValue] = useState<BigNumber | undefined>(
-    ZERO_BIG_NUMBER,
-  )
 
   const [healthFactor, setHealthFactor] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
   const [buttonText, setButtonText] = useState<string>('Execute')
@@ -120,6 +114,7 @@ export const useManagePositionForm = (
     },
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )
+  // @TODO: not working max amount
   // maxFIAT = totalCollateral*collateralValue/collateralizationRatio-totalFIAT =
   const calculateMaxMintValue = useCallback(
     (totalCollateral: BigNumber, totalNormalDebt: BigNumber) => {
@@ -193,33 +188,27 @@ export const useManagePositionForm = (
     }
   }
 
+  // @TODO: available -> balance
   useEffect(() => {
-    const depositValue = tokenInfo?.humanValue
-    const collateral = position?.totalCollateral ?? ZERO_BIG_NUMBER
+    const collateralBalance = tokenInfo?.humanValue
+    const totalCollateral = position?.totalCollateral ?? ZERO_BIG_NUMBER
     const normalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
-    const withdrawValue = calculateMaxWithdrawValue(collateral, normalDebt)
-    const mintValue = calculateMaxMintValue(collateral, normalDebt)
-    const burnValue = getHumanValue(normalDebt, WAD_DECIMALS)
+    const withdrawValue = calculateMaxWithdrawValue(totalCollateral, normalDebt)
+    const mintValue = calculateMaxMintValue(totalCollateral, normalDebt)
+    const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
 
-    // TODO: useReducer?
-    setMaxDepositValue(depositValue)
-    setAvailableDepositValue(depositValue)
-
+    setMaxDepositValue(collateralBalance)
     setMaxWithdrawValue(withdrawValue)
-    setAvailableWithdrawValue(withdrawValue)
-
     setMaxMintValue(mintValue)
-    setAvailableMintValue(mintValue)
-
     setMaxBurnValue(burnValue)
-    setAvailableBurnValue(burnValue)
+    setAvailableDepositValue(collateralBalance)
+    setAvailableWithdrawValue(collateralBalance)
   }, [
+    tokenInfo?.humanValue,
     position?.totalCollateral,
     position?.totalNormalDebt,
-    tokenInfo?.humanValue,
     calculateMaxWithdrawValue,
     calculateMaxMintValue,
-    getPositionValues,
   ])
 
   useEffect(() => {
@@ -296,9 +285,7 @@ export const useManagePositionForm = (
     availableWithdrawValue,
     maxWithdrawValue,
     maxBurnValue,
-    availableBurnValue,
     maxMintValue,
-    availableMintValue,
     healthFactor,
     handleFormChange,
     buttonText,
