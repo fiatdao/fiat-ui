@@ -98,13 +98,13 @@ const FormERC20: React.FC<{
     },
   })
 
-  const createPosition = async ({
+  const createPosition = ({
     erc20Amount,
     fiatAmount,
   }: {
     erc20Amount: BigNumber
     fiatAmount: BigNumber
-  }): Promise<void> => {
+  }) => {
     const _erc20Amount = erc20Amount ? getNonHumanValue(erc20Amount, 18) : ZERO_BIG_NUMBER
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, 18) : ZERO_BIG_NUMBER
 
