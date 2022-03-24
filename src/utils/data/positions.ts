@@ -144,8 +144,8 @@ const wranglePosition = async (
   const { id, vaultName: protocol } = position
   const vaultCollateralizationRatio =
     BigNumber.from(position.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER
-  const totalCollateral = BigNumber.from(position.totalCollateral) ?? ZERO_BIG_NUMBER
-  const totalNormalDebt = BigNumber.from(position.totalNormalDebt) ?? ZERO_BIG_NUMBER
+  const totalCollateral = BigNumber.from(position.collateral) ?? ZERO_BIG_NUMBER
+  const totalNormalDebt = BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
   const maturity = BigNumberToDateOrCurrent(position.maturity)
 
