@@ -12,6 +12,7 @@ import { tablePagination } from '@/src/utils/table'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 const Columns: ColumnsType<Position> = [
   {
@@ -79,7 +80,9 @@ const Columns: ColumnsType<Position> = [
     align: 'left',
     dataIndex: 'healthFactor',
     render: (healthFactor: Position['healthFactor']) => {
-      const healthFactorToRender = healthFactor.isFinite() ? healthFactor.toFixed(2) : '∞'
+      const healthFactorToRender = healthFactor.isFinite()
+        ? healthFactor.toFixed(2)
+        : DEFAULT_HEALTH_FACTOR
       return <CellValue state={calculateHealthFactor(healthFactor)} value={healthFactorToRender} />
     },
     responsive: ['md'],

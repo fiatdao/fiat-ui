@@ -24,6 +24,7 @@ import { Balance } from '@/src/components/custom/balance'
 import { Form } from '@/src/components/antd'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -85,7 +86,9 @@ const PositionManage = () => {
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
-  const healthFactorToRender = healthFactor?.isFinite() ? healthFactor?.toFixed(3) : '∞'
+  const healthFactorToRender = healthFactor?.isFinite()
+    ? healthFactor?.toFixed(3)
+    : DEFAULT_HEALTH_FACTOR
 
   return (
     <>

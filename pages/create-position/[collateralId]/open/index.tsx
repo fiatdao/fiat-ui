@@ -40,9 +40,8 @@ import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
 // Temporaray Change
 import { getTokenByAddress } from '@/src/constants/bondTokens'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 // import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
-
-const DEFAULT_HEALTH_FACTOR = '∞'
 
 const LAST_STEP = 7
 

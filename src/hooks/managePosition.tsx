@@ -21,6 +21,7 @@ import { Position, calculateDebt, calculateHealthFactor } from '@/src/utils/data
 import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 export type TokenInfo = {
   decimals?: number
@@ -352,11 +353,11 @@ export const useManageFormSummary = (
     },
     {
       title: 'Current Health Factor',
-      value: position.healthFactor.isFinite() ? healthFactor?.toFixed(3) : '∞',
+      value: position.healthFactor.isFinite() ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
     {
       title: 'New Health Factor',
-      value: healthFactor.isFinite() ? healthFactor?.toFixed(3) : '∞',
+      value: healthFactor.isFinite() ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
   ]
 }
