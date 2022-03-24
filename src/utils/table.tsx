@@ -14,6 +14,9 @@ export const calculateHealthFactor = (hf: BigNumber): 'danger' | 'ok' | 'warning
 export const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
 
 export const remainingTime = (d: Date) => {
+  if (d.getTime() <= Date.now()) {
+    return 'Expired'
+  }
   let today = new Date()
   const diffInDays = differenceInDays(d, today)
   today = addDays(diffInDays, today)
@@ -42,7 +45,7 @@ export const tablePagination = (total: number | undefined): any => {
     position: ['bottomCenter'],
     showTotal: (total: number, [from, to]: [number, number]) => (
       <>
-        Showing {from} to {to} of the most recent {total}
+        Showing results {from} to {to} of {total}
       </>
     ),
   }

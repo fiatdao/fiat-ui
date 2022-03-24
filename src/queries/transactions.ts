@@ -12,8 +12,8 @@ export const TRANSACTIONS = gql`
       deltaNormalDebt
       transactionHash
       tokenId
+      timestamp
       user
-      vault
       position {
         maturity
         collateralType {
