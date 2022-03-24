@@ -21,7 +21,7 @@ export type AuctionData = {
   tokenId?: string
   yield?: string
   vault?: { address: string; name?: string }
-  auction: { isActive: boolean; id: number | string }
+  action: { isActive: boolean; id: number | string }
   tokenAddress?: string | null
   collateral: TokenData
   underlier: TokenData
@@ -80,7 +80,7 @@ const wrangleAuction = async (
     yield: getHumanValue(
       calcYield(collateralValue, BigNumber.from(auctionStatus?.price.toString()) ?? null),
     )?.toFormat(2),
-    auction: { isActive: collateralAuction.isActive, id: collateralAuction.id },
+    action: { isActive: collateralAuction.isActive, id: collateralAuction.id },
     tokenAddress: underlierAddress,
     collateral: {
       symbol: collateralAuction.collateralType?.symbol ?? '',

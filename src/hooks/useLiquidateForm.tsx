@@ -1,14 +1,20 @@
+import { Contract } from '@ethersproject/contracts'
+import { TransactionResponse } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNotifications } from '@/src/hooks/useNotifications'
+import { NoLossCollateralAuctionActions } from '@/types/typechain'
+import { TransactionError } from '@/src/utils/TransactionError'
 import { contracts } from '@/src/constants/contracts'
-import useTransaction from '@/src/hooks/contracts/useTransaction'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { AuctionData } from '@/src/utils/data/auctions'
 import { Maybe } from '@/types/utils'
 
-export const useLiquidateForm = (liquidateData?: AuctionData) => {
+export const useLiquidateForm = (auctionData?: AuctionData) => {
+  const notification = useNotifications()
+
   const initialState = useMemo(
     () => ({
       loading: false,
@@ -16,23 +22,27 @@ export const useLiquidateForm = (liquidateData?: AuctionData) => {
     }),
     [],
   )
-
   const [txStatus, setTxStatus] = useState<{
     loading: boolean
     error: Maybe<Error>
   }>(initialState)
 
-  const { address: currentUserAddress } = useWeb3Connected()
-  const { userProxyAddress } = useUserProxy()
+  const { address: userAddress, appChainId, isAppConnected, web3Provider } = useWeb3Connected()
+  const { userProxy, userProxyAddress } = useUserProxy()
 
   const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
-    liquidateData?.tokenAddress as string,
-    currentUserAddress,
+    auctionData?.tokenAddress as string,
+    userProxyAddress ?? '',
   )
 
-  const takeCollateralTx = useTransaction(
-    contracts.NO_LOSS_COLLATERAL_AUCTION_ACTIONS,
-    'takeCollateral',
+  const noLossCollateralAuctionActions = useMemo(
+    () =>
+      new Contract(
+        contracts.NO_LOSS_COLLATERAL_AUCTION_ACTIONS.address[appChainId],
+        contracts.NO_LOSS_COLLATERAL_AUCTION_ACTIONS.abi,
+        web3Provider.getSigner(),
+      ) as NoLossCollateralAuctionActions,
+    [appChainId, web3Provider],
   )
 
   const liquidate = useCallback(
@@ -43,25 +53,77 @@ export const useLiquidateForm = (liquidateData?: AuctionData) => {
       collateralAmountToSend: BigNumber
       maxPrice: BigNumber
     }) => {
-      setTxStatus((prev) => ({ ...prev, loading: true }))
-
       try {
-        await takeCollateralTx(
-          liquidateData?.vault?.address,
-          liquidateData?.tokenId,
-          userProxyAddress,
-          liquidateData?.auction.id,
-          collateralAmountToSend.toFixed(),
-          maxPrice.toFixed(),
-          userProxyAddress,
+        if (!isAppConnected) {
+          notification.appNotConnected()
+          return
+        }
+
+        if (!userProxy || !userProxyAddress) {
+          throw new Error('no userProxy available')
+        }
+
+        if (!auctionData) {
+          throw new Error('missing auction data')
+        }
+
+        setTxStatus((prev) => ({ ...prev, loading: true }))
+
+        const takeCollateral = noLossCollateralAuctionActions.interface.encodeFunctionData(
+          'takeCollateral',
+          [
+            auctionData.vault?.address as string,
+            auctionData.tokenId as string,
+            userAddress,
+            auctionData.id,
+            collateralAmountToSend.toFixed(),
+            maxPrice.toFixed(),
+            userAddress,
+          ],
         )
+
+        notification.requestSign()
+
+        const tx: TransactionResponse | TransactionError = await userProxy
+          .execute(noLossCollateralAuctionActions.address, takeCollateral, {
+            gasLimit: 1_000_000,
+          })
+          .catch(notification.handleTxError)
+
+        if (tx instanceof TransactionError) {
+          throw tx
+        }
+
+        // awaiting exec
+        notification.awaitingTx(tx.hash)
+
+        const receipt = await tx.wait().catch(notification.handleTxError)
+
+        if (receipt instanceof TransactionError) {
+          throw receipt
+        }
+
+        // tx successful
+        notification.successfulTx(tx.hash)
+
+        return receipt
       } catch (err: any) {
+        notification.handleTxError(err)
         setTxStatus((prev) => ({ ...prev, error: err }))
       } finally {
         setTxStatus((prev) => ({ ...prev, loading: false }))
       }
     },
-    [liquidateData, takeCollateralTx, userProxyAddress],
+    [
+      auctionData,
+      isAppConnected,
+      noLossCollateralAuctionActions.address,
+      noLossCollateralAuctionActions.interface,
+      notification,
+      userAddress,
+      userProxy,
+      userProxyAddress,
+    ],
   )
 
   useEffect(() => {
