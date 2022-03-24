@@ -24,6 +24,7 @@ import { Balance } from '@/src/components/custom/balance'
 import { Form } from '@/src/components/antd'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -83,7 +84,9 @@ const PositionManage = () => {
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
-  const healthFactorNumber = healthFactor?.toFixed(3)
+  const healthFactorToRender = healthFactor?.isFinite()
+    ? healthFactor?.toFixed(3)
+    : DEFAULT_HEALTH_FACTOR
 
   return (
     <>
@@ -143,7 +146,7 @@ const PositionManage = () => {
                           <Form.Item name="deposit" required>
                             <TokenAmount
                               displayDecimals={4}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={healthFactorToRender}
                               mainAsset={position.protocol}
                               max={maxDepositValue}
                               maximumFractionDigits={6}
@@ -162,7 +165,7 @@ const PositionManage = () => {
                           <Form.Item name="withdraw" required>
                             <TokenAmount
                               displayDecimals={4}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={healthFactorToRender}
                               mainAsset={position.protocol}
                               max={maxWithdrawValue}
                               maximumFractionDigits={6}
@@ -206,7 +209,7 @@ const PositionManage = () => {
                           <Form.Item name="mint" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={healthFactorToRender}
                               max={maxMintValue}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariant'}
@@ -224,7 +227,7 @@ const PositionManage = () => {
                           <Form.Item name="burn" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={healthFactorToRender}
                               max={maxBurnValue}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}
