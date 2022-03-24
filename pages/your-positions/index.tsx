@@ -66,7 +66,7 @@ const YourPositions = () => {
         <InfoBlock
           state={calculateHealthFactor(pageInformation?.lowestHealthFactor ?? ZERO_BIG_NUMBER)}
           title="Lowest Health Factor"
-          value={pageInformation?.lowestHealthFactor?.toFixed(2)}
+          value={pageInformation?.lowestHealthFactor?.toFixed(3)}
         />
         <InfoBlock
           title="Next Maturity"

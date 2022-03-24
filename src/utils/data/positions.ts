@@ -19,6 +19,7 @@ import {
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
+import { Maybe } from '@/types/utils'
 
 export type Position = {
   id: string
@@ -102,8 +103,8 @@ const calculateDebt = (normalDebt: BigNumber) => {
 
 // @TODO: healthFactor = totalCollateral*collateralValue/totalFIAT/collateralizationRatio
 const calculateHealthFactor = (
-  currentValue: BigNumber | undefined, // collateralValue
-  collateralizationRatio: BigNumber | undefined,
+  currentValue: BigNumber | Maybe<BigNumber> | undefined, // collateralValue
+  collateralizationRatio: BigNumber | Maybe<BigNumber> | undefined,
   collateral: BigNumber | undefined,
   normalDebt: BigNumber | undefined,
 ): {
@@ -143,8 +144,8 @@ const wranglePosition = async (
   const { id, vaultName: protocol } = position
   const vaultCollateralizationRatio =
     BigNumber.from(position.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER
-  const totalCollateral = BigNumber.from(position.totalCollateral) ?? ZERO_BIG_NUMBER
-  const totalNormalDebt = BigNumber.from(position.totalNormalDebt) ?? ZERO_BIG_NUMBER
+  const totalCollateral = BigNumber.from(position.collateral) ?? ZERO_BIG_NUMBER
+  const totalNormalDebt = BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
   const maturity = BigNumberToDateOrCurrent(position.maturity)
 

@@ -12,7 +12,7 @@ export const COLLATERALS = gql`
       maturity
       address
       faceValue
-      ccp {
+      eptData {
         id
         balancerVault
         convergentCurvePool
