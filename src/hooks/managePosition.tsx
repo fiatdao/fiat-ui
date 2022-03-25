@@ -4,6 +4,8 @@ import { useERC20Allowance } from './useERC20Allowance'
 import {
   INFINITE_BIG_NUMBER,
   ONE_BIG_NUMBER,
+  VIRTUAL_RATE,
+  VIRTUAL_RATE_SAFETY_MARGIN,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '../constants/misc'
@@ -115,16 +117,23 @@ export const useManagePositionForm = (
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )
   // @TODO: not working max amount
-  // maxFIAT = totalCollateral*collateralValue/collateralizationRatio-totalFIAT =
+  // debt = normalDebt*virtualRate
+  // maxFIAT = totalCollateral*collateralValue/collateralizationRatio/(virtualRateSafetyMargin*virtualRate)-debt
   const calculateMaxMintValue = useCallback(
     (totalCollateral: BigNumber, totalNormalDebt: BigNumber) => {
       const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
       const currentValue = position?.currentValue ? position?.currentValue : 1
       const debt = calculateDebt(totalNormalDebt)
-      const minValue = totalCollateral.times(currentValue).div(collateralizationRatio).minus(debt)
+      const safetyMargin = VIRTUAL_RATE_SAFETY_MARGIN.times(VIRTUAL_RATE)
+
+      const mintValue = totalCollateral
+        .times(currentValue)
+        .div(collateralizationRatio)
+        .div(safetyMargin)
+        .minus(debt)
       let result = ZERO_BIG_NUMBER
-      if (minValue.isPositive()) {
-        result = minValue
+      if (mintValue.isPositive()) {
+        result = mintValue
       }
       return getHumanValue(result, WAD_DECIMALS)
     },
