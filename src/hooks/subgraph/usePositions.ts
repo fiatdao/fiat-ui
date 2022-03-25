@@ -41,15 +41,17 @@ export const usePositions = (id?: string, proxyAddress?: string, protocol?: stri
   const { address: userAddress, appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
   const { data, error, mutate } = useSWR(
     ['positions', id, proxyAddress, userAddress, protocol],
-    () =>
-      fetchPositions({
+    () => {
+      if (!userAddress) return []
+      return fetchPositions({
         id,
         proxyAddress,
-        userAddress: userAddress || undefined,
+        userAddress: userAddress,
         protocol,
         provider,
         appChainId,
-      }),
+      })
+    },
   )
 
   // TODO Remove positionTransactions from here
