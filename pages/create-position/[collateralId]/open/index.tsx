@@ -98,13 +98,13 @@ const FormERC20: React.FC<{
     },
   })
 
-  const createPosition = async ({
+  const createPosition = ({
     erc20Amount,
     fiatAmount,
   }: {
     erc20Amount: BigNumber
     fiatAmount: BigNumber
-  }): Promise<void> => {
+  }) => {
     const _erc20Amount = erc20Amount ? getNonHumanValue(erc20Amount, 18) : ZERO_BIG_NUMBER
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, 18) : ZERO_BIG_NUMBER
 
@@ -199,13 +199,14 @@ const FormERC20: React.FC<{
                 <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
                   Bond
                 </RadioTab>
-                <RadioTab
+                {/* Temporary comment untill underlying is ready for production */}
+                {/* <RadioTab
                   checked={tab === 'underlying'}
                   disabled
                   onClick={() => setTab('underlying')}
                 >
                   Underlying
-                </RadioTab>
+                </RadioTab> */}
               </RadioTabsWrapper>
             )}
             {[1, 4].includes(stateMachine.context.currentStepNumber) && tab === 'bond' && (
@@ -438,7 +439,7 @@ const OpenPosition = () => {
       value: `$${getHumanValue(collateral?.currentValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {
-      title: 'Collateralization Ratio',
+      title: 'Collateralization Threshold',
       tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
       value: collateral ? `${BigNumber.from(collateral.collateralizationRatio).times(100)}%` : '-',
     },

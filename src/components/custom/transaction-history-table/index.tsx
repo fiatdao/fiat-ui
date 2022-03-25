@@ -4,7 +4,7 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import { useState } from 'react'
 import { SelectValue } from 'antd/lib/select'
 import _ from 'lodash'
-import { parseDate, remainingTime } from '@/src/utils/table'
+import { elapsedTime, parseDate } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
 import Select from '@/src/components/antd/select'
 import { CellValue } from '@/src/components/custom/cell-value'
@@ -13,7 +13,6 @@ import { Asset } from '@/src/components/custom/asset'
 import { ACTIONS_TYPES, ActionTransaction, Transaction } from '@/src/utils/data/transactions'
 import { tablePagination } from '@/src/utils/table'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
-import { shortenAddr } from '@/src/web3/utils'
 import { useTransactionsByUser } from '@/src/hooks/subgraph/useTransactions'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 
@@ -50,7 +49,7 @@ const Columns: ColumnsType<any> = [
     align: 'right',
     dataIndex: 'deltaAmount',
     render: (delta: Transaction['amount']) => {
-      // collateral is being depositted when delta is greater than 0, otherwise is a withdraw operation
+      // collateral is being deposited when delta is greater than 0, otherwise is a withdrawal operation
       const isAdding = delta >= 0
       const text = isAdding ? `+${delta.toFixed(3)}` : `${delta.toFixed(3)}`
 
@@ -68,16 +67,14 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'transactionHash',
-    render: (obj: Transaction['transactionHash']) => (
-      <CellAddress value={shortenAddr(obj) ?? '-'} />
-    ),
+    render: (obj: Transaction['transactionHash']) => <CellAddress value={obj ?? '-'} />,
     title: 'Transaction Hash',
   },
   {
     align: 'left',
     dataIndex: 'date',
     render: (date: Transaction['date']) => (
-      <CellValue bottomValue={remainingTime(date)} value={parseDate(date)} />
+      <CellValue bottomValue={elapsedTime(date)} value={parseDate(date)} />
     ),
     responsive: ['lg'],
     title: 'Date',

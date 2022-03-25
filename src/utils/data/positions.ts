@@ -7,7 +7,6 @@ import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
 
-import { Maybe } from '@/types/utils'
 import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
@@ -15,6 +14,7 @@ import { ERC20 } from '@/types/typechain'
 import {
   INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
+  ONE_BIG_NUMBER,
   VIRTUAL_RATE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
@@ -31,7 +31,7 @@ export type Position = {
   underlier: TokenData
   totalCollateral: BigNumber
   totalNormalDebt: BigNumber
-  vaultCollateralizationRatio: Maybe<BigNumber>
+  vaultCollateralizationRatio: BigNumber
   collateralValue: BigNumber
   faceValue: BigNumber
   healthFactor: BigNumber
@@ -93,39 +93,40 @@ export const getDateState = (maturityDate: Date) => {
   return diff <= 0 ? 'danger' : diff <= 7 ? 'warning' : 'ok'
 }
 
+// @TODO: we need to use debt instead of normalDebt to calculate HF
+//        replace hardcoded value for Publican virtualRate value
+//        https://github.com/fiatdao/fiat-ui/issues/292
+const calculateDebt = (normalDebt: BigNumber) => {
+  return normalDebt.times(VIRTUAL_RATE)
+}
+
+// @TODO: healthFactor = totalCollateral*collateralValue/totalFIAT/collateralizationRatio
 const calculateHealthFactor = (
-  currentValue: BigNumber | undefined,
+  currentValue: BigNumber | undefined, // collateralValue
+  collateralizationRatio: BigNumber | undefined,
   collateral: BigNumber | undefined,
   normalDebt: BigNumber | undefined,
-  collateralizationRatio: BigNumber,
 ): {
-  healthFactor: BigNumber
+  healthFactor: BigNumber // NonHumanBigNumber
   isAtRisk: boolean
 } => {
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
-  if (normalDebt && normalDebt?.isZero()) {
+  if (!normalDebt || normalDebt?.isZero()) {
     healthFactor = INFINITE_BIG_NUMBER
+    return {
+      healthFactor,
+      isAtRisk,
+    }
   } else {
-    if (
-      currentValue &&
-      collateral &&
-      normalDebt &&
-      !collateral?.isZero() &&
-      collateralizationRatio
-    ) {
-      healthFactor = new BigNumber(
-        currentValue
-          .times(collateral.toFixed())
-          .div(normalDebt.times(VIRTUAL_RATE).toFixed())
-          .div(collateralizationRatio)
-          .toNumber(),
-      )
-      isAtRisk = collateralizationRatio.gte(healthFactor)
+    if (currentValue && collateral && !collateral?.isZero() && collateralizationRatio) {
+      const debt = calculateDebt(normalDebt)
+      healthFactor = collateral.times(currentValue).div(debt).div(collateralizationRatio)
 
       if (healthFactor.isGreaterThan(INFINITE_HEALTH_FACTOR_NUMBER)) {
         healthFactor = INFINITE_BIG_NUMBER
       }
+      isAtRisk = getHumanValue(collateralizationRatio, WAD_DECIMALS).gte(healthFactor)
     }
   }
   return {
@@ -140,12 +141,8 @@ const wranglePosition = async (
   appChainId: ChainsValues,
 ): Promise<Position> => {
   const { id, vaultName: protocol } = position
-  // we use 18 decimals, as values stored are stored in WAD in the FIAT protocol
-  const vaultCollateralizationRatio = getHumanValue(
-    BigNumber.from(position.vault?.collateralizationRatio ?? 1e18) as BigNumber,
-    WAD_DECIMALS,
-  )
-
+  const vaultCollateralizationRatio =
+    BigNumber.from(position.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER
   const totalCollateral = BigNumber.from(position.totalCollateral) ?? ZERO_BIG_NUMBER
   const totalNormalDebt = BigNumber.from(position.totalNormalDebt) ?? ZERO_BIG_NUMBER
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
@@ -160,9 +157,9 @@ const wranglePosition = async (
 
   const { healthFactor, isAtRisk } = calculateHealthFactor(
     currentValue,
+    vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
-    vaultCollateralizationRatio,
   )
 
   // TODO Interest rate
@@ -194,4 +191,4 @@ const wranglePosition = async (
     interestPerSecond,
   }
 }
-export { wranglePosition, calculateHealthFactor }
+export { wranglePosition, calculateHealthFactor, calculateDebt }
