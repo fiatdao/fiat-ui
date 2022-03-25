@@ -80,6 +80,20 @@ const CreatePosition = () => {
     },
     {
       align: 'left',
+      dataIndex: 'underlierSymbol',
+      render: (value: Collateral['underlierSymbol']) => <CellValue value={value ?? '-'} />,
+      title: 'Underlying',
+    },
+    {
+      align: 'left',
+      dataIndex: 'maturity',
+      render: (date: Collateral['maturity']) => (
+        <CellValue bottomValue={parseDate(date)} value={remainingTime(date)} />
+      ),
+      title: 'Maturity',
+    },
+    {
+      align: 'left',
       dataIndex: 'faceValue',
       render: (value: Collateral['faceValue']) => (
         <CellValue
@@ -174,7 +188,10 @@ const CreatePosition = () => {
             height="lg"
             isActive={filters[asset].active}
             key={asset}
-            onClick={() => setFilter(asset, !filters[asset].active)}
+            onClick={() => {
+              clearAllFilters()
+              setFilter(asset, !filters[asset].active)
+            }}
             rounded
           >
             {filters[asset].icon}

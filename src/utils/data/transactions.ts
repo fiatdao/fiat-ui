@@ -31,7 +31,7 @@ const wrangleTransaction = (transaction: SubgraphTransaction): Transaction => {
     transactionHash: transaction.transactionHash,
     amount: getHumanValue(transaction.collateral, WAD_DECIMALS)?.toNumber() ?? 0,
     deltaAmount: getHumanValue(transaction.deltaCollateral, WAD_DECIMALS)?.toNumber() ?? 0,
-    date: BigNumberToDateOrCurrent(transaction.position.maturity),
+    date: BigNumberToDateOrCurrent(transaction.timestamp),
     assetAddress: transaction.position.collateralType?.address ?? '',
   }
 }

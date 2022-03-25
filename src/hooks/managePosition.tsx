@@ -21,6 +21,7 @@ import { Position, calculateDebt, calculateHealthFactor } from '@/src/utils/data
 import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 export type TokenInfo = {
   decimals?: number
@@ -47,13 +48,7 @@ export const useManagePositionForm = (
     ZERO_BIG_NUMBER,
   )
   const [maxMintValue, setMaxMintValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [availableMintValue, setAvailableMintValue] = useState<BigNumber | undefined>(
-    ZERO_BIG_NUMBER,
-  )
   const [maxBurnValue, setMaxBurnValue] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [availableBurnValue, setAvailableBurnValue] = useState<BigNumber | undefined>(
-    ZERO_BIG_NUMBER,
-  )
 
   const [healthFactor, setHealthFactor] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
   const [buttonText, setButtonText] = useState<string>('Execute')
@@ -119,6 +114,7 @@ export const useManagePositionForm = (
     },
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )
+  // @TODO: not working max amount
   // maxFIAT = totalCollateral*collateralValue/collateralizationRatio-totalFIAT =
   const calculateMaxMintValue = useCallback(
     (totalCollateral: BigNumber, totalNormalDebt: BigNumber) => {
@@ -192,25 +188,27 @@ export const useManagePositionForm = (
     }
   }
 
+  // @TODO: available -> balance
   useEffect(() => {
-    const depositValue = tokenInfo?.humanValue
-    const collateral = position?.totalCollateral ?? ZERO_BIG_NUMBER
+    const collateralBalance = tokenInfo?.humanValue
+    const totalCollateral = position?.totalCollateral ?? ZERO_BIG_NUMBER
     const normalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
-    const withdrawValue = calculateMaxWithdrawValue(collateral, normalDebt)
-    const mintValue = calculateMaxMintValue(collateral, normalDebt)
-    const burnValue = getHumanValue(normalDebt, WAD_DECIMALS)
+    const withdrawValue = calculateMaxWithdrawValue(totalCollateral, normalDebt)
+    const mintValue = calculateMaxMintValue(totalCollateral, normalDebt)
+    const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
 
-    setAvailableDepositValue(depositValue)
-    setAvailableWithdrawValue(withdrawValue)
-    setAvailableMintValue(mintValue)
-    setAvailableBurnValue(burnValue)
+    setMaxDepositValue(collateralBalance)
+    setMaxWithdrawValue(withdrawValue)
+    setMaxMintValue(mintValue)
+    setMaxBurnValue(burnValue)
+    setAvailableDepositValue(collateralBalance)
+    setAvailableWithdrawValue(collateralBalance)
   }, [
+    tokenInfo?.humanValue,
     position?.totalCollateral,
     position?.totalNormalDebt,
-    tokenInfo?.humanValue,
     calculateMaxWithdrawValue,
     calculateMaxMintValue,
-    getPositionValues,
   ])
 
   useEffect(() => {
@@ -259,19 +257,23 @@ export const useManagePositionForm = (
           return
         }
       }
+
       await modifyCollateralAndDebt({
         vault: position?.protocolAddress,
         token: position?.collateral.address,
         tokenId: 0,
         deltaCollateral,
         deltaNormalDebt,
+        wait: 3,
       })
+
       await updateToken()
+
       if (onSuccess) {
         onSuccess()
       }
     } catch (err) {
-      console.error('Failed to Deposit', err)
+      console.error('Failed to Deposit:', err)
     } finally {
       setIsLoading(false)
     }
@@ -283,9 +285,7 @@ export const useManagePositionForm = (
     availableWithdrawValue,
     maxWithdrawValue,
     maxBurnValue,
-    availableBurnValue,
     maxMintValue,
-    availableMintValue,
     healthFactor,
     handleFormChange,
     buttonText,
@@ -340,11 +340,11 @@ export const useManageFormSummary = (
     },
     {
       title: 'Current Health Factor',
-      value: position.healthFactor.toFixed(3),
+      value: position.healthFactor.isFinite() ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
     {
       title: 'New Health Factor',
-      value: healthFactor.toFixed(3),
+      value: healthFactor.isFinite() ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
   ]
 }

@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { addDays, addHours, addMinutes, formatWithOptions } from 'date-fns/fp'
+import { addDays, addHours, addMinutes, formatWithOptions, subDays, subHours } from 'date-fns/fp'
 import { enUS } from 'date-fns/locale'
 import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInHours from 'date-fns/differenceInHours'
@@ -7,13 +7,16 @@ import differenceInDays from 'date-fns/differenceInDays'
 
 // @TODO: verify this colouring
 export const calculateHealthFactor = (hf: BigNumber): 'danger' | 'ok' | 'warning' => {
-  return hf.gte(2.0) ? 'ok' : hf.gt(1.0) ? 'warning' : 'danger'
+  return hf.gte(1.5) ? 'ok' : hf.gt(1.0) ? 'warning' : 'danger'
 }
 
 // curried version
 export const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
 
 export const remainingTime = (d: Date) => {
+  if (d.getTime() <= Date.now()) {
+    return 'Expired'
+  }
   let today = new Date()
   const diffInDays = differenceInDays(d, today)
   today = addDays(diffInDays, today)
@@ -24,6 +27,16 @@ export const remainingTime = (d: Date) => {
   return `${diffInDays}d:${diffInHours}h:${diffInMinutes}m`
 }
 
+export const elapsedTime = (d: Date) => {
+  let today = new Date()
+  const diffInDays = differenceInDays(today, d)
+  today = subDays(diffInDays, today)
+  const diffInHours = differenceInHours(today, d)
+  today = subHours(diffInHours, today)
+  const diffInMinutes = differenceInMinutes(today, d)
+  return `${diffInDays}d:${diffInHours}h:${diffInMinutes}m ago`
+}
+
 export const tablePagination = (total: number | undefined): any => {
   return {
     total: total,
@@ -32,7 +45,7 @@ export const tablePagination = (total: number | undefined): any => {
     position: ['bottomCenter'],
     showTotal: (total: number, [from, to]: [number, number]) => (
       <>
-        Showing {from} to {to} of the most recent {total}
+        Showing results {from} to {to} of {total}
       </>
     ),
   }

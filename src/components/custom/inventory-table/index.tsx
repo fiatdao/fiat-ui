@@ -13,6 +13,7 @@ import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 const Columns: ColumnsType<Position> = [
   {
@@ -68,9 +69,12 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'healthFactor',
-    render: (healthFactor: Position['healthFactor']) => (
-      <CellValue state={calculateHealthFactor(healthFactor)} value={`${healthFactor.toFixed(2)}`} />
-    ),
+    render: (healthFactor: Position['healthFactor']) => {
+      const healthFactorToRender = healthFactor.isFinite()
+        ? healthFactor.toFixed(3)
+        : DEFAULT_HEALTH_FACTOR
+      return <CellValue state={calculateHealthFactor(healthFactor)} value={healthFactorToRender} />
+    },
     responsive: ['md'],
     title: 'Health Factor',
   },
@@ -102,6 +106,7 @@ type InventoryProps = {
 
 const InventoryTable = ({ inventory }: InventoryProps) => {
   const riskPositions = inventory?.filter((p) => p.isAtRisk)
+  const healthyPositions = inventory?.filter((p) => !p.isAtRisk)
 
   return (
     <>
@@ -112,14 +117,14 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
       )}
       <SkeletonTable
         columns={Columns as SkeletonTableColumnsType[]}
-        loading={!inventory}
+        loading={!healthyPositions}
         rowCount={2}
       >
         <Table
           columns={Columns}
-          dataSource={inventory}
+          dataSource={healthyPositions}
           loading={false}
-          pagination={tablePagination(inventory?.length ?? 0)}
+          pagination={tablePagination(healthyPositions?.length ?? 0)}
           rowKey="name"
           scroll={{
             x: true,

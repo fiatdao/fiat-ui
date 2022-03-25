@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import { useRouter } from 'next/router'
 import cn from 'classnames'
 import { useState } from 'react'
 import { calculateHealthFactor } from '@/src/utils/table'
@@ -32,7 +33,14 @@ const tabs = [
 ]
 
 const YourPositions = () => {
-  const [activeTabKey, setActiveTabKey] = useState<TabState>(TabState.Inventory)
+  const { query } = useRouter()
+  const [activeTabKey, setActiveTabKey] = useState<TabState>(() => {
+    if (query.transaction) {
+      return TabState.Transactions
+    }
+
+    return TabState.Inventory
+  })
   const { positions } = usePositionsByUser()
   const { pageInformation } = useYourPositionInfoPage(positions)
 
@@ -58,7 +66,7 @@ const YourPositions = () => {
         <InfoBlock
           state={calculateHealthFactor(pageInformation?.lowestHealthFactor ?? ZERO_BIG_NUMBER)}
           title="Lowest Health Factor"
-          value={pageInformation?.lowestHealthFactor?.toFixed(2)}
+          value={pageInformation?.lowestHealthFactor?.toFixed(3)}
         />
         <InfoBlock
           title="Next Maturity"

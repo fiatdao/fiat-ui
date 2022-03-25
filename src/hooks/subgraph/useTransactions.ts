@@ -24,8 +24,10 @@ export const useTransactions = (
       where['user'] = user
     }
     const { positionTransactionActions: transactions } = await fetchTransactions(where)
+
     return transactions
-      .map((tx) => wrangleTransaction(tx))
+      .sort((a, b) => +b.timestamp - +a.timestamp)
+      .map(wrangleTransaction)
       .filter((tx) => (action ? tx.action.includes(action) : true))
   })
 
