@@ -169,7 +169,7 @@ const FormERC20: React.FC<{
     },
   ]
 
-  const mockedSummaryData = [
+  const summaryData = [
     {
       title: 'In your wallet',
       value: `${tokenInfo?.humanValue} ${tokenSymbol}`,
@@ -368,7 +368,7 @@ const FormERC20: React.FC<{
                       </ButtonGradient>
                     </ButtonsWrapper>
                     <div className={cn(s.summary)}>
-                      <Summary data={mockedSummaryData} />
+                      <Summary data={summaryData} />
                     </div>
                   </>
                 )}
@@ -383,7 +383,7 @@ const FormERC20: React.FC<{
           </div>
           <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
           <p className={cn(s.lastStepText)}>Your position has been successfully created.</p>
-          <Summary data={mockedSummaryData} />
+          <Summary data={summaryData} />
           <Link href={`/your-positions/`} passHref>
             <ButtonGradient height="lg">Go to Your Positions</ButtonGradient>
           </Link>
