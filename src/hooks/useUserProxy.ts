@@ -1,3 +1,4 @@
+import { useNotifications } from './useNotifications'
 import { useCallback, useMemo, useState } from 'react'
 import { Contract } from 'ethers'
 import { contracts } from '@/src/constants/contracts'
@@ -14,6 +15,7 @@ const useUserProxy = () => {
     web3Provider,
   } = useWeb3Connection()
   const [loadingProxy, setLoadingProxy] = useState(false)
+  const notification = useNotifications()
 
   const [proxyAddress, refetch] = useContractCall<
     PRBProxyType,
@@ -34,15 +36,20 @@ const useUserProxy = () => {
       )
 
       try {
-        await (await prbProxy.deploy()).wait()
+        notification.requestSign()
+        const tx = await prbProxy.deploy()
+        notification.awaitingTx(tx.hash)
+        await tx.wait().catch(notification.handleTxError)
+        notification.successfulTx(tx.hash)
         refetch()
       } catch (e) {
+        notification.handleTxError(e)
         console.error('Failed to setup the Proxy', e)
       } finally {
         setLoadingProxy(false)
       }
     }
-  }, [appChainId, isAppConnected, refetch, web3Provider])
+  }, [appChainId, isAppConnected, refetch, web3Provider, notification])
 
   const userProxy = useMemo(() => {
     if (!proxyAddress || !web3Provider) {
