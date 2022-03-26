@@ -1,4 +1,3 @@
-import { useNotifications } from './useNotifications'
 import { Contract, ethers } from 'ethers'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isAddress } from 'ethers/lib/utils'
@@ -12,7 +11,6 @@ export const useERC20Allowance = (tokenAddress: string, spender: string) => {
   const { address: currentUserAddress, web3Provider } = useWeb3Connection()
   const [allowance, setAllowance] = useState(ZERO_BIG_NUMBER)
   const [loadingApprove, setLoadingApprove] = useState(false)
-  const notification = useNotifications()
 
   const erc20 = useMemo(
     () =>
@@ -22,41 +20,29 @@ export const useERC20Allowance = (tokenAddress: string, spender: string) => {
     [tokenAddress, web3Provider],
   )
 
-  const updateAllowance = useCallback(async () => {
-    if (erc20 && isAddress(spender) && currentUserAddress) {
-      const allowance = await erc20.allowance(currentUserAddress as string, spender)
-      // need to transform to BigNumber from BigNumber.js
-      const allowanceBigNumber = BigNumber.from(allowance.toString()) as BigNumber
-      setAllowance(allowanceBigNumber)
-    }
-  }, [erc20, spender, currentUserAddress])
-
   const approve = useCallback(async () => {
-    if (!erc20) {
-      throw new Error('no erc20')
-    }
-    if (!isAddress(spender)) {
-      throw new Error('erc20 spender is not an address')
-    }
-    try {
+    if (erc20 && isAddress(spender)) {
       setLoadingApprove(true)
-      notification.requestSign()
-      const tx = await erc20.approve(spender, ethers.constants.MaxUint256)
-      notification.awaitingTx(tx.hash)
-      await tx.wait().catch(notification.handleTxError)
-      notification.successfulTx(tx.hash)
-      updateAllowance()
-      setLoadingApprove(false)
-    } catch (error) {
-      notification.handleTxError(error)
-      setLoadingApprove(false)
-      throw error
+      return (
+        (await erc20.approve(spender, ethers.constants.MaxUint256))
+          .wait()
+          .then(() => erc20.allowance(currentUserAddress as string, spender))
+          // FixMe: ugh! 'toString', 'as BigNumber'
+          .then((allowance) => setAllowance(BigNumber.from(allowance.toString()) as BigNumber))
+          .finally(() => setLoadingApprove(false))
+      )
     }
-  }, [erc20, spender, updateAllowance, notification])
+  }, [currentUserAddress, erc20, spender])
 
   useEffect(() => {
-    updateAllowance()
-  }, [updateAllowance])
+    if (erc20 && isAddress(spender) && currentUserAddress) {
+      erc20
+        .allowance(currentUserAddress, spender)
+        // FixMe: more ugh!!
+        .then((allowance) => setAllowance(BigNumber.from(allowance.toString()) as BigNumber))
+        .catch((allowance) => console.error(allowance))
+    }
+  }, [currentUserAddress, erc20, spender])
 
   return { erc20, allowance, approve, loadingApprove, hasAllowance: allowance.gt('0') }
 }
