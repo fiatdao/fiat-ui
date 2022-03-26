@@ -123,6 +123,14 @@ const CreatePosition = () => {
       title: 'Collateralization Threshold',
     },
     {
+      align: 'left',
+      dataIndex: 'maturity',
+      render: (date: Collateral['maturity']) => (
+        <CellValue bottomValue={parseDate(date)} value={`${remainingTime(date)} Left`} />
+      ),
+      title: 'Maturity',
+    },
+    {
       align: 'right',
       render: (value: Collateral) =>
         value.manageId ? (
