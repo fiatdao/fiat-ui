@@ -53,7 +53,7 @@ export const contracts = constantContracts({
   FIAT: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xeA8B4F3df3b7628A618a06A372EdC310DBdEd950',
+      [Chains.goerli]: '0x004e84d9eea17Bdad2912B475f7C473064A3Ca1C',
     },
     abi: fiat,
     decimals: 18,
@@ -63,14 +63,14 @@ export const contracts = constantContracts({
   CODEX: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x46ae7f3b5B9b32231F1e88df806672a182FbdA0C',
+      [Chains.goerli]: '0xBB789154514c0E04CA40b988a2Fa94AF1b80a840',
     },
     abi: codex,
   },
   COLLYBUS: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xcaF187fBF3137dA36a10A72c77d1A68a6986B710',
+      [Chains.goerli]: '0xe1c58e1BAD975b4882902783Ca458B6719aE3533',
     },
     abi: collybus,
   },
@@ -91,7 +91,7 @@ export const contracts = constantContracts({
   COLLATERAL_AUCTION: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xEeF8e029bA352D90Ffa3b0d85E0bf9f88280a0e5',
+      [Chains.goerli]: '0x4e21296DB6366dF6380C34a5bd47e79C80231E16',
     },
     abi: collateralAuction,
   },
@@ -105,28 +105,28 @@ export const contracts = constantContracts({
   USER_ACTIONS_EPT: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x7577970ab2bc78f59b2be80942551b194d6a7dbd',
+      [Chains.goerli]: '0x99D9ad4C752b7499B4C45c1c72B3E3bb2298305D',
     },
     abi: vaultEptActions,
   },
   USER_ACTIONS_FC: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x3DAe16D9e96413AFCB01324c01f53912A887c289',
+      [Chains.goerli]: '0x67ab5F4F18078a238A2428e73d45A6385C5F5a49',
     },
     abi: vaultFcActions,
   },
   MONETA: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x13a60380e65EC30f4d1897204306E10cf890d936',
+      [Chains.goerli]: '0xA9387089A3863F9160099257ad3368245796D980',
     },
     abi: moneta,
   },
   NO_LOSS_COLLATERAL_AUCTION_ACTIONS: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0x0978DaA4Bf9AA2A99021b672f955F16d8caD590a',
+      [Chains.goerli]: '0xD8948DEc15C1Eb31b49121B697d3e47dfAC8A289',
     },
     abi: noLossCollateralAuctionActions,
   },
