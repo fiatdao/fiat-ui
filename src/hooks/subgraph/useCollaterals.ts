@@ -34,8 +34,7 @@ export const fetchCollaterals = ({
 }
 
 export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
-  const { appChainId, readOnlyAppProvider, web3Provider } = useWeb3Connection()
-
+  const { address, appChainId, readOnlyAppProvider, web3Provider } = useWeb3Connection()
   const { positions } = usePositionsByUser()
 
   // TODO Make this more performante avoiding wrangle of positions or the whole query when inMyWallet is false
@@ -43,18 +42,22 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
 
   const provider = web3Provider ?? (readOnlyAppProvider as Web3Provider)
 
-  const { data, error } = useSWR(['collaterals', collaterals?.join(''), protocols?.join('')], () =>
-    provider
-      ? fetchCollaterals({
-          protocols: protocols?.length > 0 ? protocols : undefined,
-          collaterals,
-          provider,
-          appChainId,
-        })
-      : [],
+  const { data, error } = useSWR(
+    ['collaterals', collaterals?.join(''), protocols?.join(''), address],
+    () =>
+      provider
+        ? fetchCollaterals({
+            protocols: protocols?.length > 0 ? protocols : undefined,
+            collaterals,
+            provider,
+            appChainId,
+          })
+        : [],
   )
 
-  if (isDev() && error) console.error(error)
+  if (isDev() && error) {
+    console.error(error)
+  }
 
   return data
 }
