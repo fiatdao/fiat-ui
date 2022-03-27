@@ -86,7 +86,7 @@ const LiquidateAuction = () => {
     {
       title: 'Up for Auction',
       tooltip: 'Units of this collateral type that are currently being auctioned.',
-      value: data?.upForAuction?.toFixed(),
+      value: data?.collateralToSell?.toFixed(),
     },
     {
       title: 'Auction Price',
@@ -193,7 +193,7 @@ const LiquidateAuction = () => {
                     <div className={cn(s.balanceWrapper)}>
                       <h3 className={cn(s.balanceLabel)}>Select amount</h3>
                       <p className={cn(s.balance)}>
-                        Collateral left: ${data?.upForAuction?.toFixed()}
+                        Collateral left: ${data?.collateralToSell?.toFixed()}
                       </p>
                     </div>
 
@@ -203,7 +203,7 @@ const LiquidateAuction = () => {
                           disabled={loading}
                           displayDecimals={4}
                           mainAsset={data?.protocol.name}
-                          max={data?.upForAuction}
+                          max={data?.collateralToSell}
                           maximumFractionDigits={6}
                           secondaryAsset={data?.underlier.symbol}
                           slider
