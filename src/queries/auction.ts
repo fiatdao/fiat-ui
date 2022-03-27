@@ -11,6 +11,7 @@ export const AUCTION_BY_ID = gql`
       user
       tokenId
       debt
+      startsAt
       collateralType {
         address
         faceValue
@@ -24,6 +25,7 @@ export const AUCTION_BY_ID = gql`
         address
         name
         interestPerSecond
+        maxAuctionDuration
       }
     }
   }

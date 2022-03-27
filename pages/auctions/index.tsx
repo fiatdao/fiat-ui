@@ -14,7 +14,7 @@ import ButtonOutline from '@/src/components/antd/button-outline'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Table } from '@/src/components/antd'
-import { tablePagination } from '@/src/utils/table'
+import { parseDate, tablePagination } from '@/src/utils/table'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import Filter from '@/src/resources/svg/filter.svg'
@@ -77,9 +77,9 @@ const Auctions = () => {
     },
     {
       align: 'left',
-      dataIndex: 'upForAuction',
-      render: (value: BigNumber) => <CellValue value={value.toFixed()} />,
-      title: 'Up for Auction',
+      dataIndex: 'endsAt',
+      render: (value: Date) => <CellValue value={parseDate(value)} />,
+      title: 'Ends At',
     },
     {
       align: 'left',

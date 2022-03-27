@@ -1,5 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
+import { BigNumberToDateOrCurrent } from '@/src/utils/dateTime'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { auctionById_collateralAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
@@ -30,6 +31,7 @@ export type AuctionData = {
   tokenAddress?: string | null
   collateral: TokenData
   underlier: TokenData
+  endsAt: Date
 }
 
 const calcYield = (collateralValue?: BigNumber, auctionPrice?: BigNumber) => {
@@ -62,6 +64,14 @@ const wrangleAuction = async (
 ) => {
   const vaultAddress = collateralAuction.vault?.address || null
   const tokenId = collateralAuction.collateralType?.tokenId || 0
+
+  let endsAt = 0
+  if (collateralAuction.startsAt) {
+    endsAt += +collateralAuction.startsAt
+  }
+  if (collateralAuction.vault?.maxAuctionDuration) {
+    endsAt += +collateralAuction.vault.maxAuctionDuration
+  }
 
   const collateralValue = await getCurrentValue(provider, appChainId, tokenId, vaultAddress, false)
 
@@ -101,6 +111,7 @@ const wrangleAuction = async (
       address: collateralAuction.collateralType?.underlierAddress ?? null,
       symbol: collateralAuction.collateralType?.underlierSymbol ?? '',
     },
+    endsAt: BigNumberToDateOrCurrent(endsAt.toString()),
   } as AuctionData
 }
 

@@ -9,11 +9,13 @@ export const AUCTIONS = gql`
       collateralToSell
       tokenId
       vaultName
+      startsAt
       vault {
         id
         name
         address
         interestPerSecond
+        maxAuctionDuration
       }
       collateralType {
         id
