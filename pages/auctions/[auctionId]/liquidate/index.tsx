@@ -5,6 +5,7 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useState } from 'react'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { Form } from '@/src/components/antd'
@@ -50,7 +51,10 @@ const LiquidateAuction = () => {
 
   const { data } = useAuction(auctionId)
 
-  useDynamicTitle(data?.collateral.symbol && `Liquidate ${data.collateral.symbol} position`)
+  useDynamicTitle(
+    data?.collateral.address &&
+      `Liquidate ${getTokenByAddress(data.collateral.address)?.symbol ?? ''}`,
+  )
 
   const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
@@ -198,7 +202,7 @@ const LiquidateAuction = () => {
                         <TokenAmount
                           disabled={loading}
                           displayDecimals={4}
-                          mainAsset={data?.protocol}
+                          mainAsset={data?.protocol.name}
                           max={data?.upForAuction}
                           maximumFractionDigits={6}
                           secondaryAsset={data?.underlier.symbol}

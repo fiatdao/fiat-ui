@@ -1,5 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
+import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { auctionById_collateralAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
 import { auctions_collateralAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
@@ -12,7 +13,10 @@ import { TokenData } from '@/types/token'
 
 export type AuctionData = {
   id: string
-  protocol?: string
+  protocol: {
+    name?: string
+    humanReadableName?: string
+  }
   asset?: string
   upForAuction?: BigNumber
   price?: BigNumber
@@ -67,14 +71,17 @@ const wrangleAuction = async (
 
   return {
     id: collateralAuction.id,
-    protocol: collateralAuction.vault?.name,
+    protocol: {
+      name: collateralAuction.vault?.name,
+      humanReadableName: getTokenByAddress(collateralAuction.collateralType?.address)?.protocol,
+    },
     tokenId: collateralAuction.tokenId,
     vault: {
       address: collateralAuction.vault?.address,
       name: collateralAuction.vault?.name,
       interestPerSecond: BigNumber.from(collateralAuction.vault?.interestPerSecond?.toString()),
     },
-    asset: collateralAuction.collateralType?.symbol,
+    asset: getTokenByAddress(collateralAuction.collateralType?.address)?.symbol,
     upForAuction: BigNumber.from(auctionStatus?.collateralToSell.toString())?.unscaleBy(
       WAD_DECIMALS,
     ),

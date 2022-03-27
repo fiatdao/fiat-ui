@@ -350,7 +350,7 @@ export const useManageFormSummary = (
 }
 
 export const useManagePositionsInfoBlock = (position: Position) => {
-  const tokenSymbol = getTokenByAddress(position?.collateral.address ?? null)?.symbol ?? ''
+  const tokenSymbol = getTokenByAddress(position?.collateral.address)?.symbol ?? ''
   return [
     {
       title: 'Token',
