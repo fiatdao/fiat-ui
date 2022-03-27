@@ -40,6 +40,7 @@ const useYourPositionInfoPage = (positions: Position[]): UseYourPositionInfoPage
       }
 
       positions.forEach(async (p) => {
+        console.log(p)
         initialPositionInformation.collateralValue =
           initialPositionInformation.collateralValue.plus(p.collateralValue)
         initialPositionInformation.fiatDebt = initialPositionInformation.fiatDebt.plus(
@@ -47,12 +48,12 @@ const useYourPositionInfoPage = (positions: Position[]): UseYourPositionInfoPage
         )
         if (!initialPositionInformation.nearestMaturity?.value) {
           initialPositionInformation.nearestMaturity.value = p.maturity
-          initialPositionInformation.nearestMaturity.address = p.protocolAddress
+          initialPositionInformation.nearestMaturity.address = p.id
         } else {
           const minValue = min([p.maturity, initialPositionInformation?.nearestMaturity.value])
           initialPositionInformation.nearestMaturity.value = minValue
           if (minValue === p.maturity) {
-            initialPositionInformation.nearestMaturity.address = p.protocolAddress
+            initialPositionInformation.nearestMaturity.address = p.id
           }
         }
         if (
@@ -60,7 +61,7 @@ const useYourPositionInfoPage = (positions: Position[]): UseYourPositionInfoPage
           p.healthFactor.lte(initialPositionInformation.lowestHealthFactor.value)
         ) {
           initialPositionInformation.lowestHealthFactor.value = p.healthFactor
-          initialPositionInformation.lowestHealthFactor.address = p.protocolAddress
+          initialPositionInformation.lowestHealthFactor.address = p.id
         }
       })
       setPageInformation(initialPositionInformation)

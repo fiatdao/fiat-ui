@@ -71,7 +71,7 @@ const YourPositions = () => {
           title="Lowest Health Factor"
           url={
             pageInformation?.lowestHealthFactor?.address
-              ? getEtherscanAddressUrl(pageInformation?.lowestHealthFactor?.address)
+              ? `/your-positions/${pageInformation?.lowestHealthFactor?.address}/manage`
               : ''
           }
           value={pageInformation?.lowestHealthFactor?.value?.toFixed(3)}
@@ -79,8 +79,8 @@ const YourPositions = () => {
         <InfoBlock
           title="Next Maturity"
           url={
-            pageInformation?.nearestMaturity?.address
-              ? getEtherscanAddressUrl(pageInformation?.nearestMaturity?.address)
+            pageInformation?.lowestHealthFactor?.address
+              ? `/your-positions/${pageInformation?.nearestMaturity?.address}/manage`
               : ''
           }
           value={
