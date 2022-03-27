@@ -25,7 +25,6 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { tablePagination } from '@/src/utils/table'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
-import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
@@ -54,7 +53,6 @@ const CreatePosition = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
   const { isWalletConnected } = useWeb3Connection()
-  const { positions } = usePositionsByUser()
 
   const activeFilters = Object.values(filters)
     .filter((f) => f.active)
@@ -130,12 +128,7 @@ const CreatePosition = () => {
     {
       align: 'right',
       render: (collateral: Collateral) => {
-        const positionExistsForCollateral =
-          isWalletConnected &&
-          positions.length > 0 &&
-          (collateral.hasBalance ||
-            positions.filter((position) => collateral.id === position.collateral.address))
-        return positionExistsForCollateral ? (
+        return collateral.manageId ? (
           <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
