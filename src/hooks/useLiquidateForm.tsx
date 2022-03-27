@@ -31,7 +31,7 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
   const { userProxy, userProxyAddress } = useUserProxy()
 
   const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
-    auctionData?.tokenAddress as string,
+    auctionData?.collateral.address ?? '',
     userProxyAddress ?? '',
   )
 
@@ -108,8 +108,8 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
 
         return receipt
       } catch (err: any) {
-        notification.handleTxError(err)
         setTxStatus((prev) => ({ ...prev, error: err }))
+        throw err
       } finally {
         setTxStatus((prev) => ({ ...prev, loading: false }))
       }
@@ -133,5 +133,5 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
   // resets the status
   useEffect(() => () => setTxStatus(initialState), [initialState])
 
-  return { approve, hasAllowance, liquidate, ...txStatus }
+  return { approve, hasAllowance, liquidate, notification, ...txStatus }
 }

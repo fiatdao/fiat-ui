@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import BigNumber from 'bignumber.js'
 import Link from 'next/link'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
@@ -77,25 +78,25 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'upForAuction',
-      render: (value: any) => <CellValue value={value} />,
+      render: (value: BigNumber) => <CellValue value={value.toFixed()} />,
       title: 'Up for Auction',
     },
     {
       align: 'left',
       dataIndex: 'price',
-      render: (value: string) => <CellValue value={`$${value}`} />,
+      render: (value: BigNumber) => <CellValue value={`$${value.toFixed(4)}`} />,
       title: 'Auction Price',
     },
     {
       align: 'left',
       dataIndex: 'collateralValue',
-      render: (value: string) => <CellValue value={`$${value}`} />,
+      render: (value: BigNumber) => <CellValue value={`$${value.toFixed(4)}`} />,
       title: 'Collateral Value',
     },
     {
       align: 'left',
       dataIndex: 'yield',
-      render: (value: string) => <CellValue value={`${value}%`} />,
+      render: (value: BigNumber) => <CellValue value={`${value.toFixed(2)}%`} />,
       title: 'Yield',
     },
     {

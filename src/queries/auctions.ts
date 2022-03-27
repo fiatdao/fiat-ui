@@ -13,9 +13,13 @@ export const AUCTIONS = gql`
         id
         name
         address
+        interestPerSecond
       }
       collateralType {
         id
+        address
+        faceValue
+        maturity
         tokenId
         symbol
         underlierAddress

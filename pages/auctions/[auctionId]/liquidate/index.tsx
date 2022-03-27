@@ -5,20 +5,19 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useState } from 'react'
+import { WAD_DECIMALS } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import TokenAmount from '@/src/components/custom/token-amount'
-import { useTokenSymbol } from '@/src/hooks/contracts/useTokenSymbol'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useAuction } from '@/src/hooks/subgraph/useAuction'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useLiquidateForm } from '@/src/hooks/useLiquidateForm'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
-import { getNonHumanValue } from '@/src/web3/utils'
 import { Summary } from '@/src/components/custom/summary'
 
 const SLIPPAGE_VALUE = BigNumber.from(0.02) // 2%
@@ -49,35 +48,33 @@ const LiquidateAuction = () => {
   const [form] = AntdForm.useForm<FormProps>()
   const [step, setStep] = useState(1)
 
-  const { data } = useAuction(auctionId as string)
-  const { tokenSymbol } = useTokenSymbol(data?.tokenAddress as string)
+  const { data } = useAuction(auctionId)
 
-  useDynamicTitle(tokenSymbol && `Liquidate ${tokenSymbol} position`)
+  useDynamicTitle(data?.collateral.symbol && `Liquidate ${data.collateral.symbol} position`)
 
   const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
-  const { approve, hasAllowance, liquidate, loading } = useLiquidateForm(data)
+  const { approve, hasAllowance, liquidate, loading, notification } = useLiquidateForm(data)
 
   const onSubmit = async () => {
     // TODO SUM slippage fixed value
-    const collateralAmountToSend = getNonHumanValue(
-      form.getFieldValue('liquidateAmount').multipliedBy(SLIPPAGE_VALUE.plus(BigNumber.from(1))),
-      18,
-    )
+    const collateralAmountToSend = form
+      .getFieldValue('liquidateAmount')
+      .multipliedBy(SLIPPAGE_VALUE.plus(1))
+      .scaleBy(WAD_DECIMALS)
 
     // maxPrice parameter calc TODO must be in USD?
-    const maxPrice = getNonHumanValue(
-      FIATBalance.dividedBy(collateralAmountToSend).decimalPlaces(18),
-      18,
-    )
+    const maxPrice = FIATBalance.dividedBy(collateralAmountToSend)
+      .decimalPlaces(WAD_DECIMALS)
+      .scaleBy(WAD_DECIMALS)
 
     try {
       await liquidate({ collateralAmountToSend, maxPrice })
       await refetchFIATBalance()
       setStep(3)
     } catch (err) {
-      // TODO: shall we add an error state in the form, besides the notification?
-      console.error('failed to approve', err)
+      // FixMe?: avoid using notification here and move it inside the `useLiquidateForm` hook
+      notification.handleTxError(err)
     }
   }
 
@@ -85,41 +82,80 @@ const LiquidateAuction = () => {
     {
       title: 'Up for Auction',
       tooltip: 'Units of this collateral type that are currently being auctioned.',
-      value: data?.upForAuction || undefined,
+      value: data?.upForAuction?.toFixed(),
     },
     {
       title: 'Auction Price',
       tooltip: 'The amount of FIAT required to liquidate this collateral.',
-      value: `$${data?.price}`,
+      value: `$${data?.price?.toFixed(4)}`,
     },
     {
       title: 'Collateral Value',
       tooltip: 'The amount of underlying assets available for redemption at maturity.',
-      value: `$${data?.collateralValue}`,
+      value: `$${data?.collateralValue?.toFixed(4)}`,
     },
     {
       title: 'Yield',
       tooltip:
         'The annualized yield as determined by the difference between Auction Price and Collateral Value.',
-      value: `${data?.yield}%`,
+      value: `${data?.yield?.toFixed(2)}%`,
     },
   ]
 
-  // TODO: remove hardcoded data: https://github.com/fiatdao/fiat-ui/issues/124
   const summaryData = [
     {
+      title: 'Token',
+      value: `${data?.collateral.symbol}`,
+    },
+    {
       title: 'Amount',
-      value: `5,000 DAI Principal Token`,
+      value: `${form.getFieldValue('liquidateAmount')?.toFixed()}`,
     },
     {
-      title: 'Current price',
-      value: `5,000 DAI Principal Token`,
+      title: 'Bid price',
+      value: `$${data?.price?.toFixed(4)}`,
     },
     {
-      title: 'Total value',
-      value: `0 DAI Principal Token`,
+      title: 'Buy price',
+      value: `${
+        form
+          .getFieldValue('liquidateAmount')
+          ?.multipliedBy(data?.price ?? 0)
+          .toFixed(4) ?? 0
+      }`,
+    },
+    {
+      title: 'APY',
+      // (faceValue/bidPrice-1)/(max(0,maturity-block.timestamp)/(365*86400))
+      value: `${
+        // faceValue
+        data?.collateralValue
+          ?.dividedBy(
+            // bidPrice
+            data?.price ?? 1,
+          )
+          .minus(1)
+          .dividedBy(
+            // maturity-block.timestamp
+            BigNumber.from(data?.collateralMaturity ?? 0).dividedBy(
+              // seconds in a year
+              365 * 86400,
+            ),
+          )
+          .toFixed(4)
+      }`,
     },
   ]
+
+  console.table({
+    'faceValue (web3: `Vault20.fairPrice()`)': data?.collateralValue?.toFixed(),
+    'bidPrice (web3: `CollateralAuction.getStatus()`)': data?.price?.toFixed(),
+    'collateralMaturity (SG: `collateralAuction.collateralType.maturity`) / 265*86400':
+      BigNumber.from(data?.collateralMaturity ?? 0)
+        .dividedBy(365 * 86400)
+        .toFixed(),
+    APY: summaryData[4].value,
+  })
 
   return (
     <>
@@ -153,7 +189,7 @@ const LiquidateAuction = () => {
                     <div className={cn(s.balanceWrapper)}>
                       <h3 className={cn(s.balanceLabel)}>Select amount</h3>
                       <p className={cn(s.balance)}>
-                        Collateral left: ${Number(data?.upForAuction)}
+                        Collateral left: ${data?.upForAuction?.toFixed()}
                       </p>
                     </div>
 
@@ -163,7 +199,7 @@ const LiquidateAuction = () => {
                           disabled={loading}
                           displayDecimals={4}
                           mainAsset={data?.protocol}
-                          max={Number(data?.upForAuction)}
+                          max={data?.upForAuction}
                           maximumFractionDigits={6}
                           secondaryAsset={data?.underlier.symbol}
                           slider
@@ -184,7 +220,7 @@ const LiquidateAuction = () => {
                         loading={loading}
                         onClick={() => (hasAllowance ? form.submit() : approve())}
                       >
-                        {hasAllowance ? 'Confirm' : `Set Allowance for ${tokenSymbol}`}
+                        {hasAllowance ? 'Confirm' : `Set Allowance for ${data?.collateral.symbol}`}
                       </ButtonGradient>
                       <button
                         className={s.backButton}
