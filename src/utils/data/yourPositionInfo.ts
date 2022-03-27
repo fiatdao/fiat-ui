@@ -7,8 +7,14 @@ import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 export type YourPositionPageInformation = {
   collateralValue: BigNumber
   fiatDebt: BigNumber
-  lowestHealthFactor: BigNumber | null
-  nearestMaturity: Date | null
+  lowestHealthFactor: {
+    value: BigNumber | null
+    address: string | null
+  }
+  nearestMaturity: {
+    value: Date | null
+    address: string | null
+  }
 }
 
 type UseYourPositionInfoPage = {
@@ -23,8 +29,14 @@ const useYourPositionInfoPage = (positions: Position[]): UseYourPositionInfoPage
       const initialPositionInformation: YourPositionPageInformation = {
         collateralValue: ZERO_BIG_NUMBER,
         fiatDebt: ZERO_BIG_NUMBER,
-        lowestHealthFactor: null,
-        nearestMaturity: null,
+        lowestHealthFactor: {
+          value: null,
+          address: null,
+        },
+        nearestMaturity: {
+          value: null,
+          address: null,
+        },
       }
 
       positions.forEach(async (p) => {
@@ -33,19 +45,22 @@ const useYourPositionInfoPage = (positions: Position[]): UseYourPositionInfoPage
         initialPositionInformation.fiatDebt = initialPositionInformation.fiatDebt.plus(
           p.totalNormalDebt,
         )
-        if (!initialPositionInformation.nearestMaturity) {
-          initialPositionInformation.nearestMaturity = p.maturity
+        if (!initialPositionInformation.nearestMaturity?.value) {
+          initialPositionInformation.nearestMaturity.value = p.maturity
+          initialPositionInformation.nearestMaturity.address = p.protocolAddress
         } else {
-          initialPositionInformation.nearestMaturity = min([
-            p.maturity,
-            initialPositionInformation.nearestMaturity,
-          ])
+          const minValue = min([p.maturity, initialPositionInformation?.nearestMaturity.value])
+          initialPositionInformation.nearestMaturity.value = minValue
+          if (minValue === p.maturity) {
+            initialPositionInformation.nearestMaturity.address = p.protocolAddress
+          }
         }
         if (
-          !initialPositionInformation.lowestHealthFactor ||
-          p.healthFactor.lte(initialPositionInformation.lowestHealthFactor)
+          !initialPositionInformation.lowestHealthFactor.value ||
+          p.healthFactor.lte(initialPositionInformation.lowestHealthFactor.value)
         ) {
-          initialPositionInformation.lowestHealthFactor = p.healthFactor
+          initialPositionInformation.lowestHealthFactor.value = p.healthFactor
+          initialPositionInformation.lowestHealthFactor.address = p.protocolAddress
         }
       })
       setPageInformation(initialPositionInformation)

@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import { getEtherscanAddressUrl } from '../../src/web3/utils'
 import { useRouter } from 'next/router'
 import cn from 'classnames'
 import { useState } from 'react'
@@ -64,15 +65,27 @@ const YourPositions = () => {
           }
         />
         <InfoBlock
-          state={calculateHealthFactor(pageInformation?.lowestHealthFactor ?? ZERO_BIG_NUMBER)}
+          state={calculateHealthFactor(
+            pageInformation?.lowestHealthFactor?.value ?? ZERO_BIG_NUMBER,
+          )}
           title="Lowest Health Factor"
-          value={pageInformation?.lowestHealthFactor?.toFixed(3)}
+          url={
+            pageInformation?.lowestHealthFactor?.address
+              ? getEtherscanAddressUrl(pageInformation?.lowestHealthFactor?.address)
+              : ''
+          }
+          value={pageInformation?.lowestHealthFactor?.value?.toFixed(3)}
         />
         <InfoBlock
           title="Next Maturity"
+          url={
+            pageInformation?.nearestMaturity?.address
+              ? getEtherscanAddressUrl(pageInformation?.nearestMaturity?.address)
+              : ''
+          }
           value={
             pageInformation?.nearestMaturity
-              ? remainingTime(pageInformation.nearestMaturity)
+              ? remainingTime(pageInformation?.nearestMaturity?.value)
               : undefined
           }
         />
