@@ -12,6 +12,7 @@ import { tablePagination } from '@/src/utils/table'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 const Columns: ColumnsType<Position> = [
@@ -35,34 +36,6 @@ const Columns: ColumnsType<Position> = [
   },
   {
     align: 'left',
-    dataIndex: 'underlier',
-    render: (underlier: Position['underlier']) => <CellValue bold value={underlier.symbol} />,
-    responsive: ['lg'],
-    title: 'Underlying',
-  },
-  {
-    align: 'left',
-    dataIndex: 'maturity',
-    render: (maturity: Position['maturity']) => (
-      <CellValue bottomValue={parseDate(maturity)} value={remainingTime(maturity)} />
-    ),
-    responsive: ['xl'],
-    title: 'Maturity',
-  },
-  {
-    align: 'left',
-    dataIndex: 'totalNormalDebt',
-    render: (minted: Position['totalNormalDebt']) => (
-      <CellValue
-        tooltip={`${minted}`}
-        value={`${getHumanValue(minted, WAD_DECIMALS).toFixed(3)}`}
-      />
-    ),
-    responsive: ['xl'],
-    title: 'FIAT Minted',
-  },
-  {
-    align: 'left',
     dataIndex: 'totalCollateral',
     render: (totalCollateral: Position['totalCollateral'], obj: Position) => (
       <CellValue
@@ -73,7 +46,24 @@ const Columns: ColumnsType<Position> = [
       />
     ),
     responsive: ['lg', 'xl'],
-    title: 'Collateral Deposited',
+    title: 'Collateral',
+  },
+  {
+    align: 'left',
+    dataIndex: 'totalNormalDebt',
+    render: (minted: Position['totalNormalDebt']) => (
+      <CellValue
+        tooltip={`${minted}`}
+        value={
+          <div>
+            <FiatIcon />
+            {` ${getHumanValue(minted, WAD_DECIMALS).toFixed(3)}`}
+          </div>
+        }
+      />
+    ),
+    responsive: ['xl'],
+    title: 'Outstanding',
   },
   // @TODO: missing info icon button
   {
@@ -87,6 +77,15 @@ const Columns: ColumnsType<Position> = [
     },
     responsive: ['md'],
     title: 'Health Factor',
+  },
+  {
+    align: 'left',
+    dataIndex: 'maturity',
+    render: (maturity: Position['maturity']) => (
+      <CellValue bottomValue={parseDate(maturity)} value={remainingTime(maturity)} />
+    ),
+    responsive: ['xl'],
+    title: 'Maturity',
   },
   {
     align: 'right',

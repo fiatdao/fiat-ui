@@ -1,7 +1,7 @@
 import s from './s.module.scss'
 import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SelectValue } from 'antd/lib/select'
 import _ from 'lodash'
 import { elapsedTime, parseDate } from '@/src/utils/table'
@@ -89,12 +89,33 @@ const ACTIONS_FILTER = [
 ]
 
 const TransactionHistoryTable = () => {
-  // TODO: properly use `assetFilter` and `actionFilter` from the state
+  const { data: transactions, loading } = useTransactionsByUser()
   const [assetFilter, setAssetFilter] = useState<string>('all')
   const [actionFilter, setActionFilter] = useState<string>('all')
-  const { data: transactions, loading } = useTransactionsByUser()
-
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
+
+  useEffect(() => {
+    const applyFilter = (
+      transaction: Transaction,
+      property: keyof Transaction,
+      value: string,
+    ): boolean => {
+      if (value === 'all') return true
+      return (transaction[property] as string).includes(value)
+    }
+
+    if (transactions.length == 0) {
+      setFilteredTransactions(transactions)
+    } else {
+      // TODO: we can use an array of objects with keyof and values
+      const newFilteredTransactions = transactions.filter(
+        (t) => applyFilter(t, 'asset', assetFilter) && applyFilter(t, 'action', actionFilter),
+      )
+      setFilteredTransactions(newFilteredTransactions)
+    }
+  }, [transactions, assetFilter, actionFilter])
+
+  console.log('data: ', transactions)
 
   const ASSETS_FILTER = [
     { label: 'All Assets', value: 'all' },
@@ -107,33 +128,12 @@ const TransactionHistoryTable = () => {
     ),
   ]
 
-  const applyFilter = (
-    transaction: Transaction,
-    property: keyof Transaction,
-    value: string,
-  ): boolean => {
-    if (value === 'all') return true
-    return (transaction[property] as string).includes(value)
-  }
-
-  const applyFilters = (filters: string[]) => {
-    if (transactions) {
-      // TODO: we can use an array of objects with keyof and values
-      const newFilteredTransactions = transactions.filter(
-        (t) => applyFilter(t, 'asset', filters[0]) && applyFilter(t, 'action', filters[1]),
-      )
-      setFilteredTransactions(newFilteredTransactions)
-    }
-  }
-
   const onAssetFilterChange = (asset: string) => {
     setAssetFilter(asset)
-    applyFilters([asset, actionFilter])
   }
 
   const onActionFilterChange = (action: string) => {
     setActionFilter(action)
-    applyFilters([assetFilter, action])
   }
 
   return (

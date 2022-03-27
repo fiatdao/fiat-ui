@@ -35,14 +35,12 @@ const FILTERS: FilterData = {
 }
 
 // TODO fix types here
-const PositionsTable = ({ activeFilters, columns, inMyWallet }: any) => {
-  const data = useCollaterals(inMyWallet, activeFilters)
-
+const PositionsTable = ({ collaterals, columns }: any) => {
   return (
     <Table
       columns={columns}
-      dataSource={data}
-      pagination={tablePagination(data?.length ?? 0)}
+      dataSource={collaterals}
+      pagination={tablePagination(collaterals?.length ?? 0)}
       rowKey="id"
       scroll={{
         x: true,
@@ -55,6 +53,11 @@ const CreatePosition = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const [inMyWallet, setInMyWallet] = useState(false)
   const { isWalletConnected } = useWeb3Connection()
+
+  const activeFilters = Object.values(filters)
+    .filter((f) => f.active)
+    .map((f) => f.name)
+  const collaterals = useCollaterals(inMyWallet, activeFilters)
 
   const columns: ColumnsType<any> = [
     {
@@ -123,25 +126,30 @@ const CreatePosition = () => {
       title: 'Collateralization Threshold',
     },
     {
+      align: 'left',
+      dataIndex: 'maturity',
+      render: (date: Collateral['maturity']) => (
+        <CellValue bottomValue={parseDate(date)} value={`${remainingTime(date)} Left`} />
+      ),
+      title: 'Maturity',
+    },
+    {
       align: 'right',
-      render: (value: Collateral) =>
-        value.manageId ? (
+      render: (collateral: Collateral) => {
+        return collateral.manageId ? (
           <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
         ) : (
-          <Link href={`/create-position/${value.address}/open`} passHref>
+          <Link href={`/create-position/${collateral.address}/open`} passHref>
             <ButtonGradient disabled={!isWalletConnected}>Create Position</ButtonGradient>
           </Link>
-        ),
+        )
+      },
       title: '',
       width: 110,
     },
   ]
-
-  const activeFilters = Object.values(filters)
-    .filter((f) => f.active)
-    .map((f) => f.name)
 
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
@@ -238,7 +246,7 @@ const CreatePosition = () => {
           <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
         }
       >
-        <PositionsTable activeFilters={activeFilters} columns={columns} inMyWallet={inMyWallet} />
+        <PositionsTable collaterals={collaterals} columns={columns} />
       </SafeSuspense>
     </>
   )
