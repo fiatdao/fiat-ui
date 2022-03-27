@@ -2,7 +2,6 @@ import s from './s.module.scss'
 import { useRouter } from 'next/router'
 import cn from 'classnames'
 import { useState } from 'react'
-import { getEtherscanAddressUrl } from '@/src/web3/utils'
 import { calculateHealthFactor } from '@/src/utils/table'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Tab, Tabs } from '@/src/components/custom'
@@ -72,7 +71,7 @@ const YourPositions = () => {
           url={
             pageInformation?.lowestHealthFactor?.address
               ? `/your-positions/${pageInformation?.lowestHealthFactor?.address}/manage`
-              : ''
+              : undefined
           }
           value={pageInformation?.lowestHealthFactor?.value?.toFixed(3)}
         />
@@ -81,7 +80,7 @@ const YourPositions = () => {
           url={
             pageInformation?.lowestHealthFactor?.address
               ? `/your-positions/${pageInformation?.nearestMaturity?.address}/manage`
-              : ''
+              : undefined
           }
           value={
             pageInformation?.nearestMaturity
