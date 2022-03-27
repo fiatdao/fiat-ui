@@ -101,9 +101,9 @@ const Auctions = () => {
     },
     {
       align: 'left',
-      dataIndex: 'yield',
-      render: (value: BigNumber) => <CellValue value={`${value.toFixed(2)}%`} />,
-      title: 'Yield',
+      dataIndex: 'apy',
+      render: (value: BigNumber) => <CellValue value={value.toFixed(4)} />,
+      title: 'APY',
     },
     {
       align: 'right',

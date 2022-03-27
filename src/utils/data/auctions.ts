@@ -32,6 +32,7 @@ export type AuctionData = {
   collateral: TokenData
   underlier: TokenData
   endsAt: Date
+  apy: BigNumber
 }
 
 const calcYield = (collateralValue?: BigNumber, auctionPrice?: BigNumber) => {
@@ -112,6 +113,23 @@ const wrangleAuction = async (
       symbol: collateralAuction.collateralType?.underlierSymbol ?? '',
     },
     endsAt: BigNumberToDateOrCurrent(endsAt.toString()),
+    // APY: (faceValue/bidPrice-1)/(max(0,maturity-block.timestamp)/(365*86400))
+    apy:
+      // faceValue
+      collateralValue
+        ?.unscaleBy(WAD_DECIMALS)
+        ?.dividedBy(
+          // bidPrice
+          BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(WAD_DECIMALS) ?? 1,
+        )
+        .minus(1)
+        .dividedBy(
+          // maturity-block.timestamp
+          BigNumber.from(Number(collateralAuction.collateralType?.maturity ?? 0)).dividedBy(
+            // seconds in a year
+            365 * 86400,
+          ),
+        ),
   } as AuctionData
 }
 

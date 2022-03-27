@@ -130,24 +130,7 @@ const LiquidateAuction = () => {
     },
     {
       title: 'APY',
-      // (faceValue/bidPrice-1)/(max(0,maturity-block.timestamp)/(365*86400))
-      value: `${
-        // faceValue
-        data?.collateralValue
-          ?.dividedBy(
-            // bidPrice
-            data?.bidPrice ?? 1,
-          )
-          .minus(1)
-          .dividedBy(
-            // maturity-block.timestamp
-            BigNumber.from(data?.collateralMaturity ?? 0).dividedBy(
-              // seconds in a year
-              365 * 86400,
-            ),
-          )
-          .toFixed(4)
-      }`,
+      value: data?.apy.toFixed(4),
     },
   ]
 
