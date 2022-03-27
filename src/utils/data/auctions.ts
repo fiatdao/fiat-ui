@@ -20,7 +20,7 @@ export type AuctionData = {
   }
   asset?: string
   collateralToSell?: BigNumber
-  price?: BigNumber
+  bidPrice?: BigNumber
   collateralValue?: BigNumber
   collateralFaceValue?: BigNumber
   collateralMaturity: number
@@ -95,7 +95,7 @@ const wrangleAuction = async (
     collateralToSell: BigNumber.from(auctionStatus?.collateralToSell.toString())?.unscaleBy(
       WAD_DECIMALS,
     ),
-    price: BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(WAD_DECIMALS),
+    bidPrice: BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(WAD_DECIMALS),
     collateralValue: collateralValue?.unscaleBy(WAD_DECIMALS),
     collateralFaceValue: BigNumber.from(collateralAuction.collateralType?.faceValue)?.unscaleBy(
       WAD_DECIMALS,

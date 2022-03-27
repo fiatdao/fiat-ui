@@ -91,7 +91,7 @@ const LiquidateAuction = () => {
     {
       title: 'Auction Price',
       tooltip: 'The amount of FIAT required to liquidate this collateral.',
-      value: `$${data?.price?.toFixed(4)}`,
+      value: `$${data?.bidPrice?.toFixed(4)}`,
     },
     {
       title: 'Collateral Value',
@@ -117,14 +117,14 @@ const LiquidateAuction = () => {
     },
     {
       title: 'Bid price',
-      value: `$${data?.price?.toFixed(4)}`,
+      value: `$${data?.bidPrice?.toFixed(4)}`,
     },
     {
       title: 'Buy price',
       value: `${
         form
           .getFieldValue('liquidateAmount')
-          ?.multipliedBy(data?.price ?? 0)
+          ?.multipliedBy(data?.bidPrice ?? 0)
           .toFixed(4) ?? 0
       }`,
     },
@@ -136,7 +136,7 @@ const LiquidateAuction = () => {
         data?.collateralValue
           ?.dividedBy(
             // bidPrice
-            data?.price ?? 1,
+            data?.bidPrice ?? 1,
           )
           .minus(1)
           .dividedBy(
@@ -153,7 +153,7 @@ const LiquidateAuction = () => {
 
   console.table({
     'faceValue (web3: `Vault20.fairPrice()`)': data?.collateralValue?.toFixed(),
-    'bidPrice (web3: `CollateralAuction.getStatus()`)': data?.price?.toFixed(),
+    'bidPrice (web3: `CollateralAuction.getStatus()`)': data?.bidPrice?.toFixed(),
     'collateralMaturity (SG: `collateralAuction.collateralType.maturity`) / 265*86400':
       BigNumber.from(data?.collateralMaturity ?? 0)
         .dividedBy(365 * 86400)
