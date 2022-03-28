@@ -83,6 +83,7 @@ const FormERC20: React.FC<{
 
   const [FIATBalance] = useFIATBalance(true)
 
+  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
   const isDisabledCreatePosition = () => {
     const { fiatAmount } = form.getFieldsValue(true) as FormProps
     const debtFloor = collateral.vault.debtFloor
