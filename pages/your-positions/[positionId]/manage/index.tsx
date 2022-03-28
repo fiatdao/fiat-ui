@@ -25,6 +25,8 @@ import { Form } from '@/src/components/antd'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { getNonHumanValue } from '@/src/web3/utils'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -87,6 +89,18 @@ const PositionManage = () => {
   const healthFactorToRender = healthFactor?.isFinite()
     ? healthFactor?.toFixed(3)
     : DEFAULT_HEALTH_FACTOR
+
+  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
+  const isDisabledCreatePosition = () => {
+    const { burn = ZERO_BIG_NUMBER, mint = ZERO_BIG_NUMBER } = formValues
+    const debtFloor = position?.debtFloor ?? ZERO_BIG_NUMBER
+    const deltaDebt = mint.minus(burn)
+    const nonHumanDeltaDebt = getNonHumanValue(deltaDebt, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const finalNonHumanDeltaDebt =
+      position?.totalNormalDebt.plus(nonHumanDeltaDebt) ?? ZERO_BIG_NUMBER
+    const hasMinimum = finalNonHumanDeltaDebt.gte(debtFloor)
+    return isLoading || !hasMinimum
+  }
 
   return (
     <>
@@ -241,6 +255,7 @@ const PositionManage = () => {
 
                   <ButtonsWrapper>
                     <ButtonGradient
+                      disabled={isDisabledCreatePosition()}
                       height="lg"
                       loading={isLoading}
                       onClick={() => handleManage(formValues)}

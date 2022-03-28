@@ -40,6 +40,7 @@ export type Position = {
   interestPerSecond: BigNumber
   currentValue: BigNumber
   userAddress: string
+  debtFloor: BigNumber
 }
 
 // TODO pass tokenId depends on protocol
@@ -149,6 +150,7 @@ const wranglePosition = async (
   const totalCollateral = BigNumber.from(position.collateral) ?? ZERO_BIG_NUMBER
   const totalNormalDebt = BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
+  const debtFloor = BigNumber.from(position.vault?.debtFloor) ?? ZERO_BIG_NUMBER
   const maturity = BigNumberToDateOrCurrent(position.maturity)
 
   const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
@@ -193,6 +195,7 @@ const wranglePosition = async (
     isAtRisk,
     interestPerSecond,
     userAddress,
+    debtFloor,
   }
 }
 export { wranglePosition, calculateHealthFactor, calculateDebt }
