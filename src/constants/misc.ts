@@ -15,3 +15,4 @@ export const WAIT_BLOCKS = 8
 export const VIRTUAL_RATE = new BigNumber(1.01)
 
 export const INFINITE_BIG_NUMBER = new BigNumber(Number.POSITIVE_INFINITY)
+export const SECONDS_IN_A_YEAR = 31536000

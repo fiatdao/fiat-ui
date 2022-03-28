@@ -33,11 +33,11 @@ import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { ONE_BIG_NUMBER, ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
+import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
-// Temporaray Change
+// Temporarily Change
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { calculateHealthFactor } from '@/src/utils/data/positions'
 
@@ -442,7 +442,7 @@ const OpenPosition = () => {
     {
       title: 'Interest Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: `${perSecondToAPY(getHumanValue(interestPerSecond, WAD_DECIMALS)).toFixed(3)}%`,
+      value: `${perSecondToAPR(getHumanValue(interestPerSecond, WAD_DECIMALS)).toFixed(3)}%`,
     },
   ]
 

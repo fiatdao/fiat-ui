@@ -99,10 +99,10 @@ const LiquidateAuction = () => {
       value: `$${data?.collateralValue?.toFixed(4)}`,
     },
     {
-      title: 'Yield',
+      title: 'APY',
       tooltip:
         'The annualized yield as determined by the difference between Auction Price and Collateral Value.',
-      value: `${data?.yield?.toFixed(2)}%`,
+      value: `${data?.apy?.toFixed(2)}%`,
     },
   ]
 

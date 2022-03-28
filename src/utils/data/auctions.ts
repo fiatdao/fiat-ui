@@ -1,5 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
+import max from 'lodash/max'
 import { BigNumberToDateOrCurrent } from '@/src/utils/dateTime'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
@@ -7,7 +8,7 @@ import { auctionById_collateralAuction as subGraphAuction } from '@/types/subgra
 import { auctions_collateralAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
-import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { SECONDS_IN_A_YEAR, WAD_DECIMALS } from '@/src/constants/misc'
 import contractCall from '@/src/utils/contractCall'
 import { CollateralAuction } from '@/types/typechain'
 import { TokenData } from '@/types/token'
@@ -25,7 +26,6 @@ export type AuctionData = {
   collateralFaceValue?: BigNumber
   collateralMaturity: number
   tokenId?: string
-  yield?: BigNumber
   vault?: { address: string; name?: string; interestPerSecond?: BigNumber }
   action: { isActive: boolean; id: number | string }
   tokenAddress?: string | null
@@ -35,12 +35,23 @@ export type AuctionData = {
   apy: BigNumber
 }
 
-const calcYield = (collateralValue?: BigNumber, auctionPrice?: BigNumber) => {
-  if (!collateralValue || !auctionPrice) {
-    return ZERO_BIG_NUMBER
+const getTimeToMaturity = (maturity: number, blockTimestamp: number) => {
+  return max([0, maturity - blockTimestamp]) ?? 0
+}
+
+// APY === Yield
+const calcAPY = (faceValue?: BigNumber, bidPrice?: BigNumber, maturity = 0, blockTimestamp = 0) => {
+  if (!faceValue || !bidPrice) {
+    return 'Unavailable'
   }
 
-  return collateralValue.minus(auctionPrice).dividedBy(auctionPrice)
+  // APY: ( faceValue / bidPrice - 1) / ( max(0, maturity - block.timestamp) / (365*86400) )
+  return faceValue
+    ?.dividedBy(bidPrice)
+    .minus(1)
+    .dividedBy(
+      BigNumber.from(getTimeToMaturity(maturity, blockTimestamp)).dividedBy(SECONDS_IN_A_YEAR),
+    )
 }
 
 const getAuctionStatus = (
@@ -49,7 +60,6 @@ const getAuctionStatus = (
   auctionId: string,
 ) => {
   return contractCall<CollateralAuction, 'getStatus'>(
-    // TODO: it should be NON_LOSS_COLLATERAL_AUCTION
     contracts.COLLATERAL_AUCTION.address[appChainId],
     contracts.COLLATERAL_AUCTION.abi,
     provider,
@@ -62,6 +72,7 @@ const wrangleAuction = async (
   collateralAuction: subGraphAuctions | subGraphAuction,
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
+  blockTimestamp: number,
 ) => {
   const vaultAddress = collateralAuction.vault?.address || null
   const tokenId = collateralAuction.collateralType?.tokenId || 0
@@ -75,10 +86,12 @@ const wrangleAuction = async (
   }
 
   const collateralValue = await getCurrentValue(provider, appChainId, tokenId, vaultAddress, false)
-
   const auctionStatus = await getAuctionStatus(appChainId, provider, collateralAuction.id)
 
-  // TODO is necessary extract decimals places?
+  const collateralFaceValue = BigNumber.from(
+    collateralAuction.collateralType?.faceValue,
+  )?.unscaleBy(WAD_DECIMALS)
+  const bidPrice = BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(WAD_DECIMALS)
 
   return {
     id: collateralAuction.id,
@@ -96,13 +109,10 @@ const wrangleAuction = async (
     collateralToSell: BigNumber.from(auctionStatus?.collateralToSell.toString())?.unscaleBy(
       WAD_DECIMALS,
     ),
-    bidPrice: BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(WAD_DECIMALS),
+    bidPrice,
     collateralValue: collateralValue?.unscaleBy(WAD_DECIMALS),
-    collateralFaceValue: BigNumber.from(collateralAuction.collateralType?.faceValue)?.unscaleBy(
-      WAD_DECIMALS,
-    ),
+    collateralFaceValue,
     collateralMaturity: Number(collateralAuction.collateralType?.maturity),
-    yield: calcYield(collateralValue, BigNumber.from(auctionStatus?.price.toString())),
     action: { isActive: collateralAuction.isActive, id: collateralAuction.id },
     collateral: {
       address: collateralAuction.collateralType?.address ?? '',
@@ -113,23 +123,12 @@ const wrangleAuction = async (
       symbol: collateralAuction.collateralType?.underlierSymbol ?? '',
     },
     endsAt: BigNumberToDateOrCurrent(endsAt.toString()),
-    // APY: (faceValue/bidPrice-1)/(max(0,maturity-block.timestamp)/(365*86400))
-    apy:
-      // faceValue
-      collateralValue
-        ?.unscaleBy(WAD_DECIMALS)
-        ?.dividedBy(
-          // bidPrice
-          BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(WAD_DECIMALS) ?? 1,
-        )
-        .minus(1)
-        .dividedBy(
-          // maturity-block.timestamp
-          BigNumber.from(Number(collateralAuction.collateralType?.maturity ?? 0)).dividedBy(
-            // seconds in a year
-            365 * 86400,
-          ),
-        ),
+    apy: calcAPY(
+      collateralFaceValue,
+      bidPrice,
+      Number(collateralAuction.collateralType?.maturity ?? 0),
+      blockTimestamp,
+    ),
   } as AuctionData
 }
 
