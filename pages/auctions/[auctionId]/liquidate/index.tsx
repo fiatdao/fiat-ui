@@ -102,7 +102,7 @@ const LiquidateAuction = () => {
       title: 'APY',
       tooltip:
         'The annualized yield as implied by the current auction Bid Price and collateral maturity.',
-      value: `${data?.apy?.toFixed(2)}%`,
+      value: `${data?.apy?.toFixed(4)}%`,
     },
   ]
 
