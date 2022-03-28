@@ -40,7 +40,6 @@ const useYourPositionInfoPage = (positions: Position[]): UseYourPositionInfoPage
       }
 
       positions.forEach(async (p) => {
-        console.log(p)
         initialPositionInformation.collateralValue =
           initialPositionInformation.collateralValue.plus(p.collateralValue)
         initialPositionInformation.fiatDebt = initialPositionInformation.fiatDebt.plus(
