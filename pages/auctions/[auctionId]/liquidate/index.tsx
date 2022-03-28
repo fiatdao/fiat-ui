@@ -227,7 +227,9 @@ const LiquidateAuction = () => {
                 <Lottie animationData={SuccessAnimation} autoplay loop />
               </div>
               <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
-              <p className={cn(s.lastStepText)}>You have successfully liquidated the position.</p>
+              <p className={cn(s.lastStepText)}>
+                You have successfully liquidated (part of) the position.
+              </p>
               <Summary data={summaryData} />
               <Link href={`/your-positions/`} passHref>
                 <ButtonGradient height="lg">Go to Your Positions</ButtonGradient>
