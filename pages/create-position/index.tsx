@@ -88,7 +88,7 @@ const CreatePosition = () => {
       align: 'left',
       dataIndex: 'maturity',
       render: (date: Collateral['maturity']) => (
-        <CellValue bottomValue={parseDate(date)} value={`${remainingTime(date)} Left`} />
+        <CellValue bottomValue={parseDate(date)} value={remainingTime(date)} />
       ),
       title: 'Maturity',
     },
@@ -180,7 +180,10 @@ const CreatePosition = () => {
             height="lg"
             isActive={filters[asset].active}
             key={asset}
-            onClick={() => setFilter(asset, !filters[asset].active)}
+            onClick={() => {
+              clearAllFilters()
+              setFilter(asset, !filters[asset].active)
+            }}
             rounded
           >
             {filters[asset].icon}

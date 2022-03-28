@@ -24,6 +24,7 @@ import { Balance } from '@/src/components/custom/balance'
 import { Form } from '@/src/components/antd'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -61,7 +62,7 @@ const PositionManage = () => {
 
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
-  const [, refetchFiatBalance] = useFIATBalance()
+  const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
 
   const onSuccess = async () => {
     form.resetFields()
@@ -69,9 +70,7 @@ const PositionManage = () => {
   }
 
   const {
-    availableBurnValue,
     availableDepositValue,
-    availableMintValue,
     availableWithdrawValue,
     buttonText,
     handleFormChange,
@@ -85,7 +84,9 @@ const PositionManage = () => {
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
-  const healthFactorNumber = healthFactor?.toFixed(3)
+  const healthFactorToRender = healthFactor?.isFinite()
+    ? healthFactor?.toFixed(3)
+    : DEFAULT_HEALTH_FACTOR
 
   return (
     <>
@@ -145,7 +146,7 @@ const PositionManage = () => {
                           <Form.Item name="deposit" required>
                             <TokenAmount
                               displayDecimals={4}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={healthFactorToRender}
                               mainAsset={position.protocol}
                               max={maxDepositValue}
                               maximumFractionDigits={6}
@@ -164,7 +165,7 @@ const PositionManage = () => {
                           <Form.Item name="withdraw" required>
                             <TokenAmount
                               displayDecimals={4}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={healthFactorToRender}
                               mainAsset={position.protocol}
                               max={maxWithdrawValue}
                               maximumFractionDigits={6}
@@ -203,12 +204,12 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to borrow"
-                            value={`Available: ${availableMintValue?.toFixed(4)}`}
+                            value={`Available: ${fiatBalance?.toFixed(4)}`}
                           />
                           <Form.Item name="mint" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={healthFactorToRender}
                               max={maxMintValue}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariant'}
@@ -221,12 +222,12 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to repay"
-                            value={`Available: ${availableBurnValue?.toFixed(4)}`}
+                            value={`Available: ${fiatBalance?.toFixed(4)}`}
                           />
                           <Form.Item name="burn" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={healthFactorToRender}
                               max={maxBurnValue}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}

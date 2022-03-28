@@ -8,7 +8,7 @@ import { Collaterals_collateralTypes as SubgraphCollateral } from '@/types/subgr
 import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { contracts } from '@/src/constants/contracts'
-import { WAD_DECIMALS, ZERO_ADDRESS } from '@/src/constants/misc'
+import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_ADDRESS } from '@/src/constants/misc'
 import { Collybus } from '@/types/typechain/Collybus'
 import { Codex, ERC20, PRBProxy } from '@/types/typechain'
 import { getHumanValue } from '@/src/web3/utils'
@@ -21,7 +21,7 @@ export type Collateral = {
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
   maturity: Date
-  ccp: {
+  eptData: {
     balancerVault: string
     convergentCurvePool: string
     id: string
@@ -30,8 +30,11 @@ export type Collateral = {
   address: Maybe<string>
   faceValue: Maybe<BigNumber>
   currentValue: Maybe<BigNumber>
-  vault: { collateralizationRatio: Maybe<BigNumber>; address: string; interestPerSecond: string }
-  collateralizationRatio: number
+  vault: {
+    collateralizationRatio: Maybe<BigNumber>
+    address: string
+    interestPerSecond: Maybe<BigNumber>
+  }
   hasBalance: boolean
   manageId: Maybe<string>
 }
@@ -48,10 +51,10 @@ const wrangleCollateral = async (
 
   let currentValue = null
   if (
-    collateral?.underlierAddress &&
+    collateral.underlierAddress &&
     collateral.vault?.address &&
     collateral.maturity &&
-    collateral?.underlierAddress !== ZERO_ADDRESS
+    collateral.underlierAddress !== ZERO_ADDRESS
   ) {
     currentValue = await contractCall<Collybus, 'read'>(
       collybusAddress,
@@ -101,27 +104,22 @@ const wrangleCollateral = async (
 
   const hasPosition = !position?.collateral.isZero() || !position?.normalDebt.isZero()
 
-  const collateralizationRatio = getHumanValue(
-    collateral?.vault?.collateralizationRatio ?? 0,
-    WAD_DECIMALS,
-  )
-
   return {
     ...collateral,
     maturity: BigNumberToDateOrCurrent(collateral.maturity),
     faceValue: BigNumber.from(collateral.faceValue) ?? null,
     currentValue: BigNumber.from(currentValue?.toString()) ?? null,
-    collateralizationRatio: collateralizationRatio ? collateralizationRatio.toNumber() : 1,
     vault: {
-      collateralizationRatio: BigNumber.from(collateral.vault?.collateralizationRatio) ?? null,
+      collateralizationRatio:
+        BigNumber.from(collateral.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER,
       address: collateral.vault?.address ?? '',
-      interestPerSecond: collateral.vault?.interestPerSecond ?? '',
+      interestPerSecond: BigNumber.from(collateral.vault?.interestPerSecond) ?? null,
     },
-    ccp: {
-      balancerVault: collateral.ccp?.balancerVault ?? '',
-      convergentCurvePool: collateral.ccp?.convergentCurvePool ?? '',
-      id: collateral.ccp?.id ?? '',
-      poolId: collateral.ccp?.poolId ?? '',
+    eptData: {
+      balancerVault: collateral.eptData?.balancerVault ?? '',
+      convergentCurvePool: collateral.eptData?.convergentCurvePool ?? '',
+      id: collateral.eptData?.id ?? '',
+      poolId: collateral.eptData?.poolId ?? '',
     },
     hasBalance: !!balance && balance.gt(0),
     manageId:
