@@ -53,6 +53,8 @@ const AuctionsTable = ({ columns, filters }: any) => {
   )
 }
 
+const UNKNOWN = 'Unknown'
+
 const Auctions = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const { isWalletConnected } = useWeb3Connection()
@@ -88,19 +90,19 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'collateralToSell',
-      render: (value: BigNumber) => <CellValue value={value.toFixed(2)} />,
+      render: (value?: BigNumber) => <CellValue value={value?.toFixed(2) ?? UNKNOWN} />,
       title: 'Collateral To Sell',
     },
     {
       align: 'left',
       dataIndex: 'bidPrice',
-      render: (value: BigNumber) => (
+      render: (value?: BigNumber) => (
         <CellValue
           value={
             <HeaderInfoButton
-              className="icon-in-table"
+              className={s.iconInTable}
               icon={<FiatIcon />}
-              text={value.toFixed(4)}
+              text={value?.toFixed(4) ?? UNKNOWN}
             />
           }
         />
@@ -110,13 +112,13 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'faceValue',
-      render: (value: BigNumber) => <CellValue value={`$${value.toFixed(4)}`} />,
+      render: (value?: BigNumber) => <CellValue value={`$${value?.toFixed(4) ?? UNKNOWN}`} />,
       title: 'Face Value',
     },
     {
       align: 'left',
       dataIndex: 'apy',
-      render: (value: BigNumber) => <CellValue value={value.toFixed(4)} />,
+      render: (value: string) => <CellValue value={value} />,
       title: 'APY',
     },
     {

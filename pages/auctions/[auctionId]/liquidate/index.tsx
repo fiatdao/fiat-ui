@@ -102,7 +102,7 @@ const LiquidateAuction = () => {
       title: 'APY',
       tooltip:
         'The annualized yield as implied by the current auction Bid Price and collateral maturity.',
-      value: `${data?.apy?.toFixed(4)}%`,
+      value: `${data?.apy}`,
     },
   ]
 
@@ -130,7 +130,7 @@ const LiquidateAuction = () => {
     },
     {
       title: 'APY',
-      value: data?.apy.toFixed(4),
+      value: data?.apy,
     },
   ]
 
@@ -197,7 +197,12 @@ const LiquidateAuction = () => {
                         loading={loading}
                         onClick={() => (hasAllowance ? form.submit() : approve())}
                       >
-                        {hasAllowance ? 'Confirm' : `Set Allowance for ${data?.collateral.symbol}`}
+                        {hasAllowance
+                          ? 'Confirm'
+                          : `Set Allowance for ${
+                              getTokenByAddress(data?.collateral.address)?.symbol ??
+                              data?.collateral.symbol
+                            }`}
                       </ButtonGradient>
                       <button
                         className={s.backButton}

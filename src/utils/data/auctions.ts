@@ -32,7 +32,7 @@ export type AuctionData = {
   collateral: TokenData
   underlier: TokenData
   endsAt: Date
-  apy: BigNumber
+  apy: string
 }
 
 const getTimeToMaturity = (maturity: number, blockTimestamp: number) => {
@@ -47,11 +47,12 @@ const calcAPY = (faceValue?: BigNumber, bidPrice?: BigNumber, maturity = 0, bloc
 
   // APY: ( faceValue / bidPrice - 1) / ( max(0, maturity - block.timestamp) / (365*86400) )
   return faceValue
-    ?.dividedBy(bidPrice)
+    .dividedBy(bidPrice)
     .minus(1)
     .dividedBy(
       BigNumber.from(getTimeToMaturity(maturity, blockTimestamp)).dividedBy(SECONDS_IN_A_YEAR),
     )
+    .toFixed(4)
 }
 
 const getAuctionStatus = (
