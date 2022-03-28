@@ -70,17 +70,17 @@ const PositionManage = () => {
   }
 
   const {
-    availableDepositValue,
-    availableWithdrawValue,
+    availableDepositAmount,
+    availableWithdrawAmount,
     buttonText,
     handleFormChange,
     handleManage,
     healthFactor,
     isLoading,
-    maxBurnValue,
-    maxDepositValue,
-    maxMintValue,
-    maxWithdrawValue,
+    maxBorrowAmount,
+    maxBurnAmount,
+    maxDepositAmount,
+    maxWithdrawAmount,
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
@@ -141,14 +141,14 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to deposit"
-                            value={`Available: ${availableDepositValue?.toFixed(4)}`}
+                            value={`Available: ${availableDepositAmount?.toFixed(4)}`}
                           />
                           <Form.Item name="deposit" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorToRender}
                               mainAsset={position.protocol}
-                              max={maxDepositValue}
+                              max={maxDepositAmount}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
@@ -160,14 +160,14 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to withdraw"
-                            value={`Available: ${availableWithdrawValue?.toFixed(4)}`}
+                            value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
                           />
                           <Form.Item name="withdraw" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorToRender}
                               mainAsset={position.protocol}
-                              max={maxWithdrawValue}
+                              max={maxWithdrawAmount}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariant'}
@@ -210,7 +210,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorToRender}
-                              max={maxMintValue}
+                              max={maxBorrowAmount}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariant'}
                               tokenIcon={<FiatIcon />}
@@ -228,7 +228,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorToRender}
-                              max={maxBurnValue}
+                              max={maxBurnAmount}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}
                               tokenIcon={<FiatIcon />}

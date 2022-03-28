@@ -20,7 +20,7 @@ import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
-import { WAD_DECIMALS } from '@/src/constants/misc'
+import { VIRTUAL_RATE, VIRTUAL_RATE_SAFETY_MARGIN, WAD_DECIMALS } from '@/src/constants/misc'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -131,17 +131,22 @@ const FormERC20: React.FC<{
   const toggleMintFiat = () => setMintFiat(!mintFiat)
 
   // @TODO: not working max amount
-  // maxFIAT = totalCollateral*collateralValue/collateralizationRatio
-  const maxDepositCalculated = useMemo(() => {
+  // maxFIAT = totalCollateral*collateralValue/collateralizationRatio/(virtualRateSafetyMargin*virtualRate)-debt
+  const maxBorrowAmountCalculated = useMemo(() => {
     const totalCollateral = stateMachine.context.erc20Amount ?? ZERO_BIG_NUMBER
     const collateralValue = getHumanValue(collateral.currentValue || ONE_BIG_NUMBER, WAD_DECIMALS)
     const collateralizationRatio = getHumanValue(
       collateral.vault.collateralizationRatio || ONE_BIG_NUMBER,
       WAD_DECIMALS,
     )
-    const maxDeposit = totalCollateral.div(collateralValue).div(collateralizationRatio)
 
-    return maxDeposit
+    const virtualRateWithMargin = VIRTUAL_RATE_SAFETY_MARGIN.times(VIRTUAL_RATE)
+    const maxBorrowAmount = totalCollateral
+      .times(collateralValue)
+      .div(collateralizationRatio)
+      .div(virtualRateWithMargin)
+
+    return maxBorrowAmount
   }, [stateMachine.context.erc20Amount, collateral])
 
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
@@ -327,7 +332,7 @@ const FormERC20: React.FC<{
                               disabled={false}
                               displayDecimals={4}
                               healthFactorValue={healthFactorNumber}
-                              max={maxDepositCalculated}
+                              max={maxBorrowAmountCalculated}
                               maximumFractionDigits={6}
                               onChange={(val) =>
                                 val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
