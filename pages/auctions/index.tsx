@@ -5,6 +5,7 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import { Popover } from 'antd'
+import HeaderInfoButton from '@/src/components/custom/header-info-button'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { useAuctions } from '@/src/hooks/subgraph/useAuctions'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -21,6 +22,7 @@ import Filter from '@/src/resources/svg/filter.svg'
 import { PROTOCOLS, Protocol } from '@/types/protocols'
 import { AuctionData } from '@/src/utils/data/auctions'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
@@ -90,7 +92,17 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'bidPrice',
-      render: (value: BigNumber) => <CellValue value={value.toFixed(4)} />,
+      render: (value: BigNumber) => (
+        <CellValue
+          value={
+            <HeaderInfoButton
+              className="icon-in-table"
+              icon={<FiatIcon />}
+              text={value.toFixed(4)}
+            />
+          }
+        />
+      ),
       title: 'Bid Price',
     },
     {
