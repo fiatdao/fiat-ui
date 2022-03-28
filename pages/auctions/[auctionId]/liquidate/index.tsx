@@ -134,16 +134,6 @@ const LiquidateAuction = () => {
     },
   ]
 
-  console.table({
-    'faceValue (web3: `Vault20.fairPrice()`)': data?.collateralValue?.toFixed(),
-    'bidPrice (web3: `CollateralAuction.getStatus()`)': data?.bidPrice?.toFixed(),
-    'collateralMaturity (SG: `collateralAuction.collateralType.maturity`) / 265*86400':
-      BigNumber.from(data?.collateralMaturity ?? 0)
-        .dividedBy(365 * 86400)
-        .toFixed(),
-    APY: summaryData[4].value,
-  })
-
   return (
     <>
       <ButtonBack href="/auctions">Back</ButtonBack>
