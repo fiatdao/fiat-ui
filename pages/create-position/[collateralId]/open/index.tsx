@@ -83,6 +83,14 @@ const FormERC20: React.FC<{
 
   const [FIATBalance] = useFIATBalance(true)
 
+  const isDisabledCreatePosition = () => {
+    const { fiatAmount } = form.getFieldsValue(true) as FormProps
+    const debtFloor = collateral.vault.debtFloor
+    const nonHumanFiatAmount = getNonHumanValue(fiatAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const hasMinimum = nonHumanFiatAmount.gte(debtFloor)
+    return !hasAllowance || !isProxyAvailable || loading || !hasMinimum
+  }
+
   const { depositCollateral } = useUserActions()
   const [stateMachine, send] = useMachine(stepperMachine, {
     context: {
@@ -359,7 +367,7 @@ const FormERC20: React.FC<{
                         </ButtonExtraFormAction>
                       )}
                       <ButtonGradient
-                        disabled={!hasAllowance || !isProxyAvailable || loading}
+                        disabled={isDisabledCreatePosition()}
                         height="lg"
                         onClick={() =>
                           send({
