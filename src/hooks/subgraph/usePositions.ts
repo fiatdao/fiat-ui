@@ -46,7 +46,7 @@ export const usePositions = (id?: string, proxyAddress?: string, protocol?: stri
       return fetchPositions({
         id,
         proxyAddress,
-        userAddress: userAddress,
+        userAddress,
         protocol,
         provider,
         appChainId,

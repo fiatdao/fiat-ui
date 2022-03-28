@@ -57,7 +57,9 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   )
   useEffect(() => {
     const newCollaterals = data?.map((collateral) => {
-      const position = positions.find((p) => p.collateral.address === collateral.address)
+      const position = positions.find(
+        (p) => p.collateral.address.toLowerCase() === collateral.address?.toLowerCase(),
+      )
       return { ...collateral, manageId: position?.id }
     })
     setCollaterals(newCollaterals || [])
