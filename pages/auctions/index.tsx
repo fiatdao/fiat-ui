@@ -84,7 +84,7 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'collateralToSell',
-      render: (value: BigNumber) => <CellValue value={value.toFixed()} />,
+      render: (value: BigNumber) => <CellValue value={value.toFixed(2)} />,
       title: 'Collateral To Sell',
     },
     {
