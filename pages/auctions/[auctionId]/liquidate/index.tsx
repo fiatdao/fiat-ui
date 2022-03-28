@@ -96,7 +96,7 @@ const LiquidateAuction = () => {
     {
       title: 'Face Value',
       tooltip: 'The amount of underlying assets available for redemption at maturity.',
-      value: `$${data?.collateralValue?.toFixed(4)}`,
+      value: `$${data?.collateralFaceValue?.toFixed(4)}`,
     },
     {
       title: 'APY',
