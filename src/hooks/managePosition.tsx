@@ -99,7 +99,7 @@ export const useManagePositionForm = (
   }, [monetaFiatAllowance])
 
   // maxWithdraw = totalCollateral-collateralizationRatio*totalFIAT/collateralValue
-  const calculateMaxWithdrawValue = useCallback(
+  const calculateMaxWithdrawAmount = useCallback(
     (totalCollateral: BigNumber, totalNormalDebt: BigNumber) => {
       const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
       const currentValue = position?.currentValue ? position?.currentValue : 1
@@ -119,17 +119,17 @@ export const useManagePositionForm = (
   // @TODO: not working max amount
   // debt = normalDebt*virtualRate
   // maxFIAT = totalCollateral*collateralValue/collateralizationRatio/(virtualRateSafetyMargin*virtualRate)-debt
-  const calculateMaxMintValue = useCallback(
+  const calculateMaxBorrowAmount = useCallback(
     (totalCollateral: BigNumber, totalNormalDebt: BigNumber) => {
       const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
       const currentValue = position?.currentValue ? position?.currentValue : 1
       const debt = calculateDebt(totalNormalDebt)
-      const safetyMargin = VIRTUAL_RATE_SAFETY_MARGIN.times(VIRTUAL_RATE)
+      const virtualRateWithMargin = VIRTUAL_RATE_SAFETY_MARGIN.times(VIRTUAL_RATE)
 
       const mintValue = totalCollateral
         .times(currentValue)
         .div(collateralizationRatio)
-        .div(safetyMargin)
+        .div(virtualRateWithMargin)
         .minus(debt)
       let result = ZERO_BIG_NUMBER
       if (mintValue.isPositive()) {
@@ -174,8 +174,8 @@ export const useManagePositionForm = (
     if (!position?.totalCollateral || !position?.totalNormalDebt) return
     const { collateral, deltaNormalDebt, normalDebt } = getPositionValues()
     const depositValue = tokenInfo?.humanValue
-    const withdrawValue = calculateMaxWithdrawValue(position?.totalCollateral, normalDebt)
-    const mintValue = calculateMaxMintValue(collateral, position?.totalNormalDebt)
+    const withdrawValue = calculateMaxWithdrawAmount(position?.totalCollateral, normalDebt)
+    const mintValue = calculateMaxBorrowAmount(collateral, position?.totalNormalDebt)
     const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
 
     setMaxDepositValue(depositValue)
@@ -202,8 +202,8 @@ export const useManagePositionForm = (
     const collateralBalance = tokenInfo?.humanValue
     const totalCollateral = position?.totalCollateral ?? ZERO_BIG_NUMBER
     const normalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
-    const withdrawValue = calculateMaxWithdrawValue(totalCollateral, normalDebt)
-    const mintValue = calculateMaxMintValue(totalCollateral, normalDebt)
+    const withdrawValue = calculateMaxWithdrawAmount(totalCollateral, normalDebt)
+    const mintValue = calculateMaxBorrowAmount(totalCollateral, normalDebt)
     const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
 
     setMaxDepositValue(collateralBalance)
@@ -216,8 +216,8 @@ export const useManagePositionForm = (
     tokenInfo?.humanValue,
     position?.totalCollateral,
     position?.totalNormalDebt,
-    calculateMaxWithdrawValue,
-    calculateMaxMintValue,
+    calculateMaxWithdrawAmount,
+    calculateMaxBorrowAmount,
   ])
 
   useEffect(() => {

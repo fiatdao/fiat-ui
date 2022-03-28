@@ -132,7 +132,7 @@ const FormERC20: React.FC<{
 
   // @TODO: not working max amount
   // maxFIAT = totalCollateral*collateralValue/collateralizationRatio/(virtualRateSafetyMargin*virtualRate)-debt
-  const maxDepositCalculated = useMemo(() => {
+  const maxBorrowAmountCalculated = useMemo(() => {
     const totalCollateral = stateMachine.context.erc20Amount ?? ZERO_BIG_NUMBER
     const collateralValue = getHumanValue(collateral.currentValue || ONE_BIG_NUMBER, WAD_DECIMALS)
     const collateralizationRatio = getHumanValue(
@@ -140,13 +140,13 @@ const FormERC20: React.FC<{
       WAD_DECIMALS,
     )
 
-    const safetyMargin = VIRTUAL_RATE_SAFETY_MARGIN.times(VIRTUAL_RATE)
-    const maxDeposit = totalCollateral
+    const virtualRateWithMargin = VIRTUAL_RATE_SAFETY_MARGIN.times(VIRTUAL_RATE)
+    const maxBorrowAmount = totalCollateral
       .times(collateralValue)
       .div(collateralizationRatio)
-      .div(safetyMargin)
+      .div(virtualRateWithMargin)
 
-    return maxDeposit
+    return maxBorrowAmount
   }, [stateMachine.context.erc20Amount, collateral])
 
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
@@ -332,7 +332,7 @@ const FormERC20: React.FC<{
                               disabled={false}
                               displayDecimals={4}
                               healthFactorValue={healthFactorNumber}
-                              max={maxDepositCalculated}
+                              max={maxBorrowAmountCalculated}
                               maximumFractionDigits={6}
                               onChange={(val) =>
                                 val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
