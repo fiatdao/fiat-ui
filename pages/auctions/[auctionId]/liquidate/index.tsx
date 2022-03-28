@@ -84,7 +84,7 @@ const LiquidateAuction = () => {
 
   const blocksData = [
     {
-      title: 'Up for Auction',
+      title: 'Collateral to Sell',
       tooltip: 'Units of this collateral type that are currently being auctioned.',
       value: data?.collateralToSell?.toFixed(),
     },
