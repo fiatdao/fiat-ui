@@ -173,15 +173,15 @@ export const useManagePositionForm = (
   const handleFormChange = () => {
     if (!position?.totalCollateral || !position?.totalNormalDebt) return
     const { collateral, deltaNormalDebt, normalDebt } = getPositionValues()
-    const depositValue = tokenInfo?.humanValue
-    const withdrawValue = calculateMaxWithdrawAmount(position?.totalCollateral, normalDebt)
-    const borrowAmount = calculateMaxBorrowAmount(collateral, position?.totalNormalDebt)
-    const burnValue = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
+    const depositAmount = tokenInfo?.humanValue
+    const withdrawAmount = calculateMaxWithdrawAmount(position?.totalCollateral, normalDebt)
+    const borrowAAmount = calculateMaxBorrowAmount(collateral, position?.totalNormalDebt)
+    const burnAmount = getHumanValue(position?.totalNormalDebt, WAD_DECIMALS)
 
-    setMaxDepositAmount(depositValue)
-    setMaxWithdrawAmount(withdrawValue)
-    setMaxBorrowAmount(borrowAmount)
-    setMaxBurnAmount(burnValue)
+    setMaxDepositAmount(depositAmount)
+    setMaxWithdrawAmount(withdrawAmount)
+    setMaxBorrowAmount(borrowAAmount)
+    setMaxBurnAmount(burnAmount)
     const newHealthFactor = calculateHealthFactorFromPosition(collateral, normalDebt)
 
     setHealthFactor(newHealthFactor)
