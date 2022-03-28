@@ -109,7 +109,7 @@ const LiquidateAuction = () => {
   const summaryData = [
     {
       title: 'Asset',
-      value: `${data?.collateral.symbol}`,
+      value: `${data?.asset}`,
     },
     {
       title: 'Amount',
