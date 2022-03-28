@@ -89,7 +89,7 @@ const LiquidateAuction = () => {
       value: data?.collateralToSell?.toFixed(2),
     },
     {
-      title: 'Auction Price',
+      title: 'Bid Price',
       tooltip: 'The amount of FIAT required to liquidate this collateral.',
       value: `$${data?.bidPrice?.toFixed(4)}`,
     },
