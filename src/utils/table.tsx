@@ -13,6 +13,8 @@ export const calculateHealthFactor = (hf: BigNumber): 'danger' | 'ok' | 'warning
 // curried version
 export const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
 
+export const parseTime = formatWithOptions({ locale: enUS }, 'hh:mm:ss b')
+
 export const remainingTime = (d: Date) => {
   if (d.getTime() <= Date.now()) {
     return 'Expired'
