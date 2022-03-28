@@ -79,12 +79,12 @@ const YourPositions = () => {
           title="Next Maturity"
           url={
             pageInformation?.lowestHealthFactor?.address
-              ? `/your-positions/${pageInformation?.nearestMaturity?.address}/manage`
+              ? `/your-positions/${pageInformation.nearestMaturity.address}/manage`
               : undefined
           }
           value={
             pageInformation?.nearestMaturity
-              ? remainingTime(pageInformation?.nearestMaturity?.value)
+              ? remainingTime(pageInformation.nearestMaturity.value)
               : undefined
           }
         />
