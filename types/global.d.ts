@@ -9,6 +9,5 @@ declare global {
   interface Window {
     gtag?: any
     onboard?: any
-    ethereum?: any;
   }
 }

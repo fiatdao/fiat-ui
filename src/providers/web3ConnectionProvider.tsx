@@ -26,7 +26,7 @@ const ONBOARD_STATE_DELAY = 100
 
 // Default chain id from env var
 const INITAL_APP_CHAIN_ID = Number(
-  process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 5,
+  process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 4,
 ) as ChainsValues
 
 nullthrows(
@@ -134,9 +134,6 @@ export type Web3Context = {
   walletChainId: number | null
   web3Provider: Web3Provider | null
   getExplorerUrl: (hash: string) => string
-  changeNetworkModalOpen: boolean
-  setChangeNetworkModalOpen: Dispatch<SetStateAction<Web3Context['changeNetworkModalOpen']>>
-  setNetwork: () => void
 }
 
 const Web3ContextConnection = createContext<Web3Context | undefined>(undefined)
@@ -153,13 +150,11 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
   const [tmpWallet, setTmpWallet] = useState<Wallet | null>(null)
   const [wallet, setWallet] = useState<Wallet | null>(null)
   const [appChainId, setAppChainId] = useState<ChainsValues>(INITAL_APP_CHAIN_ID)
-  const [validNetwork, setValidNetwork] = useState<boolean>(false)
-  const [changeNetworkModalOpen, setChangeNetworkModalOpen] = useState(false)
   const supportedChainIds = Object.values(Chains)
 
   const web3Provider = wallet?.provider ? new Web3Provider(wallet.provider) : null
 
-  const isWalletConnected = web3Provider != null && address != null && validNetwork
+  const isWalletConnected = web3Provider !== null && address !== null
 
   const isAppConnected = isWalletConnected && walletChainId === appChainId
 
@@ -169,13 +164,6 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     () => new JsonRpcProvider(getNetworkConfig(appChainId).rpcUrl, appChainId),
     [appChainId],
   )
-
-  const checkForValidChain = (chain: any) => {
-    if (!Object.values(Chains).includes(chain)) {
-      return false
-    }
-    return getNetworkConfig(chain).constractsDeployed
-  }
 
   const _reconnectWallet = async (): Promise<void> => {
     if (!onboard) {
@@ -226,13 +214,6 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     }, ONBOARD_STATE_DELAY)
   }, [])
 
-  useEffect(() => {
-    setValidNetwork(checkForValidChain(walletChainId))
-    if (!checkForValidChain(walletChainId) && walletChainId !== null) {
-      setChangeNetworkModalOpen(true)
-    }
-  }, [walletChainId])
-
   // efectively connect wallet
   useEffect(() => {
     if (!address || !tmpWallet) {
@@ -259,7 +240,6 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
       return
     }
     onboard.walletReset()
-    setValidNetwork(false)
     window.localStorage.removeItem(STORAGE_CONNECTED_WALLET)
   }
 
@@ -271,27 +251,10 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     if (await onboard.walletSelect()) {
       const isWalletCheck = await onboard.walletCheck()
       if (isWalletCheck) {
-        const { address, network } = onboard.getState()
-        if (checkForValidChain(network)) {
-          setAddress(address)
-          setValidNetwork(true)
-        } else {
-          setChangeNetworkModalOpen(true)
-          setValidNetwork(false)
-        }
+        const { address } = onboard.getState()
+        setAddress(address)
       }
     }
-  }
-
-  const setNetwork = () => {
-    window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [
-        {
-          chainId: getNetworkConfig(appChainId).chainIdHex,
-        },
-      ],
-    })
   }
 
   const pushNetwork = async (): Promise<void> => {
@@ -353,9 +316,6 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     disconnectWallet,
     pushNetwork,
     setAppChainId: setAppChainId,
-    changeNetworkModalOpen,
-    setChangeNetworkModalOpen,
-    setNetwork: setNetwork,
   }
 
   if (isInitializing) {
