@@ -70,7 +70,7 @@ const YourPositions = () => {
           title="Lowest Health Factor"
           url={
             pageInformation?.lowestHealthFactor?.address
-              ? `/your-positions/${pageInformation?.lowestHealthFactor?.address}/manage`
+              ? `/your-positions/${pageInformation.lowestHealthFactor.address}/manage`
               : undefined
           }
           value={pageInformation?.lowestHealthFactor?.value?.toFixed(3)}
