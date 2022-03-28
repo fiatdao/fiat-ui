@@ -64,15 +64,27 @@ const YourPositions = () => {
           }
         />
         <InfoBlock
-          state={calculateHealthFactor(pageInformation?.lowestHealthFactor ?? ZERO_BIG_NUMBER)}
+          state={calculateHealthFactor(
+            pageInformation?.lowestHealthFactor?.value ?? ZERO_BIG_NUMBER,
+          )}
           title="Lowest Health Factor"
-          value={pageInformation?.lowestHealthFactor?.toFixed(3)}
+          url={
+            pageInformation?.lowestHealthFactor?.address
+              ? `/your-positions/${pageInformation.lowestHealthFactor.address}/manage`
+              : undefined
+          }
+          value={pageInformation?.lowestHealthFactor?.value?.toFixed(3)}
         />
         <InfoBlock
           title="Next Maturity"
+          url={
+            pageInformation?.lowestHealthFactor?.address
+              ? `/your-positions/${pageInformation.nearestMaturity.address}/manage`
+              : undefined
+          }
           value={
             pageInformation?.nearestMaturity
-              ? remainingTime(pageInformation.nearestMaturity)
+              ? remainingTime(pageInformation.nearestMaturity.value)
               : undefined
           }
         />
