@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
-import { SLIPPAGE_VALUE } from '@/src/constants/auctions'
+import { SLIPPAGE } from '@/src/constants/auctions'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useNotifications } from '@/src/hooks/useNotifications'
@@ -168,23 +168,21 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
   const maxPrice = useMemo(
     () =>
       auctionData?.bidPrice
-        ?.multipliedBy(SLIPPAGE_VALUE.plus(1))
+        ?.multipliedBy(SLIPPAGE.plus(1))
         .decimalPlaces(WAD_DECIMALS)
         .scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER,
     [auctionData?.bidPrice],
   )
 
   const maxCredit = useMemo(() => {
-    const maxToSell = auctionData?.collateralToSell?.multipliedBy(
-      BigNumber.from(1).minus(SLIPPAGE_VALUE),
-    )
+    const maxToSell = auctionData?.collateralToSell?.multipliedBy(BigNumber.from(1).minus(SLIPPAGE))
 
     if (!maxToSell || maxPrice.eq(ZERO_BIG_NUMBER)) {
       return
     }
 
     const maxToPay = FIATBalance.unscaleBy(WAD_DECIMALS).multipliedBy(
-      BigNumber.from(1).minus(SLIPPAGE_VALUE),
+      BigNumber.from(1).minus(SLIPPAGE),
     )
 
     if (maxToPay.lt(maxToSell)) {

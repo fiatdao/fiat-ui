@@ -5,7 +5,7 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useState } from 'react'
-import { LAST_STEP, SLIPPAGE_VALUE } from '@/src/constants/auctions'
+import { LAST_STEP, SLIPPAGE } from '@/src/constants/auctions'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { FIAT_TICKER, WAD_DECIMALS } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
@@ -75,7 +75,7 @@ const LiquidateAuction = () => {
 
     const collateralAmountToSend = form
       .getFieldValue('liquidateAmount')
-      .multipliedBy(SLIPPAGE_VALUE.plus(1))
+      .multipliedBy(SLIPPAGE.plus(1))
       .decimalPlaces(WAD_DECIMALS)
       .scaleBy(WAD_DECIMALS)
 
