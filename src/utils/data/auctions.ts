@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js'
 import max from 'lodash/max'
 import { BigNumberToDateOrCurrent } from '@/src/utils/dateTime'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
-import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { auctionById_collateralAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
 import { auctions_collateralAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
 import { ChainsValues } from '@/src/constants/chains'
@@ -22,7 +21,6 @@ export type AuctionData = {
   asset?: string
   collateralToSell?: BigNumber
   bidPrice?: BigNumber
-  collateralValue?: BigNumber
   collateralFaceValue?: BigNumber
   collateralMaturity: number
   tokenId?: string
@@ -75,9 +73,6 @@ const wrangleAuction = async (
   appChainId: ChainsValues,
   blockTimestamp: number,
 ) => {
-  const vaultAddress = collateralAuction.vault?.address || null
-  const tokenId = collateralAuction.collateralType?.tokenId || 0
-
   let endsAt = 0
   if (collateralAuction.startsAt) {
     endsAt += +collateralAuction.startsAt
@@ -86,12 +81,12 @@ const wrangleAuction = async (
     endsAt += +collateralAuction.vault.maxAuctionDuration
   }
 
-  const collateralValue = await getCurrentValue(provider, appChainId, tokenId, vaultAddress, false)
   const auctionStatus = await getAuctionStatus(appChainId, provider, collateralAuction.id)
 
   const collateralFaceValue = BigNumber.from(
     collateralAuction.collateralType?.faceValue,
   )?.unscaleBy(WAD_DECIMALS)
+
   const bidPrice = BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(WAD_DECIMALS)
 
   return {
@@ -111,7 +106,6 @@ const wrangleAuction = async (
       WAD_DECIMALS,
     ),
     bidPrice,
-    collateralValue: collateralValue?.unscaleBy(WAD_DECIMALS),
     collateralFaceValue,
     collateralMaturity: Number(collateralAuction.collateralType?.maturity),
     action: { isActive: collateralAuction.isActive, id: collateralAuction.id },

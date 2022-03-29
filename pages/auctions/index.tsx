@@ -111,7 +111,7 @@ const Auctions = () => {
     },
     {
       align: 'left',
-      dataIndex: 'faceValue',
+      dataIndex: 'collateralFaceValue',
       render: (value?: BigNumber) => <CellValue value={`$${value?.toFixed(4) ?? UNKNOWN}`} />,
       title: 'Face Value',
     },
