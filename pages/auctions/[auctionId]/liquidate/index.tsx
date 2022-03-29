@@ -56,19 +56,24 @@ const LiquidateAuction = () => {
       `Liquidate ${getTokenByAddress(data.collateral.address)?.symbol ?? ''}`,
   )
 
-  const [FIATBalance, refetchFIATBalance] = useFIATBalance()
+  const [, refetchFIATBalance] = useFIATBalance()
 
   const { approve, hasAllowance, liquidate, loading } = useLiquidateForm(data)
 
   const onSubmit = async () => {
+    if (!data?.bidPrice) {
+      console.error('unavailable data')
+      return
+    }
+
     // TODO SUM slippage fixed value
     const collateralAmountToSend = form
       .getFieldValue('liquidateAmount')
       .multipliedBy(SLIPPAGE_VALUE.plus(1))
       .scaleBy(WAD_DECIMALS)
 
-    // maxPrice parameter calc TODO must be in USD?
-    const maxPrice = FIATBalance.dividedBy(collateralAmountToSend)
+    const maxPrice = data.bidPrice
+      .multipliedBy(SLIPPAGE_VALUE.plus(1))
       .decimalPlaces(WAD_DECIMALS)
       .scaleBy(WAD_DECIMALS)
 
