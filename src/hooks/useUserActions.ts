@@ -1,4 +1,4 @@
-import { VIRTUAL_RATE_SAFETY_MARGIN } from '../constants/misc'
+import { VIRTUAL_RATE, VIRTUAL_RATE_SAFETY_MARGIN } from '../constants/misc'
 import { TransactionResponse } from '@ethersproject/providers'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
@@ -116,8 +116,10 @@ export const useUserActions = (): UseUserActions => {
 
       // @TODO: toFixed(0, ROUNDED) transforms BigNumber into String without decimals
       const deltaCollateral = params.deltaCollateral.toFixed(0, 8)
-      // deltaNormalDebt=deltaDebt/virtualRateWithSafetyMargin
-      const deltaNormalDebt = params.deltaNormalDebt.div(VIRTUAL_RATE_SAFETY_MARGIN).toFixed(0, 8)
+      // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
+      const deltaNormalDebt = params.deltaNormalDebt
+        .div(VIRTUAL_RATE.times(VIRTUAL_RATE_SAFETY_MARGIN))
+        .toFixed(0, 8)
 
       // TODO: check if vault/protocol type so we can use EPT or FC
       const modifyCollateralAndDebtEncoded = userActionEPT.interface.encodeFunctionData(
