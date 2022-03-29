@@ -7,7 +7,7 @@ import cn from 'classnames'
 import { useState } from 'react'
 import { LAST_STEP, SLIPPAGE_VALUE } from '@/src/constants/auctions'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
-import { WAD_DECIMALS } from '@/src/constants/misc'
+import { FIAT_TICKER, WAD_DECIMALS } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -97,7 +97,7 @@ const LiquidateAuction = () => {
     {
       title: 'Bid Price',
       tooltip: 'The current FIAT price at which the collateral can be liquidated.',
-      value: `$${data?.bidPrice?.toFixed(4)}`,
+      value: `${data?.bidPrice?.toFixed(4)} ${FIAT_TICKER}`,
     },
     {
       title: 'Face Value',
@@ -108,7 +108,7 @@ const LiquidateAuction = () => {
       title: 'APY',
       tooltip:
         'The annualized yield as implied by the current auction Bid Price and collateral maturity.',
-      value: `${data?.apy}`,
+      value: `${data?.apy}%`,
     },
   ]
 
@@ -123,7 +123,7 @@ const LiquidateAuction = () => {
     },
     {
       title: 'Bid price',
-      value: `$${data?.bidPrice?.toFixed(4)}`,
+      value: `$${data?.bidPrice?.toFixed(4)} ${FIAT_TICKER}`,
     },
     {
       title: 'Buy price',
@@ -136,7 +136,7 @@ const LiquidateAuction = () => {
     },
     {
       title: 'APY',
-      value: data?.apy,
+      value: `${data?.apy}%`,
     },
   ]
 
