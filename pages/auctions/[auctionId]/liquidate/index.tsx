@@ -225,8 +225,8 @@ const LiquidateAuction = () => {
                 You have successfully liquidated (part of) the position.
               </p>
               <Summary data={summaryData} />
-              <Link href={`/your-positions/`} passHref>
-                <ButtonGradient height="lg">Go to Your Positions</ButtonGradient>
+              <Link href={`/auctions/`} passHref>
+                <ButtonGradient height="lg">Go to Auctions</ButtonGradient>
               </Link>
             </div>
           )}
