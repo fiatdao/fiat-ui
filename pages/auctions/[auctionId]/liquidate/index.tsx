@@ -66,7 +66,6 @@ const LiquidateAuction = () => {
     maxCredit,
     maxPrice,
   } = useLiquidateForm(data)
-  console.log('maxCredit', maxCredit?.toFixed())
 
   const onSubmit = async () => {
     if (!data?.bidPrice) {

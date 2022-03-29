@@ -41,7 +41,9 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
   )
 
   const { approveFIAT } = useUserActions()
-  const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
+  const [loadingMonetaApprove, setLoadingMonetaApprove] = useState(false)
+  const [hasMonetaAllowance, setHasMonetaAllowance] = useState(false)
+
   const [monetaFiatAllowance] = useContractCall(
     contracts.FIAT.address[appChainId],
     contracts.FIAT.abi,
@@ -55,10 +57,13 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
 
   const approveMoneta = useCallback(async () => {
     try {
+      setLoadingMonetaApprove(true)
       await approveFIAT(contracts.MONETA.address[appChainId])
       setHasMonetaAllowance(true)
     } catch (err) {
       notification.handleTxError(err)
+    } finally {
+      setLoadingMonetaApprove(false)
     }
   }, [approveFIAT, appChainId, notification])
 
@@ -154,8 +159,8 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
   )
 
   useEffect(() => {
-    setTxStatus((prev) => ({ ...prev, loading: loadingApprove }))
-  }, [loadingApprove])
+    setTxStatus((prev) => ({ ...prev, loading: loadingApprove || loadingMonetaApprove }))
+  }, [loadingApprove, loadingMonetaApprove])
 
   // resets the status
   useEffect(() => () => setTxStatus(initialState), [initialState])
