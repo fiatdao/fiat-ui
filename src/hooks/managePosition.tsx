@@ -3,6 +3,7 @@ import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useERC20Allowance } from './useERC20Allowance'
 import {
   INFINITE_BIG_NUMBER,
+  MIN_EPSILON_OFFSET,
   ONE_BIG_NUMBER,
   VIRTUAL_RATE,
   VIRTUAL_RATE_SAFETY_MARGIN,
@@ -294,6 +295,24 @@ export const useManagePositionForm = (
     }
   }
 
+  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
+  // there two cases where we don't disable the button
+  // - resulting FIAT is greater than debtFloor, as required in the contracts
+  // - resulting FIAT is zero or near than zero (currently there are some precision issues so
+  //   we are using the range, [ZERO, MIN_EPSILON_OFFSET]. eg: when all FIAT is burned
+  const isDisabledCreatePosition = () => {
+    const { deltaNormalDebt } = getDeltasFromForm()
+    const debtFloor = position?.debtFloor ?? ZERO_BIG_NUMBER
+    // @TODO: is it correct to apply debt=deltaNormalDebt/virtualRateSafetyMargin ?
+    const deltaNormalDebtWithMargin = deltaNormalDebt.div(VIRTUAL_RATE_SAFETY_MARGIN)
+    const totalNormalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
+    const finalTotalNormalDebt = totalNormalDebt.plus(deltaNormalDebtWithMargin)
+    const isNearZero = finalTotalNormalDebt.lt(MIN_EPSILON_OFFSET)
+    const hasMinimum = finalTotalNormalDebt.gte(debtFloor) || isNearZero
+
+    return isLoading || !hasMinimum
+  }
+
   return {
     availableDepositAmount,
     maxDepositAmount,
@@ -307,6 +326,7 @@ export const useManagePositionForm = (
     isLoading,
     handleManage,
     calculateHealthFactorFromPosition,
+    isDisabledCreatePosition,
   }
 }
 
