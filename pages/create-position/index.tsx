@@ -62,12 +62,12 @@ const CreatePosition = () => {
   const columns: ColumnsType<any> = [
     {
       align: 'left',
-      dataIndex: 'vaultName',
-      render: (vaultName: Collateral['vaultName'], collateral: Collateral) => (
+      dataIndex: 'address',
+      render: (value: Collateral['address'], collateral: Collateral) => (
         <Asset
-          mainAsset={vaultName ?? ''}
+          mainAsset={getTokenByAddress(value)?.protocol ?? ''}
           secondaryAsset={collateral.underlierSymbol ?? ''}
-          title={vaultName ?? 'unknown'}
+          title={getTokenByAddress(value)?.protocol ?? ''}
         />
       ),
       title: 'Protocol',
@@ -80,20 +80,6 @@ const CreatePosition = () => {
         <CellValue value={getTokenByAddress(value)?.symbol ?? '-'} />
       ),
       title: 'Asset',
-    },
-    {
-      align: 'left',
-      dataIndex: 'underlierSymbol',
-      render: (value: Collateral['underlierSymbol']) => <CellValue value={value ?? '-'} />,
-      title: 'Underlying',
-    },
-    {
-      align: 'left',
-      dataIndex: 'maturity',
-      render: (date: Collateral['maturity']) => (
-        <CellValue bottomValue={parseDate(date)} value={remainingTime(date)} />
-      ),
-      title: 'Maturity',
     },
     {
       align: 'left',
