@@ -88,7 +88,8 @@ const FormERC20: React.FC<{
     const { fiatAmount } = form.getFieldsValue(true) as FormProps
     const debtFloor = collateral.vault.debtFloor
     const nonHumanFiatAmount = getNonHumanValue(fiatAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-    const hasMinimum = nonHumanFiatAmount.gte(debtFloor)
+    const hasMinimum = nonHumanFiatAmount.gte(debtFloor) || nonHumanFiatAmount.isZero()
+
     return !hasAllowance || !isProxyAvailable || loading || !hasMinimum
   }
 

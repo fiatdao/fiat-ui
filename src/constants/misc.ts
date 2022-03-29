@@ -19,3 +19,6 @@ export const VIRTUAL_RATE_SAFETY_MARGIN = new BigNumber(1.000002)
 export const INFINITE_BIG_NUMBER = new BigNumber(Number.POSITIVE_INFINITY)
 export const SECONDS_IN_A_YEAR = 31536000
 export const FIAT_TICKER = 'FIAT'
+
+// @TODO: var used to calculate difference between big numbers in non human format
+export const MIN_EPSILON_OFFSET = new BigNumber(0.005)
