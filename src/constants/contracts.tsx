@@ -126,7 +126,7 @@ export const contracts = constantContracts({
   NO_LOSS_COLLATERAL_AUCTION_ACTIONS: {
     address: {
       [Chains.mainnet]: '',
-      [Chains.goerli]: '0xa9fE97897fCa0E9F80AF844AC2E1ccc780ff4aF0',
+      [Chains.goerli]: '0x5592d5FdCaEC77Ba47f07B024F7e445F9661FD24',
     },
     abi: noLossCollateralAuctionActions,
   },

@@ -18,6 +18,8 @@ export const useERC20Allowance = (tokenAddress: string, spender: string) => {
   const [loadingApprove, setLoadingApprove] = useState(false)
   const notification = useNotifications()
 
+  console.log(currentUserAddress)
+
   const erc20 = useMemo(
     () =>
       isAddress(tokenAddress) && web3Provider
