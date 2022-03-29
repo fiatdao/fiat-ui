@@ -99,7 +99,7 @@ export const useUserActions = (): UseUserActions => {
       const receipt = await tx.wait()
 
       // tx successful
-      notification.successfulTx(tx.hash)
+      notification.successfulGenericTx(tx.hash)
 
       return receipt
     },

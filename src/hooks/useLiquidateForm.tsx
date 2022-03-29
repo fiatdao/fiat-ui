@@ -131,7 +131,7 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
         const receipt = await tx.wait()
 
         // tx successful
-        notification.successfulTx(tx.hash)
+        notification.successfulGenericTx(tx.hash)
 
         return receipt
       } catch (err: any) {
