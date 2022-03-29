@@ -51,7 +51,7 @@ export const useManagePositionForm = (
     ZERO_BIG_NUMBER,
   )
   const [maxBorrowAmount, setMaxBorrowAmount] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [maxBurnAmount, setMaxBurnAmount] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
+  const [maxRepayAmount, setMaxRepayAmount] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
 
   const [healthFactor, setHealthFactor] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
   const [buttonText, setButtonText] = useState<string>('Execute')
@@ -177,7 +177,7 @@ export const useManagePositionForm = (
     const depositAmount = tokenInfo?.humanValue
     const withdrawAmount = calculateMaxWithdrawAmount(position?.totalCollateral, normalDebt)
     const borrowAmount = calculateMaxBorrowAmount(collateral, position?.totalNormalDebt)
-    const burnAmountWithMargin = getHumanValue(
+    const repayAmountWithMargin = getHumanValue(
       position?.totalNormalDebt.times(VIRTUAL_RATE_SAFETY_MARGIN),
       WAD_DECIMALS,
     )
@@ -185,7 +185,7 @@ export const useManagePositionForm = (
     setMaxDepositAmount(depositAmount)
     setMaxWithdrawAmount(withdrawAmount)
     setMaxBorrowAmount(borrowAmount)
-    setMaxBurnAmount(burnAmountWithMargin)
+    setMaxRepayAmount(repayAmountWithMargin)
     const newHealthFactor = calculateHealthFactorFromPosition(collateral, normalDebt)
 
     setHealthFactor(newHealthFactor)
@@ -208,7 +208,7 @@ export const useManagePositionForm = (
     const normalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
     const withdrawAmount = calculateMaxWithdrawAmount(totalCollateral, normalDebt)
     const mintAmount = calculateMaxBorrowAmount(totalCollateral, normalDebt)
-    const burnAmountWithMargin = getHumanValue(
+    const repayAmountWithMargin = getHumanValue(
       normalDebt.times(VIRTUAL_RATE_SAFETY_MARGIN),
       WAD_DECIMALS,
     )
@@ -216,7 +216,7 @@ export const useManagePositionForm = (
     setMaxDepositAmount(collateralBalance)
     setMaxWithdrawAmount(withdrawAmount)
     setMaxBorrowAmount(mintAmount)
-    setMaxBurnAmount(burnAmountWithMargin)
+    setMaxRepayAmount(repayAmountWithMargin)
     setAvailableDepositAmount(collateralBalance)
     setAvailableWithdrawAmount(collateralBalance)
   }, [
@@ -318,7 +318,7 @@ export const useManagePositionForm = (
     maxDepositAmount,
     availableWithdrawAmount,
     maxWithdrawAmount,
-    maxBurnAmount,
+    maxRepayAmount,
     maxBorrowAmount,
     healthFactor,
     handleFormChange,

@@ -79,8 +79,8 @@ const PositionManage = () => {
     isDisabledCreatePosition,
     isLoading,
     maxBorrowAmount,
-    maxBurnAmount,
     maxDepositAmount,
+    maxRepayAmount,
     maxWithdrawAmount,
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
@@ -229,7 +229,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorToRender}
-                              max={maxBurnAmount}
+                              max={maxRepayAmount}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}
                               tokenIcon={<FiatIcon />}
