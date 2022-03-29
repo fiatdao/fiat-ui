@@ -9,6 +9,9 @@ import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { contracts } from '@/src/constants/contracts'
 import { ERC20 } from '@/types/typechain'
 
+/**
+ * Only handles the allowance of a tokenAddress for the EOA/connected account to a specified spender
+ */
 export const useERC20Allowance = (tokenAddress: string, spender: string) => {
   const { address: currentUserAddress, isAppConnected, web3Provider } = useWeb3Connected()
   const [allowance, setAllowance] = useState(ZERO_BIG_NUMBER)
@@ -68,11 +71,18 @@ export const useERC20Allowance = (tokenAddress: string, spender: string) => {
     if (erc20 && isAddress(spender) && currentUserAddress) {
       erc20
         .allowance(currentUserAddress, spender)
-        // FixMe: more ugh!!
         .then((allowance) => setAllowance(BigNumber.from(allowance.toString()) as BigNumber))
         .catch((allowance) => console.error(allowance))
     }
   }, [currentUserAddress, erc20, spender])
 
-  return { erc20, allowance, approve, loadingApprove, hasAllowance: allowance.gt('0') }
+  return {
+    erc20,
+    allowance,
+    approve,
+    loadingApprove,
+    // TODO: allowance.gt(0) may lead to false positives
+    //  we need to compare it against the amount to use at least
+    hasAllowance: allowance.gt('0'),
+  }
 }

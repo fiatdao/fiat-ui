@@ -5,6 +5,7 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useState } from 'react'
+import { LAST_STEP, SLIPPAGE_VALUE } from '@/src/constants/auctions'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
@@ -20,9 +21,6 @@ import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useLiquidateForm } from '@/src/hooks/useLiquidateForm'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { Summary } from '@/src/components/custom/summary'
-
-const SLIPPAGE_VALUE = BigNumber.from(0.02) // 2%
-const LAST_STEP = 3
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -58,7 +56,17 @@ const LiquidateAuction = () => {
 
   const [, refetchFIATBalance] = useFIATBalance()
 
-  const { approve, hasAllowance, liquidate, loading } = useLiquidateForm(data)
+  const {
+    approve,
+    approveMoneta,
+    hasAllowance,
+    hasMonetaAllowance,
+    liquidate,
+    loading,
+    maxCredit,
+    maxPrice,
+  } = useLiquidateForm(data)
+  console.log('maxCredit', maxCredit?.toFixed())
 
   const onSubmit = async () => {
     if (!data?.bidPrice) {
@@ -66,13 +74,8 @@ const LiquidateAuction = () => {
       return
     }
 
-    // TODO SUM slippage fixed value
     const collateralAmountToSend = form
       .getFieldValue('liquidateAmount')
-      .multipliedBy(SLIPPAGE_VALUE.plus(1))
-      .scaleBy(WAD_DECIMALS)
-
-    const maxPrice = data.bidPrice
       .multipliedBy(SLIPPAGE_VALUE.plus(1))
       .decimalPlaces(WAD_DECIMALS)
       .scaleBy(WAD_DECIMALS)
@@ -180,7 +183,7 @@ const LiquidateAuction = () => {
                           disabled={loading}
                           displayDecimals={4}
                           mainAsset={data?.protocol.name}
-                          max={data?.collateralToSell}
+                          max={maxCredit}
                           maximumFractionDigits={6}
                           secondaryAsset={data?.underlier.symbol}
                           slider
@@ -199,14 +202,19 @@ const LiquidateAuction = () => {
                       <ButtonGradient
                         height="lg"
                         loading={loading}
-                        onClick={() => (hasAllowance ? form.submit() : approve())}
+                        onClick={() =>
+                          !hasAllowance
+                            ? approve()
+                            : !hasMonetaAllowance
+                            ? approveMoneta()
+                            : form.submit()
+                        }
                       >
-                        {hasAllowance
-                          ? 'Confirm'
-                          : `Set Allowance for ${
-                              getTokenByAddress(data?.collateral.address)?.symbol ??
-                              data?.collateral.symbol
-                            }`}
+                        {!hasAllowance
+                          ? 'Set Allowance for FIAT'
+                          : !hasMonetaAllowance
+                          ? 'Enable Proxy for FIAT'
+                          : 'Confirm'}
                       </ButtonGradient>
                       <button
                         className={s.backButton}

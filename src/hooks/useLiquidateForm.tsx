@@ -2,6 +2,11 @@ import { Contract } from '@ethersproject/contracts'
 import { TransactionResponse } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useUserActions } from '@/src/hooks/useUserActions'
+import useContractCall from '@/src/hooks/contracts/useContractCall'
+import { SLIPPAGE_VALUE } from '@/src/constants/auctions'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useNotifications } from '@/src/hooks/useNotifications'
 import { NoLossCollateralAuctionActions } from '@/types/typechain'
 import { TransactionError } from '@/src/utils/TransactionError'
@@ -31,9 +36,33 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
   const { userProxy, userProxyAddress } = useUserProxy()
 
   const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
-    auctionData?.collateral.address ?? '',
+    contracts.FIAT.address[appChainId],
     userProxyAddress ?? '',
   )
+
+  const { approveFIAT } = useUserActions()
+  const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
+  const [monetaFiatAllowance] = useContractCall(
+    contracts.FIAT.address[appChainId],
+    contracts.FIAT.abi,
+    'allowance',
+    [userProxyAddress, contracts.MONETA.address[appChainId]],
+  )
+
+  useEffect(() => {
+    setHasMonetaAllowance(monetaFiatAllowance?.gt(ZERO_BIG_NUMBER) ?? false)
+  }, [monetaFiatAllowance])
+
+  const approveMoneta = useCallback(async () => {
+    try {
+      await approveFIAT(contracts.MONETA.address[appChainId])
+      setHasMonetaAllowance(true)
+    } catch (err) {
+      notification.handleTxError(err)
+    }
+  }, [approveFIAT, appChainId, notification])
+
+  const [FIATBalance] = useFIATBalance()
 
   const noLossCollateralAuctionActions = useMemo(
     () =>
@@ -131,5 +160,43 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
   // resets the status
   useEffect(() => () => setTxStatus(initialState), [initialState])
 
-  return { approve, hasAllowance, liquidate, ...txStatus }
+  const maxPrice = useMemo(
+    () =>
+      auctionData?.bidPrice
+        ?.multipliedBy(SLIPPAGE_VALUE.plus(1))
+        .decimalPlaces(WAD_DECIMALS)
+        .scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER,
+    [auctionData?.bidPrice],
+  )
+
+  const maxCredit = useMemo(() => {
+    const maxToSell = auctionData?.collateralToSell?.multipliedBy(
+      BigNumber.from(1).minus(SLIPPAGE_VALUE),
+    )
+
+    if (!maxToSell || maxPrice.eq(ZERO_BIG_NUMBER)) {
+      return
+    }
+
+    const maxToPay = FIATBalance.unscaleBy(WAD_DECIMALS).multipliedBy(
+      BigNumber.from(1).minus(SLIPPAGE_VALUE),
+    )
+
+    if (maxToPay.lt(maxToSell)) {
+      return maxToPay.dividedBy(maxPrice.unscaleBy(WAD_DECIMALS))
+    }
+
+    return maxToSell.dividedBy(maxPrice.unscaleBy(WAD_DECIMALS))
+  }, [auctionData?.collateralToSell, maxPrice, FIATBalance])
+
+  return {
+    approve,
+    approveMoneta,
+    hasAllowance,
+    hasMonetaAllowance,
+    liquidate,
+    maxPrice,
+    maxCredit,
+    ...txStatus,
+  }
 }
