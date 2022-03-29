@@ -12,15 +12,18 @@ import { tablePagination } from '@/src/utils/table'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
-import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 const Columns: ColumnsType<Position> = [
   {
     align: 'left',
-    dataIndex: 'protocol',
-    render: (protocol: Position['protocol'], position: Position) => (
-      <Asset mainAsset={protocol} secondaryAsset={position.underlier.symbol} title={protocol} />
+    dataIndex: 'collateral',
+    render: (collateral: Position['collateral'], position: Position) => (
+      <Asset
+        mainAsset={getTokenByAddress(collateral.address)?.protocol ?? ''}
+        secondaryAsset={position.underlier.symbol}
+        title={getTokenByAddress(collateral.address)?.protocol ?? ''}
+      />
     ),
     title: 'Protocol',
     width: 200,
@@ -54,12 +57,7 @@ const Columns: ColumnsType<Position> = [
     render: (minted: Position['totalNormalDebt']) => (
       <CellValue
         tooltip={`${minted}`}
-        value={
-          <div>
-            <FiatIcon />
-            {` ${getHumanValue(minted, WAD_DECIMALS).toFixed(3)}`}
-          </div>
-        }
+        value={` ${getHumanValue(minted, WAD_DECIMALS).toFixed(3)} FIAT`}
       />
     ),
     responsive: ['xl'],
