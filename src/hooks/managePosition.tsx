@@ -178,7 +178,7 @@ export const useManagePositionForm = (
     const withdrawAmount = calculateMaxWithdrawAmount(position?.totalCollateral, normalDebt)
     const borrowAmount = calculateMaxBorrowAmount(collateral, position?.totalNormalDebt)
     const repayAmountWithMargin = getHumanValue(
-      position?.totalNormalDebt.times(VIRTUAL_RATE_SAFETY_MARGIN),
+      position?.totalNormalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_SAFETY_MARGIN)),
       WAD_DECIMALS,
     )
 
@@ -209,7 +209,7 @@ export const useManagePositionForm = (
     const withdrawAmount = calculateMaxWithdrawAmount(totalCollateral, normalDebt)
     const mintAmount = calculateMaxBorrowAmount(totalCollateral, normalDebt)
     const repayAmountWithMargin = getHumanValue(
-      normalDebt.times(VIRTUAL_RATE_SAFETY_MARGIN),
+      normalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_SAFETY_MARGIN)),
       WAD_DECIMALS,
     )
 
@@ -303,8 +303,10 @@ export const useManagePositionForm = (
   const isDisabledCreatePosition = () => {
     const { deltaNormalDebt } = getDeltasFromForm()
     const debtFloor = position?.debtFloor ?? ZERO_BIG_NUMBER
-    // @TODO: is it correct to apply debt=deltaNormalDebt/virtualRateSafetyMargin ?
-    const deltaNormalDebtWithMargin = deltaNormalDebt.div(VIRTUAL_RATE_SAFETY_MARGIN)
+    // @TODO: simulate final result, deltaNormalDebt = debt / (virtualRate * virtualRateSafetyMargin)
+    const deltaNormalDebtWithMargin = deltaNormalDebt.div(
+      VIRTUAL_RATE.times(VIRTUAL_RATE_SAFETY_MARGIN),
+    )
     const totalNormalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
     const finalTotalNormalDebt = totalNormalDebt.plus(deltaNormalDebtWithMargin)
     const isNearZero = finalTotalNormalDebt.lt(MIN_EPSILON_OFFSET)
