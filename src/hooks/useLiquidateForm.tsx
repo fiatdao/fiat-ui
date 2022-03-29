@@ -84,11 +84,13 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
 
         notification.requestSign()
 
-        const tx: TransactionResponse | TransactionError = await userProxy
-          .execute(noLossCollateralAuctionActions.address, takeCollateral, {
+        const tx: TransactionResponse | TransactionError = await userProxy.execute(
+          noLossCollateralAuctionActions.address,
+          takeCollateral,
+          {
             gasLimit: 1_000_000,
-          })
-          .catch(notification.handleTxError)
+          },
+        )
 
         if (tx instanceof TransactionError) {
           throw tx
@@ -97,11 +99,7 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
         // awaiting exec
         notification.awaitingTx(tx.hash)
 
-        const receipt = await tx.wait().catch(notification.handleTxError)
-
-        if (receipt instanceof TransactionError) {
-          throw receipt
-        }
+        const receipt = await tx.wait()
 
         // tx successful
         notification.successfulTx(tx.hash)
@@ -109,7 +107,7 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
         return receipt
       } catch (err: any) {
         setTxStatus((prev) => ({ ...prev, error: err }))
-        throw err
+        notification.handleTxError(err)
       } finally {
         setTxStatus((prev) => ({ ...prev, loading: false }))
       }
@@ -133,5 +131,5 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
   // resets the status
   useEffect(() => () => setTxStatus(initialState), [initialState])
 
-  return { approve, hasAllowance, liquidate, notification, ...txStatus }
+  return { approve, hasAllowance, liquidate, ...txStatus }
 }

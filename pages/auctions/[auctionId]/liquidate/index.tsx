@@ -58,7 +58,7 @@ const LiquidateAuction = () => {
 
   const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
-  const { approve, hasAllowance, liquidate, loading, notification } = useLiquidateForm(data)
+  const { approve, hasAllowance, liquidate, loading } = useLiquidateForm(data)
 
   const onSubmit = async () => {
     // TODO SUM slippage fixed value
@@ -72,13 +72,12 @@ const LiquidateAuction = () => {
       .decimalPlaces(WAD_DECIMALS)
       .scaleBy(WAD_DECIMALS)
 
-    try {
-      await liquidate({ collateralAmountToSend, maxPrice })
+    const receipt = await liquidate({ collateralAmountToSend, maxPrice })
+
+    // tx was not successful
+    if (receipt) {
       await refetchFIATBalance()
       setStep(3)
-    } catch (err) {
-      // FixMe?: avoid using notification here and move it inside the `useLiquidateForm` hook
-      notification.handleTxError(err)
     }
   }
 
