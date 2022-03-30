@@ -39,7 +39,7 @@ const StepperTitle: React.FC<{
   </div>
 )
 
-type FormProps = { liquidateAmount: BigNumber }
+type FormProps = { amountToBuy: BigNumber }
 
 const LiquidateAuction = () => {
   const auctionId = useQueryParam('auctionId')
@@ -50,8 +50,7 @@ const LiquidateAuction = () => {
   const { data } = useAuction(auctionId)
 
   useDynamicTitle(
-    data?.collateral.address &&
-      `Liquidate ${getTokenByAddress(data.collateral.address)?.symbol ?? ''}`,
+    data?.collateral.address && `Buy ${getTokenByAddress(data.collateral.address)?.symbol ?? ''}`,
   )
 
   const [, refetchFIATBalance] = useFIATBalance()
@@ -59,9 +58,9 @@ const LiquidateAuction = () => {
   const {
     approve,
     approveMoneta,
+    buyCollateral,
     hasAllowance,
     hasMonetaAllowance,
-    liquidate,
     loading,
     maxCredit,
     maxPrice,
@@ -74,12 +73,12 @@ const LiquidateAuction = () => {
     }
 
     const collateralAmountToSend = form
-      .getFieldValue('liquidateAmount')
+      .getFieldValue('amountToBuy')
       .multipliedBy(SLIPPAGE.plus(1))
       .decimalPlaces(WAD_DECIMALS)
       .scaleBy(WAD_DECIMALS)
 
-    const receipt = await liquidate({ collateralAmountToSend, maxPrice })
+    const receipt = await buyCollateral({ collateralAmountToSend, maxPrice })
 
     // tx was not successful
     if (receipt) {
@@ -96,7 +95,7 @@ const LiquidateAuction = () => {
     },
     {
       title: 'Current Auction Price',
-      tooltip: 'The current FIAT price at which the collateral can be liquidated.',
+      tooltip: 'The current FIAT price at which the collateral can be bought.',
       value: `${data?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
     },
     {
@@ -119,20 +118,20 @@ const LiquidateAuction = () => {
     },
     {
       title: 'Amount',
-      value: `${form.getFieldValue('liquidateAmount')?.toFixed()}`,
+      value: `${form.getFieldValue('amountToBuy')?.toFixed()}`,
     },
     {
       title: 'Current Auction Price',
-      value: `$${data?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
+      value: `${data?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
     },
     {
       title: 'Buy price',
       value: `${
         form
-          .getFieldValue('liquidateAmount')
+          .getFieldValue('amountToBuy')
           ?.multipliedBy(data?.currentAuctionPrice ?? 0)
           .toFixed(4) ?? 0
-      }`,
+      } ${FIAT_TICKER}`,
     },
     {
       title: 'APY',
@@ -160,10 +159,8 @@ const LiquidateAuction = () => {
             <>
               <StepperTitle
                 currentStep={step}
-                description={
-                  step === 1 ? 'Select the amount to be liquidated' : 'Confirm the details'
-                }
-                title={'Liquidate a position'}
+                description={step === 1 ? 'Select the amount to buy' : 'Confirm the details'}
+                title={'Buy collateral'}
                 totalSteps={2}
               />
               <div className={cn(s.form)}>
@@ -176,8 +173,8 @@ const LiquidateAuction = () => {
                       </p>
                     </div>
 
-                    <Form form={form} initialValues={{ liquidateAmount: 0 }} onFinish={onSubmit}>
-                      <Form.Item name="liquidateAmount" required>
+                    <Form form={form} initialValues={{ amountToBuy: 0 }} onFinish={onSubmit}>
+                      <Form.Item name="amountToBuy" required>
                         <TokenAmount
                           disabled={loading}
                           displayDecimals={4}
@@ -189,7 +186,7 @@ const LiquidateAuction = () => {
                         />
                       </Form.Item>
                       <ButtonGradient disabled={loading} height="lg" onClick={() => setStep(2)}>
-                        Liquidate
+                        Buy collateral
                       </ButtonGradient>
                     </Form>
                   </>

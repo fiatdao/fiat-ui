@@ -118,7 +118,7 @@ const Auctions = () => {
       render: ({ id, isActive }) =>
         isActive ? (
           <Link href={`/auctions/${id}/liquidate`} passHref>
-            <ButtonGradient disabled={!isWalletConnected}>Liquidate</ButtonGradient>
+            <ButtonGradient disabled={!isWalletConnected}>Buy collateral</ButtonGradient>
           </Link>
         ) : (
           <ButtonGradient disabled>Not Available</ButtonGradient>
@@ -184,7 +184,7 @@ const Auctions = () => {
 
   return (
     <>
-      <h2 className={cn(s.title)}>Select an asset to liquidate and get yield</h2>
+      <h2 className={cn(s.title)}>Select a collateral asset on auction to buy</h2>
       <div className={cn(s.filters)}>
         {renderFilters()}
         {clearButton()}
@@ -193,7 +193,7 @@ const Auctions = () => {
         arrowContent={false}
         content={
           <>
-            <div className={cn(s.fitersGrid)}>{renderFilters()}</div>
+            <div className={cn(s.filtersGrid)}>{renderFilters()}</div>
             <div className={cn(s.buttonContainer)}>{clearButton()}</div>
           </>
         }

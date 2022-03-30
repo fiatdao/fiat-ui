@@ -79,7 +79,7 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
     [appChainId, web3Provider],
   )
 
-  const liquidate = useCallback(
+  const buyCollateral = useCallback(
     async ({
       collateralAmountToSend,
       maxPrice,
@@ -199,7 +199,7 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
     approveMoneta,
     hasAllowance,
     hasMonetaAllowance,
-    liquidate,
+    buyCollateral,
     maxPrice,
     maxCredit,
     ...txStatus,
