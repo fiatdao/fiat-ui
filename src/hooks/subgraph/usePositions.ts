@@ -17,7 +17,7 @@ export const fetchPositions = ({
   userAddress,
 }: {
   id?: string
-  userAddress?: string
+  userAddress: string
   proxyAddress?: string
   protocol?: string
   provider: JsonRpcProvider
@@ -33,7 +33,7 @@ export const fetchPositions = ({
       collateral_not: '0', // TODO: if collateral is 0 then position is closed (always collateral >= normalDebt)
     },
   }).then(async ({ positions }) => {
-    return Promise.all(positions.map((p) => wranglePosition(p, provider, appChainId)))
+    return Promise.all(positions.map((p) => wranglePosition(p, provider, appChainId, userAddress)))
   })
 }
 
