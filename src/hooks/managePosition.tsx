@@ -6,7 +6,7 @@ import {
   MIN_EPSILON_OFFSET,
   ONE_BIG_NUMBER,
   VIRTUAL_RATE,
-  VIRTUAL_RATE_SAFETY_MARGIN,
+  VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '../constants/misc'
@@ -125,7 +125,7 @@ export const useManagePositionForm = (
       const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
       const currentValue = position?.currentValue ? position?.currentValue : 1
       const debt = calculateDebt(totalNormalDebt)
-      const virtualRateWithMargin = VIRTUAL_RATE_SAFETY_MARGIN.times(VIRTUAL_RATE)
+      const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(VIRTUAL_RATE)
 
       const borrowAmount = totalCollateral
         .times(currentValue)
@@ -178,7 +178,7 @@ export const useManagePositionForm = (
     const withdrawAmount = calculateMaxWithdrawAmount(position?.totalCollateral, normalDebt)
     const borrowAmount = calculateMaxBorrowAmount(collateral, position?.totalNormalDebt)
     const repayAmountWithMargin = getHumanValue(
-      position?.totalNormalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_SAFETY_MARGIN)),
+      position?.totalNormalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE)),
       WAD_DECIMALS,
     )
 
@@ -209,7 +209,7 @@ export const useManagePositionForm = (
     const withdrawAmount = calculateMaxWithdrawAmount(totalCollateral, normalDebt)
     const mintAmount = calculateMaxBorrowAmount(totalCollateral, normalDebt)
     const repayAmountWithMargin = getHumanValue(
-      normalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_SAFETY_MARGIN)),
+      normalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE)),
       WAD_DECIMALS,
     )
 
@@ -305,7 +305,7 @@ export const useManagePositionForm = (
     const debtFloor = position?.debtFloor ?? ZERO_BIG_NUMBER
     // @TODO: simulate final result, deltaNormalDebt = debt / (virtualRate * virtualRateSafetyMargin)
     const deltaNormalDebtWithMargin = deltaNormalDebt.div(
-      VIRTUAL_RATE.times(VIRTUAL_RATE_SAFETY_MARGIN),
+      VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE),
     )
     const totalNormalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
     const finalTotalNormalDebt = totalNormalDebt.plus(deltaNormalDebtWithMargin)

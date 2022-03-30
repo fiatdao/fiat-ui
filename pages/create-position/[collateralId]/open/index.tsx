@@ -20,7 +20,7 @@ import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
-import { VIRTUAL_RATE, VIRTUAL_RATE_SAFETY_MARGIN, WAD_DECIMALS } from '@/src/constants/misc'
+import { VIRTUAL_RATE, VIRTUAL_RATE_MAX_SLIPPAGE, WAD_DECIMALS } from '@/src/constants/misc'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -150,7 +150,7 @@ const FormERC20: React.FC<{
       WAD_DECIMALS,
     )
 
-    const virtualRateWithMargin = VIRTUAL_RATE_SAFETY_MARGIN.times(VIRTUAL_RATE)
+    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(VIRTUAL_RATE)
     const maxBorrowAmount = totalCollateral
       .times(collateralValue)
       .div(collateralizationRatio)
