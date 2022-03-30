@@ -55,7 +55,8 @@ const calcAPY = (
     .dividedBy(
       BigNumber.from(getTimeToMaturity(maturity, blockTimestamp)).dividedBy(SECONDS_IN_A_YEAR),
     )
-    .toFixed(4)
+    .multipliedBy(100)
+    .toFixed(2)
 }
 
 const getAuctionStatus = (
