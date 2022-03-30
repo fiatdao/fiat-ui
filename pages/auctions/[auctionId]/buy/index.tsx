@@ -18,7 +18,7 @@ import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useAuction } from '@/src/hooks/subgraph/useAuction'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
-import { useLiquidateForm } from '@/src/hooks/useLiquidateForm'
+import { useBuyCollateralForm } from '@/src/hooks/useBuyCollateralForm'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { Summary } from '@/src/components/custom/summary'
 
@@ -41,7 +41,7 @@ const StepperTitle: React.FC<{
 
 type FormProps = { amountToBuy: BigNumber }
 
-const LiquidateAuction = () => {
+const BuyCollateral = () => {
   const auctionId = useQueryParam('auctionId')
 
   const [form] = AntdForm.useForm<FormProps>()
@@ -64,7 +64,7 @@ const LiquidateAuction = () => {
     loading,
     maxCredit,
     maxPrice,
-  } = useLiquidateForm(data)
+  } = useBuyCollateralForm(data)
 
   const onSubmit = async () => {
     if (!data?.currentAuctionPrice) {
@@ -245,4 +245,4 @@ const LiquidateAuction = () => {
   )
 }
 
-export default withRequiredConnection(LiquidateAuction)
+export default withRequiredConnection(BuyCollateral)

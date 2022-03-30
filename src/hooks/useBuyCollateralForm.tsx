@@ -17,7 +17,7 @@ import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { AuctionData } from '@/src/utils/data/auctions'
 import { Maybe } from '@/types/utils'
 
-export const useLiquidateForm = (auctionData?: AuctionData) => {
+export const useBuyCollateralForm = (auctionData?: AuctionData) => {
   const notification = useNotifications()
 
   const initialState = useMemo(

@@ -117,7 +117,7 @@ const Auctions = () => {
       dataIndex: 'action',
       render: ({ id, isActive }) =>
         isActive ? (
-          <Link href={`/auctions/${id}/liquidate`} passHref>
+          <Link href={`/auctions/${id}/buy`} passHref>
             <ButtonGradient disabled={!isWalletConnected}>Buy collateral</ButtonGradient>
           </Link>
         ) : (
