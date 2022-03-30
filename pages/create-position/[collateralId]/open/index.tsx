@@ -20,7 +20,13 @@ import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
-import { VIRTUAL_RATE, VIRTUAL_RATE_MAX_SLIPPAGE, WAD_DECIMALS } from '@/src/constants/misc'
+import {
+  BELOW_MINIMUM_AMOUNT_TEXT,
+  DEPOSIT_COLLATERAL_TEXT,
+  VIRTUAL_RATE,
+  VIRTUAL_RATE_MAX_SLIPPAGE,
+  WAD_DECIMALS,
+} from '@/src/constants/misc'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -41,6 +47,7 @@ import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { calculateHealthFactor } from '@/src/utils/data/positions'
 
+// @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7
 
 const StepperTitle: React.FC<{
@@ -71,6 +78,7 @@ const FormERC20: React.FC<{
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [loading, setLoading] = useState(false)
+
   const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
     tokenAddress,
     userProxyAddress ?? '',
@@ -82,16 +90,6 @@ const FormERC20: React.FC<{
   })
 
   const [FIATBalance] = useFIATBalance(true)
-
-  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
-  const isDisabledCreatePosition = () => {
-    const { fiatAmount } = form.getFieldsValue(true) as FormProps
-    const debtFloor = collateral.vault.debtFloor
-    const nonHumanFiatAmount = getNonHumanValue(fiatAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-    const hasMinimum = nonHumanFiatAmount.gte(debtFloor) || nonHumanFiatAmount.isZero()
-
-    return !hasAllowance || !isProxyAvailable || loading || !hasMinimum
-  }
 
   const { depositCollateral } = useUserActions()
   const [stateMachine, send] = useMachine(stepperMachine, {
@@ -158,6 +156,19 @@ const FormERC20: React.FC<{
 
     return maxBorrowAmount
   }, [stateMachine.context.erc20Amount, collateral])
+
+  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
+  const hasMinimumFIAT = useMemo(() => {
+    const fiatAmount = stateMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
+    const debtFloor = collateral.vault.debtFloor
+    const nonHumanFiatAmount = getNonHumanValue(fiatAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+
+    return nonHumanFiatAmount.gte(debtFloor) || nonHumanFiatAmount.isZero()
+  }, [stateMachine.context.fiatAmount, collateral.vault.debtFloor])
+
+  const isDisabledCreatePosition = () => {
+    return !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT
+  }
 
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
   const deltaNormalDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
@@ -379,7 +390,7 @@ const FormERC20: React.FC<{
                           })
                         }
                       >
-                        Deposit collateral
+                        {hasMinimumFIAT ? DEPOSIT_COLLATERAL_TEXT : BELOW_MINIMUM_AMOUNT_TEXT}
                       </ButtonGradient>
                     </ButtonsWrapper>
                     <div className={cn(s.summary)}>

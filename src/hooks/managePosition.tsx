@@ -2,9 +2,13 @@ import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useERC20Allowance } from './useERC20Allowance'
 import {
+  BELOW_MINIMUM_AMOUNT_TEXT,
+  ENABLE_PROXY_FOR_FIAT_TEXT,
+  EXECUTE_TEXT,
   INFINITE_BIG_NUMBER,
   MIN_EPSILON_OFFSET,
   ONE_BIG_NUMBER,
+  SET_ALLOWANCE_PROXY_TEXT,
   VIRTUAL_RATE,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
@@ -13,7 +17,7 @@ import {
 import { parseDate } from '../utils/dateTime'
 import { shortenAddr } from '../web3/utils'
 import BigNumber from 'bignumber.js'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
@@ -171,6 +175,30 @@ export const useManagePositionForm = (
     return { collateral, normalDebt, deltaCollateral, deltaNormalDebt }
   }, [position?.totalCollateral, position?.totalNormalDebt, getDeltasFromForm])
 
+  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
+  // there two cases where we don't disable the button
+  // - resulting FIAT is greater than debtFloor, as required in the contracts
+  // - resulting FIAT is zero or near than zero (currently there are some precision issues so
+  //   we are using the range, [ZERO, MIN_EPSILON_OFFSET]. eg: when all FIAT is burned
+
+  const hasMinimumFIAT = useMemo(() => {
+    const { deltaNormalDebt } = getDeltasFromForm()
+    const debtFloor = position?.debtFloor ?? ZERO_BIG_NUMBER
+    // @TODO: simulate final result, deltaNormalDebt = debt / (virtualRate * virtualRateSafetyMargin)
+    const deltaNormalDebtWithMargin = deltaNormalDebt.div(
+      VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE),
+    )
+    const totalNormalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
+    const finalTotalNormalDebt = totalNormalDebt.plus(deltaNormalDebtWithMargin)
+    const isNearZero = finalTotalNormalDebt.lt(MIN_EPSILON_OFFSET)
+
+    return finalTotalNormalDebt.gte(debtFloor) || isNearZero
+  }, [getDeltasFromForm, position?.debtFloor, position?.totalNormalDebt])
+
+  const isDisabledCreatePosition = () => {
+    return isLoading || !hasMinimumFIAT
+  }
+
   const handleFormChange = () => {
     if (!position?.totalCollateral || !position?.totalNormalDebt) return
     const { collateral, deltaNormalDebt, normalDebt } = getPositionValues()
@@ -181,23 +209,25 @@ export const useManagePositionForm = (
       position?.totalNormalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE)),
       WAD_DECIMALS,
     )
+    const newHealthFactor = calculateHealthFactorFromPosition(collateral, normalDebt)
 
     setMaxDepositAmount(depositAmount)
     setMaxWithdrawAmount(withdrawAmount)
     setMaxBorrowAmount(borrowAmount)
     setMaxRepayAmount(repayAmountWithMargin)
-    const newHealthFactor = calculateHealthFactorFromPosition(collateral, normalDebt)
-
     setHealthFactor(newHealthFactor)
+
     if (deltaNormalDebt.isNegative()) {
       const text = !hasFiatAllowance
-        ? 'Set allowance for Proxy'
+        ? SET_ALLOWANCE_PROXY_TEXT
         : !hasMonetaAllowance
-        ? 'Enable Proxy for FIAT'
-        : 'Execute'
+        ? ENABLE_PROXY_FOR_FIAT_TEXT
+        : !hasMinimumFIAT
+        ? BELOW_MINIMUM_AMOUNT_TEXT
+        : EXECUTE_TEXT
       setButtonText(text)
     } else {
-      setButtonText('Execute')
+      setButtonText(!hasMinimumFIAT ? BELOW_MINIMUM_AMOUNT_TEXT : EXECUTE_TEXT)
     }
   }
 
@@ -234,15 +264,17 @@ export const useManagePositionForm = (
 
     if (toBurn.isGreaterThan(ZERO_BIG_NUMBER)) {
       const text = !hasFiatAllowance
-        ? 'Set allowance for Proxy'
+        ? SET_ALLOWANCE_PROXY_TEXT
         : !hasMonetaAllowance
-        ? 'Enable Proxy for FIAT'
-        : 'Execute'
+        ? ENABLE_PROXY_FOR_FIAT_TEXT
+        : !hasMinimumFIAT
+        ? BELOW_MINIMUM_AMOUNT_TEXT
+        : EXECUTE_TEXT
       setButtonText(text)
     } else {
-      setButtonText('Execute')
+      setButtonText(!hasMinimumFIAT ? BELOW_MINIMUM_AMOUNT_TEXT : EXECUTE_TEXT)
     }
-  }, [hasFiatAllowance, hasMonetaAllowance, positionFormFields])
+  }, [hasFiatAllowance, hasMonetaAllowance, positionFormFields, hasMinimumFIAT])
 
   const handleManage = async ({
     burn,
@@ -293,26 +325,6 @@ export const useManagePositionForm = (
     } finally {
       setIsLoading(false)
     }
-  }
-
-  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
-  // there two cases where we don't disable the button
-  // - resulting FIAT is greater than debtFloor, as required in the contracts
-  // - resulting FIAT is zero or near than zero (currently there are some precision issues so
-  //   we are using the range, [ZERO, MIN_EPSILON_OFFSET]. eg: when all FIAT is burned
-  const isDisabledCreatePosition = () => {
-    const { deltaNormalDebt } = getDeltasFromForm()
-    const debtFloor = position?.debtFloor ?? ZERO_BIG_NUMBER
-    // @TODO: simulate final result, deltaNormalDebt = debt / (virtualRate * virtualRateSafetyMargin)
-    const deltaNormalDebtWithMargin = deltaNormalDebt.div(
-      VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE),
-    )
-    const totalNormalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
-    const finalTotalNormalDebt = totalNormalDebt.plus(deltaNormalDebtWithMargin)
-    const isNearZero = finalTotalNormalDebt.lt(MIN_EPSILON_OFFSET)
-    const hasMinimum = finalTotalNormalDebt.gte(debtFloor) || isNearZero
-
-    return isLoading || !hasMinimum
   }
 
   return {
