@@ -4,7 +4,7 @@ import { assign, createMachine } from 'xstate'
 export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string } } = {
   1: {
     title: 'Configure your position',
-    subtitle: 'Select which asset to deposit and how much FIAT to mint.',
+    subtitle: 'Select deposit amount and how much FIAT to mint.',
   },
   2: {
     title: 'Create a Proxy contract',
@@ -16,7 +16,7 @@ export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string 
   },
   4: {
     title: 'Configure your positions',
-    subtitle: 'Select which asset to deposit and how much FIAT to mint.',
+    subtitle: 'Select deposit amount and how much FIAT to mint.',
   },
   5: {
     title: 'Confirm your new position',
