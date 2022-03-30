@@ -19,12 +19,11 @@ import { getTokenByAddress } from '@/src/constants/bondTokens'
 const Columns: ColumnsType<any> = [
   {
     align: 'left',
-    dataIndex: 'protocol',
-    render: (protocol: Transaction['vaultName'], transaction: Transaction) => (
+    render: (transaction: Transaction) => (
       <Asset
-        mainAsset={transaction.vaultName}
+        mainAsset={getTokenByAddress(transaction.assetAddress)?.protocol ?? ''}
         secondaryAsset={transaction.underlierSymbol}
-        title={transaction.vaultName}
+        title={getTokenByAddress(transaction.assetAddress)?.protocol ?? ''}
       />
     ),
     title: 'Protocol',
