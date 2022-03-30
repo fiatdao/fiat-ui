@@ -68,7 +68,7 @@ const LiquidateAuction = () => {
   } = useLiquidateForm(data)
 
   const onSubmit = async () => {
-    if (!data?.bidPrice) {
+    if (!data?.currentAuctionPrice) {
       console.error('unavailable data')
       return
     }
@@ -95,9 +95,9 @@ const LiquidateAuction = () => {
       value: data?.auctionedCollateral?.toFixed(2),
     },
     {
-      title: 'Bid Price',
+      title: 'Current Auction Price',
       tooltip: 'The current FIAT price at which the collateral can be liquidated.',
-      value: `${data?.bidPrice?.toFixed(4)} ${FIAT_TICKER}`,
+      value: `${data?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
     },
     {
       title: 'Face Value',
@@ -107,7 +107,7 @@ const LiquidateAuction = () => {
     {
       title: 'APY',
       tooltip:
-        'The annualized yield as implied by the current auction Bid Price and collateral maturity.',
+        'The annualized yield as implied by the Current Auction Price and collateral maturity.',
       value: `${data?.apy}%`,
     },
   ]
@@ -122,15 +122,15 @@ const LiquidateAuction = () => {
       value: `${form.getFieldValue('liquidateAmount')?.toFixed()}`,
     },
     {
-      title: 'Bid price',
-      value: `$${data?.bidPrice?.toFixed(4)} ${FIAT_TICKER}`,
+      title: 'Current Auction Price',
+      value: `$${data?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
     },
     {
       title: 'Buy price',
       value: `${
         form
           .getFieldValue('liquidateAmount')
-          ?.multipliedBy(data?.bidPrice ?? 0)
+          ?.multipliedBy(data?.currentAuctionPrice ?? 0)
           .toFixed(4) ?? 0
       }`,
     },

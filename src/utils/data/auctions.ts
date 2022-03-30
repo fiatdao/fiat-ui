@@ -20,7 +20,7 @@ export type AuctionData = {
   }
   asset?: string
   auctionedCollateral?: BigNumber
-  bidPrice?: BigNumber
+  currentAuctionPrice?: BigNumber
   collateralFaceValue?: BigNumber
   collateralMaturity: number
   tokenId?: string
@@ -38,14 +38,19 @@ const getTimeToMaturity = (maturity: number, blockTimestamp: number) => {
 }
 
 // APY === Yield
-const calcAPY = (faceValue?: BigNumber, bidPrice?: BigNumber, maturity = 0, blockTimestamp = 0) => {
-  if (!faceValue || !bidPrice) {
+const calcAPY = (
+  faceValue?: BigNumber,
+  currentAuctionPrice?: BigNumber,
+  maturity = 0,
+  blockTimestamp = 0,
+) => {
+  if (!faceValue || !currentAuctionPrice) {
     return 'Unavailable'
   }
 
-  // APY: ( faceValue / bidPrice - 1) / ( max(0, maturity - block.timestamp) / (365*86400) )
+  // APY: ( faceValue / currentAuctionPrice - 1) / ( max(0, maturity - block.timestamp) / (365*86400) )
   return faceValue
-    .dividedBy(bidPrice)
+    .dividedBy(currentAuctionPrice)
     .minus(1)
     .dividedBy(
       BigNumber.from(getTimeToMaturity(maturity, blockTimestamp)).dividedBy(SECONDS_IN_A_YEAR),
@@ -87,7 +92,9 @@ const wrangleAuction = async (
     collateralAuction.collateralType?.faceValue,
   )?.unscaleBy(WAD_DECIMALS)
 
-  const bidPrice = BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(WAD_DECIMALS)
+  const currentAuctionPrice = BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(
+    WAD_DECIMALS,
+  )
 
   return {
     id: collateralAuction.id,
@@ -105,7 +112,7 @@ const wrangleAuction = async (
     auctionedCollateral: BigNumber.from(auctionStatus?.collateralToSell.toString())?.unscaleBy(
       WAD_DECIMALS,
     ),
-    bidPrice,
+    currentAuctionPrice,
     collateralFaceValue,
     collateralMaturity: Number(collateralAuction.collateralType?.maturity),
     action: { isActive: collateralAuction.isActive, id: collateralAuction.id },
@@ -120,7 +127,7 @@ const wrangleAuction = async (
     endsAt: BigNumberToDateOrCurrent(endsAt.toString()),
     apy: calcAPY(
       collateralFaceValue,
-      bidPrice,
+      currentAuctionPrice,
       Number(collateralAuction.collateralType?.maturity ?? 0),
       blockTimestamp,
     ),

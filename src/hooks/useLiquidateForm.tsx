@@ -167,11 +167,11 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
 
   const maxPrice = useMemo(
     () =>
-      auctionData?.bidPrice
+      auctionData?.currentAuctionPrice
         ?.multipliedBy(SLIPPAGE.plus(1))
         .decimalPlaces(WAD_DECIMALS)
         .scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER,
-    [auctionData?.bidPrice],
+    [auctionData?.currentAuctionPrice],
   )
 
   const maxCredit = useMemo(() => {

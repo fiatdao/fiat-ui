@@ -94,11 +94,11 @@ const Auctions = () => {
     },
     {
       align: 'left',
-      dataIndex: 'bidPrice',
+      dataIndex: 'currentAuctionPrice',
       render: (value?: BigNumber) => (
         <CellValue value={`${value?.toFixed(4) ?? UNKNOWN} ${FIAT_TICKER}`} />
       ),
-      title: 'Bid Price',
+      title: 'Current Auction Price',
     },
     {
       align: 'left',
