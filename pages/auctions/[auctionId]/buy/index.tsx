@@ -53,7 +53,7 @@ const BuyCollateral = () => {
     data?.collateral.address && `Buy ${getTokenByAddress(data.collateral.address)?.symbol ?? ''}`,
   )
 
-  const [, refetchFIATBalance] = useFIATBalance()
+  const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
   const {
     approve,
@@ -169,7 +169,7 @@ const BuyCollateral = () => {
                     <div className={cn(s.balanceWrapper)}>
                       <h3 className={cn(s.balanceLabel)}>Select amount</h3>
                       <p className={cn(s.balance)}>
-                        Collateral left: ${data?.auctionedCollateral?.toFixed(2)}
+                        Balance: {FIATBalance.unscaleBy(WAD_DECIMALS)?.toFixed(2)}
                       </p>
                     </div>
 
