@@ -390,7 +390,7 @@ export const useManagePositionsInfoBlock = (position: Position) => {
       value: `$${getHumanValue(position?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {
-      title: 'Price',
+      title: 'Collateral Value',
       tooltip: 'The currently discounted value of the bond.',
       value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
