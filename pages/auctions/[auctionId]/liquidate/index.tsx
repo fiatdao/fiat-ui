@@ -90,9 +90,9 @@ const LiquidateAuction = () => {
 
   const blocksData = [
     {
-      title: 'Collateral to Sell',
+      title: 'Auctioned Collateral',
       tooltip: 'Units of this collateral type that are currently being auctioned.',
-      value: data?.collateralToSell?.toFixed(2),
+      value: data?.auctionedCollateral?.toFixed(2),
     },
     {
       title: 'Bid Price',
@@ -172,7 +172,7 @@ const LiquidateAuction = () => {
                     <div className={cn(s.balanceWrapper)}>
                       <h3 className={cn(s.balanceLabel)}>Select amount</h3>
                       <p className={cn(s.balance)}>
-                        Collateral left: ${data?.collateralToSell?.toFixed(2)}
+                        Collateral left: ${data?.auctionedCollateral?.toFixed(2)}
                       </p>
                     </div>
 

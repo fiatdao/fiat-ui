@@ -175,7 +175,9 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
   )
 
   const maxCredit = useMemo(() => {
-    const maxToSell = auctionData?.collateralToSell?.multipliedBy(BigNumber.from(1).minus(SLIPPAGE))
+    const maxToSell = auctionData?.auctionedCollateral?.multipliedBy(
+      BigNumber.from(1).minus(SLIPPAGE),
+    )
 
     if (!maxToSell || maxPrice.eq(ZERO_BIG_NUMBER)) {
       return
@@ -190,7 +192,7 @@ export const useLiquidateForm = (auctionData?: AuctionData) => {
     }
 
     return maxToSell.dividedBy(maxPrice.unscaleBy(WAD_DECIMALS))
-  }, [auctionData?.collateralToSell, maxPrice, FIATBalance])
+  }, [auctionData?.auctionedCollateral, maxPrice, FIATBalance])
 
   return {
     approve,
