@@ -3,7 +3,6 @@ import cn from 'classnames'
 import React, { useEffect, useState } from 'react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
@@ -62,17 +61,17 @@ const PositionManage = () => {
 
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
-  const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
 
   const onSuccess = async () => {
     form.resetFields()
-    await Promise.all([refetchPosition(), refetchFiatBalance()])
+    await Promise.all([refetchPosition()])
   }
 
   const {
     availableDepositAmount,
     availableWithdrawAmount,
     buttonText,
+    fiatBalance,
     handleFormChange,
     handleManage,
     healthFactor,

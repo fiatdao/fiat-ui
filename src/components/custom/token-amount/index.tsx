@@ -59,6 +59,12 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   const bnMaxValue = BigNumber.from(max) ?? MAX_UINT_256
 
   const bnValue = value !== undefined ? BigNumber.min(value, bnMaxValue) : undefined
+  const bnMaxValueNumber = bnMaxValue.toNumber()
+  // @TODO: we shouldn't use bnMaxValue.toNumber() because it loses precision
+  const bnMaxValueNumberSlider = Number(bnMaxValue?.toFixed(0, 8)) // or bnMaxValue?.toNumber()
+  // @TODO: we shouldn't use bnMaxValue.toNumber() because it loses precision
+  const bnValueNumberSlider = Number(bnValue?.toFixed(0, 8)) // or bnValue?.toNumber()
+  const placeholderValue = formatBigValue(bnMaxValueNumber, 6)
 
   function onMaxHandle() {
     onChange?.(bnMaxValue)
@@ -100,11 +106,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
         hidden={hidden}
         maximumFractionDigits={maximumFractionDigits}
         onChange={handleInputChange}
-        placeholder={
-          max !== undefined
-            ? `0 (Max ${formatBigValue(bnMaxValue.toNumber(), displayDecimals)})`
-            : ''
-        }
+        placeholder={max !== undefined ? `0 (Max ${placeholderValue})` : ''}
         value={bnValue}
       />
       {slider && !hidden && (
@@ -141,13 +143,12 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
             disabled={disabled}
             healthFactorVariant={slider === 'healthFactorVariant'}
             healthFactorVariantReverse={slider === 'healthFactorVariantReverse'}
-            // @TODO: we shouldn't use bnMaxValue.toNumber() because it loses precision
-            max={Number(bnMaxValue.toFixed(0, 8))}
+            max={bnMaxValueNumberSlider}
             min={0}
             onChange={onSliderChange}
             step={step}
             tooltipVisible={false}
-            value={Number(bnValue?.toFixed(0, 8))}
+            value={bnValueNumberSlider}
           />
         </>
       )}

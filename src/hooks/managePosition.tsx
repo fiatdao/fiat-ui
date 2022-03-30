@@ -1,6 +1,7 @@
 import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useERC20Allowance } from './useERC20Allowance'
+import { useFIATBalance } from './useFIATBalance'
 import {
   BELOW_MINIMUM_AMOUNT_TEXT,
   ENABLE_PROXY_FOR_FIAT_TEXT,
@@ -42,6 +43,7 @@ export const useManagePositionForm = (
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { approveFIAT, modifyCollateralAndDebt } = useUserActions()
+  const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { userProxyAddress } = useUserProxy()
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -144,6 +146,20 @@ export const useManagePositionForm = (
     },
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )
+
+  const calculateMaxRepayAmount = useCallback(
+    (debt: BigNumber) => {
+      const virtualRateWithMargin = VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE)
+      const debtWithMargin = debt.times(virtualRateWithMargin)
+      const repayAmountWithMargin = getHumanValue(debtWithMargin, WAD_DECIMALS)
+      if (fiatBalance.gte(repayAmountWithMargin)) {
+        return repayAmountWithMargin
+      }
+      return fiatBalance
+    },
+    [fiatBalance],
+  )
+
   const approveMonetaAllowance = useCallback(async () => {
     const MONETA = contracts.MONETA.address[appChainId]
     await approveFIAT(MONETA)
@@ -205,16 +221,14 @@ export const useManagePositionForm = (
     const depositAmount = tokenInfo?.humanValue
     const withdrawAmount = calculateMaxWithdrawAmount(position?.totalCollateral, normalDebt)
     const borrowAmount = calculateMaxBorrowAmount(collateral, position?.totalNormalDebt)
-    const repayAmountWithMargin = getHumanValue(
-      position?.totalNormalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE)),
-      WAD_DECIMALS,
-    )
+    const repayAmount = calculateMaxRepayAmount(position?.totalNormalDebt)
+
     const newHealthFactor = calculateHealthFactorFromPosition(collateral, normalDebt)
 
     setMaxDepositAmount(depositAmount)
     setMaxWithdrawAmount(withdrawAmount)
     setMaxBorrowAmount(borrowAmount)
-    setMaxRepayAmount(repayAmountWithMargin)
+    setMaxRepayAmount(repayAmount)
     setHealthFactor(newHealthFactor)
 
     if (deltaNormalDebt.isNegative()) {
@@ -238,15 +252,12 @@ export const useManagePositionForm = (
     const normalDebt = position?.totalNormalDebt ?? ZERO_BIG_NUMBER
     const withdrawAmount = calculateMaxWithdrawAmount(totalCollateral, normalDebt)
     const mintAmount = calculateMaxBorrowAmount(totalCollateral, normalDebt)
-    const repayAmountWithMargin = getHumanValue(
-      normalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE)),
-      WAD_DECIMALS,
-    )
+    const repayAmount = calculateMaxRepayAmount(normalDebt)
 
     setMaxDepositAmount(collateralBalance)
     setMaxWithdrawAmount(withdrawAmount)
     setMaxBorrowAmount(mintAmount)
-    setMaxRepayAmount(repayAmountWithMargin)
+    setMaxRepayAmount(repayAmount)
     setAvailableDepositAmount(collateralBalance)
     setAvailableWithdrawAmount(collateralBalance)
   }, [
@@ -255,6 +266,7 @@ export const useManagePositionForm = (
     position?.totalNormalDebt,
     calculateMaxWithdrawAmount,
     calculateMaxBorrowAmount,
+    calculateMaxRepayAmount,
   ])
 
   useEffect(() => {
@@ -316,6 +328,7 @@ export const useManagePositionForm = (
       })
 
       await updateToken()
+      await refetchFiatBalance()
 
       if (onSuccess) {
         onSuccess()
@@ -341,6 +354,7 @@ export const useManagePositionForm = (
     handleManage,
     calculateHealthFactorFromPosition,
     isDisabledCreatePosition,
+    fiatBalance,
   }
 }
 
