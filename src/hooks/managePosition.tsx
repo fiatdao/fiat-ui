@@ -1,7 +1,6 @@
 import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useERC20Allowance } from './useERC20Allowance'
-import { useFIATBalance } from './useFIATBalance'
 import {
   BELOW_MINIMUM_AMOUNT_TEXT,
   ENABLE_PROXY_FOR_FIAT_TEXT,
@@ -43,7 +42,6 @@ export const useManagePositionForm = (
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { approveFIAT, modifyCollateralAndDebt } = useUserActions()
-  const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { userProxyAddress } = useUserProxy()
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -147,18 +145,12 @@ export const useManagePositionForm = (
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )
 
-  const calculateMaxRepayAmount = useCallback(
-    (debt: BigNumber) => {
-      const virtualRateWithMargin = VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE)
-      const debtWithMargin = debt.times(virtualRateWithMargin)
-      const repayAmountWithMargin = getHumanValue(debtWithMargin, WAD_DECIMALS)
-      if (fiatBalance.gte(repayAmountWithMargin)) {
-        return repayAmountWithMargin
-      }
-      return fiatBalance
-    },
-    [fiatBalance],
-  )
+  const calculateMaxRepayAmount = useCallback((debt: BigNumber) => {
+    const virtualRateWithMargin = VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE)
+    const debtWithMargin = debt.times(virtualRateWithMargin)
+    const repayAmountWithMargin = getHumanValue(debtWithMargin, WAD_DECIMALS)
+    return repayAmountWithMargin
+  }, [])
 
   const approveMonetaAllowance = useCallback(async () => {
     const MONETA = contracts.MONETA.address[appChainId]
@@ -211,9 +203,9 @@ export const useManagePositionForm = (
     return finalTotalNormalDebt.gte(debtFloor) || isNearZero
   }, [getDeltasFromForm, position?.debtFloor, position?.totalNormalDebt])
 
-  const isDisabledCreatePosition = () => {
+  const isDisabledCreatePosition = useMemo(() => {
     return isLoading || !hasMinimumFIAT
-  }
+  }, [isLoading, hasMinimumFIAT])
 
   const handleFormChange = () => {
     if (!position?.totalCollateral || !position?.totalNormalDebt) return
@@ -328,7 +320,6 @@ export const useManagePositionForm = (
       })
 
       await updateToken()
-      await refetchFiatBalance()
 
       if (onSuccess) {
         onSuccess()
@@ -354,7 +345,6 @@ export const useManagePositionForm = (
     handleManage,
     calculateHealthFactorFromPosition,
     isDisabledCreatePosition,
-    fiatBalance,
   }
 }
 
