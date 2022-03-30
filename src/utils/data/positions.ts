@@ -39,6 +39,7 @@ export type Position = {
   isAtRisk: boolean
   interestPerSecond: BigNumber
   currentValue: BigNumber
+  userAddress: string
 }
 
 // TODO pass tokenId depends on protocol
@@ -140,6 +141,7 @@ const wranglePosition = async (
   position: SubgraphPosition,
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
+  userAddress: string,
 ): Promise<Position> => {
   const { id, vaultName: protocol } = position
   const vaultCollateralizationRatio =
@@ -190,6 +192,7 @@ const wranglePosition = async (
     healthFactor,
     isAtRisk,
     interestPerSecond,
+    userAddress,
   }
 }
 export { wranglePosition, calculateHealthFactor, calculateDebt }

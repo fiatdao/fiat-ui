@@ -1,5 +1,6 @@
 import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
+import { extractFieldsFromPositionId } from '@/src/utils/managePosition'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { calculateHealthFactor, parseDate, remainingTime } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
@@ -18,7 +19,7 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'collateral',
-    render: (collateral: Position['collateral'], position: Position) => (
+    render: (collateral: Position['collateral'], position) => (
       <Asset
         mainAsset={getTokenByAddress(collateral.address)?.protocol ?? ''}
         secondaryAsset={position.underlier.symbol}
@@ -40,9 +41,9 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'totalCollateral',
-    render: (totalCollateral: Position['totalCollateral'], obj: Position) => (
+    render: (totalCollateral: Position['totalCollateral'], position) => (
       <CellValue
-        bottomValue={`$${getHumanValue(obj.collateralValue, WAD_DECIMALS).toFixed(2)}`}
+        bottomValue={`$${getHumanValue(position.collateralValue, WAD_DECIMALS).toFixed(2)}`}
         // TODO: collateralValue = fairPrice * totalCollateral
         // (we need to scale by 36 because we are multiplying 2 BigNumbers with 18 decimals)
         value={`${getHumanValue(totalCollateral, WAD_DECIMALS).toFixed(3)}`}
@@ -88,11 +89,23 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'right',
     dataIndex: 'id', // FIXME Check on chain this
-    render: (id) => (
-      <Link href={`/your-positions/${id}/manage`} passHref>
-        <ButtonGradient>Manage Position</ButtonGradient>
-      </Link>
-    ),
+    render: (id: Position['id'], { userAddress }) => {
+      const { proxyAddress } = extractFieldsFromPositionId(id)
+      const canManage = proxyAddress.toLowerCase() !== userAddress.toLowerCase()
+
+      return (
+        <Link href={`/your-positions/${id}/manage`} passHref>
+          <ButtonGradient
+            disabled={!canManage}
+            title={
+              !canManage ? 'Currently, only Proxy-created positions can be managed from the UI' : ''
+            }
+          >
+            Manage Position
+          </ButtonGradient>
+        </Link>
+      )
+    },
     title: '',
     width: 110,
   },
