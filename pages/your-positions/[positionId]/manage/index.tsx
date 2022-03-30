@@ -24,6 +24,8 @@ import { Form } from '@/src/components/antd'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -50,7 +52,8 @@ const PositionManage = () => {
   const [form] = AntdForm.useForm<PositionManageFormFields>()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
-
+  // @TODO: useFIATBalance hook can't be moved into another hook it trigger infinite updates
+  const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { position, refetch: refetchPosition } = useManagePositionInfo()
 
   useEffect(() => {
@@ -64,14 +67,13 @@ const PositionManage = () => {
 
   const onSuccess = async () => {
     form.resetFields()
-    await Promise.all([refetchPosition()])
+    await Promise.all([refetchPosition(), refetchFiatBalance()])
   }
 
   const {
     availableDepositAmount,
     availableWithdrawAmount,
     buttonText,
-    fiatBalance,
     handleFormChange,
     handleManage,
     healthFactor,
@@ -87,6 +89,8 @@ const PositionManage = () => {
   const healthFactorToRender = healthFactor?.isFinite()
     ? healthFactor?.toFixed(3)
     : DEFAULT_HEALTH_FACTOR
+
+  const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
 
   return (
     <>
@@ -228,7 +232,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorToRender}
-                              max={maxRepayAmount}
+                              max={maxRepay}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}
                               tokenIcon={<FiatIcon />}
@@ -241,7 +245,7 @@ const PositionManage = () => {
 
                   <ButtonsWrapper>
                     <ButtonGradient
-                      disabled={isDisabledCreatePosition()}
+                      disabled={isDisabledCreatePosition}
                       height="lg"
                       loading={isLoading}
                       onClick={() => handleManage(formValues)}
