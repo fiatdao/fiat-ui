@@ -101,7 +101,7 @@ const BuyCollateral = () => {
     {
       title: 'Face Value',
       tooltip: 'The amount of underlying tokens available for redemption at maturity.',
-      value: `$${data?.collateralFaceValue?.toFixed(4)}`,
+      value: `$${data?.faceValue?.toFixed(4)}`,
     },
     {
       title: 'APY',

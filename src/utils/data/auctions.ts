@@ -21,7 +21,7 @@ export type AuctionData = {
   asset?: string
   auctionedCollateral?: BigNumber
   currentAuctionPrice?: BigNumber
-  collateralFaceValue?: BigNumber
+  faceValue?: BigNumber
   collateralMaturity: number
   tokenId?: string
   vault?: { address: string; name?: string; interestPerSecond?: BigNumber }
@@ -89,9 +89,9 @@ const wrangleAuction = async (
 
   const auctionStatus = await getAuctionStatus(appChainId, provider, collateralAuction.id)
 
-  const collateralFaceValue = BigNumber.from(
-    collateralAuction.collateralType?.faceValue,
-  )?.unscaleBy(WAD_DECIMALS)
+  const faceValue = BigNumber.from(collateralAuction.collateralType?.faceValue)?.unscaleBy(
+    WAD_DECIMALS,
+  )
 
   const currentAuctionPrice = BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(
     WAD_DECIMALS,
@@ -114,7 +114,7 @@ const wrangleAuction = async (
       WAD_DECIMALS,
     ),
     currentAuctionPrice,
-    collateralFaceValue,
+    faceValue,
     collateralMaturity: Number(collateralAuction.collateralType?.maturity),
     action: { isActive: collateralAuction.isActive, id: collateralAuction.id },
     collateral: {
@@ -127,7 +127,7 @@ const wrangleAuction = async (
     },
     endsAt: BigNumberToDateOrCurrent(endsAt.toString()),
     apy: calcAPY(
-      collateralFaceValue,
+      faceValue,
       currentAuctionPrice,
       Number(collateralAuction.collateralType?.maturity ?? 0),
       blockTimestamp,
