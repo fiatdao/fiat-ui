@@ -146,10 +146,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
             min={0}
             onChange={onSliderChange}
             step={step}
-            tipFormatter={(sliderValue) =>
-              sliderValue ? formatBigValue(new BigNumber(sliderValue), displayDecimals) : 0
-            }
-            tooltipPlacement="bottom"
+            tooltipVisible={false}
             value={bnValue?.toNumber()}
           />
         </>
