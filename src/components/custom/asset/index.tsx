@@ -11,7 +11,12 @@ export const Asset: React.FC<{
 }> = ({ className, mainAsset, secondaryAsset, title, ...restProps }) => {
   return (
     <div className={cn(s.component, className)} {...restProps}>
-      <AssetIcons dimensions="32px" mainAsset={mainAsset} secondaryAsset={secondaryAsset} />
+      <AssetIcons
+        className={cn(s.icon)}
+        dimensions="32px"
+        mainAsset={mainAsset}
+        secondaryAsset={secondaryAsset}
+      />
       <div className={cn(s.title)}>{title}</div>
     </div>
   )
