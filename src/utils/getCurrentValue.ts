@@ -13,8 +13,9 @@ export const getCurrentValue = async (
   tokenId: number | string,
   vaultAddress: Maybe<string>,
   isFaceValue = false,
-): Promise<BigNumber> => {
+) => {
   let collateralValue = ZERO_BIG_NUMBER
+
   if (vaultAddress) {
     const _collateralValue = await contractCall<Vault20, 'fairPrice'>(
       vaultAddress,
@@ -29,5 +30,5 @@ export const getCurrentValue = async (
     }
   }
 
-  return collateralValue as BigNumber
+  return collateralValue
 }

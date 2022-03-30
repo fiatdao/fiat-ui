@@ -1,9 +1,11 @@
 import s from './s.module.scss'
+import BigNumber from 'bignumber.js'
 import Link from 'next/link'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import { Popover } from 'antd'
+import { FIAT_TICKER } from '@/src/constants/misc'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { useAuctions } from '@/src/hooks/subgraph/useAuctions'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -13,7 +15,7 @@ import ButtonOutline from '@/src/components/antd/button-outline'
 import Element from '@/src/resources/svg/element.svg'
 import Notional from '@/src/resources/svg/notional.svg'
 import { Table } from '@/src/components/antd'
-import { tablePagination } from '@/src/utils/table'
+import { parseDate, parseTime, tablePagination } from '@/src/utils/table'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import Filter from '@/src/resources/svg/filter.svg'
@@ -50,6 +52,8 @@ const AuctionsTable = ({ columns, filters }: any) => {
   )
 }
 
+const UNKNOWN = 'Unknown'
+
 const Auctions = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
   const { isWalletConnected } = useWeb3Connection()
@@ -60,9 +64,9 @@ const Auctions = () => {
       dataIndex: 'protocol',
       render: (protocol: AuctionData['protocol'], obj: AuctionData) => (
         <Asset
-          mainAsset={protocol ?? ''}
+          mainAsset={protocol.name ?? ''}
           secondaryAsset={obj.underlier.symbol}
-          title={protocol ?? ''}
+          title={protocol.humanReadableName ?? ''}
         />
       ),
       title: 'Protocol',
@@ -76,35 +80,45 @@ const Auctions = () => {
     },
     {
       align: 'left',
-      dataIndex: 'upForAuction',
-      render: (value: any) => <CellValue value={value} />,
-      title: 'Up for Auction',
+      dataIndex: 'endsAt',
+      render: (value: Date) => (
+        <CellValue bottomValue={parseTime(value)} value={parseDate(value)} />
+      ),
+      title: 'Ends At',
     },
     {
       align: 'left',
-      dataIndex: 'price',
-      render: (value: string) => <CellValue value={`$${value}`} />,
-      title: 'Auction Price',
+      dataIndex: 'auctionedCollateral',
+      render: (value?: BigNumber) => <CellValue value={value?.toFixed(2) ?? UNKNOWN} />,
+      title: 'Auctioned Collateral',
     },
     {
       align: 'left',
-      dataIndex: 'collateralValue',
-      render: (value: string) => <CellValue value={`$${value}`} />,
-      title: 'Collateral Value',
+      dataIndex: 'currentAuctionPrice',
+      render: (value?: BigNumber) => (
+        <CellValue value={`${value?.toFixed(4) ?? UNKNOWN} ${FIAT_TICKER}`} />
+      ),
+      title: 'Current Auction Price',
     },
     {
       align: 'left',
-      dataIndex: 'yield',
+      dataIndex: 'faceValue',
+      render: (value?: BigNumber) => <CellValue value={`$${value?.toFixed(4) ?? UNKNOWN}`} />,
+      title: 'Face Value',
+    },
+    {
+      align: 'left',
+      dataIndex: 'apy',
       render: (value: string) => <CellValue value={`${value}%`} />,
-      title: 'Yield',
+      title: 'APY',
     },
     {
       align: 'right',
       dataIndex: 'action',
       render: ({ id, isActive }) =>
         isActive ? (
-          <Link href={`/auctions/${id}/liquidate`} passHref>
-            <ButtonGradient disabled={!isWalletConnected}>Liquidate</ButtonGradient>
+          <Link href={`/auctions/${id}/buy`} passHref>
+            <ButtonGradient disabled={!isWalletConnected}>Buy collateral</ButtonGradient>
           </Link>
         ) : (
           <ButtonGradient disabled>Not Available</ButtonGradient>
@@ -170,7 +184,7 @@ const Auctions = () => {
 
   return (
     <>
-      <h2 className={cn(s.title)}>Select an asset to liquidate and get yield</h2>
+      <h2 className={cn(s.title)}>Select a collateral asset on auction to buy</h2>
       <div className={cn(s.filters)}>
         {renderFilters()}
         {clearButton()}
@@ -179,7 +193,7 @@ const Auctions = () => {
         arrowContent={false}
         content={
           <>
-            <div className={cn(s.fitersGrid)}>{renderFilters()}</div>
+            <div className={cn(s.filtersGrid)}>{renderFilters()}</div>
             <div className={cn(s.buttonContainer)}>{clearButton()}</div>
           </>
         }

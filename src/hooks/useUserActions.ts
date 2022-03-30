@@ -96,14 +96,10 @@ export const useUserActions = (): UseUserActions => {
       // awaiting exec
       notification.awaitingTx(tx.hash)
 
-      const receipt = await tx.wait().catch(notification.handleTxError)
-
-      if (receipt instanceof TransactionError) {
-        throw receipt
-      }
+      const receipt = await tx.wait()
 
       // tx successful
-      notification.successfulTx(tx.hash)
+      notification.successfulGenericTx(tx.hash)
 
       return receipt
     },

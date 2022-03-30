@@ -20,11 +20,12 @@ export const useAuctions = (protocols: string[]): UseAuctions => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
 
   const { data, error } = useSWR(['auctions', protocols.join(), appChainId, provider], async () => {
-    const { collateralAuctions } = await fetchAuctions(
-      protocols.length ? { vaultName_in: protocols } : null,
-    )
+    const [{ collateralAuctions }, { timestamp }] = await Promise.all([
+      fetchAuctions(protocols.length ? { vaultName_in: protocols } : null),
+      provider.getBlock('latest'),
+    ])
     return Promise.all(
-      collateralAuctions.map((auction) => wrangleAuction(auction, provider, appChainId)),
+      collateralAuctions.map((auction) => wrangleAuction(auction, provider, appChainId, timestamp)),
     )
   })
 

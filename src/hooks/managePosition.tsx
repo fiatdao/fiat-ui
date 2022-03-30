@@ -20,7 +20,7 @@ import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, calculateDebt, calculateHealthFactor } from '@/src/utils/data/positions'
-import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
+import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
@@ -359,7 +359,7 @@ export const useManageFormSummary = (
 }
 
 export const useManagePositionsInfoBlock = (position: Position) => {
-  const tokenSymbol = getTokenByAddress(position?.collateral.address ?? null)?.symbol ?? ''
+  const tokenSymbol = getTokenByAddress(position?.collateral.address)?.symbol ?? ''
   return [
     {
       title: 'Token',
@@ -404,7 +404,7 @@ export const useManagePositionsInfoBlock = (position: Position) => {
     {
       title: 'Interest Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: `${perSecondToAPY(getHumanValue(position?.interestPerSecond, WAD_DECIMALS)).toFixed(
+      value: `${perSecondToAPR(getHumanValue(position?.interestPerSecond, WAD_DECIMALS)).toFixed(
         3,
       )}%`,
     },

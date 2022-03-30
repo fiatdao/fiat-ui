@@ -18,6 +18,11 @@ export type TokenMeta = TokenData & {
 
 export type AddressMappedToken = {
   address: string
-  token: any
+  token: {
+    protocol: string
+    symbol: string
+    decimals: number
+    name: string
+  }
   chain: string
 }

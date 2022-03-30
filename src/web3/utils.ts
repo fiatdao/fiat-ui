@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { SECONDS_IN_A_YEAR, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 BigNumber.prototype.scaleBy = function (decimals: any = 0): any {
   return this.multipliedBy(10 ** decimals)
@@ -92,9 +92,9 @@ export function getNonHumanValue(value: any, decimals: any = 0): any {
   return value ? BigNumber.from(value)?.scaleBy(decimals) : undefined
 }
 
-// Converts interest rate from "per second return rate" to APY
-export function perSecondToAPY(value: BigNumber): number {
-  return (Math.pow(value.toNumber(), 31536000) - 1) * 100
+// Converts interest rate from "per second return rate" to APR
+export function perSecondToAPR(value: BigNumber): number {
+  return (Math.pow(value.toNumber(), SECONDS_IN_A_YEAR) - 1) * 100
 }
 
 export function formatBigValue(

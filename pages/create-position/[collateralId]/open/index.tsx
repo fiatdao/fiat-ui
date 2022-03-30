@@ -33,11 +33,11 @@ import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { ONE_BIG_NUMBER, ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { getHumanValue, getNonHumanValue, perSecondToAPY } from '@/src/web3/utils'
+import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
-// Temporaray Change
+// Temporarily Change
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { calculateHealthFactor } from '@/src/utils/data/positions'
 
@@ -174,7 +174,7 @@ const FormERC20: React.FC<{
     },
   ]
 
-  const mockedSummaryData = [
+  const summaryData = [
     {
       title: 'In your wallet',
       value: `${tokenInfo?.humanValue} ${tokenSymbol}`,
@@ -373,7 +373,7 @@ const FormERC20: React.FC<{
                       </ButtonGradient>
                     </ButtonsWrapper>
                     <div className={cn(s.summary)}>
-                      <Summary data={mockedSummaryData} />
+                      <Summary data={summaryData} />
                     </div>
                   </>
                 )}
@@ -388,7 +388,7 @@ const FormERC20: React.FC<{
           </div>
           <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
           <p className={cn(s.lastStepText)}>Your position has been successfully created.</p>
-          <Summary data={mockedSummaryData} />
+          <Summary data={summaryData} />
           <Link href={`/your-positions/`} passHref>
             <ButtonGradient height="lg">Go to Your Positions</ButtonGradient>
           </Link>
@@ -447,7 +447,7 @@ const OpenPosition = () => {
     {
       title: 'Interest Rate',
       tooltip: 'The annualized cost of interest for minting FIAT.',
-      value: `${perSecondToAPY(getHumanValue(interestPerSecond, WAD_DECIMALS)).toFixed(3)}%`,
+      value: `${perSecondToAPR(getHumanValue(interestPerSecond, WAD_DECIMALS)).toFixed(3)}%`,
     },
   ]
 

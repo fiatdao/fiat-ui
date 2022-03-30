@@ -125,6 +125,25 @@ export const useNotifications = () => {
     [push],
   )
 
+  const successfulGenericTx = useCallback(
+    (txHash: string) => {
+      antdNotification.success({
+        message: 'Transaction successful',
+        description: (
+          <a
+            href={getExplorerUrl(txHash)}
+            referrerPolicy="no-referrer"
+            rel="noreferrer"
+            target="_blank"
+          >
+            View on explorer
+          </a>
+        ),
+      })
+    },
+    [getExplorerUrl],
+  )
+
   const requestSign = () => {
     antdNotification.info({
       message: 'Sign',
@@ -152,6 +171,7 @@ export const useNotifications = () => {
     awaitingTx,
     awaitingTxBlocks,
     successfulTx,
+    successfulGenericTx,
     requestSign,
     noSigner,
     appNotConnected,
