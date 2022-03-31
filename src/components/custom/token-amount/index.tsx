@@ -111,7 +111,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
                 </span>
                 <Tooltip
                   title={
-                    'A score representing your risk of collateral liquidation, with scores of 1 or below triggering collateral auction.'
+                    'The Health Factor of a position represents the risk of the position being liquidated. A position can be liquidated if the health factor is less than 1.0.'
                   }
                 >
                   <Info />
@@ -129,7 +129,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
                 </span>
                 <Tooltip
                   title={
-                    'A score representing your risk of collateral liquidation, with scores of 1 or below triggering collateral auction.'
+                    'The Health Factor of a position represents the risk of the position being liquidated. A position can be liquidated if the health factor is less than 1.0.'
                   }
                 >
                   <Info />
