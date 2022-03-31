@@ -59,8 +59,6 @@
   &.isActive {
     background-color: transparent;
     color: var(--theme-text-color);
-    cursor: default;
-    pointer-events: none;
 
     &::before {
       background: linear-gradient(90deg, var(--theme-color-2) 0%, var(--theme-color-3) 100%);
