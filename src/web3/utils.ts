@@ -274,10 +274,9 @@ export function shortenAddr(addr: string | undefined, first = 6, last = 4): stri
   return addr ? [String(addr).slice(0, first), String(addr).slice(-last)].join('...') : undefined
 }
 
-/// Gas limit is sometimes a few units too low when routing txs through a proxy contract.
+/// Gas price is sometimes a few units too low when routing txs through a proxy contract.
 /// We should get less tx failures by adding ~10% of whatever the gas limit is.
-export async function getGasLimit(web3Provider: Web3Provider) {
-  const gasMultiplier = 0.1
-  const gasPrice = (await web3Provider.getGasPrice()).toNumber()
-  return gasPrice + gasPrice * gasMultiplier
+export async function getGasPrice(web3Provider: Web3Provider) {
+  const gasPrice = await web3Provider.getGasPrice()
+  return gasPrice.mul(110).div(100) // +10% margin
 }

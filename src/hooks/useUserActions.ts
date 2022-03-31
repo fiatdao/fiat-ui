@@ -8,7 +8,7 @@ import useUserProxy from '@/src/hooks/useUserProxy'
 import { contracts } from '@/src/constants/contracts'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { VaultEPTActions } from '@/types/typechain'
-import { getGasLimit } from '@/src/web3/utils'
+import { getGasPrice } from '@/src/web3/utils'
 
 type BaseModify = {
   vault: string
@@ -86,7 +86,7 @@ export const useUserActions = (): UseUserActions => {
 
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, approveFIAT, {
-          gasLimit: await getGasLimit(web3Provider),
+          gasPrice: await getGasPrice(web3Provider),
         })
         .catch(notification.handleTxError)
 
@@ -137,7 +137,7 @@ export const useUserActions = (): UseUserActions => {
 
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, modifyCollateralAndDebtEncoded, {
-          gasLimit: await getGasLimit(web3Provider),
+          gasPrice: await getGasPrice(web3Provider),
         })
         .catch(notification.handleTxError)
 
@@ -198,7 +198,7 @@ export const useUserActions = (): UseUserActions => {
 
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, buyCollateralAndModifyDebtEncoded, {
-          gasLimit: await getGasLimit(web3Provider),
+          gasPrice: await getGasPrice(web3Provider),
         })
         .catch(notification.handleTxError)
 
