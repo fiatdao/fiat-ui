@@ -10,7 +10,7 @@ import {
   ZERO_BIG_NUMBER,
 } from '../constants/misc'
 import { parseDate } from '../utils/dateTime'
-import { shortenAddr } from '../web3/utils'
+import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
@@ -360,24 +360,22 @@ export const useManageFormSummary = (
 
 export const useManagePositionsInfoBlock = (position: Position) => {
   const tokenSymbol = getTokenByAddress(position?.collateral.address)?.symbol ?? ''
+  const chainId = useWeb3Connection().appChainId
   return [
     {
       title: 'Token',
       value: position ? tokenSymbol : '-',
-      address: position ? position.collateral.address : '-',
-      appChainId: useWeb3Connection().appChainId,
+      url: position ? getEtherscanAddressUrl(position.collateral.address, chainId) : '-',
     },
     {
       title: 'Underlying Asset',
       value: position ? position.underlier.symbol : '-',
-      address: position ? position.underlier.address : '-',
-      appChainId: useWeb3Connection().appChainId,
+      url: position ? getEtherscanAddressUrl(position.underlier.address, chainId) : '-',
     },
     {
       title: 'Owner',
       value: position ? shortenAddr(position.owner, 8, 8) : '-',
-      address: position ? position.owner : '-',
-      appChainId: useWeb3Connection().appChainId,
+      url: position ? getEtherscanAddressUrl(position.owner, chainId) : '-',
     },
     {
       title: 'Maturity Date',

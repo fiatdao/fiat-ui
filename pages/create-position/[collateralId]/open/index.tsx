@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import { getEtherscanAddressUrl } from '../../../../src/web3/utils'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -408,19 +409,20 @@ const OpenPosition = () => {
   // const { tokenSymbol } = useTokenSymbol(tokenAddress)
   const collateralizationRatio = collateral?.vault.collateralizationRatio ?? null
   const interestPerSecond = collateral?.vault.interestPerSecond ?? ZERO_BIG_NUMBER
+  const chainId = useWeb3Connection().appChainId
 
-  const mockedBlocks = [
+  const infoBlocks = [
     {
       title: 'Token',
       value: tokenSymbol ?? '-',
-      address: tokenAddress,
-      appChainId: useWeb3Connection().appChainId,
+      url: getEtherscanAddressUrl(tokenAddress, chainId),
     },
     {
       title: 'Underlying Asset',
       value: collateral ? collateral.underlierSymbol : '-',
-      address: collateral?.underlierAddress,
-      appChainId: useWeb3Connection().appChainId,
+      url: collateral?.underlierAddress
+        ? getEtherscanAddressUrl(collateral?.underlierAddress, chainId)
+        : '',
     },
     {
       title: 'Maturity Date',
@@ -462,7 +464,7 @@ const OpenPosition = () => {
             tokenSymbol={tokenSymbol}
           />
         }
-        infoBlocks={mockedBlocks}
+        infoBlocks={infoBlocks}
       />
     </>
   )

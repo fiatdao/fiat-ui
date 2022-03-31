@@ -2,6 +2,7 @@ import s from './s.module.scss'
 import cn from 'classnames'
 import Tooltip from '@/src/components/antd/tooltip'
 import Info from '@/src/resources/svg/info.svg'
+import ExternalLink from '@/src/components/custom/externalLink'
 
 interface Props {
   className?: string
@@ -15,7 +16,7 @@ interface Props {
   value?: string | React.ReactNode
 }
 
-export const InfoBlock: React.FC<Props> = ({
+export const InnerInfoBlock: React.FC<Props> = ({
   bold,
   className,
   footer,
@@ -63,5 +64,17 @@ export const InfoBlock: React.FC<Props> = ({
       </p>
       {footer && <div className={s.footer}>{footer}</div>}
     </div>
+  )
+}
+
+export const InfoBlock: React.FC<Props> = (props: Props) => {
+  const { url } = props
+  if (!url) {
+    return <InnerInfoBlock {...props} />
+  }
+  return (
+    <ExternalLink className={s.link} href={url}>
+      <InnerInfoBlock {...props} />
+    </ExternalLink>
   )
 }
