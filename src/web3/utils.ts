@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { Web3Provider } from '@ethersproject/providers'
+import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber'
 import { SECONDS_IN_A_YEAR, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 BigNumber.prototype.scaleBy = function (decimals: any = 0): any {
@@ -274,9 +274,8 @@ export function shortenAddr(addr: string | undefined, first = 6, last = 4): stri
   return addr ? [String(addr).slice(0, first), String(addr).slice(-last)].join('...') : undefined
 }
 
-/// Gas price is sometimes a few units too low when routing txs through a proxy contract.
-/// We should get less tx failures by adding ~10% of whatever the gas limit is.
-export async function getGasPrice(web3Provider: Web3Provider) {
-  const gasPrice = await web3Provider.getGasPrice()
-  return gasPrice.mul(110).div(100) // +10% margin
+/// Estimated gasLimit is sometimes a few units too low when routing txs through a proxy contract.
+/// Here we raise the gasLimit by a small margin to mitigate tx failures.
+export function calculateGasLimitWithMargin(gasLimit: EthersBigNumber) {
+  return gasLimit.mul(110).div(100) // +10% margin
 }
