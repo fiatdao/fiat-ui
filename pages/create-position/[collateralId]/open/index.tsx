@@ -171,12 +171,12 @@ const FormERC20: React.FC<{
   }
 
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
-  const deltaNormalDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
+  const deltaDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
   const { healthFactor: hf } = calculateHealthFactor(
     collateral.currentValue,
     collateral.vault.collateralizationRatio,
     deltaCollateral,
-    deltaNormalDebt,
+    deltaDebt,
   )
   const healthFactorNumber = hf?.toFixed(3)
 

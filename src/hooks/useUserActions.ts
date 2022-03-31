@@ -1,4 +1,4 @@
-import { VIRTUAL_RATE, VIRTUAL_RATE_MAX_SLIPPAGE } from '../constants/misc'
+import { calculateNormalDebt } from '../utils/data/positions'
 import { TransactionResponse } from '@ethersproject/providers'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
@@ -24,7 +24,7 @@ type DepositCollateral = BaseModify & {
 
 type ModifyCollateralAndDebt = BaseModify & {
   deltaCollateral: BigNumber
-  deltaNormalDebt: BigNumber
+  deltaDebt: BigNumber
 }
 
 type BuyCollateralAndModifyDebt = {
@@ -117,10 +117,12 @@ export const useUserActions = (): UseUserActions => {
       // @TODO: toFixed(0, ROUNDED) transforms BigNumber into String without decimals
       const deltaCollateral = params.deltaCollateral.toFixed(0, 8)
       // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
-      const deltaNormalDebt = params.deltaNormalDebt
-        .div(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE))
-        .toFixed(0, 8)
+      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt).toFixed(0, 8)
 
+      console.log('====> call contract modify')
+      console.log({ owner: userProxyAddress })
+      console.log({ deltaDebt: params.deltaDebt.toString() })
+      console.log({ deltaNormalDebt: deltaNormalDebt })
       // TODO: check if vault/protocol type so we can use EPT or FC
       const modifyCollateralAndDebtEncoded = userActionEPT.interface.encodeFunctionData(
         'modifyCollateralAndDebt',
@@ -238,7 +240,7 @@ export const useUserActions = (): UseUserActions => {
       return modifyCollateralAndDebt({
         ...params,
         deltaCollateral: params.toDeposit,
-        deltaNormalDebt: params.toMint,
+        deltaDebt: params.toMint,
       })
     },
     [modifyCollateralAndDebt],

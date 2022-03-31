@@ -16,6 +16,7 @@ import {
   INFINITE_HEALTH_FACTOR_NUMBER,
   ONE_BIG_NUMBER,
   VIRTUAL_RATE,
+  VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
@@ -32,6 +33,7 @@ export type Position = {
   underlier: TokenData
   totalCollateral: BigNumber
   totalNormalDebt: BigNumber
+  totalDebt: BigNumber
   vaultCollateralizationRatio: BigNumber
   collateralValue: BigNumber
   faceValue: BigNumber
@@ -99,23 +101,30 @@ export const getDateState = (maturityDate: Date) => {
 // @TODO: we need to use debt instead of normalDebt to calculate HF
 //        replace hardcoded value for Publican virtualRate value
 //        https://github.com/fiatdao/fiat-ui/issues/292
+// normalDebt = debt / (virtualRate*slippageMargin)
+const calculateNormalDebt = (debt: BigNumber) => {
+  return debt.div(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE))
+}
+
+// debt = normalDebt * (virtualRate*slippageMargin)
 const calculateDebt = (normalDebt: BigNumber) => {
-  return normalDebt.times(VIRTUAL_RATE)
+  return normalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE))
 }
 
 // @TODO: healthFactor = totalCollateral*collateralValue/totalFIAT/collateralizationRatio
+// totalFIAT = debt = normalDebt * (virtualRate*slippageMargin)
 const calculateHealthFactor = (
   currentValue: BigNumber | Maybe<BigNumber> | undefined, // collateralValue
   collateralizationRatio: BigNumber | Maybe<BigNumber> | undefined,
   collateral: BigNumber | undefined,
-  normalDebt: BigNumber | undefined,
+  debt: BigNumber | undefined,
 ): {
   healthFactor: BigNumber // NonHumanBigNumber
   isAtRisk: boolean
 } => {
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
-  if (!normalDebt || normalDebt?.isZero()) {
+  if (!debt || debt?.isZero()) {
     healthFactor = INFINITE_BIG_NUMBER
     return {
       healthFactor,
@@ -123,7 +132,6 @@ const calculateHealthFactor = (
     }
   } else {
     if (currentValue && collateral && !collateral?.isZero() && collateralizationRatio) {
-      const debt = calculateDebt(normalDebt)
       healthFactor = collateral.times(currentValue).div(debt).div(collateralizationRatio)
 
       if (healthFactor.isGreaterThan(INFINITE_HEALTH_FACTOR_NUMBER)) {
@@ -149,6 +157,9 @@ const wranglePosition = async (
     BigNumber.from(position.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER
   const totalCollateral = BigNumber.from(position.collateral) ?? ZERO_BIG_NUMBER
   const totalNormalDebt = BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER
+  const totalDebt = (BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER).div(
+    VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE),
+  )
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
   const debtFloor = BigNumber.from(position.vault?.debtFloor) ?? ZERO_BIG_NUMBER
   const maturity = BigNumberToDateOrCurrent(position.maturity)
@@ -164,7 +175,7 @@ const wranglePosition = async (
     currentValue,
     vaultCollateralizationRatio,
     totalCollateral,
-    totalNormalDebt,
+    totalDebt,
   )
 
   // TODO Interest rate
@@ -176,6 +187,7 @@ const wranglePosition = async (
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
+    totalDebt,
     currentValue,
     owner: position.owner,
     collateralValue: getHumanValue(currentValue.times(totalCollateral), WAD_DECIMALS),
@@ -198,4 +210,4 @@ const wranglePosition = async (
     debtFloor,
   }
 }
-export { wranglePosition, calculateHealthFactor, calculateDebt }
+export { wranglePosition, calculateHealthFactor, calculateNormalDebt, calculateDebt }
