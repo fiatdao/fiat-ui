@@ -119,10 +119,6 @@ export const useUserActions = (): UseUserActions => {
       // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
       const deltaNormalDebt = calculateNormalDebt(params.deltaDebt).toFixed(0, 8)
 
-      console.log('====> modifyCollateralAndDebt')
-      console.log({ owner: userProxyAddress })
-      console.log({ deltaDebt: params.deltaDebt.toString() })
-      console.log({ deltaNormalDebt: deltaNormalDebt })
       // TODO: check if vault/protocol type so we can use EPT or FC
       const modifyCollateralAndDebtEncoded = userActionEPT.interface.encodeFunctionData(
         'modifyCollateralAndDebt',
