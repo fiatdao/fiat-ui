@@ -119,7 +119,7 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
 
         notification.requestSign()
 
-        const gasEstimate = await userProxy.execute(
+        const gasEstimate = await userProxy.estimateGas.execute(
           noLossCollateralAuctionActions.address,
           takeCollateral,
         )
