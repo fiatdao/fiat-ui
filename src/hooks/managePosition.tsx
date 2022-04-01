@@ -22,7 +22,7 @@ import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { Position, calculateHealthFactor, calculateNormalDebt } from '@/src/utils/data/positions'
+import { Position, calculateHealthFactor } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
@@ -126,8 +126,7 @@ export const useManagePositionForm = (
       const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
       const currentValue = position?.currentValue ? position?.currentValue : 1
       const collateralWithMults = totalCollateral.times(currentValue).div(collateralizationRatio)
-      const collateralWithRate = calculateNormalDebt(collateralWithMults)
-      const borrowAmount = collateralWithRate.minus(totalDebt)
+      const borrowAmount = collateralWithMults.minus(totalDebt)
 
       let result = ZERO_BIG_NUMBER
       if (borrowAmount.isPositive()) {
@@ -140,7 +139,6 @@ export const useManagePositionForm = (
 
   const calculateMaxRepayAmount = useCallback((debt: BigNumber) => {
     const repayAmountWithMargin = getHumanValue(debt, WAD_DECIMALS)
-    console.log({ repayAmountWithMargin: repayAmountWithMargin.toString() })
     return repayAmountWithMargin
   }, [])
 

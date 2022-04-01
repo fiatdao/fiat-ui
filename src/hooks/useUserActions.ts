@@ -119,7 +119,7 @@ export const useUserActions = (): UseUserActions => {
       // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
       const deltaNormalDebt = calculateNormalDebt(params.deltaDebt).toFixed(0, 8)
 
-      console.log('====> call contract modify')
+      console.log('====> modifyCollateralAndDebt')
       console.log({ owner: userProxyAddress })
       console.log({ deltaDebt: params.deltaDebt.toString() })
       console.log({ deltaNormalDebt: deltaNormalDebt })

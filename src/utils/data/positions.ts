@@ -157,9 +157,9 @@ const wranglePosition = async (
     BigNumber.from(position.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER
   const totalCollateral = BigNumber.from(position.collateral) ?? ZERO_BIG_NUMBER
   const totalNormalDebt = BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER
-  const totalDebt = (BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER).div(
-    VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE),
-  )
+
+  // @TODO: totalDebt = normalDebt * RATES
+  const totalDebt = calculateDebt(BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER)
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
   const debtFloor = BigNumber.from(position.vault?.debtFloor) ?? ZERO_BIG_NUMBER
   const maturity = BigNumberToDateOrCurrent(position.maturity)
