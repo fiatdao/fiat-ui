@@ -7,7 +7,7 @@ import { Collaterals_collateralTypes as SubgraphCollateral } from '@/types/subgr
 import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { contracts } from '@/src/constants/contracts'
-import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_ADDRESS } from '@/src/constants/misc'
+import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Collybus } from '@/types/typechain/Collybus'
 import { getHumanValue } from '@/src/web3/utils'
 
@@ -32,6 +32,7 @@ export type Collateral = {
     collateralizationRatio: Maybe<BigNumber>
     address: string
     interestPerSecond: Maybe<BigNumber>
+    debtFloor: BigNumber
   }
   manageId?: string
 }
@@ -78,6 +79,7 @@ const wrangleCollateral = async (
         BigNumber.from(collateral.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER,
       address: collateral.vault?.address ?? '',
       interestPerSecond: BigNumber.from(collateral.vault?.interestPerSecond) ?? null,
+      debtFloor: BigNumber.from(collateral.vault?.debtFloor) ?? ZERO_BIG_NUMBER,
     },
     eptData: {
       balancerVault: collateral.eptData?.balancerVault ?? '',

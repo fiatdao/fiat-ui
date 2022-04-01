@@ -24,6 +24,7 @@ export const COLLATERALS = gql`
         collateralizationRatio
         address
         interestPerSecond
+        debtFloor
       }
     }
   }
