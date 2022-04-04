@@ -9,7 +9,7 @@ import useUserProxy from '@/src/hooks/useUserProxy'
 import { contracts } from '@/src/constants/contracts'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { VaultEPTActions } from '@/types/typechain'
-import { calculateGasLimitWithMargin } from '@/src/web3/utils'
+import { estimateGasLimit } from '@/src/web3/utils'
 
 type BaseModify = {
   vault: string
@@ -85,13 +85,12 @@ export const useUserActions = (): UseUserActions => {
 
       notification.requestSign()
 
-      const gasEstimate = await userProxy.estimateGas.execute(
-        userProxy.execute(userActionEPT.address, approveFIAT),
-      )
-
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, approveFIAT, {
-          gasLimit: calculateGasLimitWithMargin(gasEstimate),
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            userActionEPT.address,
+            approveFIAT,
+          ]),
         })
         .catch(notification.handleTxError)
 
@@ -142,14 +141,12 @@ export const useUserActions = (): UseUserActions => {
       // please sign
       notification.requestSign()
 
-      const gasEstimate = await userProxy.estimateGas.execute(
-        userActionEPT.address,
-        modifyCollateralAndDebtEncoded,
-      )
-
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, modifyCollateralAndDebtEncoded, {
-          gasLimit: calculateGasLimitWithMargin(gasEstimate),
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            userActionEPT.address,
+            modifyCollateralAndDebtEncoded,
+          ]),
         })
         .catch(notification.handleTxError)
 
@@ -207,13 +204,12 @@ export const useUserActions = (): UseUserActions => {
       // please sign
       notification.requestSign()
 
-      const gasEstimate = await userProxy.estimateGas.execute(
-        userProxy.execute(userActionEPT.address, buyCollateralAndModifyDebtEncoded),
-      )
-
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, buyCollateralAndModifyDebtEncoded, {
-          gasLimit: calculateGasLimitWithMargin(gasEstimate),
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            userActionEPT.address,
+            buyCollateralAndModifyDebtEncoded,
+          ]),
         })
         .catch(notification.handleTxError)
 
