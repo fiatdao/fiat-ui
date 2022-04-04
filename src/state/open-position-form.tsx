@@ -3,11 +3,11 @@ import { assign, createMachine } from 'xstate'
 
 export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string } } = {
   1: {
-    title: 'Configure your position',
+    title: 'Configure Your Position',
     subtitle: 'Select collateral amount to deposit and how much FIAT to mint.',
   },
   2: {
-    title: 'Create a Proxy contract',
+    title: 'Create a Proxy Contract',
     subtitle: 'The Proxy Contract will allow you to interact with the FIAT protocol.',
   },
   3: {
@@ -15,11 +15,11 @@ export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string 
     subtitle: 'Give permission to the FIAT protocol to manage your collateral.',
   },
   4: {
-    title: 'Configure your position',
+    title: 'Configure Your Position',
     subtitle: 'Select collateral amount to deposit and how much FIAT to mint.',
   },
   5: {
-    title: 'Confirm your new position',
+    title: 'Confirm Your New Position',
     subtitle: 'Review and verify the details of your new position.',
   },
 }
