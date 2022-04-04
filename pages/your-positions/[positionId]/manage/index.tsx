@@ -3,7 +3,6 @@ import cn from 'classnames'
 import React, { useEffect, useState } from 'react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
-import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
@@ -25,6 +24,8 @@ import { Form } from '@/src/components/antd'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -51,7 +52,8 @@ const PositionManage = () => {
   const [form] = AntdForm.useForm<PositionManageFormFields>()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
-
+  // @TODO: useFIATBalance hook can't be moved into another hook it trigger infinite updates
+  const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { position, refetch: refetchPosition } = useManagePositionInfo()
 
   useEffect(() => {
@@ -62,7 +64,6 @@ const PositionManage = () => {
 
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
-  const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
 
   const onSuccess = async () => {
     form.resetFields()
@@ -76,10 +77,11 @@ const PositionManage = () => {
     handleFormChange,
     handleManage,
     healthFactor,
+    isDisabledCreatePosition,
     isLoading,
     maxBorrowAmount,
-    maxBurnAmount,
     maxDepositAmount,
+    maxRepayAmount,
     maxWithdrawAmount,
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
@@ -87,6 +89,8 @@ const PositionManage = () => {
   const healthFactorToRender = healthFactor?.isFinite()
     ? healthFactor?.toFixed(3)
     : DEFAULT_HEALTH_FACTOR
+
+  const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
 
   return (
     <>
@@ -228,7 +232,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorToRender}
-                              max={maxBurnAmount}
+                              max={maxRepay}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}
                               tokenIcon={<FiatIcon />}
@@ -241,6 +245,7 @@ const PositionManage = () => {
 
                   <ButtonsWrapper>
                     <ButtonGradient
+                      disabled={isDisabledCreatePosition}
                       height="lg"
                       loading={isLoading}
                       onClick={() => handleManage(formValues)}

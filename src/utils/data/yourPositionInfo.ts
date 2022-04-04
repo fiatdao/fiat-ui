@@ -42,9 +42,7 @@ const useYourPositionInfoPage = (positions: Position[]): UseYourPositionInfoPage
       positions.forEach(async (p) => {
         initialPositionInformation.collateralValue =
           initialPositionInformation.collateralValue.plus(p.collateralValue)
-        initialPositionInformation.fiatDebt = initialPositionInformation.fiatDebt.plus(
-          p.totalNormalDebt,
-        )
+        initialPositionInformation.fiatDebt = initialPositionInformation.fiatDebt.plus(p.totalDebt)
         if (!initialPositionInformation.nearestMaturity?.value) {
           initialPositionInformation.nearestMaturity.value = p.maturity
           initialPositionInformation.nearestMaturity.address = p.id

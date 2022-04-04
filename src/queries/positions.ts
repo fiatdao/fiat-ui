@@ -21,6 +21,7 @@ export const POSITIONS = gql`
         maxDiscount
         collateralizationRatio
         interestPerSecond
+        debtFloor
       }
     }
   }
