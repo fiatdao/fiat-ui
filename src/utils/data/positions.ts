@@ -146,6 +146,10 @@ const calculateHealthFactor = (
   }
 }
 
+const isValidHealthFactor = (healthFactor?: BigNumber) => {
+  return healthFactor && healthFactor.isFinite() && healthFactor.isPositive()
+}
+
 const wranglePosition = async (
   position: SubgraphPosition,
   provider: JsonRpcProvider,
@@ -210,4 +214,10 @@ const wranglePosition = async (
     debtFloor,
   }
 }
-export { wranglePosition, calculateHealthFactor, calculateNormalDebt, calculateDebt }
+export {
+  wranglePosition,
+  calculateHealthFactor,
+  calculateNormalDebt,
+  calculateDebt,
+  isValidHealthFactor,
+}
