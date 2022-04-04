@@ -14,7 +14,7 @@ import {
   useManagePositionInfo,
   useManagePositionsInfoBlock,
 } from '@/src/hooks/managePosition'
-import { Position } from '@/src/utils/data/positions'
+import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
@@ -86,7 +86,7 @@ const PositionManage = () => {
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
-  const healthFactorToRender = healthFactor?.isFinite()
+  const healthFactorToRender = isValidHealthFactor(healthFactor)
     ? healthFactor?.toFixed(3)
     : DEFAULT_HEALTH_FACTOR
 

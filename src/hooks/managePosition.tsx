@@ -22,7 +22,7 @@ import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { Position, calculateHealthFactor } from '@/src/utils/data/positions'
+import { Position, calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
@@ -356,14 +356,13 @@ export const useManageFormSummary = (
     },
     {
       title: 'Current Health Factor',
-      value: position.healthFactor.isFinite() ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
+      value: isValidHealthFactor(position.healthFactor)
+        ? position.healthFactor?.toFixed(3)
+        : DEFAULT_HEALTH_FACTOR,
     },
     {
       title: 'New Health Factor',
-      value:
-        healthFactor.isFinite() && healthFactor.isPositive()
-          ? healthFactor?.toFixed(3)
-          : DEFAULT_HEALTH_FACTOR,
+      value: isValidHealthFactor(healthFactor) ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
   ]
 }
