@@ -69,6 +69,7 @@ const initialContext: Context = {
   loading: false,
   loadingType: '',
 }
+
 const stepperMachine = createMachine<Context, Events>(
   {
     id: 'stepper',
@@ -93,7 +94,7 @@ const stepperMachine = createMachine<Context, Events>(
         always: [
           {
             target: 'step-4-enteringFIATAmount',
-            cond: (ctx) => ctx.hasAllowance && ctx.isProxyAvailable && ctx.erc20Amount.gt(0),
+            cond: (ctx) => ctx.hasAllowance && ctx.isProxyAvailable,
           },
         ],
         entry: [assign({ currentStepNumber: (_) => 1 })],
@@ -114,10 +115,6 @@ const stepperMachine = createMachine<Context, Events>(
       },
       'step-4-enteringFIATAmount': {
         entry: [assign({ currentStepNumber: (_) => 4 })],
-        always: {
-          target: 'step-1-enteringERC20Amount',
-          cond: (ctx) => !ctx.erc20Amount.gt(0),
-        },
         on: {
           // CLICK_DEPLOY: [{ target: 'step-5-addCollateral' }],
           CONFIRM: 'confirming-position',

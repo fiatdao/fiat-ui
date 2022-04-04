@@ -322,6 +322,7 @@ const FormERC20: React.FC<{
                     {`Set Allowance for ${tokenSymbol}`}
                   </ButtonGradient>
                 )}
+
                 {stateMachine.context.currentStepNumber === 4 && (
                   <>
                     {mintFiat && (
