@@ -285,7 +285,7 @@ const PositionManage = () => {
                 ))}
                 <ButtonsWrapper>
                   <ButtonGradient height="lg" loading={isLoadingPosition} onClick={reset}>
-                    Start a New Transaction
+                    Continue
                   </ButtonGradient>
                   <Link href={`/your-positions/`} passHref>
                     <button className={cn(s.finishButton)}>Go to Your Positions</button>
