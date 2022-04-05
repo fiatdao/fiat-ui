@@ -408,7 +408,10 @@ const FormERC20: React.FC<{
             <Lottie animationData={SuccessAnimation} autoplay loop />
           </div>
           <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
-          <p className={cn(s.lastStepText)}>Your position has been successfully created.</p>
+          <p className={cn(s.lastStepText)}>
+            Your position has been successfully created! It may take a couple seconds for your
+            position to show in the app.
+          </p>
           <Summary data={summaryData} />
           <Link href={`/your-positions/`} passHref>
             <ButtonGradient height="lg">Go to Your Positions</ButtonGradient>
