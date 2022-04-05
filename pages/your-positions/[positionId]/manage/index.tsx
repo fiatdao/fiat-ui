@@ -58,7 +58,6 @@ const PositionManage = () => {
   // @TODO: useFIATBalance hook can't be moved into another hook it trigger infinite updates
   const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { position, refetch: refetchPosition } = useManagePositionInfo()
-  const [isLoadingPosition, setIsLoadingPosition] = useState<boolean>(false)
 
   useEffect(() => {
     setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
@@ -68,6 +67,11 @@ const PositionManage = () => {
 
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
+
+  const onSuccess = async () => {
+    form.resetFields()
+    await Promise.all([refetchPosition(), refetchFiatBalance()])
+  }
 
   const {
     availableDepositAmount,
@@ -84,7 +88,7 @@ const PositionManage = () => {
     maxRepayAmount,
     maxWithdrawAmount,
     setFinished,
-  } = useManagePositionForm(position as Position, formValues)
+  } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
   const healthFactorToRender = isValidHealthFactor(healthFactor)
@@ -94,11 +98,7 @@ const PositionManage = () => {
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
 
   const reset = async () => {
-    setIsLoadingPosition(true)
-    form.resetFields()
-    await Promise.all([refetchPosition(), refetchFiatBalance()])
     setFinished(false)
-    setIsLoadingPosition(false)
   }
 
   return (
@@ -279,11 +279,8 @@ const PositionManage = () => {
             <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
             <p className={cn(s.lastStepText)}>Your position has been successfully updated.</p>
             <div className={cn(s.summary)}>
-              {summary.map((item, index) => (
-                <SummaryItem key={index} title={item.title} value={item.value} />
-              ))}
               <ButtonsWrapper>
-                <ButtonGradient height="lg" loading={isLoadingPosition} onClick={reset}>
+                <ButtonGradient height="lg" onClick={reset}>
                   Continue
                 </ButtonGradient>
                 <Link href={`/your-positions/`} passHref>
