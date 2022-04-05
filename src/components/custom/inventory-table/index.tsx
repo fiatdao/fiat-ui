@@ -54,8 +54,8 @@ const Columns: ColumnsType<Position> = [
   },
   {
     align: 'left',
-    dataIndex: 'totalNormalDebt',
-    render: (minted: Position['totalNormalDebt']) => (
+    dataIndex: 'totalDebt',
+    render: (minted: Position['totalDebt']) => (
       <CellValue
         tooltip={`${minted}`}
         value={` ${getHumanValue(minted, WAD_DECIMALS).toFixed(3)} FIAT`}
