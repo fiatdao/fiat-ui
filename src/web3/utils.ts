@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber'
+import { Contract } from 'ethers'
 import { SECONDS_IN_A_YEAR, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 BigNumber.prototype.scaleBy = function (decimals: any = 0): any {
@@ -275,7 +275,8 @@ export function shortenAddr(addr: string | undefined, first = 6, last = 4): stri
 }
 
 /// Estimated gasLimit is sometimes a few units too low when routing txs through a proxy contract.
-/// Here we raise the gasLimit by a small margin to mitigate tx failures.
-export function calculateGasLimitWithMargin(gasLimit: EthersBigNumber) {
-  return gasLimit.mul(110).div(100) // +10% margin
+/// Here we estimate the gas for a contract call and raise the estimated gasLimit by a small margin to mitigate tx failures.
+export async function estimateGasLimit(contract: Contract, method: string, args: any[]) {
+  const gasEstimate = await contract.estimateGas[method](...args)
+  return gasEstimate.mul(110).div(100) // +10% margin
 }

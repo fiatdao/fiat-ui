@@ -310,7 +310,6 @@ const FormERC20: React.FC<{
                   <ButtonsWrapper>
                     {!isProxyAvailable && (
                       <ButtonGradient
-                        disabled={!stateMachine.context.erc20Amount.gt(0)}
                         height="lg"
                         onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
                       >
@@ -323,7 +322,9 @@ const FormERC20: React.FC<{
                         height="lg"
                         onClick={() => send({ type: 'CLICK_ALLOW' })}
                       >
-                        Set Allowance
+                        {stateMachine.context.erc20Amount.gt(0)
+                          ? 'Set Allowance'
+                          : `Insufficient Balance for ${tokenSymbol}`}
                       </ButtonGradient>
                     )}
                   </ButtonsWrapper>
@@ -343,6 +344,7 @@ const FormERC20: React.FC<{
                     {`Set Allowance for ${tokenSymbol}`}
                   </ButtonGradient>
                 )}
+
                 {stateMachine.context.currentStepNumber === 4 && (
                   <>
                     {mintFiat && (

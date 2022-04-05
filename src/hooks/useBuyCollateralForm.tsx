@@ -16,7 +16,7 @@ import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { AuctionData } from '@/src/utils/data/auctions'
 import { Maybe } from '@/types/utils'
-import { calculateGasLimitWithMargin } from '@/src/web3/utils'
+import { estimateGasLimit } from '@/src/web3/utils'
 
 export const useBuyCollateralForm = (auctionData?: AuctionData) => {
   const notification = useNotifications()
@@ -119,16 +119,14 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
 
         notification.requestSign()
 
-        const gasEstimate = await userProxy.estimateGas.execute(
-          noLossCollateralAuctionActions.address,
-          takeCollateral,
-        )
-
         const tx: TransactionResponse | TransactionError = await userProxy.execute(
           noLossCollateralAuctionActions.address,
           takeCollateral,
           {
-            gasLimit: calculateGasLimitWithMargin(gasEstimate),
+            gasLimit: await estimateGasLimit(userProxy, 'execute', [
+              noLossCollateralAuctionActions.address,
+              takeCollateral,
+            ]),
           },
         )
 
