@@ -13,21 +13,19 @@ import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import Element from '@/src/resources/svg/element.svg'
-import Notional from '@/src/resources/svg/notional.svg'
 import { Table } from '@/src/components/antd'
 import { parseDate, parseTime, tablePagination } from '@/src/utils/table'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import Filter from '@/src/resources/svg/filter.svg'
-import { PROTOCOLS, Protocol } from '@/types/protocols'
+import { ELEMENT_SUBGRAPH_PROTOCOL, PROTOCOLS, Protocol } from '@/types/protocols'
 import { AuctionData } from '@/src/utils/data/auctions'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
 const FILTERS: FilterData = {
-  Notional: { active: false, name: 'Notional', icon: <Notional /> },
-  Element: { active: false, name: 'Element', icon: <Element /> },
+  Element: { active: false, name: ELEMENT_SUBGRAPH_PROTOCOL, icon: <Element /> },
 }
 
 const getParsedActiveFilters = (filters: FilterData) =>
