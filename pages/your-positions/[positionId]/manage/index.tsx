@@ -84,7 +84,7 @@ const PositionManage = () => {
     maxRepayAmount,
     maxWithdrawAmount,
     setFinished,
-  } = useManagePositionForm(position as Position, formValues, undefined)
+  } = useManagePositionForm(position as Position, formValues)
 
   const summary = useManageFormSummary(position as Position, formValues)
   const healthFactorToRender = isValidHealthFactor(healthFactor)
@@ -105,198 +105,195 @@ const PositionManage = () => {
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
 
-      <PositionFormsLayout
-        form={
-          !finished ? (
-            <>
-              <div className={cn(s.top)}>
-                <RadioTabsWrapper>
-                  <RadioTab
-                    checked={activeSection === 'collateral'}
-                    onClick={() => setActiveSection('collateral')}
-                  >
-                    Collateral
-                  </RadioTab>
-                  <RadioTab
-                    checked={activeSection === 'fiat'}
-                    onClick={() => setActiveSection('fiat')}
-                  >
-                    FIAT
-                  </RadioTab>
-                </RadioTabsWrapper>
-              </div>
-
-              <Form form={form} onValuesChange={handleFormChange}>
-                <fieldset>
-                  <div className={cn(s.component)}>
-                    {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
-                      <>
-                        <Tabs className={cn(s.tabs)}>
-                          <Tab
-                            isActive={'deposit' === activeTabKey}
-                            onClick={() => {
-                              form.setFieldsValue({ withdraw: undefined })
-                              setActiveTabKey('deposit')
-                            }}
-                          >
-                            Deposit
-                          </Tab>
-                          <Tab
-                            isActive={'withdraw' === activeTabKey}
-                            onClick={() => {
-                              form.setFieldsValue({ deposit: undefined })
-                              setActiveTabKey('withdraw')
-                            }}
-                          >
-                            Withdraw
-                          </Tab>
-                        </Tabs>
-                        {'deposit' === activeTabKey && position && (
-                          <>
-                            <Balance
-                              title="Select amount to deposit"
-                              value={`Available: ${availableDepositAmount?.toFixed(4)}`}
-                            />
-                            <Form.Item name="deposit" required>
-                              <TokenAmount
-                                displayDecimals={4}
-                                healthFactorValue={healthFactorToRender}
-                                mainAsset={position.protocol}
-                                max={maxDepositAmount}
-                                maximumFractionDigits={6}
-                                secondaryAsset={position.underlier.symbol}
-                                slider={'healthFactorVariantReverse'}
-                              />
-                            </Form.Item>
-                          </>
-                        )}
-                        {'withdraw' === activeTabKey && position && (
-                          <>
-                            <Balance
-                              title="Select amount to withdraw"
-                              value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
-                            />
-                            <Form.Item name="withdraw" required>
-                              <TokenAmount
-                                displayDecimals={4}
-                                healthFactorValue={healthFactorToRender}
-                                mainAsset={position.protocol}
-                                max={maxWithdrawAmount}
-                                maximumFractionDigits={6}
-                                secondaryAsset={position.underlier.symbol}
-                                slider={'healthFactorVariant'}
-                              />
-                            </Form.Item>
-                          </>
-                        )}
-                      </>
-                    )}
-
-                    {'fiat' === activeSection && isFiatTab(activeTabKey) && (
-                      <>
-                        <Tabs className={cn(s.tabs)}>
-                          <Tab
-                            isActive={'mint' === activeTabKey}
-                            onClick={() => {
-                              form.setFieldsValue({ burn: undefined })
-                              setActiveTabKey('mint')
-                            }}
-                          >
-                            Borrow
-                          </Tab>
-                          <Tab
-                            isActive={'burn' === activeTabKey}
-                            onClick={() => {
-                              form.setFieldsValue({ mint: undefined })
-                              setActiveTabKey('burn')
-                            }}
-                          >
-                            Repay
-                          </Tab>
-                        </Tabs>
-                        {'mint' === activeTabKey && position && (
-                          <>
-                            <Balance
-                              title="Select amount to borrow"
-                              value={`Available: ${fiatBalance?.toFixed(4)}`}
-                            />
-                            <Form.Item name="mint" required>
-                              <TokenAmount
-                                displayDecimals={contracts.FIAT.decimals}
-                                healthFactorValue={healthFactorToRender}
-                                max={maxBorrowAmount}
-                                maximumFractionDigits={contracts.FIAT.decimals}
-                                slider={'healthFactorVariant'}
-                                tokenIcon={<FiatIcon />}
-                              />
-                            </Form.Item>
-                          </>
-                        )}
-                        {'burn' === activeTabKey && position && (
-                          <>
-                            <Balance
-                              title="Select amount to repay"
-                              value={`Available: ${fiatBalance?.toFixed(4)}`}
-                            />
-                            <Form.Item name="burn" required>
-                              <TokenAmount
-                                displayDecimals={contracts.FIAT.decimals}
-                                healthFactorValue={healthFactorToRender}
-                                max={maxRepay}
-                                maximumFractionDigits={contracts.FIAT.decimals}
-                                slider={'healthFactorVariantReverse'}
-                                tokenIcon={<FiatIcon />}
-                              />
-                            </Form.Item>
-                          </>
-                        )}
-                      </>
-                    )}
-
-                    <ButtonsWrapper>
-                      <ButtonGradient
-                        disabled={isDisabledCreatePosition}
-                        height="lg"
-                        loading={isLoading}
-                        onClick={() => handleManage(formValues)}
-                      >
-                        {buttonText}
-                      </ButtonGradient>
-                    </ButtonsWrapper>
-                    <div className={cn(s.summary)}>
-                      {summary.map((item, index) => (
-                        <SummaryItem key={index} title={item.title} value={item.value} />
-                      ))}
-                    </div>
-                  </div>
-                </fieldset>
-              </Form>
-            </>
-          ) : (
-            <div className={cn(s.form)}>
-              <div className={cn(s.lastStepAnimation)}>
-                <Lottie animationData={SuccessAnimation} autoplay loop />
-              </div>
-              <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
-              <p className={cn(s.lastStepText)}>Your position has been successfully updated.</p>
-              <div className={cn(s.summary)}>
-                {summary.map((item, index) => (
-                  <SummaryItem key={index} title={item.title} value={item.value} />
-                ))}
-                <ButtonsWrapper>
-                  <ButtonGradient height="lg" loading={isLoadingPosition} onClick={reset}>
-                    Continue
-                  </ButtonGradient>
-                  <Link href={`/your-positions/`} passHref>
-                    <button className={cn(s.finishButton)}>Go to Your Positions</button>
-                  </Link>
-                </ButtonsWrapper>
-              </div>
+      <PositionFormsLayout infoBlocks={infoBlocks}>
+        {!finished ? (
+          <>
+            <div className={cn(s.top)}>
+              <RadioTabsWrapper>
+                <RadioTab
+                  checked={activeSection === 'collateral'}
+                  onClick={() => setActiveSection('collateral')}
+                >
+                  Collateral
+                </RadioTab>
+                <RadioTab
+                  checked={activeSection === 'fiat'}
+                  onClick={() => setActiveSection('fiat')}
+                >
+                  FIAT
+                </RadioTab>
+              </RadioTabsWrapper>
             </div>
-          )
-        }
-        infoBlocks={infoBlocks}
-      />
+
+            <Form form={form} onValuesChange={handleFormChange}>
+              <fieldset>
+                <div className={cn(s.component)}>
+                  {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
+                    <>
+                      <Tabs className={cn(s.tabs)}>
+                        <Tab
+                          isActive={'deposit' === activeTabKey}
+                          onClick={() => {
+                            form.setFieldsValue({ withdraw: undefined })
+                            setActiveTabKey('deposit')
+                          }}
+                        >
+                          Deposit
+                        </Tab>
+                        <Tab
+                          isActive={'withdraw' === activeTabKey}
+                          onClick={() => {
+                            form.setFieldsValue({ deposit: undefined })
+                            setActiveTabKey('withdraw')
+                          }}
+                        >
+                          Withdraw
+                        </Tab>
+                      </Tabs>
+                      {'deposit' === activeTabKey && position && (
+                        <>
+                          <Balance
+                            title="Select amount to deposit"
+                            value={`Available: ${availableDepositAmount?.toFixed(4)}`}
+                          />
+                          <Form.Item name="deposit" required>
+                            <TokenAmount
+                              displayDecimals={4}
+                              healthFactorValue={healthFactorToRender}
+                              mainAsset={position.protocol}
+                              max={maxDepositAmount}
+                              maximumFractionDigits={6}
+                              secondaryAsset={position.underlier.symbol}
+                              slider={'healthFactorVariantReverse'}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
+                      {'withdraw' === activeTabKey && position && (
+                        <>
+                          <Balance
+                            title="Select amount to withdraw"
+                            value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
+                          />
+                          <Form.Item name="withdraw" required>
+                            <TokenAmount
+                              displayDecimals={4}
+                              healthFactorValue={healthFactorToRender}
+                              mainAsset={position.protocol}
+                              max={maxWithdrawAmount}
+                              maximumFractionDigits={6}
+                              secondaryAsset={position.underlier.symbol}
+                              slider={'healthFactorVariant'}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {'fiat' === activeSection && isFiatTab(activeTabKey) && (
+                    <>
+                      <Tabs className={cn(s.tabs)}>
+                        <Tab
+                          isActive={'mint' === activeTabKey}
+                          onClick={() => {
+                            form.setFieldsValue({ burn: undefined })
+                            setActiveTabKey('mint')
+                          }}
+                        >
+                          Borrow
+                        </Tab>
+                        <Tab
+                          isActive={'burn' === activeTabKey}
+                          onClick={() => {
+                            form.setFieldsValue({ mint: undefined })
+                            setActiveTabKey('burn')
+                          }}
+                        >
+                          Repay
+                        </Tab>
+                      </Tabs>
+                      {'mint' === activeTabKey && position && (
+                        <>
+                          <Balance
+                            title="Select amount to borrow"
+                            value={`Available: ${fiatBalance?.toFixed(4)}`}
+                          />
+                          <Form.Item name="mint" required>
+                            <TokenAmount
+                              displayDecimals={contracts.FIAT.decimals}
+                              healthFactorValue={healthFactorToRender}
+                              max={maxBorrowAmount}
+                              maximumFractionDigits={contracts.FIAT.decimals}
+                              slider={'healthFactorVariant'}
+                              tokenIcon={<FiatIcon />}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
+                      {'burn' === activeTabKey && position && (
+                        <>
+                          <Balance
+                            title="Select amount to repay"
+                            value={`Available: ${fiatBalance?.toFixed(4)}`}
+                          />
+                          <Form.Item name="burn" required>
+                            <TokenAmount
+                              displayDecimals={contracts.FIAT.decimals}
+                              healthFactorValue={healthFactorToRender}
+                              max={maxRepay}
+                              maximumFractionDigits={contracts.FIAT.decimals}
+                              slider={'healthFactorVariantReverse'}
+                              tokenIcon={<FiatIcon />}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  <ButtonsWrapper>
+                    <ButtonGradient
+                      disabled={isDisabledCreatePosition}
+                      height="lg"
+                      loading={isLoading}
+                      onClick={() => handleManage(formValues)}
+                    >
+                      {buttonText}
+                    </ButtonGradient>
+                  </ButtonsWrapper>
+                  <div className={cn(s.summary)}>
+                    {summary.map((item, index) => (
+                      <SummaryItem key={index} title={item.title} value={item.value} />
+                    ))}
+                  </div>
+                </div>
+              </fieldset>
+            </Form>
+          </>
+        ) : (
+          <div className={cn(s.form)}>
+            <div className={cn(s.lastStepAnimation)}>
+              <Lottie animationData={SuccessAnimation} autoplay loop />
+            </div>
+            <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
+            <p className={cn(s.lastStepText)}>Your position has been successfully updated.</p>
+            <div className={cn(s.summary)}>
+              {summary.map((item, index) => (
+                <SummaryItem key={index} title={item.title} value={item.value} />
+              ))}
+              <ButtonsWrapper>
+                <ButtonGradient height="lg" loading={isLoadingPosition} onClick={reset}>
+                  Continue
+                </ButtonGradient>
+                <Link href={`/your-positions/`} passHref>
+                  <button className={cn(s.finishButton)}>Go to Your Positions</button>
+                </Link>
+              </ButtonsWrapper>
+            </div>
+          </div>
+        )}
+      </PositionFormsLayout>
     </>
   )
 }

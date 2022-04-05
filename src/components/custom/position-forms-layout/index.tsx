@@ -7,9 +7,8 @@ import { getEtherscanAddressUrl } from '@/src/web3/utils'
 
 export const PositionFormsLayout: React.FC<{
   className?: string
-  form: React.ReactNode
   infoBlocks: any[]
-}> = ({ className, form, infoBlocks, ...restProps }) => {
+}> = ({ children, className, infoBlocks, ...restProps }) => {
   return (
     <div className={cn(s.component, className)} {...restProps}>
       <div className={cn(s.infoBlocks)}>
@@ -28,7 +27,7 @@ export const PositionFormsLayout: React.FC<{
           </ExternalLink>
         ))}
       </div>
-      <Card noPadding>{form}</Card>
+      <Card noPadding>{children}</Card>
     </div>
   )
 }

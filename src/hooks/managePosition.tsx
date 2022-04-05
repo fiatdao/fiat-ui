@@ -36,7 +36,7 @@ export type TokenInfo = {
 export const useManagePositionForm = (
   position: Position | undefined,
   positionFormFields: PositionManageFormFields | undefined,
-  onSuccess: (() => void) | undefined,
+  onSuccess?: () => void,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { approveFIAT, modifyCollateralAndDebt } = useUserActions()
