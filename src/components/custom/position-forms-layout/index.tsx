@@ -5,9 +5,8 @@ import { InfoBlock } from '@/src/components/custom/info-block'
 
 export const PositionFormsLayout: React.FC<{
   className?: string
-  form: React.ReactNode
   infoBlocks: any[]
-}> = ({ className, form, infoBlocks, ...restProps }) => {
+}> = ({ children, className, infoBlocks, ...restProps }) => {
   return (
     <div className={cn(s.component, className)} {...restProps}>
       <div className={cn(s.infoBlocks)}>
@@ -21,7 +20,7 @@ export const PositionFormsLayout: React.FC<{
           />
         ))}
       </div>
-      <Card noPadding>{form}</Card>
+      <Card noPadding>{children}</Card>
     </div>
   )
 }
