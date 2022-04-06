@@ -1,5 +1,6 @@
 import s from './s.module.scss'
 import cn from 'classnames'
+import Link from 'next/link'
 import Tooltip from '@/src/components/antd/tooltip'
 import Info from '@/src/resources/svg/info.svg'
 import ExternalLink from '@/src/components/custom/externalLink'
@@ -69,12 +70,21 @@ export const InnerInfoBlock: React.FC<Props> = ({
 
 export const InfoBlock: React.FC<Props> = (props: Props) => {
   const { url } = props
+  const isAbsoluteUrl = url && ['https://', 'http://'].some((substring) => url.includes(substring))
   if (!url) {
     return <InnerInfoBlock {...props} />
   }
+  if (url && isAbsoluteUrl) {
+    return (
+      <ExternalLink className={s.link} href={url}>
+        <InnerInfoBlock {...props} />
+      </ExternalLink>
+    )
+  }
+
   return (
-    <ExternalLink className={s.link} href={url}>
+    <Link href={url}>
       <InnerInfoBlock {...props} />
-    </ExternalLink>
+    </Link>
   )
 }
