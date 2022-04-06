@@ -375,7 +375,7 @@ export const useManagePositionsInfoBlock = (position: Position) => {
   const tokenSymbol = getTokenByAddress(position?.collateral.address)?.symbol ?? ''
   return [
     {
-      title: 'Token',
+      title: 'Asset',
       value: position ? tokenSymbol : '-',
       address: position ? position.collateral.address : '-',
       appChainId: useWeb3Connection().appChainId,
