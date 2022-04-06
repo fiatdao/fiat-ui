@@ -36,13 +36,14 @@ export type TokenInfo = {
 export const useManagePositionForm = (
   position: Position | undefined,
   positionFormFields: PositionManageFormFields | undefined,
-  onSuccess: (() => void) | undefined,
+  onSuccess?: () => void,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { approveFIAT, modifyCollateralAndDebt } = useUserActions()
   const { userProxyAddress } = useUserProxy()
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [finished, setFinished] = useState<boolean>(false)
 
   const [maxDepositAmount, setMaxDepositAmount] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
   const [availableDepositAmount, setAvailableDepositAmount] = useState<BigNumber | undefined>(
@@ -283,6 +284,7 @@ export const useManagePositionForm = (
       })
 
       await updateToken()
+      setFinished(true)
 
       if (onSuccess) {
         onSuccess()
@@ -308,6 +310,8 @@ export const useManagePositionForm = (
     handleManage,
     calculateHealthFactorFromPosition,
     isDisabledCreatePosition,
+    finished,
+    setFinished,
   }
 }
 

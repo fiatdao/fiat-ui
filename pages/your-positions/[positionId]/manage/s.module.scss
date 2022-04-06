@@ -1,3 +1,9 @@
+@import 'src/styles/text-gradient';
+
+.form {
+  padding: var(--theme-common-card-padding) var(--theme-common-card-padding) 28px;
+}
+
 .top {
   padding: var(--theme-common-card-padding) var(--theme-common-card-padding) 28px;
 }
@@ -16,4 +22,38 @@
   margin-right: calc(var(--theme-common-card-padding) * -1);
   padding-left: var(--theme-common-card-padding);
   padding-right: var(--theme-common-card-padding);
+}
+
+.lastStepAnimation {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.lastStepTitle {
+  color: var(--theme-text-color);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 6px;
+  text-align: center;
+}
+
+.lastStepText {
+  color: var(--theme-color-9);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.finishButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  height: 24px;
+  padding: 0;
+
+  @include text-gradient();
 }
