@@ -21,7 +21,13 @@ import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
-import { VIRTUAL_RATE, VIRTUAL_RATE_SAFETY_MARGIN, WAD_DECIMALS } from '@/src/constants/misc'
+import {
+  BELOW_MINIMUM_AMOUNT_TEXT,
+  DEPOSIT_COLLATERAL_TEXT,
+  VIRTUAL_RATE,
+  VIRTUAL_RATE_MAX_SLIPPAGE,
+  WAD_DECIMALS,
+} from '@/src/constants/misc'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -42,6 +48,7 @@ import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { calculateHealthFactor } from '@/src/utils/data/positions'
 
+// @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7
 
 const StepperTitle: React.FC<{
@@ -72,6 +79,7 @@ const FormERC20: React.FC<{
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [loading, setLoading] = useState(false)
+
   const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
     tokenAddress,
     userProxyAddress ?? '',
@@ -141,7 +149,7 @@ const FormERC20: React.FC<{
       WAD_DECIMALS,
     )
 
-    const virtualRateWithMargin = VIRTUAL_RATE_SAFETY_MARGIN.times(VIRTUAL_RATE)
+    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(VIRTUAL_RATE)
     const maxBorrowAmount = totalCollateral
       .times(collateralValue)
       .div(collateralizationRatio)
@@ -150,13 +158,26 @@ const FormERC20: React.FC<{
     return maxBorrowAmount
   }, [stateMachine.context.erc20Amount, collateral])
 
+  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
+  const hasMinimumFIAT = useMemo(() => {
+    const fiatAmount = stateMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
+    const debtFloor = collateral.vault.debtFloor
+    const nonHumanFiatAmount = getNonHumanValue(fiatAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+
+    return nonHumanFiatAmount.gte(debtFloor) || nonHumanFiatAmount.isZero()
+  }, [stateMachine.context.fiatAmount, collateral.vault.debtFloor])
+
+  const isDisabledCreatePosition = () => {
+    return !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT
+  }
+
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
-  const deltaNormalDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
+  const deltaDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
   const { healthFactor: hf } = calculateHealthFactor(
     collateral.currentValue,
     collateral.vault.collateralizationRatio,
     deltaCollateral,
-    deltaNormalDebt,
+    deltaDebt,
   )
   const healthFactorNumber = hf?.toFixed(3)
 
@@ -290,7 +311,6 @@ const FormERC20: React.FC<{
                   <ButtonsWrapper>
                     {!isProxyAvailable && (
                       <ButtonGradient
-                        disabled={!stateMachine.context.erc20Amount.gt(0)}
                         height="lg"
                         onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
                       >
@@ -303,7 +323,9 @@ const FormERC20: React.FC<{
                         height="lg"
                         onClick={() => send({ type: 'CLICK_ALLOW' })}
                       >
-                        Set Allowance
+                        {stateMachine.context.erc20Amount.gt(0)
+                          ? 'Set Allowance'
+                          : `Insufficient Balance for ${tokenSymbol}`}
                       </ButtonGradient>
                     )}
                   </ButtonsWrapper>
@@ -323,6 +345,7 @@ const FormERC20: React.FC<{
                     {`Set Allowance for ${tokenSymbol}`}
                   </ButtonGradient>
                 )}
+
                 {stateMachine.context.currentStepNumber === 4 && (
                   <>
                     {mintFiat && (
@@ -360,7 +383,7 @@ const FormERC20: React.FC<{
                         </ButtonExtraFormAction>
                       )}
                       <ButtonGradient
-                        disabled={!hasAllowance || !isProxyAvailable || loading}
+                        disabled={isDisabledCreatePosition()}
                         height="lg"
                         onClick={() =>
                           send({
@@ -370,7 +393,7 @@ const FormERC20: React.FC<{
                           })
                         }
                       >
-                        Deposit collateral
+                        {hasMinimumFIAT ? DEPOSIT_COLLATERAL_TEXT : BELOW_MINIMUM_AMOUNT_TEXT}
                       </ButtonGradient>
                     </ButtonsWrapper>
                     <div className={cn(s.summary)}>
@@ -388,7 +411,10 @@ const FormERC20: React.FC<{
             <Lottie animationData={SuccessAnimation} autoplay loop />
           </div>
           <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
-          <p className={cn(s.lastStepText)}>Your position has been successfully created.</p>
+          <p className={cn(s.lastStepText)}>
+            Your position has been successfully created! It may take a couple seconds for your
+            position to show in the app.
+          </p>
           <Summary data={summaryData} />
           <Link href={`/your-positions/`} passHref>
             <ButtonGradient height="lg">Go to Your Positions</ButtonGradient>

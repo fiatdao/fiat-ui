@@ -3,11 +3,11 @@ import { assign, createMachine } from 'xstate'
 
 export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string } } = {
   1: {
-    title: 'Configure your position',
+    title: 'Configure Your Position',
     subtitle: 'Select collateral amount to deposit and how much FIAT to mint.',
   },
   2: {
-    title: 'Create a Proxy contract',
+    title: 'Create a Proxy Contract',
     subtitle: 'The Proxy Contract will allow you to interact with the FIAT protocol.',
   },
   3: {
@@ -15,11 +15,11 @@ export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string 
     subtitle: 'Give permission to the FIAT protocol to manage your collateral.',
   },
   4: {
-    title: 'Configure your position',
+    title: 'Configure Your Position',
     subtitle: 'Select collateral amount to deposit and how much FIAT to mint.',
   },
   5: {
-    title: 'Confirm your new position',
+    title: 'Confirm Your New Position',
     subtitle: 'Review and verify the details of your new position.',
   },
 }
@@ -69,6 +69,7 @@ const initialContext: Context = {
   loading: false,
   loadingType: '',
 }
+
 const stepperMachine = createMachine<Context, Events>(
   {
     id: 'stepper',
@@ -93,7 +94,7 @@ const stepperMachine = createMachine<Context, Events>(
         always: [
           {
             target: 'step-4-enteringFIATAmount',
-            cond: (ctx) => ctx.hasAllowance && ctx.isProxyAvailable && ctx.erc20Amount.gt(0),
+            cond: (ctx) => ctx.hasAllowance && ctx.isProxyAvailable,
           },
         ],
         entry: [assign({ currentStepNumber: (_) => 1 })],
@@ -114,10 +115,6 @@ const stepperMachine = createMachine<Context, Events>(
       },
       'step-4-enteringFIATAmount': {
         entry: [assign({ currentStepNumber: (_) => 4 })],
-        always: {
-          target: 'step-1-enteringERC20Amount',
-          cond: (ctx) => !ctx.erc20Amount.gt(0),
-        },
         on: {
           // CLICK_DEPLOY: [{ target: 'step-5-addCollateral' }],
           CONFIRM: 'confirming-position',

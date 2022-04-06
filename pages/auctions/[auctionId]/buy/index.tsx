@@ -5,7 +5,7 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useState } from 'react'
-import { LAST_STEP, SLIPPAGE } from '@/src/constants/auctions'
+import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { FIAT_TICKER, WAD_DECIMALS } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
@@ -41,19 +41,18 @@ const StepperTitle: React.FC<{
 
 type FormProps = { amountToBuy: BigNumber }
 
+type Step = {
+  description: string
+  buttonText: string
+  prev: () => void
+  next: () => void
+  callback: () => void | Promise<void>
+}
+
 const BuyCollateral = () => {
   const auctionId = useQueryParam('auctionId')
-
-  const [form] = AntdForm.useForm<FormProps>()
-  const [step, setStep] = useState(1)
-
   const { data } = useAuction(auctionId)
-
-  useDynamicTitle(
-    data?.collateral.address && `Buy ${getTokenByAddress(data.collateral.address)?.symbol ?? ''}`,
-  )
-
-  const [FIATBalance, refetchFIATBalance] = useFIATBalance()
+  const [form] = AntdForm.useForm<FormProps>()
 
   const {
     approve,
@@ -65,6 +64,90 @@ const BuyCollateral = () => {
     maxCredit,
     maxPrice,
   } = useBuyCollateralForm(data)
+
+  const [step, setStep] = useState(0)
+  const steps: Step[] = [
+    {
+      description: 'Select the amount to buy',
+      buttonText: 'Buy collateral',
+      next() {
+        if (!hasAllowance) {
+          setStep(1)
+        } else if (!hasMonetaAllowance) {
+          setStep(2)
+        } else {
+          setStep(3)
+        }
+      },
+      prev() {
+        return
+      },
+      callback() {
+        this.next()
+      },
+    },
+    {
+      description: 'Set Allowance for FIAT',
+      buttonText: 'Set Allowance for FIAT',
+      next() {
+        if (!hasMonetaAllowance) {
+          setStep(2)
+        } else {
+          setStep(3)
+        }
+      },
+      prev() {
+        setStep(0)
+      },
+      async callback() {
+        await approve()
+        this.next()
+      },
+    },
+    {
+      description: 'Enable Proxy for FIAT',
+      buttonText: 'Enable Proxy for FIAT',
+      next() {
+        setStep(3)
+      },
+      prev() {
+        if (!hasAllowance) {
+          setStep(1)
+        } else {
+          setStep(0)
+        }
+      },
+      async callback() {
+        await approveMoneta()
+        this.next()
+      },
+    },
+    {
+      description: 'Confirm the details',
+      buttonText: 'Confirm',
+      next() {
+        return
+      },
+      prev() {
+        if (!hasMonetaAllowance) {
+          setStep(2)
+        } else if (!hasAllowance) {
+          setStep(1)
+        } else {
+          setStep(0)
+        }
+      },
+      callback() {
+        form.submit()
+      },
+    },
+  ]
+
+  useDynamicTitle(
+    data?.collateral.address && `Buy ${getTokenByAddress(data.collateral.address)?.symbol ?? ''}`,
+  )
+
+  const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
   const onSubmit = async () => {
     if (!data?.currentAuctionPrice) {
@@ -83,7 +166,7 @@ const BuyCollateral = () => {
     // tx was not successful
     if (receipt) {
       await refetchFIATBalance()
-      setStep(3)
+      setStep((prev) => prev + 1)
     }
   }
 
@@ -155,16 +238,16 @@ const BuyCollateral = () => {
         </div>
 
         <div className={cn(s.formWrapper)}>
-          {step !== LAST_STEP ? (
+          {step + 1 !== SUCCESS_STEP ? (
             <>
               <StepperTitle
-                currentStep={step}
-                description={step === 1 ? 'Select the amount to buy' : 'Confirm the details'}
+                currentStep={step + 1}
+                description={steps[step].description}
                 title={'Buy collateral'}
-                totalSteps={2}
+                totalSteps={steps.length}
               />
               <div className={cn(s.form)}>
-                {step === 1 && (
+                {step === 0 ? (
                   <>
                     <div className={cn(s.balanceWrapper)}>
                       <h3 className={cn(s.balanceLabel)}>Select amount</h3>
@@ -185,37 +268,26 @@ const BuyCollateral = () => {
                           slider
                         />
                       </Form.Item>
-                      <ButtonGradient disabled={loading} height="lg" onClick={() => setStep(2)}>
-                        Buy collateral
+                      <ButtonGradient disabled={loading} height="lg" onClick={steps[step].next}>
+                        {steps[step].buttonText}
                       </ButtonGradient>
                     </Form>
                   </>
-                )}
-                {step === 2 && (
+                ) : (
                   <>
-                    <Summary data={summaryData} />
+                    {step === 3 && <Summary data={summaryData} />}
                     <div className={s.buttonsWrapper}>
                       <ButtonGradient
                         height="lg"
                         loading={loading}
-                        onClick={() =>
-                          !hasAllowance
-                            ? approve()
-                            : !hasMonetaAllowance
-                            ? approveMoneta()
-                            : form.submit()
-                        }
+                        onClick={steps[step].callback.bind(steps[step])}
                       >
-                        {!hasAllowance
-                          ? 'Set Allowance for FIAT'
-                          : !hasMonetaAllowance
-                          ? 'Enable Proxy for FIAT'
-                          : 'Confirm'}
+                        {steps[step].buttonText}
                       </ButtonGradient>
                       <button
                         className={s.backButton}
                         disabled={loading}
-                        onClick={() => setStep(1)}
+                        onClick={steps[step].prev}
                       >
                         &#8592; Go back
                       </button>

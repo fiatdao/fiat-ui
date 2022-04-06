@@ -8,7 +8,7 @@ import { CellValue } from '@/src/components/custom/cell-value'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import { Asset } from '@/src/components/custom/asset'
 import { PositionsAtRiskTableWrapper } from '@/src/components/custom/positions-at-risk-table-wrapper'
-import { Position } from '@/src/utils/data/positions'
+import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
 import { tablePagination } from '@/src/utils/table'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
@@ -54,8 +54,8 @@ const Columns: ColumnsType<Position> = [
   },
   {
     align: 'left',
-    dataIndex: 'totalNormalDebt',
-    render: (minted: Position['totalNormalDebt']) => (
+    dataIndex: 'totalDebt',
+    render: (minted: Position['totalDebt']) => (
       <CellValue
         tooltip={`${minted}`}
         value={` ${getHumanValue(minted, WAD_DECIMALS).toFixed(3)} FIAT`}
@@ -69,7 +69,7 @@ const Columns: ColumnsType<Position> = [
     align: 'left',
     dataIndex: 'healthFactor',
     render: (healthFactor: Position['healthFactor']) => {
-      const healthFactorToRender = healthFactor.isFinite()
+      const healthFactorToRender = isValidHealthFactor(healthFactor)
         ? healthFactor.toFixed(3)
         : DEFAULT_HEALTH_FACTOR
       return <CellValue state={calculateHealthFactor(healthFactor)} value={healthFactorToRender} />

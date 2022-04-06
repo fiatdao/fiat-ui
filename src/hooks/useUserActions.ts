@@ -1,3 +1,4 @@
+import { calculateNormalDebt } from '../utils/data/positions'
 import { TransactionResponse } from '@ethersproject/providers'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
@@ -6,8 +7,9 @@ import { useNotifications } from '@/src/hooks/useNotifications'
 import { TransactionError } from '@/src/utils/TransactionError'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { contracts } from '@/src/constants/contracts'
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { VaultEPTActions } from '@/types/typechain'
+import { estimateGasLimit } from '@/src/web3/utils'
 
 type BaseModify = {
   vault: string
@@ -23,7 +25,7 @@ type DepositCollateral = BaseModify & {
 
 type ModifyCollateralAndDebt = BaseModify & {
   deltaCollateral: BigNumber
-  deltaNormalDebt: BigNumber
+  deltaDebt: BigNumber
 }
 
 type BuyCollateralAndModifyDebt = {
@@ -56,7 +58,7 @@ export type UseUserActions = {
 }
 
 export const useUserActions = (): UseUserActions => {
-  const { address, appChainId, web3Provider } = useWeb3Connection()
+  const { address, appChainId, web3Provider } = useWeb3Connected()
   const { userProxy, userProxyAddress } = useUserProxy()
   const notification = useNotifications()
 
@@ -85,7 +87,10 @@ export const useUserActions = (): UseUserActions => {
 
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, approveFIAT, {
-          gasLimit: 1_000_000,
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            userActionEPT.address,
+            approveFIAT,
+          ]),
         })
         .catch(notification.handleTxError)
 
@@ -115,7 +120,9 @@ export const useUserActions = (): UseUserActions => {
 
       // @TODO: toFixed(0, ROUNDED) transforms BigNumber into String without decimals
       const deltaCollateral = params.deltaCollateral.toFixed(0, 8)
-      const deltaNormalDebt = params.deltaNormalDebt.toFixed(0, 8)
+      // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
+      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt).toFixed(0, 8)
+
       // TODO: check if vault/protocol type so we can use EPT or FC
       const modifyCollateralAndDebtEncoded = userActionEPT.interface.encodeFunctionData(
         'modifyCollateralAndDebt',
@@ -136,7 +143,10 @@ export const useUserActions = (): UseUserActions => {
 
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, modifyCollateralAndDebtEncoded, {
-          gasLimit: 1_000_000,
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            userActionEPT.address,
+            modifyCollateralAndDebtEncoded,
+          ]),
         })
         .catch(notification.handleTxError)
 
@@ -196,7 +206,10 @@ export const useUserActions = (): UseUserActions => {
 
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, buyCollateralAndModifyDebtEncoded, {
-          gasLimit: 1_000_000,
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            userActionEPT.address,
+            buyCollateralAndModifyDebtEncoded,
+          ]),
         })
         .catch(notification.handleTxError)
 
@@ -233,7 +246,7 @@ export const useUserActions = (): UseUserActions => {
       return modifyCollateralAndDebt({
         ...params,
         deltaCollateral: params.toDeposit,
-        deltaNormalDebt: params.toMint,
+        deltaDebt: params.toMint,
       })
     },
     [modifyCollateralAndDebt],
