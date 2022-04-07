@@ -12,28 +12,22 @@ import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
 import { tablePagination } from '@/src/utils/table'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
-import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 const Columns: ColumnsType<Position> = [
   {
     align: 'left',
-    dataIndex: 'protocolAddress',
-    render: (vaultAddress: Position['protocolAddress'], { tokenId, underlier }) => {
-      const { protocol = '' } = getCollateralMetadata({ vaultAddress, tokenId }) ?? {}
-
-      return <Asset mainAsset={protocol} secondaryAsset={underlier.symbol} title={protocol} />
-    },
+    dataIndex: 'protocol',
+    render: (protocol: Position['protocol'], { underlier: { symbol } }) => (
+      <Asset mainAsset={protocol} secondaryAsset={symbol} title={protocol} />
+    ),
     title: 'Protocol',
     width: 200,
   },
   {
     align: 'left',
-    dataIndex: 'protocolAddress',
-    render: (vaultAddress: Position['protocolAddress'], { tokenId }) => {
-      const { symbol = '-' } = getCollateralMetadata({ vaultAddress, tokenId }) ?? {}
-      return <CellValue bold value={symbol} />
-    },
+    dataIndex: 'symbol',
+    render: (symbol: Position['symbol']) => <CellValue bold value={symbol} />,
     title: 'Asset',
     width: 200,
   },

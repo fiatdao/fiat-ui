@@ -1,5 +1,6 @@
 import useUserProxy from '../useUserProxy'
 import useSWR from 'swr'
+import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { PositionTransactionAction_filter } from '@/types/subgraph/__generated__/globalTypes'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { Transactions, TransactionsVariables } from '@/types/subgraph/__generated__/Transactions'
@@ -15,6 +16,7 @@ export const useTransactions = (
   action?: ActionTransaction,
   user?: Maybe<string>,
 ): SwrResponse<Transaction> => {
+  const { appChainId } = useWeb3Connected()
   const { data, error } = useSWR(['transactions', protocol, action, user], async () => {
     const where: Maybe<PositionTransactionAction_filter> = {}
     if (protocol) {
@@ -27,8 +29,8 @@ export const useTransactions = (
 
     return transactions
       .sort((a, b) => +b.timestamp - +a.timestamp)
-      .map(wrangleTransaction)
-      .filter((tx) => (action ? tx.action.includes(action) : true))
+      .map((transaction) => wrangleTransaction(appChainId, transaction))
+      .filter((transaction) => (action ? transaction.action.includes(action) : true))
   })
 
   return { data: data ?? [], error, loading: !data && !error }

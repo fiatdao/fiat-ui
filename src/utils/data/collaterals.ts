@@ -72,7 +72,7 @@ const wrangleCollateral = async (
   }
 
   const { protocol = '', symbol = '' } =
-    getCollateralMetadata({
+    getCollateralMetadata(appChainId, {
       vaultAddress: collateral.vault?.address,
       tokenId: collateral.tokenId,
     }) ?? {}

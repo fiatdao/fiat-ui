@@ -25,7 +25,6 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 export type TokenInfo = {
@@ -372,11 +371,10 @@ export const useManageFormSummary = (
 }
 
 export const useManagePositionsInfoBlock = (position: Position) => {
-  const tokenSymbol = getTokenByAddress(position?.collateral.address)?.symbol ?? ''
   return [
     {
       title: 'Asset',
-      value: position ? tokenSymbol : '-',
+      value: position.symbol || '-',
       address: position ? position.collateral.address : '-',
       appChainId: useWeb3Connection().appChainId,
     },

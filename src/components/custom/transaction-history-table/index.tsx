@@ -3,7 +3,7 @@ import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
 import { useEffect, useState } from 'react'
 import { SelectValue } from 'antd/lib/select'
-import _ from 'lodash'
+import { uniqBy } from 'lodash'
 import { elapsedTime, parseDate } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
 import Select from '@/src/components/antd/select'
@@ -14,26 +14,21 @@ import { ACTIONS_TYPES, ActionTransaction, Transaction } from '@/src/utils/data/
 import { tablePagination } from '@/src/utils/table'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import { useTransactionsByUser } from '@/src/hooks/subgraph/useTransactions'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
 
-const Columns: ColumnsType<any> = [
+const Columns: ColumnsType<Transaction> = [
   {
     align: 'left',
-    render: (transaction: Transaction) => (
-      <Asset
-        mainAsset={getTokenByAddress(transaction.assetAddress)?.protocol ?? ''}
-        secondaryAsset={transaction.underlierSymbol}
-        title={getTokenByAddress(transaction.assetAddress)?.protocol ?? ''}
-      />
+    dataIndex: 'protocol',
+    render: (protocol: Transaction['protocol'], { underlierSymbol }) => (
+      <Asset mainAsset={protocol} secondaryAsset={underlierSymbol} title={protocol} />
     ),
     title: 'Protocol',
     width: 200,
   },
   {
     align: 'left',
-    render: (transaction: Transaction) => (
-      <CellValue bold value={getTokenByAddress(transaction.assetAddress)?.symbol ?? '-'} />
-    ),
+    dataIndex: 'symbol',
+    render: (symbol: Transaction['symbol']) => <CellValue bold value={symbol} />,
     title: 'Asset',
     width: 200,
   },
@@ -114,14 +109,11 @@ const TransactionHistoryTable = () => {
     }
   }, [transactions, assetFilter, actionFilter])
 
-  console.log('data: ', transactions)
-
   const ASSETS_FILTER = [
     { label: 'All Assets', value: 'all' },
-    ..._.uniqBy(
-      transactions.map((s) => {
-        const tokenMetadata = getTokenByAddress(s.assetAddress)
-        return { label: tokenMetadata?.symbol ?? s.asset, value: s.asset }
+    ...uniqBy(
+      transactions.map((transaction) => {
+        return { label: transaction.symbol || transaction.asset, value: transaction.asset }
       }),
       'value',
     ),

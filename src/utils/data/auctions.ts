@@ -13,7 +13,11 @@ import contractCall from '@/src/utils/contractCall'
 import { CollateralAuction } from '@/types/typechain'
 import { TokenData } from '@/types/token'
 
-export const scaleToDecimalsCount = (scale: string): number | undefined => {
+export const scaleToDecimalsCount = (scale?: Maybe<string>): number | undefined => {
+  if (!scale) {
+    return
+  }
+
   const exponentialRegex = /1e[-+](\d)$/
   const decimalPlaces = BigNumber.from(scale)?.toExponential().match(exponentialRegex)?.[1]
 
@@ -109,7 +113,7 @@ const wrangleAuction = async (
     WAD_DECIMALS,
   )
 
-  const vaultMetadata = getCollateralMetadata({
+  const vaultMetadata = getCollateralMetadata(appChainId, {
     vaultAddress: collateralAuction.vault?.address,
     tokenId: collateralAuction.tokenId,
   })
