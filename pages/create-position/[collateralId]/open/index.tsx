@@ -480,16 +480,13 @@ const OpenPosition = () => {
   return (
     <>
       <ButtonBack href="/create-position">Back</ButtonBack>
-      <PositionFormsLayout
-        form={
-          <FormERC20
-            collateral={collateral as Collateral} // TODO Fix with suspense
-            tokenAddress={tokenAddress as string}
-            tokenSymbol={tokenSymbol}
-          />
-        }
-        infoBlocks={mockedBlocks}
-      />
+      <PositionFormsLayout infoBlocks={mockedBlocks}>
+        <FormERC20
+          collateral={collateral as Collateral} // TODO Fix with suspense
+          tokenAddress={tokenAddress as string}
+          tokenSymbol={tokenSymbol}
+        />
+      </PositionFormsLayout>
     </>
   )
 }
