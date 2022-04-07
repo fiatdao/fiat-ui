@@ -2,6 +2,7 @@ import { BigNumberToDateOrCurrent } from '../dateTime'
 import contractCall from '../contractCall'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from 'bignumber.js'
+import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { Collaterals_collateralTypes as SubgraphCollateral } from '@/types/subgraph/__generated__/Collaterals'
 
 import { ChainsValues } from '@/src/constants/chains'
@@ -15,7 +16,8 @@ export type Collateral = {
   id: string
   tokenId: Maybe<string>
   vaultName: Maybe<string>
-  symbol: Maybe<string>
+  symbol: string
+  protocol: string
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
   maturity: Date
@@ -69,8 +71,16 @@ const wrangleCollateral = async (
     )
   }
 
+  const { protocol = '', symbol = '' } =
+    getCollateralMetadata({
+      vaultAddress: collateral.vault?.address,
+      tokenId: collateral.tokenId,
+    }) ?? {}
+
   return {
     ...collateral,
+    protocol,
+    symbol,
     maturity: BigNumberToDateOrCurrent(collateral.maturity),
     faceValue: BigNumber.from(collateral.faceValue) ?? null,
     currentValue: BigNumber.from(currentValue?.toString()) ?? null,

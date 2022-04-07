@@ -167,7 +167,7 @@ const TransactionHistoryTable = () => {
           dataSource={filteredTransactions}
           loading={loading}
           pagination={tablePagination(filteredTransactions?.length ?? 0)}
-          rowKey="address"
+          rowKey="vaultAddress"
           scroll={{
             x: true,
           }}

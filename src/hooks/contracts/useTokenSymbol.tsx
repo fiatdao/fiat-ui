@@ -2,7 +2,7 @@ import { Interface } from 'ethers/lib/utils'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 
 export const useTokenSymbol = (tokenAddress: string): { tokenSymbol: string } => {
-  // TODO: this is going to be a problem if the `tokenAddress` is not a valid address
+  // TODO: this is going to be a problem if the `tokenAddress` is not a valid vaultAddress
   const [tokenSymbol = ''] = useContractCall(
     tokenAddress,
     new Interface(['function symbol() view returns (string)']),

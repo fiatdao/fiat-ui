@@ -6,7 +6,6 @@ import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useState } from 'react'
 import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { FIAT_TICKER, WAD_DECIMALS } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { Form } from '@/src/components/antd'
@@ -143,9 +142,7 @@ const BuyCollateral = () => {
     },
   ]
 
-  useDynamicTitle(
-    data?.collateral.address && `Buy ${getTokenByAddress(data.collateral.address)?.symbol ?? ''}`,
-  )
+  useDynamicTitle(data?.protocol && `Buy ${data.protocol.humanReadableName}`)
 
   const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
@@ -261,7 +258,8 @@ const BuyCollateral = () => {
                         <TokenAmount
                           disabled={loading}
                           displayDecimals={4}
-                          mainAsset={data?.protocol.name}
+                          {/* FixMe: send proper value to `mainAsset` */}
+                          mainAsset={data?.collateral.address}
                           max={maxCredit}
                           maximumFractionDigits={6}
                           secondaryAsset={data?.underlier.symbol}

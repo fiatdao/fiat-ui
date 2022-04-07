@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
+import { Maybe } from '@/types/utils'
 import { useGeneral } from '@/src/providers/generalProvider'
 
-export const useDynamicTitle = (title?: string) => {
+export const useDynamicTitle = (title?: Maybe<string>) => {
   const { resetTitle, setTitle } = useGeneral()
 
   useEffect(() => {

@@ -12,29 +12,28 @@ import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
 import { tablePagination } from '@/src/utils/table'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
+import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 const Columns: ColumnsType<Position> = [
   {
     align: 'left',
-    dataIndex: 'collateral',
-    render: (collateral: Position['collateral'], position) => (
-      <Asset
-        mainAsset={getTokenByAddress(collateral.address)?.protocol ?? ''}
-        secondaryAsset={position.underlier.symbol}
-        title={getTokenByAddress(collateral.address)?.protocol ?? ''}
-      />
-    ),
+    dataIndex: 'protocolAddress',
+    render: (vaultAddress: Position['protocolAddress'], { tokenId, underlier }) => {
+      const { protocol = '' } = getCollateralMetadata({ vaultAddress, tokenId }) ?? {}
+
+      return <Asset mainAsset={protocol} secondaryAsset={underlier.symbol} title={protocol} />
+    },
     title: 'Protocol',
     width: 200,
   },
   {
     align: 'left',
-    dataIndex: 'collateral',
-    render: (collateral: Position['collateral']) => (
-      <CellValue bold value={getTokenByAddress(collateral.address)?.symbol ?? '-'} />
-    ),
+    dataIndex: 'protocolAddress',
+    render: (vaultAddress: Position['protocolAddress'], { tokenId }) => {
+      const { symbol = '-' } = getCollateralMetadata({ vaultAddress, tokenId }) ?? {}
+      return <CellValue bold value={symbol} />
+    },
     title: 'Asset',
     width: 200,
   },
@@ -123,7 +122,12 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
     <>
       {riskPositions && riskPositions.length > 0 && (
         <PositionsAtRiskTableWrapper>
-          <Table columns={Columns} dataSource={riskPositions} loading={false} rowKey="address" />
+          <Table
+            columns={Columns}
+            dataSource={riskPositions}
+            loading={false}
+            rowKey="vaultAddress"
+          />
         </PositionsAtRiskTableWrapper>
       )}
       <SkeletonTable

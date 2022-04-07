@@ -53,7 +53,7 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
           symbol="FIAT"
         />
         <AddTokenButton
-          // TODO address FDT token??
+          // TODO vaultAddress FDT token??
           address={contracts.FIAT.address[Chains.goerli]}
           decimals={18}
           image={FDTTokenImage}

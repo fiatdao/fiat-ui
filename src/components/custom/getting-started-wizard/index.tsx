@@ -90,7 +90,7 @@ const StepsContent: React.FC<StepsContentProps> = ({ context, send, step }: Step
             />
 
             <AddTokenButton
-              // TODO change this address
+              // TODO change this vaultAddress
               address={contracts.FIAT.address[Chains.goerli]}
               decimals={18}
               disabled={fdtTokenIsAdded}

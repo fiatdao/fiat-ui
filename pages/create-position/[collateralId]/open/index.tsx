@@ -44,7 +44,7 @@ import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalan
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
 // Temporarily Change
-import { getTokenByAddress } from '@/src/constants/bondTokens'
+import { getCollateralMetadata, getTokenByAddress } from '@/src/constants/bondTokens'
 import { calculateHealthFactor } from '@/src/utils/data/positions'
 
 // @TODO: hardcoded step from open-position-form
@@ -430,7 +430,7 @@ const OpenPosition = () => {
   const { data: collateral } = useCollateral(tokenAddress)
 
   // Temporary change
-  const tokenSymbol = getTokenByAddress(tokenAddress)?.symbol ?? ''
+  const tokenSymbol = getCollateralMetadata(tokenAddress)?.symbol ?? ''
   // const { tokenSymbol } = useTokenSymbol(tokenAddress)
   const collateralizationRatio = collateral?.vault.collateralizationRatio ?? null
   const interestPerSecond = collateral?.vault.interestPerSecond ?? ZERO_BIG_NUMBER

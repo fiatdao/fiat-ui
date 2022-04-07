@@ -7,7 +7,7 @@
 4. Start the app with `yarn dev`.
 
 ## Testnet Faucet Links
-- USDC: https://goerli.etherscan.io/address/0x08034634bbd210485c9c8f798afdc5432782fd18#writeContract
+- USDC: https://goerli.etherscan.io/vaultAddress/0x08034634bbd210485c9c8f798afdc5432782fd18#writeContract
 - Element.fi: https://testnet.element.fi/mint
 
 =======

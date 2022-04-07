@@ -26,6 +26,7 @@ export const AUCTIONS = gql`
         symbol
         underlierAddress
         underlierSymbol
+        underlierScale
       }
       user
     }

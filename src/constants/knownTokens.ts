@@ -1,6 +1,6 @@
 import { TokenMeta } from '@/types/token'
 
-// FixMe: Create a proper config file Record<KnownTokens, { address: string }>
+// FixMe: Create a proper config file Record<KnownTokens, { vaultAddress: string }>
 const config: any = {
   tokens: {},
 }

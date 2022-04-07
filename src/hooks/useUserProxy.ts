@@ -58,7 +58,7 @@ const useUserProxy = () => {
     return new Contract(
       proxyAddress,
       [
-        'function execute(address target, bytes calldata data) external payable returns (bytes memory response)',
+        'function execute(vaultAddress target, bytes calldata data) external payable returns (bytes memory response)',
       ],
       web3Provider.getSigner(),
     )
