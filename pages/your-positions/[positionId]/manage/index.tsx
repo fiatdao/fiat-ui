@@ -3,6 +3,8 @@ import cn from 'classnames'
 import React, { useEffect, useState } from 'react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import Lottie from 'lottie-react'
+import Link from 'next/link'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
@@ -26,6 +28,7 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -74,6 +77,7 @@ const PositionManage = () => {
     availableDepositAmount,
     availableWithdrawAmount,
     buttonText,
+    finished,
     handleFormChange,
     handleManage,
     healthFactor,
@@ -83,6 +87,7 @@ const PositionManage = () => {
     maxDepositAmount,
     maxRepayAmount,
     maxWithdrawAmount,
+    setFinished,
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
@@ -92,12 +97,16 @@ const PositionManage = () => {
 
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
 
+  const reset = async () => {
+    setFinished(false)
+  }
+
   return (
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
 
-      <PositionFormsLayout
-        form={
+      <PositionFormsLayout infoBlocks={infoBlocks}>
+        {!finished ? (
           <>
             <div className={cn(s.top)}>
               <RadioTabsWrapper>
@@ -262,9 +271,26 @@ const PositionManage = () => {
               </fieldset>
             </Form>
           </>
-        }
-        infoBlocks={infoBlocks}
-      />
+        ) : (
+          <div className={cn(s.form)}>
+            <div className={cn(s.lastStepAnimation)}>
+              <Lottie animationData={SuccessAnimation} autoplay loop />
+            </div>
+            <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
+            <p className={cn(s.lastStepText)}>Your position has been successfully updated.</p>
+            <div className={cn(s.summary)}>
+              <ButtonsWrapper>
+                <ButtonGradient height="lg" onClick={reset}>
+                  Continue
+                </ButtonGradient>
+                <Link href={`/your-positions/`} passHref>
+                  <button className={cn(s.finishButton)}>Go to Your Positions</button>
+                </Link>
+              </ButtonsWrapper>
+            </div>
+          </div>
+        )}
+      </PositionFormsLayout>
     </>
   )
 }
