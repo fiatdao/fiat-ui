@@ -19,7 +19,7 @@ export type ChainConfig = {
   rpcUrl: string
   blockExplorerUrls: string[]
   iconUrls: string[]
-  constractsDeployed: boolean
+  contractsDeployed: boolean
 }
 
 export const chainsConfig: Record<ChainsValues, ChainConfig> = {
@@ -32,7 +32,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     rpcUrl: 'https://main-light.eth.linkpool.io',
     blockExplorerUrls: ['https://etherscan.io/'],
     iconUrls: [],
-    constractsDeployed: false,
+    contractsDeployed: true,
   },
   [Chains.goerli]: {
     id: Chains.goerli,
@@ -43,7 +43,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     rpcUrl: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
     blockExplorerUrls: ['https://goerli.etherscan.io/'],
     iconUrls: [],
-    constractsDeployed: true,
+    contractsDeployed: true,
   },
 }
 
