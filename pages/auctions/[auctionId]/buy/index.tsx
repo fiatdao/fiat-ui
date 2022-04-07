@@ -253,13 +253,13 @@ const BuyCollateral = () => {
                       </p>
                     </div>
 
+                    {/* FixMe: send proper value to `mainAsset` */}
                     <Form form={form} initialValues={{ amountToBuy: 0 }} onFinish={onSubmit}>
                       <Form.Item name="amountToBuy" required>
                         <TokenAmount
                           disabled={loading}
                           displayDecimals={4}
-                          {/* FixMe: send proper value to `mainAsset` */}
-                          mainAsset={data?.collateral.address}
+                          mainAsset={data?.protocol.name ?? ''}
                           max={maxCredit}
                           maximumFractionDigits={6}
                           secondaryAsset={data?.underlier.symbol}
