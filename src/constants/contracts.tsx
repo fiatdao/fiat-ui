@@ -7,6 +7,7 @@ import {
   noLossCollateralAuction,
   noLossCollateralAuctionActions,
   prbProxy,
+  prbProxyRegistry,
   vault20,
   vaultEptActions,
 } from '@/src/abis'
@@ -78,12 +79,19 @@ export const contracts = constantContracts({
     },
     abi: noLossCollateralAuction,
   },
-  PRB_Proxy: {
+  PRB_PROXY: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '',
+    },
+    abi: prbProxy,
+  },
+  PRB_PROXY_REGISTRY: {
     address: {
       [Chains.mainnet]: '0x6aD36586D91950Cc232f90c4065faA94427955fB',
       [Chains.goerli]: '0xc918902ef2f428f2dc77e3b4b5e5e153aab9d1b0',
     },
-    abi: prbProxy,
+    abi: prbProxyRegistry,
   },
   USER_ACTIONS_EPT: {
     address: {

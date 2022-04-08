@@ -22,7 +22,7 @@ const useUserProxy = () => {
     'getCurrentProxy',
     [string],
     Promise<string>
-  >(contracts.PRB_Proxy.address[appChainId], contracts.PRB_Proxy.abi, 'getCurrentProxy', [
+  >(contracts.PRB_PROXY_REGISTRY.address[appChainId], contracts.PRB_PROXY_REGISTRY.abi, 'getCurrentProxy', [
     currentUserAddress as string,
   ])
 
@@ -30,8 +30,8 @@ const useUserProxy = () => {
     if (isAppConnected && web3Provider) {
       setLoadingProxy(true)
       const prbProxy = new Contract(
-        contracts.PRB_Proxy.address[appChainId],
-        contracts.PRB_Proxy.abi,
+        contracts.PRB_PROXY_REGISTRY.address[appChainId],
+        contracts.PRB_PROXY_REGISTRY.abi,
         web3Provider.getSigner(),
       )
 
@@ -57,9 +57,7 @@ const useUserProxy = () => {
     }
     return new Contract(
       proxyAddress,
-      [
-        'function execute(vaultAddress target, bytes calldata data) external payable returns (bytes memory response)',
-      ],
+      contracts.PRB_PROXY.abi,
       web3Provider.getSigner(),
     )
   }, [proxyAddress, web3Provider])

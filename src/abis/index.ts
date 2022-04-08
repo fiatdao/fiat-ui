@@ -9,6 +9,7 @@ import userActions1155 from './UserActions1155.json'
 import vault20 from './Vault20.json'
 import vault1155 from './Vault1155.json'
 import prbProxy from './PRBProxy.json'
+import prbProxyRegistry from './PRBProxyRegistry.json'
 import noLossCollateralAuction from './NoLossCollateralAuction.json'
 import moneta from './Moneta.json'
 import noLossCollateralAuctionActions from './NoLossCollateralAuctionActions.json'
@@ -33,5 +34,6 @@ export {
   userActions1155,
   vault20,
   prbProxy,
+  prbProxyRegistry,
   moneta,
 }
