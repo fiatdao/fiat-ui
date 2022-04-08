@@ -1,10 +1,10 @@
 import {
   codex,
-  collateralAuction,
   collybus,
   erc20,
   fiat,
   moneta,
+  noLossCollateralAuction,
   noLossCollateralAuctionActions,
   prbProxy,
   vault20,
@@ -71,12 +71,12 @@ export const contracts = constantContracts({
     },
     abi: vault20,
   },
-  COLLATERAL_AUCTION: {
+  NO_LOSS_COLLATERAL_AUCTION: {
     address: {
       [Chains.mainnet]: '0xa50D5B25E29a8FA7E94DA10698fE5100f0eb0cc5',
       [Chains.goerli]: '0x57a5185692DEc513bFe6e5D5ed9ef9FC2f72e01D',
     },
-    abi: collateralAuction,
+    abi: noLossCollateralAuction,
   },
   PRB_Proxy: {
     address: {

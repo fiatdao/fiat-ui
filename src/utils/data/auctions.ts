@@ -8,9 +8,14 @@ import { auctionById_collateralAuction as subGraphAuction } from '@/types/subgra
 import { auctions_collateralAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
-import { SECONDS_IN_A_YEAR, WAD_DECIMALS } from '@/src/constants/misc'
+import {
+  SECONDS_IN_A_YEAR,
+  WAD_DECIMALS,
+  ZERO_ADDRESS,
+  ZERO_BIG_NUMBER,
+} from '@/src/constants/misc'
 import contractCall from '@/src/utils/contractCall'
-import { CollateralAuction } from '@/types/typechain'
+import { NoLossCollateralAuction } from '@/types/typechain'
 import { TokenData } from '@/types/token'
 
 export const scaleToDecimalsCount = (scale?: Maybe<string>): number | undefined => {
@@ -80,12 +85,26 @@ const getAuctionStatus = (
   provider: JsonRpcProvider,
   auctionId: string,
 ) => {
-  return contractCall<CollateralAuction, 'getStatus'>(
-    contracts.COLLATERAL_AUCTION.address[appChainId],
-    contracts.COLLATERAL_AUCTION.abi,
+  return contractCall<NoLossCollateralAuction, 'getStatus'>(
+    contracts.NO_LOSS_COLLATERAL_AUCTION.address[appChainId],
+    contracts.NO_LOSS_COLLATERAL_AUCTION.abi,
     provider,
     'getStatus',
     [auctionId],
+  )
+}
+
+const getAuctionVaultConfig = (
+  appChainId: ChainsValues,
+  provider: JsonRpcProvider,
+  vaultAddress: string,
+) => {
+  return contractCall<NoLossCollateralAuction, 'vaults'>(
+    contracts.NO_LOSS_COLLATERAL_AUCTION.address[appChainId],
+    contracts.NO_LOSS_COLLATERAL_AUCTION.abi,
+    provider,
+    'vaults',
+    [vaultAddress],
   )
 }
 
@@ -95,12 +114,18 @@ const wrangleAuction = async (
   appChainId: ChainsValues,
   blockTimestamp: number,
 ): Promise<AuctionData> => {
-  let endsAt = 0
+  const vaultConfig = await getAuctionVaultConfig(
+    appChainId,
+    provider,
+    collateralAuction.vault?.address ?? ZERO_ADDRESS,
+  )
+
+  let endsAt = ZERO_BIG_NUMBER
   if (collateralAuction.startsAt) {
-    endsAt += +collateralAuction.startsAt
+    endsAt = endsAt.plus(collateralAuction.startsAt)
   }
-  if (collateralAuction.vault?.maxAuctionDuration) {
-    endsAt += +collateralAuction.vault.maxAuctionDuration
+  if (vaultConfig?.maxAuctionDuration) {
+    endsAt = endsAt.plus(vaultConfig.maxAuctionDuration.toNumber())
   }
 
   const auctionStatus = await getAuctionStatus(appChainId, provider, collateralAuction.id)
