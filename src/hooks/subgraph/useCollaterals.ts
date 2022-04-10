@@ -1,8 +1,4 @@
 import { usePositionsByUser } from './usePositionsByUser'
-import useSWR from 'swr'
-import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
-import _ from 'lodash'
-import { useEffect, useState } from 'react'
 import isDev from '@/src/utils/isDev'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
@@ -10,6 +6,10 @@ import { ChainsValues } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { COLLATERALS } from '@/src/queries/collaterals'
 import { Collateral, wrangleCollateral } from '@/src/utils/data/collaterals'
+import { useEffect, useState } from 'react'
+import _ from 'lodash'
+import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
+import useSWR from 'swr'
 
 // TODO Import readonly provider from singleton
 export const fetchCollaterals = ({

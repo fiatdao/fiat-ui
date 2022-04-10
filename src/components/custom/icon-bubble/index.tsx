@@ -1,6 +1,5 @@
-import React, { CSSProperties } from 'react'
-
 import Sprite from '@/src/resources/svg/icons-sprite.svg'
+import React, { CSSProperties } from 'react'
 
 export type IconBubbleProps = {
   name?: string

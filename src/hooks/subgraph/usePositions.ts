@@ -1,11 +1,11 @@
-import useSWR from 'swr'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { POSITIONS } from '@/src/queries/positions'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { Positions, PositionsVariables } from '@/types/subgraph/__generated__/Positions'
 import { wranglePosition } from '@/src/utils/data/positions'
 import { ChainsValues } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import useSWR from 'swr'
 
 // TODO Import readonly provider from singleton
 export const fetchPositions = ({

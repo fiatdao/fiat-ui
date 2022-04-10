@@ -1,6 +1,6 @@
+import { Table } from '@/src/components/antd'
 import { Skeleton, SkeletonProps } from 'antd'
 import { ColumnsType } from 'antd/lib/table'
-import { Table } from '@/src/components/antd'
 
 export type SkeletonTableColumnsType = {
   key: string

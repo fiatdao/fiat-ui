@@ -1,6 +1,3 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
-import BigNumber from 'bignumber.js'
-import max from 'lodash/max'
 import { Maybe } from '@/types/utils'
 import { BigNumberToDateOrCurrent } from '@/src/utils/dateTime'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
@@ -17,6 +14,9 @@ import {
 import contractCall from '@/src/utils/contractCall'
 import { NoLossCollateralAuction } from '@/types/typechain'
 import { TokenData } from '@/types/token'
+import max from 'lodash/max'
+import BigNumber from 'bignumber.js'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 export const scaleToDecimalsCount = (scale?: Maybe<string>): number | undefined => {
   if (!scale) {

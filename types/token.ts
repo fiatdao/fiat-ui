@@ -1,5 +1,5 @@
-import BigNumber from 'bignumber.js'
 import { TokenIconNames } from '@/src/components/custom/icon'
+import BigNumber from 'bignumber.js'
 
 export type TokenData = {
   symbol: string

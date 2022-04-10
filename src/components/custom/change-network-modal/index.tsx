@@ -1,8 +1,8 @@
-import React from 'react'
 import Modal from '@/src/components/antd/modal'
 import Grid from '@/src/components/custom/grid'
 import { Text } from '@/src/components/custom/typography'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import React from 'react'
 
 const ChangeNetworkModal: React.FC = () => {
   const { changeNetworkModalOpen, setChangeNetworkModalOpen, setNetwork } = useWeb3Connection()

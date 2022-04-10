@@ -1,5 +1,4 @@
 import useUserProxy from '../useUserProxy'
-import useSWR from 'swr'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { PositionTransactionAction_filter } from '@/types/subgraph/__generated__/globalTypes'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
@@ -7,6 +6,7 @@ import { Transactions, TransactionsVariables } from '@/types/subgraph/__generate
 import { TRANSACTIONS } from '@/src/queries/transactions'
 import { ActionTransaction, Transaction, wrangleTransaction } from '@/src/utils/data/transactions'
 import { Maybe, SwrResponse } from '@/types/utils'
+import useSWR from 'swr'
 
 const fetchTransactions = async (where: Maybe<PositionTransactionAction_filter>) =>
   graphqlFetcher<Transactions, TransactionsVariables>(TRANSACTIONS, { where })

@@ -1,6 +1,5 @@
-import nullthrows from 'nullthrows'
-
 import { ObjectValues } from '@/types/utils'
+import nullthrows from 'nullthrows'
 
 export const Chains = {
   mainnet: 1,

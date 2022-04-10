@@ -1,10 +1,4 @@
 import s from './s.module.scss'
-import BigNumber from 'bignumber.js'
-import Link from 'next/link'
-import { ColumnsType } from 'antd/lib/table/interface'
-import cn from 'classnames'
-import { ReactNode, useCallback, useState } from 'react'
-import { Popover } from 'antd'
 import { FIAT_TICKER } from '@/src/constants/misc'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { useAuctions } from '@/src/hooks/subgraph/useAuctions'
@@ -21,6 +15,12 @@ import Filter from '@/src/resources/svg/filter.svg'
 import { ELEMENT_SUBGRAPH_PROTOCOL, PROTOCOLS, Protocol } from '@/types/protocols'
 import { AuctionData } from '@/src/utils/data/auctions'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { Popover } from 'antd'
+import { ReactNode, useCallback, useState } from 'react'
+import cn from 'classnames'
+import { ColumnsType } from 'antd/lib/table/interface'
+import Link from 'next/link'
+import BigNumber from 'bignumber.js'
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 

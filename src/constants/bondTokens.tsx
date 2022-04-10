@@ -1,6 +1,6 @@
-import { memoize } from 'lodash'
 import { Maybe } from '@/types/utils'
 import { metadataByNetwork } from '@/metadata'
+import { memoize } from 'lodash'
 
 type PTokenMap = {
   [vaultAddress: string]: {

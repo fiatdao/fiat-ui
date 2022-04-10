@@ -1,8 +1,8 @@
-import useSWR from 'swr'
 import { USER_PROXY } from '@/src/queries/userProxy'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { userProxy, userProxyVariables } from '@/types/subgraph/__generated__/userProxy'
 import { Maybe } from '@/types/utils'
+import useSWR from 'swr'
 
 export const fetchUserProxy = (address: string) =>
   graphqlFetcher<userProxy, userProxyVariables>(USER_PROXY, { id: address })

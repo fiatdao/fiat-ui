@@ -1,8 +1,8 @@
 import s from './s.module.scss'
-import cn from 'classnames'
 import { shortenAddr } from '@/src/web3/utils'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { chainsConfig } from '@/src/constants/chains'
+import cn from 'classnames'
 
 export const CellAddress: React.FC<{
   className?: string
