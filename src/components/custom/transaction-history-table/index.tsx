@@ -1,10 +1,6 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import { ColumnsType } from 'antd/lib/table/interface'
-import { useEffect, useState } from 'react'
-import { SelectValue } from 'antd/lib/select'
-import { uniqBy } from 'lodash'
 import { elapsedTime, parseDate } from '@/src/utils/table'
+import { useTransactionsByUser } from '@/src/hooks/subgraph/useTransactions'
 import { Table } from '@/src/components/antd'
 import Select from '@/src/components/antd/select'
 import { CellValue } from '@/src/components/custom/cell-value'
@@ -13,15 +9,17 @@ import { Asset } from '@/src/components/custom/asset'
 import { ACTIONS_TYPES, ActionTransaction, Transaction } from '@/src/utils/data/transactions'
 import { tablePagination } from '@/src/utils/table'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
-import { useTransactionsByUser } from '@/src/hooks/subgraph/useTransactions'
+import { useEffect, useState } from 'react'
+import { uniqBy } from 'lodash'
+import { ColumnsType } from 'antd/lib/table/interface'
+import cn from 'classnames'
+import { SelectValue } from 'antd/lib/select'
 
 const Columns: ColumnsType<Transaction> = [
   {
     align: 'left',
     dataIndex: 'protocol',
-    render: (protocol: Transaction['protocol'], { underlierSymbol }) => (
-      <Asset mainAsset={protocol} secondaryAsset={underlierSymbol} title={protocol} />
-    ),
+    render: (protocol: Transaction['protocol']) => <Asset mainAsset={protocol} title={protocol} />,
     title: 'Protocol',
     width: 200,
   },

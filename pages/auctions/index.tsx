@@ -60,12 +60,8 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'protocol',
-      render: (protocol: AuctionData['protocol'], obj: AuctionData) => (
-        <Asset
-          mainAsset={protocol.name ?? ''}
-          secondaryAsset={obj.underlier.symbol}
-          title={protocol.humanReadableName ?? ''}
-        />
+      render: (protocol: AuctionData['protocol']) => (
+        <Asset mainAsset={protocol.name ?? ''} title={protocol.humanReadableName ?? ''} />
       ),
       title: 'Protocol',
       width: 200,

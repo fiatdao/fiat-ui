@@ -9,7 +9,10 @@ type PTokenMap = {
       symbol: string
       decimals: number
       name: string
-      icon: string
+      icons: {
+        main: string
+        secondary: string
+      }
     }
   }
 }
@@ -49,3 +52,25 @@ export const getCollateralMetadata = memoize(
     return fromEntries[vaultAddress.toLowerCase()][tokenId]
   },
 )
+
+export const getPTokenIconFromMetadata = memoize((protocolName?: string) => {
+  if (!metadataByNetwork || !protocolName) {
+    return
+  }
+
+  const iconsByProtocolName: Record<string, { main: string; secondary: string }> =
+    Object.fromEntries(
+      Object.entries(metadataByNetwork)
+        .map(([, byNetwork]) =>
+          Object.entries(byNetwork).map(([, metadataByTokenId]) =>
+            Object.entries(metadataByTokenId).map(([, metadata]) => [
+              metadata.name.toLowerCase(),
+              metadata.icons,
+            ]),
+          ),
+        )
+        .flat(2),
+    )
+
+  return iconsByProtocolName[protocolName.toLowerCase()]
+})

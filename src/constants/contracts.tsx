@@ -89,7 +89,7 @@ export const contracts = constantContracts({
   PRB_PROXY_REGISTRY: {
     address: {
       [Chains.mainnet]: '0x6aD36586D91950Cc232f90c4065faA94427955fB',
-      [Chains.goerli]: '0xc918902ef2f428f2dc77e3b4b5e5e153aab9d1b0',
+      [Chains.goerli]: '0xaBe829031705bf022A21b3F94427E9A22183eBDE',
     },
     abi: prbProxyRegistry,
   },

@@ -1,7 +1,3 @@
-import { BigNumberToDateOrCurrent } from '../dateTime'
-import contractCall from '../contractCall'
-import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
-import { BigNumber } from 'bignumber.js'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { Collaterals_collateralTypes as SubgraphCollateral } from '@/types/subgraph/__generated__/Collaterals'
 
@@ -11,11 +7,14 @@ import { contracts } from '@/src/constants/contracts'
 import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Collybus } from '@/types/typechain/Collybus'
 import { getHumanValue } from '@/src/web3/utils'
+import contractCall from '@/src/utils/contractCall'
+import { BigNumberToDateOrCurrent } from '@/src/utils/dateTime'
+import { BigNumber } from 'bignumber.js'
+import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 
 export type Collateral = {
   id: string
   tokenId: Maybe<string>
-  vaultName: Maybe<string>
   symbol: string
   protocol: string
   underlierSymbol: Maybe<string>
@@ -35,6 +34,7 @@ export type Collateral = {
     address: string
     interestPerSecond: Maybe<BigNumber>
     debtFloor: BigNumber
+    name: string
   }
   manageId?: string
 }
@@ -90,6 +90,7 @@ const wrangleCollateral = async (
       address: collateral.vault?.address ?? '',
       interestPerSecond: BigNumber.from(collateral.vault?.interestPerSecond) ?? null,
       debtFloor: BigNumber.from(collateral.vault?.debtFloor) ?? ZERO_BIG_NUMBER,
+      name: collateral.vault?.name ?? '',
     },
     eptData: {
       balancerVault: collateral.eptData?.balancerVault ?? '',

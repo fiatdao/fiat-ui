@@ -1,8 +1,5 @@
 import s from './s.module.scss'
-import React from 'react'
-import BigNumber from 'bignumber.js'
-import cn from 'classnames'
-import classNames from 'classnames'
+import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 import { MAX_UINT_256 } from '@/src/constants/misc'
 import Slider from '@/src/components/antd/slider'
 import { formatBigValue } from '@/src/web3/utils'
@@ -13,6 +10,10 @@ import { AssetIcons } from '@/src/components/custom/asset-icons'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Tooltip from '@/src/components/antd/tooltip'
 import Info from '@/src/resources/svg/info.svg'
+import classNames from 'classnames'
+import cn from 'classnames'
+import BigNumber from 'bignumber.js'
+import React from 'react'
 
 export type TokenAmountProps = {
   className?: string
@@ -49,7 +50,6 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     max,
     maximumFractionDigits = 4,
     onChange,
-    secondaryAsset,
     slider = false,
     tokenIcon,
     value,
@@ -89,8 +89,8 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
             ) : (
               <AssetIcons
                 dimensions={'32px'}
-                mainAsset={mainAsset}
-                secondaryAsset={secondaryAsset}
+                mainAsset={getPTokenIconFromMetadata(mainAsset)?.main}
+                secondaryAsset={getPTokenIconFromMetadata(mainAsset)?.secondary}
               />
             )}
           </div>

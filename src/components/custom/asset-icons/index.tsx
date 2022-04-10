@@ -1,27 +1,6 @@
 import s from './s.module.scss'
 import cn from 'classnames'
 
-import DAI from '@/src/components/custom/asset-icons/resources/dai.svg'
-import EPYV from '@/src/components/custom/asset-icons/resources/epyv.svg'
-import FDAI from '@/src/components/custom/asset-icons/resources/fdai.svg'
-import SBOND from '@/src/components/custom/asset-icons/resources/sbond.svg'
-import USDC from '@/src/components/custom/asset-icons/resources/usdc.svg'
-
-const getAsset = (_asset?: string) => {
-  const asset = _asset ? _asset.toUpperCase() : ''
-  return asset === 'DAI' ? (
-    <DAI />
-  ) : asset.includes('ELEMENT') ? (
-    <EPYV />
-  ) : asset === 'FDAI' ? (
-    <FDAI />
-  ) : asset === 'SBOND' ? (
-    <SBOND />
-  ) : asset.includes('USDC') ? (
-    <USDC />
-  ) : null
-}
-
 export const AssetIcons: React.FC<{
   className?: string
   dimensions?: string
@@ -34,8 +13,14 @@ export const AssetIcons: React.FC<{
       style={dimensions ? { width: dimensions, height: dimensions } : undefined}
       {...restProps}
     >
-      <div className={cn(s.mainAsset)}>{getAsset(mainAsset)}</div>
-      <div className={cn(s.secondaryAsset)}>{getAsset(secondaryAsset)}</div>
+      <div className={cn(s.mainAsset)}>
+        <img alt={mainAsset} src={mainAsset} />
+      </div>
+      {secondaryAsset && (
+        <div className={cn(s.secondaryAsset)}>
+          <img alt={secondaryAsset} src={secondaryAsset} />
+        </div>
+      )}
     </div>
   )
 }
