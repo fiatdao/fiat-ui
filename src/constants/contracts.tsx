@@ -43,8 +43,8 @@ export const contracts = constantContracts({
   },
   FIAT: {
     address: {
-      [Chains.mainnet]: '0x2d9579552cD679943cbBc23BDdd9467840C98c75',
-      [Chains.goerli]: '0x391eCE49AD1019041FB6ab5424318e5001Ee55cc',
+      [Chains.mainnet]: '0x586Aa273F262909EEF8fA02d90Ab65F5015e0516',
+      [Chains.goerli]: '0x7c9571148968d05608d324463E38F04a7eAAd53e',
     },
     abi: fiat,
     decimals: 18,
@@ -53,15 +53,15 @@ export const contracts = constantContracts({
   },
   CODEX: {
     address: {
-      [Chains.mainnet]: '0xCE0e395cF61D0F836ddd4fC021f009C93DFe3a63',
-      [Chains.goerli]: '0x406ADF43ed603a39eae058975235d53d46138033',
+      [Chains.mainnet]: '0x6bF5EB06201e4ea7C315b1C23BfE79fAE30541F9',
+      [Chains.goerli]: '0x56974fC4bB4Dc18dDDa06B2056f1Bdfef0eCA0FF',
     },
     abi: codex,
   },
   COLLYBUS: {
     address: {
-      [Chains.mainnet]: '0x6B576f65DE4B8B171aEF412DEBc33dc53500cFdB',
-      [Chains.goerli]: '0xd419496FF8f66bdAfDeD859b439aa5807e835d7d',
+      [Chains.mainnet]: '0xD503383fFABbec8Eb85eAED448fE1fFEc0a8148A',
+      [Chains.goerli]: '0xB894853D5771B588530394065D44A33BcB314aC5',
     },
     abi: collybus,
   },
@@ -74,8 +74,8 @@ export const contracts = constantContracts({
   },
   NO_LOSS_COLLATERAL_AUCTION: {
     address: {
-      [Chains.mainnet]: '0xa50D5B25E29a8FA7E94DA10698fE5100f0eb0cc5',
-      [Chains.goerli]: '0x57a5185692DEc513bFe6e5D5ed9ef9FC2f72e01D',
+      [Chains.mainnet]: '0x69E65740a4db91e7e18c69A2180251Cf929E035E',
+      [Chains.goerli]: '0x2651d4Bf4EDe0A65d3439f10e69dCe419d9e63D9',
     },
     abi: noLossCollateralAuction,
   },
@@ -88,29 +88,29 @@ export const contracts = constantContracts({
   },
   PRB_PROXY_REGISTRY: {
     address: {
-      [Chains.mainnet]: '0x6aD36586D91950Cc232f90c4065faA94427955fB',
-      [Chains.goerli]: '0xaBe829031705bf022A21b3F94427E9A22183eBDE',
+      [Chains.mainnet]: '0x9b6e12B5d59339a2cA34Af36455BF0A0396069C6',
+      [Chains.goerli]: '0xc918902ef2f428f2dc77e3b4b5e5e153aab9d1b0',
     },
     abi: prbProxyRegistry,
   },
   USER_ACTIONS_EPT: {
     address: {
-      [Chains.mainnet]: '0xa5FD0632ddC2E6ce5c6a83B81730FBf45D80A8b2',
-      [Chains.goerli]: '0xb57A76FF53a5DcEa7B344a44c30197C49566F37F',
+      [Chains.mainnet]: '0x0021DCEeb93130059C2BbBa7DacF14fe34aFF23c',
+      [Chains.goerli]: '0xEEf2b5B29007FDCd31b9961a1D2691b69B3640aa',
     },
     abi: vaultEptActions,
   },
   MONETA: {
     address: {
-      [Chains.mainnet]: '0xbCC7DaA516aF69F4A8D36fBda8863A125ec05dE8',
-      [Chains.goerli]: '0x166d6f37A97A0E1Cf9aDd84065EeA317F85eD0ce',
+      [Chains.mainnet]: '0xEA8Efd605845F4cFAa8Ee6c757390196E1b3f736',
+      [Chains.goerli]: '0xacB75532D1D83321f9B95f9b1eE6Bf3F9c2c475D',
     },
     abi: moneta,
   },
   NO_LOSS_COLLATERAL_AUCTION_ACTIONS: {
     address: {
-      [Chains.mainnet]: '0xF3f2d750a2e1543E376eBd5eE1e7cA0c067fB2ab',
-      [Chains.goerli]: '0xed9453aD232FC5cc0D62dc217454735BB9EC7DB4',
+      [Chains.mainnet]: '0x8ec9d8Af2C0922c5c39388148C136f31E07209Bd',
+      [Chains.goerli]: '0x72614e33ba8fBE89ff2c7c6Edf8c56D43f51E577',
     },
     abi: noLossCollateralAuctionActions,
   },

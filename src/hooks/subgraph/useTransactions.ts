@@ -25,6 +25,9 @@ export const useTransactions = (
     if (user) {
       where['user'] = user
     }
+    // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
+    where['vaultName_not_contains_nocase'] = 'deprecated'
+
     const { positionTransactionActions: transactions } = await fetchTransactions(where)
 
     return transactions
