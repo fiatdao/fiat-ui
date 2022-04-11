@@ -30,7 +30,8 @@ export const fetchPositions = ({
       id,
       vaultName,
       owner_in: userAddresses.length > 0 ? userAddresses : undefined,
-      collateral_not: '0', // TODO: if collateral is 0 then position is closed (always collateral >= normalDebt)
+      collateral_not: '0', // TODO: if collateral is 0 then position is closed (always collateral >= normalDebt),
+      vaultName_not_contains_nocase: 'deprecated', // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     },
   }).then(async ({ positions }) => {
     return Promise.all(positions.map((p) => wranglePosition(p, provider, appChainId, userAddress)))
