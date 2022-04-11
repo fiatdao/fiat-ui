@@ -25,7 +25,12 @@ export const fetchCollaterals = ({
 }) => {
   return graphqlFetcher<Collaterals, CollateralsVariables>(COLLATERALS, {
     // @TODO: add maturity filter maturity_gte (Date.now()/1000).toString()
-    where: { vaultName_in: vaultNames, address_in: userCollaterals },
+    // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
+    where: {
+      vaultName_in: vaultNames,
+      address_in: userCollaterals,
+      vaultName_not_contains_nocase: 'deprecated',
+    },
   }).then(async ({ collateralTypes }) => {
     return Promise.all(
       collateralTypes
