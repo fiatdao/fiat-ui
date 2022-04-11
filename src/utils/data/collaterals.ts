@@ -1,4 +1,7 @@
-import { getCollateralMetadata } from '@/src/constants/bondTokens'
+import { BigNumberToDateOrCurrent } from '../dateTime'
+import contractCall from '../contractCall'
+import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
+import { BigNumber } from 'bignumber.js'
 import { Collaterals_collateralTypes as SubgraphCollateral } from '@/types/subgraph/__generated__/Collaterals'
 
 import { ChainsValues } from '@/src/constants/chains'
@@ -7,10 +10,7 @@ import { contracts } from '@/src/constants/contracts'
 import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Collybus } from '@/types/typechain/Collybus'
 import { getHumanValue } from '@/src/web3/utils'
-import contractCall from '@/src/utils/contractCall'
-import { BigNumberToDateOrCurrent } from '@/src/utils/dateTime'
-import { BigNumber } from 'bignumber.js'
-import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
+import { getCollateralMetadata } from '@/src/constants/bondTokens'
 
 export type Collateral = {
   id: string

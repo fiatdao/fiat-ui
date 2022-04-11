@@ -1,3 +1,4 @@
+import useSWR from 'swr'
 import { AUCTION_BY_ID } from '@/src/queries/auction'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -7,7 +8,6 @@ import {
   auctionByIdVariables,
   auctionById_collateralAuction,
 } from '@/types/subgraph/__generated__/auctionById'
-import useSWR from 'swr'
 
 const getAuctionById = async (auctionId: string): Promise<auctionById> =>
   graphqlFetcher<auctionById, auctionByIdVariables>(AUCTION_BY_ID, { id: auctionId })

@@ -1,5 +1,7 @@
 import s from './s.module.scss'
-import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
+import React from 'react'
+import BigNumber from 'bignumber.js'
+import cn from 'classnames'
 import { MAX_UINT_256 } from '@/src/constants/misc'
 import Slider from '@/src/components/antd/slider'
 import { formatBigValue } from '@/src/web3/utils'
@@ -9,11 +11,8 @@ import NumericInput from '@/src/components/custom/numeric-input'
 import { AssetIcons } from '@/src/components/custom/asset-icons'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Tooltip from '@/src/components/antd/tooltip'
+import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 import Info from '@/src/resources/svg/info.svg'
-import classNames from 'classnames'
-import cn from 'classnames'
-import BigNumber from 'bignumber.js'
-import React from 'react'
 
 export type TokenAmountProps = {
   className?: string
@@ -124,7 +123,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
             </div>
           )}
           {slider === 'healthFactorVariantReverse' && (
-            <div className={classNames(s.healthFactorWrapper, s.reverse)}>
+            <div className={cn(s.healthFactorWrapper, s.reverse)}>
               <div className={s.safer}>Safer</div>
               <div className={s.healthFactor}>
                 <span>

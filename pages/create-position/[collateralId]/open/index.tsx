@@ -1,4 +1,11 @@
 import s from './s.module.scss'
+import { useMachine } from '@xstate/react'
+import AntdForm from 'antd/lib/form'
+import BigNumber from 'bignumber.js'
+import cn from 'classnames'
+import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
+import Lottie from 'lottie-react'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
@@ -37,13 +44,6 @@ import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalan
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
 import { calculateHealthFactor } from '@/src/utils/data/positions'
-import Lottie from 'lottie-react'
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import cn from 'classnames'
-import BigNumber from 'bignumber.js'
-import { useMachine } from '@xstate/react'
-import AntdForm from 'antd/lib/form'
 
 // @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7

@@ -1,7 +1,8 @@
 import s from './s.module.scss'
-import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
-import { AssetIcons } from '@/src/components/custom/asset-icons'
 import cn from 'classnames'
+
+import { AssetIcons } from '@/src/components/custom/asset-icons'
+import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 
 export const Asset: React.FC<{
   className?: string
