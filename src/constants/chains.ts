@@ -32,7 +32,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     rpcUrl: 'https://main-light.eth.linkpool.io',
     blockExplorerUrls: ['https://etherscan.io/'],
     iconUrls: [],
-    constractsDeployed: false,
+    constractsDeployed: true,
   },
   [Chains.goerli]: {
     id: Chains.goerli,
