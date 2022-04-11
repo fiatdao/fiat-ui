@@ -78,7 +78,7 @@ export const contracts = constantContracts({
     },
     abi: collateralAuction,
   },
-  PRB_Proxy: {
+  PROXY_REGISTRY: {
     address: {
       [Chains.mainnet]: '0x9b6e12B5d59339a2cA34Af36455BF0A0396069C6',
       [Chains.goerli]: '0xc918902ef2f428f2dc77e3b4b5e5e153aab9d1b0',
