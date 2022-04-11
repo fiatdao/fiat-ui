@@ -7,6 +7,7 @@ import {
   moneta,
   noLossCollateralAuctionActions,
   prbProxy,
+  publican,
   vault20,
   vaultEptActions,
 } from '@/src/abis'
@@ -105,5 +106,12 @@ export const contracts = constantContracts({
       [Chains.goerli]: '0x72614e33ba8fBE89ff2c7c6Edf8c56D43f51E577',
     },
     abi: noLossCollateralAuctionActions,
+  },
+  PUBLICAN: {
+    address: {
+      [Chains.mainnet]: '0x3fF548c77A82B377258b5220164E7Ae267eD8978',
+      [Chains.goerli]: '0x9278785Fd998f527B2dBad2ed83d18a69DD50C14',
+    },
+    abi: publican,
   },
 })

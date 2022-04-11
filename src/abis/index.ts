@@ -15,6 +15,7 @@ import noLossCollateralAuctionActions from './NoLossCollateralAuctionActions.jso
 import vault1155Actions from './Vault1155Actions.json'
 import vaultEptActions from './VaultEPTActions.json'
 import vaultFcActions from './VaultFCActions.json'
+import publican from './Publican.json'
 
 export {
   codex,
@@ -34,4 +35,5 @@ export {
   vault20,
   prbProxy,
   moneta,
+  publican,
 }

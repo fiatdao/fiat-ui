@@ -1,4 +1,5 @@
 import { calculateNormalDebt } from '../utils/data/positions'
+import { getVirtualRate } from '../utils/getVirtualRate'
 import { TransactionResponse } from '@ethersproject/providers'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
@@ -62,6 +63,13 @@ export const useUserActions = (): UseUserActions => {
   const { userProxy, userProxyAddress } = useUserProxy()
   const notification = useNotifications()
 
+  const _getVirtualRate = useCallback(
+    (vaultAddress: string) => {
+      return getVirtualRate(vaultAddress, appChainId, web3Provider)
+    },
+    [appChainId, web3Provider],
+  )
+
   // Element User Action: ERC20
   const userActionEPT = useMemo(() => {
     return new Contract(
@@ -121,7 +129,8 @@ export const useUserActions = (): UseUserActions => {
       // @TODO: toFixed(0, ROUNDED) transforms BigNumber into String without decimals
       const deltaCollateral = params.deltaCollateral.toFixed(0, 8)
       // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
-      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt).toFixed(0, 8)
+      const virtualRate = await _getVirtualRate(params.vault)
+      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, virtualRate).toFixed(0, 8)
 
       // TODO: check if vault/protocol type so we can use EPT or FC
       const modifyCollateralAndDebtEncoded = userActionEPT.interface.encodeFunctionData(
@@ -179,6 +188,7 @@ export const useUserActions = (): UseUserActions => {
       userActionEPT.interface,
       userActionEPT.address,
       notification,
+      _getVirtualRate,
     ],
   )
 
