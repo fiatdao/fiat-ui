@@ -18,7 +18,9 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'protocol',
-    render: (protocol: Position['protocol']) => <Asset mainAsset={protocol} title={protocol} />,
+    render: (protocol: Position['protocol'], { vaultName }) => (
+      <Asset mainAsset={vaultName} title={protocol} />
+    ),
     title: 'Protocol',
     width: 200,
   },
