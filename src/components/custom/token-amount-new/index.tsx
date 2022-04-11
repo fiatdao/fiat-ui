@@ -1,4 +1,7 @@
 import s from './s.module.scss'
+import React from 'react'
+import BigNumber from 'bignumber.js'
+import cn from 'classnames'
 
 import { DropdownList } from '@/src/components/custom/dropdown'
 import Icon, { TokenIconNames } from '@/src/components/custom/icon'
@@ -6,9 +9,6 @@ import { Slider } from '@/src/components/custom/slider'
 import { Text } from '@/src/components/custom/typography'
 import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { KnownTokens } from '@/src/constants/knownTokens'
-import cn from 'classnames'
-import BigNumber from 'bignumber.js'
-import React from 'react'
 
 type TokenAmountType = {
   value: string

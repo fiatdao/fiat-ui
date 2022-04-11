@@ -1,8 +1,8 @@
 import { Position } from './positions'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import BigNumber from 'bignumber.js'
 import { min } from 'date-fns'
 import { useEffect, useState } from 'react'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 export type YourPositionPageInformation = {
   collateralValue: BigNumber

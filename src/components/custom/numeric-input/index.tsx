@@ -1,7 +1,7 @@
-import Input from '@/src/components/antd/input'
 import React from 'react'
 import { InputProps } from 'antd/lib/input/Input'
 import BigNumber from 'bignumber.js'
+import Input from '@/src/components/antd/input'
 
 export type NumericInputProps = Omit<InputProps, 'value' | 'onChange'> & {
   value?: BigNumber | number

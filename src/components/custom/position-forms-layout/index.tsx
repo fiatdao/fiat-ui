@@ -1,9 +1,9 @@
 import s from './s.module.scss'
+import cn from 'classnames'
 import { Card } from '@/src/components/custom/card'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import ExternalLink from '@/src/components/custom/externalLink'
 import { getEtherscanAddressUrl } from '@/src/web3/utils'
-import cn from 'classnames'
 
 export const PositionFormsLayout: React.FC<{
   className?: string

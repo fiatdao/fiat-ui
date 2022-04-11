@@ -1,9 +1,9 @@
-import { Maybe } from '@/types/utils'
 import { addDays, addHours, addMinutes, formatWithOptions } from 'date-fns/fp'
 import { enUS } from 'date-fns/locale'
 import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
+import { Maybe } from '@/types/utils'
 
 export const DATE_FORMAT = 'MM/dd/yyyy'
 

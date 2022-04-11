@@ -1,6 +1,6 @@
+import React, { Suspense } from 'react'
 import { GeneralError } from '@/src/components/custom/general-error'
 import ErrorBoundary from '@/src/components/custom/error-boundary'
-import React, { Suspense } from 'react'
 
 type Props = {
   children: React.ReactNode

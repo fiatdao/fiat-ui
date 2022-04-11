@@ -1,10 +1,10 @@
+import BigNumber from 'bignumber.js'
+import { KeyedMutator } from 'swr'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getHumanValue } from '@/src/web3/utils'
-import { KeyedMutator } from 'swr'
-import BigNumber from 'bignumber.js'
 
 export const useFIATBalance = (asHumanValue = false): [BigNumber, KeyedMutator<any>] => {
   const { address: currentUserAddress, appChainId } = useWeb3Connection()

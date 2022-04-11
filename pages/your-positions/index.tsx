@@ -1,4 +1,7 @@
 import s from './s.module.scss'
+import { useRouter } from 'next/router'
+import cn from 'classnames'
+import { useState } from 'react'
 import { calculateHealthFactor } from '@/src/utils/table'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Tab, Tabs } from '@/src/components/custom'
@@ -12,9 +15,6 @@ import { useYourPositionInfoPage } from '@/src/utils/data/yourPositionInfo'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { useState } from 'react'
-import cn from 'classnames'
-import { useRouter } from 'next/router'
 
 enum TabState {
   Inventory = 'inventory',

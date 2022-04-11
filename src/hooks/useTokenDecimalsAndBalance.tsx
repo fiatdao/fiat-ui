@@ -1,12 +1,12 @@
 import { TokenInfo } from './managePosition'
 import { contracts } from '../constants/contracts'
 import { getHumanValue } from '../web3/utils'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { ERC20 } from '@/types/typechain'
 import useSWR, { KeyedMutator } from 'swr'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'ethers'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { ERC20 } from '@/types/typechain'
 
 type UseDecimalsAndTokenValue = {
   tokenInfo?: TokenInfo

@@ -1,5 +1,8 @@
 import contractCall from '../contractCall'
 import { BigNumberToDateOrCurrent } from '../dateTime'
+import BigNumber from 'bignumber.js'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { differenceInDays } from 'date-fns'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
@@ -19,9 +22,6 @@ import {
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
 import { Maybe } from '@/types/utils'
-import { differenceInDays } from 'date-fns'
-import { JsonRpcProvider } from '@ethersproject/providers'
-import BigNumber from 'bignumber.js'
 
 export type Position = {
   id: string

@@ -1,7 +1,7 @@
 import s from './s.module.scss'
+import cn from 'classnames'
 import Tooltip from '@/src/components/antd/tooltip'
 import Info from '@/src/resources/svg/info.svg'
-import cn from 'classnames'
 
 interface Props {
   className?: string

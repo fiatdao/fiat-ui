@@ -1,4 +1,9 @@
 import s from './s.module.scss'
+import { useRouter } from 'next/router'
+import { Layout } from 'antd'
+import cn from 'classnames'
+import { Drawer } from 'antd'
+import { FC, useState } from 'react'
 import { ChainsValues, chainsConfig } from '@/src/constants/chains'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
@@ -14,11 +19,6 @@ import { ButtonMobileMenu } from '@/src/components/custom/button-mobile-menu'
 import { HeaderInfoButton } from '@/src/components/custom/header-info-button'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import Ethereum from '@/src/resources/svg/ethereum.svg'
-import { FC, useState } from 'react'
-import { Drawer } from 'antd'
-import cn from 'classnames'
-import { Layout } from 'antd'
-import { useRouter } from 'next/router'
 
 const FiatBalanceInfo = () => {
   const [fiatBalance] = useFIATBalance(true)

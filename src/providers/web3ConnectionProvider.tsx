@@ -1,6 +1,3 @@
-import { Chains, ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/chains'
-import isServer from '@/src/utils/isServer'
-import { RequiredNonNull } from '@/types/utils'
 import {
   Dispatch,
   ReactElement,
@@ -19,6 +16,9 @@ import { API, Wallet } from 'bnc-onboard/dist/src/interfaces'
 import { Subscriptions } from 'bnc-onboard/dist/src/interfaces'
 
 import nullthrows from 'nullthrows'
+import { Chains, ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/chains'
+import isServer from '@/src/utils/isServer'
+import { RequiredNonNull } from '@/types/utils'
 
 const STORAGE_CONNECTED_WALLET = 'onboard_selectedWallet'
 // give onboard a window to update its internal state after certain actions

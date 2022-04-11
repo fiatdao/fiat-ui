@@ -1,6 +1,6 @@
 import s from './s.module.scss'
-import Less from '@/src/resources/svg/gradient-less.svg'
 import cn from 'classnames'
+import Less from '@/src/resources/svg/gradient-less.svg'
 
 type Props = {
   bottom: React.ReactNode
