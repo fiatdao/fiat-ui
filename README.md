@@ -12,7 +12,6 @@
 
 =======
 
-
 # UI dev stack for BN
 
 > This document is a collection of all the best practices that we think will work better for us to speed-up project development.
