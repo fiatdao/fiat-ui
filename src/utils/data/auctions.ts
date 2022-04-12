@@ -1,7 +1,7 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import max from 'lodash/max'
-import { BigNumberToDateOrCurrent } from '@/src/utils/dateTime'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { auctionById_collateralAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
 import { auctions_collateralAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
@@ -79,12 +79,25 @@ const wrangleAuction = async (
   appChainId: ChainsValues,
   blockTimestamp: number,
 ) => {
-  let endsAt = 0
-  if (collateralAuction.startsAt) {
-    endsAt += +collateralAuction.startsAt
-  }
-  if (collateralAuction.vault?.maxAuctionDuration) {
-    endsAt += +collateralAuction.vault.maxAuctionDuration
+  let endsAt = null
+  if (
+    collateralAuction.collateralToSell &&
+    collateralAuction.startPrice &&
+    collateralAuction.vault
+  ) {
+    // floorPrice = auction.debt / auction.collateralToSell
+    const floorPrice = BigNumber.from(collateralAuction.debt)?.dividedBy(
+      collateralAuction.collateralToSell,
+    ) as BigNumber
+
+    // endsAt = vault.maxAuctionDuration * (auction.startPrice - auction.floorPrice)/auction.startPrice
+    endsAt = BigNumber.from(collateralAuction.vault.maxAuctionDuration)
+      ?.times(
+        (BigNumber.from(collateralAuction.startPrice) as BigNumber)
+          .minus(floorPrice)
+          .dividedBy(collateralAuction.startPrice),
+      )
+      .toString()
   }
 
   const auctionStatus = await getAuctionStatus(appChainId, provider, collateralAuction.id)
@@ -125,7 +138,7 @@ const wrangleAuction = async (
       address: collateralAuction.collateralType?.underlierAddress ?? null,
       symbol: collateralAuction.collateralType?.underlierSymbol ?? '',
     },
-    endsAt: BigNumberToDateOrCurrent(endsAt.toString()),
+    endsAt: stringToDateOrCurrent(endsAt),
     apy: calcAPY(
       faceValue,
       currentAuctionPrice,
