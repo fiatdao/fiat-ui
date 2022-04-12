@@ -41,7 +41,7 @@ export const fetchPositions = ({
 export const usePositions = (id?: string, proxyAddress?: string, protocol?: string) => {
   const { address: userAddress, appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
   const { data, error, mutate } = useSWR(
-    ['positions', id, proxyAddress, userAddress, protocol],
+    ['positions', id, proxyAddress, userAddress, protocol, appChainId],
     () => {
       if (!userAddress) return []
       return fetchPositions({

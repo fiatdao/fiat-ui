@@ -20,7 +20,7 @@ export const useTransactions = (
   user?: Maybe<string>,
 ): SwrResponse<Transaction> => {
   const { appChainId } = useWeb3Connection()
-  const { data, error } = useSWR(['transactions', protocol, action, user], async () => {
+  const { data, error } = useSWR(['transactions', protocol, action, user, appChainId], async () => {
     const where: Maybe<PositionTransactionAction_filter> = {}
     if (protocol) {
       where['vaultName'] = protocol

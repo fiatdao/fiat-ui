@@ -11,7 +11,7 @@ export const fetchUserProxy = (appChainId: ChainsValues, address: string) =>
 
 export const useUserProxy = (address: Maybe<string>) => {
   const { appChainId } = useWeb3Connection()
-  const { data } = useSWR(['user-proxy'], () => {
+  const { data } = useSWR(['user-proxy', appChainId, address], () => {
     if (address) {
       return fetchUserProxy(appChainId, address)
     }

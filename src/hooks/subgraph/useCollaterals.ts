@@ -51,7 +51,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
     : undefined
 
   const { data, error } = useSWR(
-    ['collaterals', userPositionCollaterals?.join(''), protocols?.join('')],
+    ['collaterals', userPositionCollaterals?.join(''), protocols?.join(''), appChainId],
     () =>
       fetchCollaterals({
         protocols: protocols?.length > 0 ? protocols : undefined,
