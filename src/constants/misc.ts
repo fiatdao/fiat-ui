@@ -7,7 +7,8 @@ export const INFINITE_HEALTH_FACTOR_NUMBER = new BigNumber(100)
 export const MAX_UINT_256 = TWO_BIG_NUMBER.pow(256).minus(1)
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-export const SUBGRAPH_API = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_API || ''
+export const SUBGRAPH_GOERLI = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_GOERLI || ''
+export const SUBGRAPH_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_MAINNET || ''
 export const WAD_DECIMALS = 18
 
 export const WAIT_BLOCKS = 8
