@@ -103,7 +103,7 @@ export const getDateState = (maturityDate: Date) => {
 //        https://github.com/fiatdao/fiat-ui/issues/292
 // normalDebt = debt / (virtualRate*slippageMargin)
 const calculateNormalDebt = (debt: BigNumber, virtualRate: BigNumber) => {
-  return debt.div(virtualRate).times(VIRTUAL_RATE_MAX_SLIPPAGE)
+  return debt.div(virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
 }
 
 // debt = normalDebt * (virtualRate*slippageMargin)
