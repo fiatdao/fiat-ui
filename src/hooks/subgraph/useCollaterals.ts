@@ -23,7 +23,7 @@ export const fetchCollaterals = ({
   provider: Web3Provider | JsonRpcProvider
   appChainId: ChainsValues
 }) => {
-  return graphqlFetcher<Collaterals, CollateralsVariables>(COLLATERALS, {
+  return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
     // @TODO: add maturity filter maturity_gte (Date.now()/1000).toString()
     // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     where: {
@@ -51,7 +51,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
     : undefined
 
   const { data, error } = useSWR(
-    ['collaterals', userPositionCollaterals?.join(''), protocols?.join('')],
+    ['collaterals', userPositionCollaterals?.join(''), protocols?.join(''), appChainId],
     () =>
       fetchCollaterals({
         protocols: protocols?.length > 0 ? protocols : undefined,
