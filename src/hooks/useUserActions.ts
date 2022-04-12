@@ -27,6 +27,7 @@ type DepositCollateral = BaseModify & {
 type ModifyCollateralAndDebt = BaseModify & {
   deltaCollateral: BigNumber
   deltaDebt: BigNumber
+  virtualRate?: BigNumber
 }
 
 type BuyCollateralAndModifyDebt = {
@@ -128,9 +129,14 @@ export const useUserActions = (): UseUserActions => {
 
       // @TODO: toFixed(0, ROUNDED) transforms BigNumber into String without decimals
       const deltaCollateral = params.deltaCollateral.toFixed(0, 8)
+      if (!params.virtualRate) {
+        params.virtualRate = await _getVirtualRate(params.vault)
+      }
       // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
-      const virtualRate = await _getVirtualRate(params.vault)
-      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, virtualRate).toFixed(0, 8)
+      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
+        0,
+        8,
+      )
 
       console.log({ 'params.vault': params.vault.toString() })
       console.log({ 'params.token': params.token.toString() })
@@ -141,7 +147,7 @@ export const useUserActions = (): UseUserActions => {
       console.log({ deltaCollateral: deltaCollateral.toString() })
       console.log({ 'params.deltaDebt (user input)': params.deltaDebt.toString() })
       console.log({ deltaNormalDebt: deltaNormalDebt.toString() })
-      console.log({ virtualRate: virtualRate.toString() })
+      console.log({ virtualRate: params.virtualRate.toString() })
 
       // TODO: check if vault/protocol type so we can use EPT or FC
       const modifyCollateralAndDebtEncoded = userActionEPT.interface.encodeFunctionData(

@@ -281,6 +281,7 @@ export const useManagePositionForm = (
         deltaCollateral,
         deltaDebt,
         wait: 3,
+        virtualRate: position.virtualRate,
       })
 
       await updateToken()
