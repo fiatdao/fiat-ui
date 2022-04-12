@@ -7,6 +7,14 @@
     {
       "source": "/rewards",
       "destination": "/"
+    },
+    {
+      "source": "/age-of-romulus",
+      "destination": "/"
+    },
+    {
+      "source": "/airdrop",
+      "destination": "/"
     }
   ]
 }
