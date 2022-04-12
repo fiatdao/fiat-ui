@@ -2,18 +2,13 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import max from 'lodash/max'
 import { Maybe } from '@/types/utils'
-import { BigNumberToDateOrCurrent } from '@/src/utils/dateTime'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { auctionById_collateralAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
 import { auctions_collateralAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
-import {
-  SECONDS_IN_A_YEAR,
-  WAD_DECIMALS,
-  ZERO_ADDRESS,
-  ZERO_BIG_NUMBER,
-} from '@/src/constants/misc'
+import { SECONDS_IN_A_YEAR, WAD_DECIMALS } from '@/src/constants/misc'
 import contractCall from '@/src/utils/contractCall'
 import { NoLossCollateralAuction } from '@/types/typechain'
 import { TokenData } from '@/types/token'
@@ -94,38 +89,31 @@ const getAuctionStatus = (
   )
 }
 
-const getAuctionVaultConfig = (
-  appChainId: ChainsValues,
-  provider: JsonRpcProvider,
-  vaultAddress: string,
-) => {
-  return contractCall<NoLossCollateralAuction, 'vaults'>(
-    contracts.NO_LOSS_COLLATERAL_AUCTION.address[appChainId],
-    contracts.NO_LOSS_COLLATERAL_AUCTION.abi,
-    provider,
-    'vaults',
-    [vaultAddress],
-  )
-}
-
 const wrangleAuction = async (
   collateralAuction: subGraphAuctions | subGraphAuction,
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
   blockTimestamp: number,
 ): Promise<AuctionData> => {
-  const vaultConfig = await getAuctionVaultConfig(
-    appChainId,
-    provider,
-    collateralAuction.vault?.address ?? ZERO_ADDRESS,
-  )
+  let endsAt = null
+  if (
+    collateralAuction.collateralToSell &&
+    collateralAuction.startPrice &&
+    collateralAuction.vault
+  ) {
+    // floorPrice = auction.debt / auction.collateralToSell
+    const floorPrice = BigNumber.from(collateralAuction.debt)?.dividedBy(
+      collateralAuction.collateralToSell,
+    ) as BigNumber
 
-  let endsAt = ZERO_BIG_NUMBER
-  if (collateralAuction.startsAt) {
-    endsAt = endsAt.plus(collateralAuction.startsAt)
-  }
-  if (vaultConfig?.maxAuctionDuration) {
-    endsAt = endsAt.plus(vaultConfig.maxAuctionDuration.toNumber())
+    // endsAt = vault.maxAuctionDuration * (auction.startPrice - auction.floorPrice)/auction.startPrice
+    endsAt = BigNumber.from(collateralAuction.vault.maxAuctionDuration)
+      ?.times(
+        (BigNumber.from(collateralAuction.startPrice) as BigNumber)
+          .minus(floorPrice)
+          .dividedBy(collateralAuction.startPrice),
+      )
+      .toString()
   }
 
   const auctionStatus = await getAuctionStatus(appChainId, provider, collateralAuction.id)
@@ -173,7 +161,7 @@ const wrangleAuction = async (
       symbol: collateralAuction.collateralType?.underlierSymbol ?? '',
       decimals: scaleToDecimalsCount(collateralAuction.collateralType?.underlierScale) ?? 0,
     },
-    endsAt: BigNumberToDateOrCurrent(endsAt.toString()),
+    endsAt: stringToDateOrCurrent(endsAt),
     apy: calcAPY(
       faceValue,
       currentAuctionPrice,

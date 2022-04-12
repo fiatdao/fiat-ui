@@ -1,10 +1,12 @@
-import { SUBGRAPH_API } from '../constants/misc'
 import { DocumentNode } from 'graphql'
 import { GraphQLClient } from 'graphql-request'
+import { Chains, ChainsValues, chainsConfig } from '@/src/constants/chains'
 
-const fetcher = new GraphQLClient(SUBGRAPH_API)
+// we initialize always in GOERLI
+const fetcher = new GraphQLClient(chainsConfig[Chains.goerli].subgraphApi)
 
 export const graphqlFetcher = <Response, Variables = void>(
+  appChainId: ChainsValues,
   query: DocumentNode,
   variables?: Variables,
-) => fetcher.request<Response>(query, variables)
+) => fetcher.setEndpoint(chainsConfig[appChainId].subgraphApi).request<Response>(query, variables)

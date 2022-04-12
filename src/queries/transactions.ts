@@ -13,7 +13,9 @@ export const TRANSACTIONS = gql`
       transactionHash
       tokenId
       timestamp
-      user
+      user {
+        id
+      }
       vault {
         address
       }

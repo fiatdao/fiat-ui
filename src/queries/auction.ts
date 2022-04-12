@@ -1,33 +1,45 @@
 import gql from 'graphql-tag'
 
+export const AUCTION_MAIN_DATA = gql`
+  fragment Auction on CollateralAuction {
+    id
+    auctionId
+    isActive
+    collateralToSell
+    tokenId
+    vaultName
+    debt
+    startsAt
+    startPrice
+    user {
+      id
+    }
+    vault {
+      id
+      name
+      address
+      interestPerSecond
+      maxAuctionDuration
+    }
+    collateralType {
+      id
+      address
+      faceValue
+      maturity
+      tokenId
+      symbol
+      underlierAddress
+      underlierSymbol
+      underlierScale
+    }
+  }
+`
+
 export const AUCTION_BY_ID = gql`
+  ${AUCTION_MAIN_DATA}
   query auctionById($id: ID!) {
     collateralAuction(id: $id) {
-      id
-      collateralToSell
-      tokenId
-      vaultName
-      isActive
-      user
-      tokenId
-      debt
-      startsAt
-      collateralType {
-        address
-        faceValue
-        maturity
-        symbol
-        tokenId
-        underlierAddress
-        underlierSymbol
-        underlierScale
-      }
-      vault {
-        address
-        name
-        interestPerSecond
-        maxAuctionDuration
-      }
+      ...Auction
     }
   }
 `

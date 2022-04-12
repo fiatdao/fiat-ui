@@ -1,4 +1,5 @@
 import { memoize } from 'lodash'
+import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { metadataByNetwork } from '@/metadata'
 
@@ -21,37 +22,39 @@ type MetadataByNetwork = {
   [chainId: number]: PTokenMap
 }
 
+const getVaults = memoize((appChainId: ChainsValues) => {
+  const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
+
+  return Object.fromEntries(
+    Object.entries(vaultsMetadata).map(([vaultAddress, metadata]) => [
+      // transform addresses to lowerCase
+      vaultAddress.toLowerCase(),
+      metadata,
+    ]),
+  )
+})
+
 // memoized as the metadata information will remain unchanged from build to build
 // so, we need to only re-execute the search if the `chainId` changes
-export const getCollateralMetadata = memoize(
-  (
-    appChainId: number,
-    {
-      tokenId,
-      vaultAddress,
-    }: {
-      tokenId?: Maybe<string>
-      vaultAddress?: Maybe<string>
-    },
-  ) => {
-    if (!vaultAddress || !tokenId || !metadataByNetwork) {
-      return
-    }
-
-    const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
-
-    const fromEntries = Object.fromEntries(
-      Object.entries(vaultsMetadata).map(([vaultAddress, metadata]) => [
-        // transform addresses to lowerCase
-        vaultAddress.toLowerCase(),
-        metadata,
-      ]),
-    )
-
-    // lookup by vaultAddress and tokenId
-    return fromEntries[vaultAddress.toLowerCase()][tokenId]
+export const getCollateralMetadata = (
+  appChainId: ChainsValues,
+  {
+    tokenId,
+    vaultAddress,
+  }: {
+    tokenId?: Maybe<string>
+    vaultAddress?: Maybe<string>
   },
-)
+) => {
+  if (!vaultAddress || !tokenId || !metadataByNetwork) {
+    return
+  }
+
+  const vaults = getVaults(appChainId)
+
+  // lookup by vaultAddress and tokenId
+  return vaults[vaultAddress.toLowerCase()][tokenId]
+}
 
 export const getPTokenIconFromMetadata = memoize((protocolName?: string) => {
   if (!metadataByNetwork || !protocolName) {

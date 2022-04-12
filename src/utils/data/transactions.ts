@@ -1,4 +1,4 @@
-import { BigNumberToDateOrCurrent } from '../dateTime'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import { ChainsValues } from '@/src/constants/chains'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { getHumanValue } from '@/src/web3/utils'
@@ -46,7 +46,7 @@ const wrangleTransaction = (
     transactionHash: transaction.transactionHash,
     amount: getHumanValue(transaction.collateral, WAD_DECIMALS)?.toNumber() ?? 0,
     deltaAmount: getHumanValue(transaction.deltaCollateral, WAD_DECIMALS)?.toNumber() ?? 0,
-    date: BigNumberToDateOrCurrent(transaction.timestamp),
+    date: stringToDateOrCurrent(transaction.timestamp),
     assetAddress: transaction.position.collateralType?.address ?? '',
   }
 }

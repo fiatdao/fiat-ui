@@ -1,8 +1,8 @@
-import contractCall from '../contractCall'
-import { BigNumberToDateOrCurrent } from '../dateTime'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { differenceInDays } from 'date-fns'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
+import contractCall from '@/src/utils/contractCall'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
@@ -48,14 +48,13 @@ export type Position = {
   vaultName: string
 }
 
-// TODO pass tokenId depends on protocol
-
 const readValue = async (
   position: SubgraphPosition,
   isFaceValue: boolean,
   appChainId: ChainsValues,
   provider: JsonRpcProvider,
 ): Promise<BigNumber> => {
+  // TODO: tokenId depends on protocol (0 is for element-fi)
   return getCurrentValue(provider, appChainId, 0, position?.vault?.address || null, isFaceValue)
 }
 
@@ -168,7 +167,7 @@ const wranglePosition = async (
   const totalDebt = calculateDebt(BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER)
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
   const debtFloor = BigNumber.from(position.vault?.debtFloor) ?? ZERO_BIG_NUMBER
-  const maturity = BigNumberToDateOrCurrent(position.maturity)
+  const maturity = stringToDateOrCurrent(position.maturity)
   const vaultName = position.vaultName ?? ''
 
   const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
