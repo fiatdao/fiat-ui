@@ -1,3 +1,4 @@
+import { getVirtualRate } from '../getVirtualRate'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from 'bignumber.js'
 import contractCall from '@/src/utils/contractCall'
@@ -35,6 +36,7 @@ export type Collateral = {
     interestPerSecond: Maybe<BigNumber>
     debtFloor: BigNumber
     name: string
+    virtualRate: BigNumber
   }
   manageId?: string
 }
@@ -70,6 +72,7 @@ const wrangleCollateral = async (
       ],
     )
   }
+  const virtualRate = await getVirtualRate(collateral.vault?.address ?? '', appChainId, provider)
 
   const { protocol = '', symbol = '' } =
     getCollateralMetadata(appChainId, {
@@ -91,6 +94,7 @@ const wrangleCollateral = async (
       interestPerSecond: BigNumber.from(collateral.vault?.interestPerSecond) ?? null,
       debtFloor: BigNumber.from(collateral.vault?.debtFloor) ?? ZERO_BIG_NUMBER,
       name: collateral.vault?.name ?? '',
+      virtualRate,
     },
     eptData: {
       balancerVault: collateral.eptData?.balancerVault ?? '',
