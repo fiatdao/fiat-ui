@@ -25,7 +25,7 @@ export const fetchPositions = ({
 }) => {
   const userAddresses = [userAddress, proxyAddress].filter((p) => !!p) as string[]
 
-  return graphqlFetcher<Positions, PositionsVariables>(POSITIONS, {
+  return graphqlFetcher<Positions, PositionsVariables>(appChainId, POSITIONS, {
     where: {
       id,
       vaultName,

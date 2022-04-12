@@ -1,4 +1,5 @@
 import useSWR from 'swr'
+import { ChainsValues } from '@/src/constants/chains'
 import { AUCTION_BY_ID } from '@/src/queries/auction'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -9,8 +10,8 @@ import {
   auctionById_collateralAuction,
 } from '@/types/subgraph/__generated__/auctionById'
 
-const getAuctionById = async (auctionId: string): Promise<auctionById> =>
-  graphqlFetcher<auctionById, auctionByIdVariables>(AUCTION_BY_ID, { id: auctionId })
+const getAuctionById = async (appChainId: ChainsValues, auctionId: string): Promise<auctionById> =>
+  graphqlFetcher<auctionById, auctionByIdVariables>(appChainId, AUCTION_BY_ID, { id: auctionId })
 
 export const useAuction = (auctionId: string) => {
   const {
@@ -23,7 +24,7 @@ export const useAuction = (auctionId: string) => {
     ['auction', auctionId, currentUserAddress, appChainId, provider],
     async () => {
       const [{ collateralAuction }, { timestamp }] = await Promise.all([
-        getAuctionById(auctionId),
+        getAuctionById(appChainId, auctionId),
         provider.getBlock('latest'),
       ])
       return wrangleAuction(
