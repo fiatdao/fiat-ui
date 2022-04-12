@@ -11,7 +11,9 @@ export const AUCTION_MAIN_DATA = gql`
     debt
     startsAt
     startPrice
-    user
+    user {
+      id
+    }
     vault {
       id
       name
