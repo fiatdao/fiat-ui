@@ -16,6 +16,7 @@ import { API, Wallet } from 'bnc-onboard/dist/src/interfaces'
 import { Subscriptions } from 'bnc-onboard/dist/src/interfaces'
 
 import nullthrows from 'nullthrows'
+import { DEFAULT_CHAIN_ID } from '@/src/constants/misc'
 import { Chains, ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/chains'
 import isServer from '@/src/utils/isServer'
 import { RequiredNonNull } from '@/types/utils'
@@ -25,9 +26,7 @@ const STORAGE_CONNECTED_WALLET = 'onboard_selectedWallet'
 const ONBOARD_STATE_DELAY = 100
 
 // Default chain id from env var
-const INITIAL_APP_CHAIN_ID = Number(
-  process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 5,
-) as ChainsValues
+const INITIAL_APP_CHAIN_ID = Number(DEFAULT_CHAIN_ID) as ChainsValues
 
 nullthrows(
   Object.values(Chains).includes(INITIAL_APP_CHAIN_ID) ? INITIAL_APP_CHAIN_ID : null,
