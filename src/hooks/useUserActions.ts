@@ -138,17 +138,6 @@ export const useUserActions = (): UseUserActions => {
         8,
       )
 
-      console.log({ 'params.vault': params.vault.toString() })
-      console.log({ 'params.token': params.token.toString() })
-      console.log({ 'params.tokenId': params.tokenId.toString() })
-      console.log({ userProxyAddress: userProxyAddress.toString() })
-      console.log({ address: address.toString() })
-      console.log({ address: address.toString() })
-      console.log({ deltaCollateral: deltaCollateral.toString() })
-      console.log({ 'params.deltaDebt (user input)': params.deltaDebt.toString() })
-      console.log({ deltaNormalDebt: deltaNormalDebt.toString() })
-      console.log({ virtualRate: params.virtualRate.toString() })
-
       // TODO: check if vault/protocol type so we can use EPT or FC
       const modifyCollateralAndDebtEncoded = userActionEPT.interface.encodeFunctionData(
         'modifyCollateralAndDebt',
