@@ -132,6 +132,17 @@ export const useUserActions = (): UseUserActions => {
       const virtualRate = await _getVirtualRate(params.vault)
       const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, virtualRate).toFixed(0, 8)
 
+      console.log({ 'params.vault': params.vault.toString() })
+      console.log({ 'params.token': params.token.toString() })
+      console.log({ 'params.tokenId': params.tokenId.toString() })
+      console.log({ userProxyAddress: userProxyAddress.toString() })
+      console.log({ address: address.toString() })
+      console.log({ address: address.toString() })
+      console.log({ deltaCollateral: deltaCollateral.toString() })
+      console.log({ 'params.deltaDebt (user input)': params.deltaDebt.toString() })
+      console.log({ deltaNormalDebt: deltaNormalDebt.toString() })
+      console.log({ virtualRate: virtualRate.toString() })
+
       // TODO: check if vault/protocol type so we can use EPT or FC
       const modifyCollateralAndDebtEncoded = userActionEPT.interface.encodeFunctionData(
         'modifyCollateralAndDebt',
@@ -149,13 +160,20 @@ export const useUserActions = (): UseUserActions => {
 
       // please sign
       notification.requestSign()
+      // @TODO adds fixed gas amount to be able to create failing tx's
+      let gasLimit: any = 1_000_000
+      try {
+        gasLimit = await estimateGasLimit(userProxy, 'execute', [
+          userActionEPT.address,
+          modifyCollateralAndDebtEncoded,
+        ])
+      } catch (err) {
+        console.log({ err })
+      }
 
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, modifyCollateralAndDebtEncoded, {
-          gasLimit: await estimateGasLimit(userProxy, 'execute', [
-            userActionEPT.address,
-            modifyCollateralAndDebtEncoded,
-          ]),
+          gasLimit,
         })
         .catch(notification.handleTxError)
 
