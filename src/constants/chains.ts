@@ -21,7 +21,7 @@ export type ChainConfig = {
   blockExplorerUrls: string[]
   iconUrls: string[]
   subgraphApi: string
-  constractsDeployed: boolean
+  contractsDeployed: boolean
 }
 
 export const chainsConfig: Record<ChainsValues, ChainConfig> = {
@@ -35,7 +35,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     blockExplorerUrls: ['https://etherscan.io/'],
     iconUrls: [],
     subgraphApi: SUBGRAPH_MAINNET,
-    constractsDeployed: true,
+    contractsDeployed: true,
   },
   [Chains.goerli]: {
     id: Chains.goerli,
@@ -47,7 +47,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     blockExplorerUrls: ['https://goerli.etherscan.io/'],
     iconUrls: [],
     subgraphApi: SUBGRAPH_GOERLI,
-    constractsDeployed: true,
+    contractsDeployed: true,
   },
 }
 

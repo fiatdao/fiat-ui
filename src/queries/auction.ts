@@ -30,6 +30,7 @@ export const AUCTION_MAIN_DATA = gql`
       symbol
       underlierAddress
       underlierSymbol
+      underlierScale
     }
   }
 `

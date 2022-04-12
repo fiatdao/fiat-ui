@@ -1,31 +1,47 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import max from 'lodash/max'
+import { Maybe } from '@/types/utils'
 import { stringToDateOrCurrent } from '@/src/utils/dateTime'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
+import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { auctionById_collateralAuction as subGraphAuction } from '@/types/subgraph/__generated__/auctionById'
 import { auctions_collateralAuctions as subGraphAuctions } from '@/types/subgraph/__generated__/auctions'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { SECONDS_IN_A_YEAR, WAD_DECIMALS } from '@/src/constants/misc'
 import contractCall from '@/src/utils/contractCall'
-import { CollateralAuction } from '@/types/typechain'
+import { NoLossCollateralAuction } from '@/types/typechain'
 import { TokenData } from '@/types/token'
+
+export const scaleToDecimalsCount = (scale?: Maybe<string>): number | undefined => {
+  if (!scale) {
+    return
+  }
+
+  const exponentialRegex = /1e[-+](\d)$/
+  const decimalPlaces = BigNumber.from(scale)?.toExponential().match(exponentialRegex)?.[1]
+
+  if (typeof decimalPlaces === 'string') {
+    return Number(decimalPlaces)
+  }
+
+  return decimalPlaces
+}
 
 export type AuctionData = {
   id: string
   protocol: {
-    name?: string
-    humanReadableName?: string
+    name?: Maybe<string>
+    humanReadableName: string
   }
   asset?: string
   auctionedCollateral?: BigNumber
   currentAuctionPrice?: BigNumber
   faceValue?: BigNumber
   collateralMaturity: number
-  tokenId?: string
-  vault?: { address: string; name?: string; interestPerSecond?: BigNumber }
-  action: { isActive: boolean; id: number | string }
+  tokenId?: Maybe<string>
+  vault: { address?: Maybe<string>; name?: Maybe<string>; interestPerSecond?: BigNumber }
+  action: { isActive: Maybe<boolean>; id: number | string }
   tokenAddress?: string | null
   collateral: TokenData
   underlier: TokenData
@@ -64,9 +80,9 @@ const getAuctionStatus = (
   provider: JsonRpcProvider,
   auctionId: string,
 ) => {
-  return contractCall<CollateralAuction, 'getStatus'>(
-    contracts.COLLATERAL_AUCTION.address[appChainId],
-    contracts.COLLATERAL_AUCTION.abi,
+  return contractCall<NoLossCollateralAuction, 'getStatus'>(
+    contracts.NO_LOSS_COLLATERAL_AUCTION.address[appChainId],
+    contracts.NO_LOSS_COLLATERAL_AUCTION.abi,
     provider,
     'getStatus',
     [auctionId],
@@ -78,7 +94,7 @@ const wrangleAuction = async (
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
   blockTimestamp: number,
-) => {
+): Promise<AuctionData> => {
   let endsAt = null
   if (
     collateralAuction.collateralToSell &&
@@ -110,11 +126,16 @@ const wrangleAuction = async (
     WAD_DECIMALS,
   )
 
+  const vaultMetadata = getCollateralMetadata(appChainId, {
+    vaultAddress: collateralAuction.vault?.address,
+    tokenId: collateralAuction.tokenId,
+  })
+
   return {
     id: collateralAuction.id,
     protocol: {
       name: collateralAuction.vault?.name,
-      humanReadableName: getTokenByAddress(collateralAuction.collateralType?.address)?.protocol,
+      humanReadableName: vaultMetadata?.protocol ?? '',
     },
     tokenId: collateralAuction.tokenId,
     vault: {
@@ -122,7 +143,7 @@ const wrangleAuction = async (
       name: collateralAuction.vault?.name,
       interestPerSecond: BigNumber.from(collateralAuction.vault?.interestPerSecond?.toString()),
     },
-    asset: getTokenByAddress(collateralAuction.collateralType?.address)?.symbol,
+    asset: vaultMetadata?.symbol,
     auctionedCollateral: BigNumber.from(auctionStatus?.collateralToSell.toString())?.unscaleBy(
       WAD_DECIMALS,
     ),
@@ -133,10 +154,12 @@ const wrangleAuction = async (
     collateral: {
       address: collateralAuction.collateralType?.address ?? '',
       symbol: collateralAuction.collateralType?.symbol ?? '',
+      decimals: vaultMetadata?.decimals ?? 0,
     },
     underlier: {
-      address: collateralAuction.collateralType?.underlierAddress ?? null,
+      address: collateralAuction.collateralType?.underlierAddress ?? '',
       symbol: collateralAuction.collateralType?.underlierSymbol ?? '',
+      decimals: scaleToDecimalsCount(collateralAuction.collateralType?.underlierScale) ?? 0,
     },
     endsAt: stringToDateOrCurrent(endsAt),
     apy: calcAPY(
@@ -145,7 +168,7 @@ const wrangleAuction = async (
       Number(collateralAuction.collateralType?.maturity ?? 0),
       blockTimestamp,
     ),
-  } as AuctionData
+  }
 }
 
 export { wrangleAuction }

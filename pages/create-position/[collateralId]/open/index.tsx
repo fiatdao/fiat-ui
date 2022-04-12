@@ -42,8 +42,6 @@ import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/util
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
-// Temporarily Change
-import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { calculateHealthFactor } from '@/src/utils/data/positions'
 
 // @TODO: hardcoded step from open-position-form
@@ -294,13 +292,12 @@ const FormERC20: React.FC<{
                   <Form.Item name="tokenAmount" required>
                     <TokenAmount
                       displayDecimals={tokenInfo?.decimals}
-                      mainAsset={collateral.vaultName as string}
+                      mainAsset={collateral.vault.name}
                       max={tokenInfo?.humanValue}
                       maximumFractionDigits={tokenInfo?.decimals}
                       onChange={(val) =>
                         val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })
                       }
-                      secondaryAsset={tokenSymbol}
                       slider
                     />
                   </Form.Item>
@@ -428,9 +425,7 @@ const OpenPosition = () => {
   useDynamicTitle(`Create Position`)
   const { data: collateral } = useCollateral(tokenAddress)
 
-  // Temporary change
-  const tokenSymbol = getTokenByAddress(tokenAddress)?.symbol ?? ''
-  // const { tokenSymbol } = useTokenSymbol(tokenAddress)
+  const tokenSymbol = collateral?.symbol ?? ''
   const collateralizationRatio = collateral?.vault.collateralizationRatio ?? null
   const interestPerSecond = collateral?.vault.interestPerSecond ?? ZERO_BIG_NUMBER
 

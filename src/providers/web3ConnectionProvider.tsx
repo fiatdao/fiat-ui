@@ -173,7 +173,7 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     if (!Object.values(Chains).includes(chain)) {
       return false
     }
-    return getNetworkConfig(chain).constractsDeployed
+    return getNetworkConfig(chain).contractsDeployed
   }
 
   const _reconnectWallet = async (): Promise<void> => {

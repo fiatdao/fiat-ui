@@ -4,6 +4,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { differenceInDays } from 'date-fns'
 import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import contractCall from '@/src/utils/contractCall'
+import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
@@ -27,6 +28,7 @@ export type Position = {
   tokenId: string
   owner: string
   protocol: string
+  symbol: string
   protocolAddress: string
   maturity: Date
   collateral: TokenData
@@ -43,6 +45,7 @@ export type Position = {
   currentValue: BigNumber
   userAddress: string
   debtFloor: BigNumber
+  vaultName: string
   virtualRate: BigNumber
 }
 
@@ -156,7 +159,6 @@ const wranglePosition = async (
   appChainId: ChainsValues,
   userAddress: string,
 ): Promise<Position> => {
-  const { id, vaultName: protocol } = position
   const vaultCollateralizationRatio =
     BigNumber.from(position.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER
   const totalCollateral = BigNumber.from(position.collateral) ?? ZERO_BIG_NUMBER
@@ -164,6 +166,7 @@ const wranglePosition = async (
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
   const debtFloor = BigNumber.from(position.vault?.debtFloor) ?? ZERO_BIG_NUMBER
   const maturity = stringToDateOrCurrent(position.maturity)
+  const vaultName = position.vaultName ?? ''
 
   const [currentValue, faceValue, collateralDecimals, underlierDecimals, virtualRate] =
     await Promise.all([
@@ -183,12 +186,19 @@ const wranglePosition = async (
     totalDebt,
   )
 
+  const { protocol = '', symbol = '' } =
+    getCollateralMetadata(appChainId, {
+      vaultAddress: position.vault?.address,
+      tokenId: position.collateralType?.tokenId,
+    }) ?? {}
+
   // TODO Interest rate
   return {
-    id,
+    id: position.id,
     tokenId: position.collateralType?.tokenId ?? '',
     protocolAddress: position.vault?.address ?? '',
-    protocol: protocol ?? '',
+    protocol,
+    symbol,
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
@@ -213,6 +223,7 @@ const wranglePosition = async (
     interestPerSecond,
     userAddress,
     debtFloor,
+    vaultName,
     virtualRate,
   }
 }

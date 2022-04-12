@@ -12,29 +12,22 @@ import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
 import { tablePagination } from '@/src/utils/table'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 const Columns: ColumnsType<Position> = [
   {
     align: 'left',
-    dataIndex: 'collateral',
-    render: (collateral: Position['collateral'], position) => (
-      <Asset
-        mainAsset={getTokenByAddress(collateral.address)?.protocol ?? ''}
-        secondaryAsset={position.underlier.symbol}
-        title={getTokenByAddress(collateral.address)?.protocol ?? ''}
-      />
+    dataIndex: 'protocol',
+    render: (protocol: Position['protocol'], { vaultName }) => (
+      <Asset mainAsset={vaultName} title={protocol} />
     ),
     title: 'Protocol',
     width: 200,
   },
   {
     align: 'left',
-    dataIndex: 'collateral',
-    render: (collateral: Position['collateral']) => (
-      <CellValue bold value={getTokenByAddress(collateral.address)?.symbol ?? '-'} />
-    ),
+    dataIndex: 'symbol',
+    render: (symbol: Position['symbol']) => <CellValue bold value={symbol} />,
     title: 'Asset',
     width: 200,
   },
@@ -123,7 +116,12 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
     <>
       {riskPositions && riskPositions.length > 0 && (
         <PositionsAtRiskTableWrapper>
-          <Table columns={Columns} dataSource={riskPositions} loading={false} rowKey="address" />
+          <Table
+            columns={Columns}
+            dataSource={riskPositions}
+            loading={false}
+            rowKey="vaultAddress"
+          />
         </PositionsAtRiskTableWrapper>
       )}
       <SkeletonTable

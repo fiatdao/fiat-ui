@@ -160,7 +160,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorToRender}
-                              mainAsset={position.protocol}
+                              mainAsset={position.vaultName}
                               max={maxDepositAmount}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
@@ -179,7 +179,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorToRender}
-                              mainAsset={position.protocol}
+                              mainAsset={position.vaultName}
                               max={maxWithdrawAmount}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}

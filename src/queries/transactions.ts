@@ -16,9 +16,13 @@ export const TRANSACTIONS = gql`
       user {
         id
       }
+      vault {
+        address
+      }
       position {
         maturity
         collateralType {
+          tokenId
           address
           underlierAddress
           underlierSymbol

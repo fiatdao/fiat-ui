@@ -35,8 +35,8 @@ export const useTransactions = (
 
     return transactions
       .sort((a, b) => +b.timestamp - +a.timestamp)
-      .map(wrangleTransaction)
-      .filter((tx) => (action ? tx.action.includes(action) : true))
+      .map((transaction) => wrangleTransaction(appChainId, transaction))
+      .filter((transaction) => (action ? transaction.action.includes(action) : true))
   })
 
   return { data: data ?? [], error, loading: !data && !error }

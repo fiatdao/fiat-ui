@@ -1,10 +1,14 @@
 import { stringToDateOrCurrent } from '@/src/utils/dateTime'
+import { ChainsValues } from '@/src/constants/chains'
+import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { getHumanValue } from '@/src/web3/utils'
 import { Transactions_positionTransactionActions as SubgraphTransaction } from '@/types/subgraph/__generated__/Transactions'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 
 export type ActionTransaction = SubgraphTransaction['__typename']
 export type Transaction = {
+  protocol: string
+  symbol: string
   vaultName: string
   underlierSymbol: string
   asset: string
@@ -22,8 +26,19 @@ export const ACTIONS_TYPES: Record<ActionTransaction, string> = {
   ModifyCollateralAndDebtAction: 'Modify',
 }
 
-const wrangleTransaction = (transaction: SubgraphTransaction): Transaction => {
+const wrangleTransaction = (
+  appChainId: ChainsValues,
+  transaction: SubgraphTransaction,
+): Transaction => {
+  const { protocol = '', symbol = '' } =
+    getCollateralMetadata(appChainId, {
+      vaultAddress: transaction.vault?.address,
+      tokenId: transaction.position.collateralType?.tokenId,
+    }) ?? {}
+
   return {
+    protocol,
+    symbol,
     vaultName: transaction.vaultName ?? '',
     underlierSymbol: transaction.position.collateralType?.underlierSymbol ?? '',
     asset: transaction.position.collateralType?.symbol ?? '',
