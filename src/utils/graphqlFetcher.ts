@@ -9,7 +9,4 @@ export const graphqlFetcher = <Response, Variables = void>(
   appChainId: ChainsValues,
   query: DocumentNode,
   variables?: Variables,
-) => {
-  fetcher.setEndpoint(chainsConfig[appChainId].subgraphApi)
-  return fetcher.request<Response>(query, variables)
-}
+) => fetcher.setEndpoint(chainsConfig[appChainId].subgraphApi).request<Response>(query, variables)
