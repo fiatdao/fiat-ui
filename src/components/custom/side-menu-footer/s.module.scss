@@ -59,6 +59,13 @@
   grid-template-columns: 1fr 1fr;
 }
 
-.sha {
+.metadata {
   color: var(--theme-secondary-color);
+}
+
+.metadataButton {
+  background: transparent;
+  color: var(--theme-secondary-color);
+  border: 0;
+  float: right;
 }

@@ -15,7 +15,7 @@ export const useTransactions = (
   action?: ActionTransaction,
   user?: Maybe<string>,
 ): SwrResponse<Transaction> => {
-  const { data, error } = useSWR(['transactions', protocol, action], async () => {
+  const { data, error } = useSWR(['transactions', protocol, action, user], async () => {
     const where: Maybe<PositionTransactionAction_filter> = {}
     if (protocol) {
       where['vaultName'] = protocol
@@ -23,9 +23,14 @@ export const useTransactions = (
     if (user) {
       where['user'] = user
     }
+    // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
+    where['vaultName_not_contains_nocase'] = 'deprecated'
+
     const { positionTransactionActions: transactions } = await fetchTransactions(where)
+
     return transactions
-      .map((tx) => wrangleTransaction(tx))
+      .sort((a, b) => +b.timestamp - +a.timestamp)
+      .map(wrangleTransaction)
       .filter((tx) => (action ? tx.action.includes(action) : true))
   })
 

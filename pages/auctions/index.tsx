@@ -1,9 +1,11 @@
 import s from './s.module.scss'
+import BigNumber from 'bignumber.js'
 import Link from 'next/link'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
 import { Popover } from 'antd'
+import { FIAT_TICKER } from '@/src/constants/misc'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { useAuctions } from '@/src/hooks/subgraph/useAuctions'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -11,80 +13,19 @@ import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import Element from '@/src/resources/svg/element.svg'
-import Notional from '@/src/resources/svg/notional.svg'
 import { Table } from '@/src/components/antd'
-import { tablePagination } from '@/src/utils/table'
+import { parseDate, parseTime, tablePagination } from '@/src/utils/table'
 import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import Filter from '@/src/resources/svg/filter.svg'
-import { PROTOCOLS, Protocol } from '@/types/protocols'
+import { ELEMENT_SUBGRAPH_PROTOCOL, PROTOCOLS, Protocol } from '@/types/protocols'
 import { AuctionData } from '@/src/utils/data/auctions'
-
-const Columns: ColumnsType<any> = [
-  {
-    align: 'left',
-    dataIndex: 'protocol',
-    render: (protocol: AuctionData['protocol'], obj: AuctionData) => (
-      <Asset
-        mainAsset={protocol ?? ''}
-        secondaryAsset={obj.underlier.symbol}
-        title={protocol ?? ''}
-      />
-    ),
-    title: 'Protocol',
-    width: 200,
-  },
-  {
-    align: 'left',
-    dataIndex: 'asset',
-    render: (value: string) => <CellValue value={value} />,
-    title: 'Asset',
-  },
-  {
-    align: 'left',
-    dataIndex: 'upForAuction',
-    render: (value: any) => <CellValue value={value} />,
-    title: 'Up for Auction',
-  },
-  {
-    align: 'left',
-    dataIndex: 'price',
-    render: (value: string) => <CellValue value={`$${value}`} />,
-    title: 'Auction Price',
-  },
-  {
-    align: 'left',
-    dataIndex: 'collateralValue',
-    render: (value: string) => <CellValue value={`$${value}`} />,
-    title: 'Collateral Value',
-  },
-  {
-    align: 'left',
-    dataIndex: 'yield',
-    render: (value: string) => <CellValue value={`${value}%`} />,
-    title: 'Yield',
-  },
-  {
-    align: 'right',
-    dataIndex: 'action',
-    render: ({ id, isActive }) =>
-      isActive ? (
-        <Link href={`/auctions/${id}/liquidate`} passHref>
-          <ButtonGradient>Liquidate</ButtonGradient>
-        </Link>
-      ) : (
-        <ButtonGradient disabled>Not Available</ButtonGradient>
-      ),
-    title: '',
-    width: 110,
-  },
-]
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
 const FILTERS: FilterData = {
-  Notional: { active: false, name: 'Notional', icon: <Notional /> },
-  Element: { active: false, name: 'Element', icon: <Element /> },
+  Element: { active: false, name: ELEMENT_SUBGRAPH_PROTOCOL, icon: <Element /> },
 }
 
 const getParsedActiveFilters = (filters: FilterData) =>
@@ -92,12 +33,12 @@ const getParsedActiveFilters = (filters: FilterData) =>
     .filter(({ active }) => active)
     .map(({ name }) => name) as Protocol[]
 
-const AuctionsTable = ({ filters }: any) => {
+const AuctionsTable = ({ columns, filters }: any) => {
   const { auctions } = useAuctions(getParsedActiveFilters(filters))
 
   return (
     <Table
-      columns={Columns}
+      columns={columns}
       dataSource={auctions}
       loading={false}
       pagination={tablePagination(auctions?.length ?? 0)}
@@ -109,8 +50,81 @@ const AuctionsTable = ({ filters }: any) => {
   )
 }
 
+const UNKNOWN = 'Unknown'
+
 const Auctions = () => {
   const [filters, setFilters] = useState<FilterData>(FILTERS)
+  const { isWalletConnected } = useWeb3Connection()
+
+  const columns: ColumnsType<any> = [
+    {
+      align: 'left',
+      dataIndex: 'protocol',
+      render: (protocol: AuctionData['protocol'], obj: AuctionData) => (
+        <Asset
+          mainAsset={protocol.name ?? ''}
+          secondaryAsset={obj.underlier.symbol}
+          title={protocol.humanReadableName ?? ''}
+        />
+      ),
+      title: 'Protocol',
+      width: 200,
+    },
+    {
+      align: 'left',
+      dataIndex: 'asset',
+      render: (value: string) => <CellValue value={value} />,
+      title: 'Asset',
+    },
+    {
+      align: 'left',
+      dataIndex: 'endsAt',
+      render: (value: Date) => (
+        <CellValue bottomValue={parseTime(value)} value={parseDate(value)} />
+      ),
+      title: 'Ends At',
+    },
+    {
+      align: 'left',
+      dataIndex: 'auctionedCollateral',
+      render: (value?: BigNumber) => <CellValue value={value?.toFixed(2) ?? UNKNOWN} />,
+      title: 'Auctioned Collateral',
+    },
+    {
+      align: 'left',
+      dataIndex: 'currentAuctionPrice',
+      render: (value?: BigNumber) => (
+        <CellValue value={`${value?.toFixed(4) ?? UNKNOWN} ${FIAT_TICKER}`} />
+      ),
+      title: 'Current Auction Price',
+    },
+    {
+      align: 'left',
+      dataIndex: 'faceValue',
+      render: (value?: BigNumber) => <CellValue value={`$${value?.toFixed(4) ?? UNKNOWN}`} />,
+      title: 'Face Value',
+    },
+    {
+      align: 'left',
+      dataIndex: 'apy',
+      render: (value: string) => <CellValue value={`${value}%`} />,
+      title: 'APY',
+    },
+    {
+      align: 'right',
+      dataIndex: 'action',
+      render: ({ id, isActive }) =>
+        isActive ? (
+          <Link href={`/auctions/${id}/buy`} passHref>
+            <ButtonGradient disabled={!isWalletConnected}>Buy collateral</ButtonGradient>
+          </Link>
+        ) : (
+          <ButtonGradient disabled>Not Available</ButtonGradient>
+        ),
+      title: '',
+      width: 110,
+    },
+  ]
 
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
@@ -168,7 +182,7 @@ const Auctions = () => {
 
   return (
     <>
-      <h2 className={cn(s.title)}>Select an asset to liquidate and get yield</h2>
+      <h2 className={cn(s.title)}>Select a collateral asset on auction to buy</h2>
       <div className={cn(s.filters)}>
         {renderFilters()}
         {clearButton()}
@@ -177,7 +191,7 @@ const Auctions = () => {
         arrowContent={false}
         content={
           <>
-            <div className={cn(s.fitersGrid)}>{renderFilters()}</div>
+            <div className={cn(s.filtersGrid)}>{renderFilters()}</div>
             <div className={cn(s.buttonContainer)}>{clearButton()}</div>
           </>
         }
@@ -191,10 +205,10 @@ const Auctions = () => {
       </Popover>
       <SafeSuspense
         fallback={
-          <SkeletonTable columns={Columns as SkeletonTableColumnsType[]} loading rowCount={2} />
+          <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
         }
       >
-        <AuctionsTable filters={filters} />
+        <AuctionsTable columns={columns} filters={filters} />
       </SafeSuspense>
     </>
   )

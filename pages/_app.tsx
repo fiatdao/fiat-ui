@@ -6,7 +6,7 @@ import SafeSuspense from '@/src/components/custom/safe-suspense'
 import GeneralContextProvider from '@/src/providers/generalProvider'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
 import KnownTokensProvider from '@/src/providers/knownTokensProvider'
-import WrongNetwork from '@/src/components/custom/wrong-network'
+import ChangeNetworkModal from '@/src/components/custom/change-network-modal'
 import { Sidebar } from '@/src/components/custom/sidebar'
 import Spin from '@/src/components/antd/spin'
 
@@ -73,7 +73,7 @@ function App({ Component, pageProps }: AppProps) {
                 </Layout>
               </Layout>
             </KnownTokensProvider>
-            <WrongNetwork />
+            <ChangeNetworkModal />
           </Web3ConnectionProvider>
         </SWRConfig>
       </GeneralContextProvider>

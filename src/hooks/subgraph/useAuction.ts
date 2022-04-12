@@ -22,11 +22,15 @@ export const useAuction = (auctionId: string) => {
   const { data, error } = useSWR(
     ['auction', auctionId, currentUserAddress, appChainId, provider],
     async () => {
-      const { collateralAuction } = await getAuctionById(auctionId)
+      const [{ collateralAuction }, { timestamp }] = await Promise.all([
+        getAuctionById(auctionId),
+        provider.getBlock('latest'),
+      ])
       return wrangleAuction(
         collateralAuction as auctionById_collateralAuction,
         provider,
         appChainId,
+        timestamp,
       )
     },
   )

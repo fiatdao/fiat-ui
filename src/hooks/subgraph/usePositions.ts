@@ -17,7 +17,7 @@ export const fetchPositions = ({
   userAddress,
 }: {
   id?: string
-  userAddress?: string
+  userAddress: string
   proxyAddress?: string
   protocol?: string
   provider: JsonRpcProvider
@@ -30,11 +30,11 @@ export const fetchPositions = ({
       id,
       vaultName,
       owner_in: userAddresses.length > 0 ? userAddresses : undefined,
-      totalCollateral_not: '0',
-      totalNormalDebt_not: '0',
+      collateral_not: '0', // TODO: if collateral is 0 then position is closed (always collateral >= normalDebt),
+      vaultName_not_contains_nocase: 'deprecated', // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     },
   }).then(async ({ positions }) => {
-    return Promise.all(positions.map((p) => wranglePosition(p, provider, appChainId)))
+    return Promise.all(positions.map((p) => wranglePosition(p, provider, appChainId, userAddress)))
   })
 }
 
@@ -42,15 +42,17 @@ export const usePositions = (id?: string, proxyAddress?: string, protocol?: stri
   const { address: userAddress, appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
   const { data, error, mutate } = useSWR(
     ['positions', id, proxyAddress, userAddress, protocol],
-    () =>
-      fetchPositions({
+    () => {
+      if (!userAddress) return []
+      return fetchPositions({
         id,
         proxyAddress,
-        userAddress: userAddress || undefined,
+        userAddress,
         protocol,
         provider,
         appChainId,
-      }),
+      })
+    },
   )
 
   // TODO Remove positionTransactions from here

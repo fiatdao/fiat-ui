@@ -6,9 +6,9 @@ export const POSITIONS = gql`
       id
       vaultName
       maturity
-      totalCollateral
+      collateral
       owner
-      totalNormalDebt
+      normalDebt
       collateralType {
         symbol
         address
@@ -21,6 +21,7 @@ export const POSITIONS = gql`
         maxDiscount
         collateralizationRatio
         interestPerSecond
+        debtFloor
       }
     }
   }

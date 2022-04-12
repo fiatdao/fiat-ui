@@ -1,10 +1,10 @@
 import s from './s.module.scss'
 import cn from 'classnames'
 import { ColumnsType } from 'antd/lib/table/interface'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SelectValue } from 'antd/lib/select'
 import _ from 'lodash'
-import { parseDate, remainingTime } from '@/src/utils/table'
+import { elapsedTime, parseDate } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
 import Select from '@/src/components/antd/select'
 import { CellValue } from '@/src/components/custom/cell-value'
@@ -13,19 +13,17 @@ import { Asset } from '@/src/components/custom/asset'
 import { ACTIONS_TYPES, ActionTransaction, Transaction } from '@/src/utils/data/transactions'
 import { tablePagination } from '@/src/utils/table'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
-import { shortenAddr } from '@/src/web3/utils'
 import { useTransactionsByUser } from '@/src/hooks/subgraph/useTransactions'
 import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 const Columns: ColumnsType<any> = [
   {
     align: 'left',
-    dataIndex: 'protocol',
-    render: (protocol: Transaction['vaultName'], transaction: Transaction) => (
+    render: (transaction: Transaction) => (
       <Asset
-        mainAsset={transaction.vaultName}
+        mainAsset={getTokenByAddress(transaction.assetAddress)?.protocol ?? ''}
         secondaryAsset={transaction.underlierSymbol}
-        title={transaction.vaultName}
+        title={getTokenByAddress(transaction.assetAddress)?.protocol ?? ''}
       />
     ),
     title: 'Protocol',
@@ -50,7 +48,7 @@ const Columns: ColumnsType<any> = [
     align: 'right',
     dataIndex: 'deltaAmount',
     render: (delta: Transaction['amount']) => {
-      // collateral is being depositted when delta is greater than 0, otherwise is a withdraw operation
+      // collateral is being deposited when delta is greater than 0, otherwise is a withdrawal operation
       const isAdding = delta >= 0
       const text = isAdding ? `+${delta.toFixed(3)}` : `${delta.toFixed(3)}`
 
@@ -68,16 +66,14 @@ const Columns: ColumnsType<any> = [
   {
     align: 'left',
     dataIndex: 'transactionHash',
-    render: (obj: Transaction['transactionHash']) => (
-      <CellAddress value={shortenAddr(obj) ?? '-'} />
-    ),
+    render: (obj: Transaction['transactionHash']) => <CellAddress value={obj ?? '-'} />,
     title: 'Transaction Hash',
   },
   {
     align: 'left',
     dataIndex: 'date',
     render: (date: Transaction['date']) => (
-      <CellValue bottomValue={remainingTime(date)} value={parseDate(date)} />
+      <CellValue bottomValue={elapsedTime(date)} value={parseDate(date)} />
     ),
     responsive: ['lg'],
     title: 'Date',
@@ -92,12 +88,33 @@ const ACTIONS_FILTER = [
 ]
 
 const TransactionHistoryTable = () => {
-  // TODO: properly use `assetFilter` and `actionFilter` from the state
+  const { data: transactions, loading } = useTransactionsByUser()
   const [assetFilter, setAssetFilter] = useState<string>('all')
   const [actionFilter, setActionFilter] = useState<string>('all')
-  const { data: transactions, loading } = useTransactionsByUser()
-
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
+
+  useEffect(() => {
+    const applyFilter = (
+      transaction: Transaction,
+      property: keyof Transaction,
+      value: string,
+    ): boolean => {
+      if (value === 'all') return true
+      return (transaction[property] as string).includes(value)
+    }
+
+    if (transactions.length == 0) {
+      setFilteredTransactions(transactions)
+    } else {
+      // TODO: we can use an array of objects with keyof and values
+      const newFilteredTransactions = transactions.filter(
+        (t) => applyFilter(t, 'asset', assetFilter) && applyFilter(t, 'action', actionFilter),
+      )
+      setFilteredTransactions(newFilteredTransactions)
+    }
+  }, [transactions, assetFilter, actionFilter])
+
+  console.log('data: ', transactions)
 
   const ASSETS_FILTER = [
     { label: 'All Assets', value: 'all' },
@@ -110,33 +127,12 @@ const TransactionHistoryTable = () => {
     ),
   ]
 
-  const applyFilter = (
-    transaction: Transaction,
-    property: keyof Transaction,
-    value: string,
-  ): boolean => {
-    if (value === 'all') return true
-    return (transaction[property] as string).includes(value)
-  }
-
-  const applyFilters = (filters: string[]) => {
-    if (transactions) {
-      // TODO: we can use an array of objects with keyof and values
-      const newFilteredTransactions = transactions.filter(
-        (t) => applyFilter(t, 'asset', filters[0]) && applyFilter(t, 'action', filters[1]),
-      )
-      setFilteredTransactions(newFilteredTransactions)
-    }
-  }
-
   const onAssetFilterChange = (asset: string) => {
     setAssetFilter(asset)
-    applyFilters([asset, actionFilter])
   }
 
   const onActionFilterChange = (action: string) => {
     setActionFilter(action)
-    applyFilters([assetFilter, action])
   }
 
   return (

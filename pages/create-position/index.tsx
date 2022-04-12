@@ -1,5 +1,4 @@
 import s from './s.module.scss'
-import { getDateState } from '../../src/utils/data/positions'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import { ReactNode, useCallback, useState } from 'react'
@@ -9,7 +8,6 @@ import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/utils/table'
 import Element from '@/src/resources/svg/element.svg'
-import Notional from '@/src/resources/svg/notional.svg'
 import { Table } from '@/src/components/antd'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { CellValue } from '@/src/components/custom/cell-value'
@@ -17,7 +15,7 @@ import { Asset } from '@/src/components/custom/asset'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Filter from '@/src/resources/svg/filter.svg'
-import { PROTOCOLS, Protocol } from '@/types/protocols'
+import { ELEMENT_SUBGRAPH_PROTOCOL, PROTOCOLS, Protocol } from '@/types/protocols'
 import { useCollaterals } from '@/src/hooks/subgraph/useCollaterals'
 import { Collateral, formatColRatio } from '@/src/utils/data/collaterals'
 import { getHumanValue } from '@/src/web3/utils'
@@ -31,19 +29,17 @@ type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactN
 
 const FILTERS: FilterData = {
   // BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
-  Notional: { active: false, name: 'Notional', icon: <Notional /> },
-  Element: { active: false, name: 'Element', icon: <Element /> },
+  Element: { active: false, name: ELEMENT_SUBGRAPH_PROTOCOL, icon: <Element /> },
+  // Notional: { active: false, name: 'Notional', icon: <Notional /> },
 }
 
 // TODO fix types here
-const PositionsTable = ({ activeFilters, columns, inMyWallet }: any) => {
-  const data = useCollaterals(inMyWallet, activeFilters)
-
+const PositionsTable = ({ collaterals, columns }: any) => {
   return (
     <Table
       columns={columns}
-      dataSource={data}
-      pagination={tablePagination(data?.length ?? 0)}
+      dataSource={collaterals}
+      pagination={tablePagination(collaterals?.length ?? 0)}
       rowKey="id"
       scroll={{
         x: true,
@@ -57,15 +53,20 @@ const CreatePosition = () => {
   const [inMyWallet, setInMyWallet] = useState(false)
   const { isWalletConnected } = useWeb3Connection()
 
+  const activeFilters = Object.values(filters)
+    .filter((f) => f.active)
+    .map((f) => f.name)
+  const collaterals = useCollaterals(inMyWallet, activeFilters)
+
   const columns: ColumnsType<any> = [
     {
       align: 'left',
-      dataIndex: 'vaultName',
-      render: (vaultName: Collateral['vaultName'], collateral: Collateral) => (
+      dataIndex: 'address',
+      render: (value: Collateral['address'], collateral: Collateral) => (
         <Asset
-          mainAsset={vaultName ?? ''}
+          mainAsset={getTokenByAddress(value)?.protocol ?? ''}
           secondaryAsset={collateral.underlierSymbol ?? ''}
-          title={vaultName ?? 'unknown'}
+          title={getTokenByAddress(value)?.protocol ?? ''}
         />
       ),
       title: 'Protocol',
@@ -78,24 +79,6 @@ const CreatePosition = () => {
         <CellValue value={getTokenByAddress(value)?.symbol ?? '-'} />
       ),
       title: 'Asset',
-    },
-    {
-      align: 'left',
-      dataIndex: 'underlierSymbol',
-      render: (value: Collateral['underlierSymbol']) => <CellValue value={value ?? '-'} />,
-      title: 'Underlying',
-    },
-    {
-      align: 'left',
-      dataIndex: 'maturity',
-      render: (date: Collateral['maturity']) => (
-        <CellValue
-          bottomValue={parseDate(date)}
-          state={getDateState(date)}
-          value={`${remainingTime(date)} Left`}
-        />
-      ),
-      title: 'Maturity',
     },
     {
       align: 'left',
@@ -125,28 +108,33 @@ const CreatePosition = () => {
       render: ({ collateralizationRatio: value }: Collateral['vault']) => {
         return <CellValue value={value ? `${formatColRatio(value)}%` : '-'} />
       },
-      title: 'Collateralization Ratio',
+      title: 'Collateralization Threshold',
+    },
+    {
+      align: 'left',
+      dataIndex: 'maturity',
+      render: (date: Collateral['maturity']) => (
+        <CellValue bottomValue={parseDate(date)} value={`${remainingTime(date)} Left`} />
+      ),
+      title: 'Maturity',
     },
     {
       align: 'right',
-      render: (value: Collateral) =>
-        value.manageId ? (
+      render: (collateral: Collateral) => {
+        return collateral.manageId ? (
           <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
         ) : (
-          <Link href={`/create-position/${value.address}/open`} passHref>
+          <Link href={`/create-position/${collateral.address}/open`} passHref>
             <ButtonGradient disabled={!isWalletConnected}>Create Position</ButtonGradient>
           </Link>
-        ),
+        )
+      },
       title: '',
       width: 110,
     },
   ]
-
-  const activeFilters = Object.values(filters)
-    .filter((f) => f.active)
-    .map((f) => f.name)
 
   const areAllFiltersActive = Object.keys(filters).every((s) => filters[s as Protocol].active)
 
@@ -185,7 +173,10 @@ const CreatePosition = () => {
             height="lg"
             isActive={filters[asset].active}
             key={asset}
-            onClick={() => setFilter(asset, !filters[asset].active)}
+            onClick={() => {
+              clearAllFilters()
+              setFilter(asset, !filters[asset].active)
+            }}
             rounded
           >
             {filters[asset].icon}
@@ -240,7 +231,7 @@ const CreatePosition = () => {
           <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
         }
       >
-        <PositionsTable activeFilters={activeFilters} columns={columns} inMyWallet={inMyWallet} />
+        <PositionsTable collaterals={collaterals} columns={columns} />
       </SafeSuspense>
     </>
   )

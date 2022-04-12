@@ -11,15 +11,21 @@ export const AUCTION_BY_ID = gql`
       user
       tokenId
       debt
+      startsAt
       collateralType {
-        underlierAddress
+        address
+        faceValue
+        maturity
         symbol
         tokenId
+        underlierAddress
         underlierSymbol
       }
       vault {
         address
         name
+        interestPerSecond
+        maxAuctionDuration
       }
     }
   }

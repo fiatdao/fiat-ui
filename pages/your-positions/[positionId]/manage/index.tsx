@@ -3,6 +3,8 @@ import cn from 'classnames'
 import React, { useEffect, useState } from 'react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import Lottie from 'lottie-react'
+import Link from 'next/link'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
@@ -14,17 +16,19 @@ import {
   useManagePositionInfo,
   useManagePositionsInfoBlock,
 } from '@/src/hooks/managePosition'
-import { Position } from '@/src/utils/data/positions'
+import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
 import { Balance } from '@/src/components/custom/balance'
 import { Form } from '@/src/components/antd'
-import { getHumanValue } from '@/src/web3/utils'
-import { WAD_DECIMALS } from '@/src/constants/misc'
 import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -51,7 +55,8 @@ const PositionManage = () => {
   const [form] = AntdForm.useForm<PositionManageFormFields>()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
-
+  // @TODO: useFIATBalance hook can't be moved into another hook it trigger infinite updates
+  const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { position, refetch: refetchPosition } = useManagePositionInfo()
 
   useEffect(() => {
@@ -63,37 +68,45 @@ const PositionManage = () => {
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
 
-  const onSuccess = () => {
+  const onSuccess = async () => {
     form.resetFields()
-    refetchPosition()
+    await Promise.all([refetchPosition(), refetchFiatBalance()])
   }
 
   const {
-    availableBurnValue,
-    availableDepositValue,
-    availableMintValue,
-    availableWithdrawValue,
+    availableDepositAmount,
+    availableWithdrawAmount,
     buttonText,
+    finished,
     handleFormChange,
     handleManage,
     healthFactor,
+    isDisabledCreatePosition,
     isLoading,
-    maxBurnValue,
-    maxDepositValue,
-    maxMintValue,
-    maxWithdrawValue,
+    maxBorrowAmount,
+    maxDepositAmount,
+    maxRepayAmount,
+    maxWithdrawAmount,
+    setFinished,
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
+  const healthFactorToRender = isValidHealthFactor(healthFactor)
+    ? healthFactor?.toFixed(3)
+    : DEFAULT_HEALTH_FACTOR
 
-  const healthFactorNumber = Number(getHumanValue(healthFactor, WAD_DECIMALS)?.toFixed(4))
+  const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
+
+  const reset = async () => {
+    setFinished(false)
+  }
 
   return (
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
 
-      <PositionFormsLayout
-        form={
+      <PositionFormsLayout infoBlocks={infoBlocks}>
+        {!finished ? (
           <>
             <div className={cn(s.top)}>
               <RadioTabsWrapper>
@@ -141,14 +154,14 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to deposit"
-                            value={`Available: ${Number(availableDepositValue?.toFixed(4))}`}
+                            value={`Available: ${availableDepositAmount?.toFixed(4)}`}
                           />
                           <Form.Item name="deposit" required>
                             <TokenAmount
                               displayDecimals={4}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={healthFactorToRender}
                               mainAsset={position.protocol}
-                              max={Number(maxDepositValue?.toFixed(4))}
+                              max={maxDepositAmount}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
@@ -160,14 +173,14 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to withdraw"
-                            value={`Available: ${Number(availableWithdrawValue?.toFixed(4))}`}
+                            value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
                           />
                           <Form.Item name="withdraw" required>
                             <TokenAmount
                               displayDecimals={4}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={healthFactorToRender}
                               mainAsset={position.protocol}
-                              max={Number(maxWithdrawValue?.toFixed(4))}
+                              max={maxWithdrawAmount}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariant'}
@@ -204,13 +217,13 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to borrow"
-                            value={`Available: ${Number(availableMintValue?.toFixed(4))}`}
+                            value={`Available: ${fiatBalance?.toFixed(4)}`}
                           />
                           <Form.Item name="mint" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
-                              healthFactorValue={healthFactorNumber}
-                              max={Number(maxMintValue?.toFixed(4))}
+                              healthFactorValue={healthFactorToRender}
+                              max={maxBorrowAmount}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariant'}
                               tokenIcon={<FiatIcon />}
@@ -222,13 +235,13 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to repay"
-                            value={`Available: ${Number(availableBurnValue?.toFixed(4))}`}
+                            value={`Available: ${fiatBalance?.toFixed(4)}`}
                           />
                           <Form.Item name="burn" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
-                              healthFactorValue={healthFactorNumber}
-                              max={Number(maxBurnValue?.toFixed(4))}
+                              healthFactorValue={healthFactorToRender}
+                              max={maxRepay}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}
                               tokenIcon={<FiatIcon />}
@@ -241,6 +254,7 @@ const PositionManage = () => {
 
                   <ButtonsWrapper>
                     <ButtonGradient
+                      disabled={isDisabledCreatePosition}
                       height="lg"
                       loading={isLoading}
                       onClick={() => handleManage(formValues)}
@@ -257,9 +271,26 @@ const PositionManage = () => {
               </fieldset>
             </Form>
           </>
-        }
-        infoBlocks={infoBlocks}
-      />
+        ) : (
+          <div className={cn(s.form)}>
+            <div className={cn(s.lastStepAnimation)}>
+              <Lottie animationData={SuccessAnimation} autoplay loop />
+            </div>
+            <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
+            <p className={cn(s.lastStepText)}>Your position has been successfully updated.</p>
+            <div className={cn(s.summary)}>
+              <ButtonsWrapper>
+                <ButtonGradient height="lg" onClick={reset}>
+                  Continue
+                </ButtonGradient>
+                <Link href={`/your-positions/`} passHref>
+                  <button className={cn(s.finishButton)}>Go to Your Positions</button>
+                </Link>
+              </ButtonsWrapper>
+            </div>
+          </div>
+        )}
+      </PositionFormsLayout>
     </>
   )
 }

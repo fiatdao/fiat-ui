@@ -35,20 +35,23 @@ export const isValidPositionId = (positionId: string | string[] | undefined): bo
   return positionIdRegex.test(positionId)
 }
 
-export const useExtractPositionIdData = (): {
-  vaultAddress: string
-  tokenId: string
-  proxyAddress: string
-} => {
-  const positionId = useQueryParam('positionId')
-
+export const extractFieldsFromPositionId = (positionId: string) => {
   if (!isValidPositionIdType(positionId) || !isValidPositionId(positionId)) {
     if (isDev()) {
       console.error('Invalid position id')
     }
   }
 
-  const [vaultAddress, tokenId, proxyAddress] = (positionId as string).split('-')
+  const [vaultAddress, tokenId, proxyAddress] = positionId.split('-')
 
   return { vaultAddress, tokenId, proxyAddress }
+}
+
+export const useExtractPositionIdData = (): {
+  vaultAddress: string
+  tokenId: string
+  proxyAddress: string
+} => {
+  const positionId = useQueryParam('positionId')
+  return extractFieldsFromPositionId(positionId)
 }

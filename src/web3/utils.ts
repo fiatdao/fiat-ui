@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { Contract } from 'ethers'
+import { SECONDS_IN_A_YEAR, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 BigNumber.prototype.scaleBy = function (decimals: any = 0): any {
   return this.multipliedBy(10 ** decimals)
@@ -92,9 +93,9 @@ export function getNonHumanValue(value: any, decimals: any = 0): any {
   return value ? BigNumber.from(value)?.scaleBy(decimals) : undefined
 }
 
-// Converts interest rate from "per second return rate" to APY
-export function perSecondToAPY(value: BigNumber): number {
-  return (Math.pow(value.toNumber(), 31536000) - 1) * 100
+// Converts interest rate from "per second return rate" to APR
+export function perSecondToAPR(value: BigNumber): number {
+  return (Math.pow(value.toNumber(), SECONDS_IN_A_YEAR) - 1) * 100
 }
 
 export function formatBigValue(
@@ -271,4 +272,11 @@ export function formatUSDValue(
 
 export function shortenAddr(addr: string | undefined, first = 6, last = 4): string | undefined {
   return addr ? [String(addr).slice(0, first), String(addr).slice(-last)].join('...') : undefined
+}
+
+/// Estimated gasLimit is sometimes a few units too low when routing txs through a proxy contract.
+/// Here we estimate the gas for a contract call and raise the estimated gasLimit by a small margin to mitigate tx failures.
+export async function estimateGasLimit(contract: Contract, method: string, args: any[]) {
+  const gasEstimate = await contract.estimateGas[method](...args)
+  return gasEstimate.mul(110).div(100) // +10% margin
 }

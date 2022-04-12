@@ -12,7 +12,7 @@ export const COLLATERALS = gql`
       maturity
       address
       faceValue
-      ccp {
+      eptData {
         id
         balancerVault
         convergentCurvePool
@@ -24,6 +24,7 @@ export const COLLATERALS = gql`
         collateralizationRatio
         address
         interestPerSecond
+        debtFloor
       }
     }
   }

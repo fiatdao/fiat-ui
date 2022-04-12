@@ -1,5 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import useSWR, { KeyedMutator } from 'swr'
+import { Maybe } from '@/types/utils'
 import { Positions, PositionsVariables } from '@/types/subgraph/__generated__/Positions'
 import { ChainsValues } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -8,10 +9,11 @@ import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { POSITIONS } from '@/src/queries/positions'
 
 // FIXME Use fragment or find a way to unify queries
-export const fetchPosition = async (
+export const fetchPosition = (
   positionId: string,
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
+  userAddress: Maybe<string>,
 ) => {
   return graphqlFetcher<Positions, PositionsVariables>(POSITIONS, {
     where: {
@@ -21,7 +23,7 @@ export const fetchPosition = async (
     const [position] = positions
 
     if (position) {
-      return wranglePosition(position, provider, appChainId)
+      return wranglePosition(position, provider, appChainId, userAddress ?? '')
     }
 
     throw `Position with id ${positionId} not found`
@@ -35,11 +37,11 @@ type usePosition = {
 }
 
 export const usePosition = (positionId: string): usePosition => {
-  const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
+  const { address: userAddress, appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
 
-  const { data, error, mutate } = useSWR(['position-by-id', positionId, appChainId], async () => {
-    return fetchPosition(positionId, provider, appChainId)
-  })
+  const { data, error, mutate } = useSWR(['position-by-id', positionId, appChainId, provider], () =>
+    fetchPosition(positionId, provider, appChainId, userAddress),
+  )
 
   return { position: data, refetch: mutate, error }
 }

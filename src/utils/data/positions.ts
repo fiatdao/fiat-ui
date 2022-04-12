@@ -7,7 +7,6 @@ import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
 
-import { Maybe } from '@/types/utils'
 import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
@@ -15,10 +14,13 @@ import { ERC20 } from '@/types/typechain'
 import {
   INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
+  ONE_BIG_NUMBER,
   VIRTUAL_RATE,
+  VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
+import { Maybe } from '@/types/utils'
 
 export type Position = {
   id: string
@@ -31,13 +33,16 @@ export type Position = {
   underlier: TokenData
   totalCollateral: BigNumber
   totalNormalDebt: BigNumber
-  vaultCollateralizationRatio: Maybe<BigNumber>
+  totalDebt: BigNumber
+  vaultCollateralizationRatio: BigNumber
   collateralValue: BigNumber
   faceValue: BigNumber
   healthFactor: BigNumber
   isAtRisk: boolean
   interestPerSecond: BigNumber
   currentValue: BigNumber
+  userAddress: string
+  debtFloor: BigNumber
 }
 
 // TODO pass tokenId depends on protocol
@@ -93,39 +98,46 @@ export const getDateState = (maturityDate: Date) => {
   return diff <= 0 ? 'danger' : diff <= 7 ? 'warning' : 'ok'
 }
 
+// @TODO: we need to use debt instead of normalDebt to calculate HF
+//        replace hardcoded value for Publican virtualRate value
+//        https://github.com/fiatdao/fiat-ui/issues/292
+// normalDebt = debt / (virtualRate*slippageMargin)
+const calculateNormalDebt = (debt: BigNumber) => {
+  return debt.div(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE))
+}
+
+// debt = normalDebt * (virtualRate*slippageMargin)
+const calculateDebt = (normalDebt: BigNumber) => {
+  return normalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE))
+}
+
+// @TODO: healthFactor = totalCollateral*collateralValue/totalFIAT/collateralizationRatio
+// totalFIAT = debt = normalDebt * (virtualRate*slippageMargin)
 const calculateHealthFactor = (
-  currentValue: BigNumber | undefined,
+  currentValue: BigNumber | Maybe<BigNumber> | undefined, // collateralValue
+  collateralizationRatio: BigNumber | Maybe<BigNumber> | undefined,
   collateral: BigNumber | undefined,
-  normalDebt: BigNumber | undefined,
-  collateralizationRatio: BigNumber,
+  debt: BigNumber | undefined,
 ): {
-  healthFactor: BigNumber
+  healthFactor: BigNumber // NonHumanBigNumber
   isAtRisk: boolean
 } => {
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
-  if (normalDebt && normalDebt?.isZero()) {
+  if (!debt || debt?.isZero()) {
     healthFactor = INFINITE_BIG_NUMBER
+    return {
+      healthFactor,
+      isAtRisk,
+    }
   } else {
-    if (
-      currentValue &&
-      collateral &&
-      normalDebt &&
-      !collateral?.isZero() &&
-      collateralizationRatio
-    ) {
-      healthFactor = new BigNumber(
-        currentValue
-          .times(collateral.toFixed())
-          .div(normalDebt.times(VIRTUAL_RATE).toFixed())
-          .div(collateralizationRatio)
-          .toNumber(),
-      )
-      isAtRisk = collateralizationRatio.gte(healthFactor)
+    if (currentValue && collateral && !collateral?.isZero() && collateralizationRatio) {
+      healthFactor = collateral.times(currentValue).div(debt).div(collateralizationRatio)
 
       if (healthFactor.isGreaterThan(INFINITE_HEALTH_FACTOR_NUMBER)) {
         healthFactor = INFINITE_BIG_NUMBER
       }
+      isAtRisk = getHumanValue(collateralizationRatio, WAD_DECIMALS).gte(healthFactor)
     }
   }
   return {
@@ -134,21 +146,26 @@ const calculateHealthFactor = (
   }
 }
 
+const isValidHealthFactor = (healthFactor?: BigNumber) => {
+  return healthFactor && healthFactor.isFinite() && healthFactor.isPositive()
+}
+
 const wranglePosition = async (
   position: SubgraphPosition,
   provider: JsonRpcProvider,
   appChainId: ChainsValues,
+  userAddress: string,
 ): Promise<Position> => {
   const { id, vaultName: protocol } = position
-  // we use 18 decimals, as values stored are stored in WAD in the FIAT protocol
-  const vaultCollateralizationRatio = getHumanValue(
-    BigNumber.from(position.vault?.collateralizationRatio ?? 1e18) as BigNumber,
-    WAD_DECIMALS,
-  )
+  const vaultCollateralizationRatio =
+    BigNumber.from(position.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER
+  const totalCollateral = BigNumber.from(position.collateral) ?? ZERO_BIG_NUMBER
+  const totalNormalDebt = BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER
 
-  const totalCollateral = BigNumber.from(position.totalCollateral) ?? ZERO_BIG_NUMBER
-  const totalNormalDebt = BigNumber.from(position.totalNormalDebt) ?? ZERO_BIG_NUMBER
+  // @TODO: totalDebt = normalDebt * RATES
+  const totalDebt = calculateDebt(BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER)
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
+  const debtFloor = BigNumber.from(position.vault?.debtFloor) ?? ZERO_BIG_NUMBER
   const maturity = BigNumberToDateOrCurrent(position.maturity)
 
   const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
@@ -160,9 +177,9 @@ const wranglePosition = async (
 
   const { healthFactor, isAtRisk } = calculateHealthFactor(
     currentValue,
-    totalCollateral,
-    totalNormalDebt,
     vaultCollateralizationRatio,
+    totalCollateral,
+    totalDebt,
   )
 
   // TODO Interest rate
@@ -174,6 +191,7 @@ const wranglePosition = async (
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
+    totalDebt,
     currentValue,
     owner: position.owner,
     collateralValue: getHumanValue(currentValue.times(totalCollateral), WAD_DECIMALS),
@@ -192,6 +210,14 @@ const wranglePosition = async (
     healthFactor,
     isAtRisk,
     interestPerSecond,
+    userAddress,
+    debtFloor,
   }
 }
-export { wranglePosition, calculateHealthFactor }
+export {
+  wranglePosition,
+  calculateHealthFactor,
+  calculateNormalDebt,
+  calculateDebt,
+  isValidHealthFactor,
+}

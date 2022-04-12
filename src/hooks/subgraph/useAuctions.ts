@@ -19,12 +19,18 @@ type UseAuctions = {
 export const useAuctions = (protocols: string[]): UseAuctions => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
 
+  // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
   const { data, error } = useSWR(['auctions', protocols.join(), appChainId, provider], async () => {
-    const { collateralAuctions } = await fetchAuctions(
-      protocols.length ? { vaultName_in: protocols } : null,
-    )
+    const [{ collateralAuctions }, { timestamp }] = await Promise.all([
+      fetchAuctions(
+        protocols.length
+          ? { vaultName_in: protocols, vaultName_not_contains_nocase: 'deprecated' }
+          : null,
+      ),
+      provider.getBlock('latest'),
+    ])
     return Promise.all(
-      collateralAuctions.map((auction) => wrangleAuction(auction, provider, appChainId)),
+      collateralAuctions.map((auction) => wrangleAuction(auction, provider, appChainId, timestamp)),
     )
   })
 

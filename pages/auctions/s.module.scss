@@ -33,7 +33,7 @@
   }
 }
 
-.fitersGrid {
+.filtersGrid {
   display: grid;
   gap: 12px;
   grid-template-columns: 1fr;
@@ -52,11 +52,18 @@
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  margin: 0 auto;
+  margin: 0 auto 0 0;
   padding: 0;
   text-decoration: underline;
 
   &:hover {
     text-decoration: none;
   }
+}
+
+.iconInTable {
+  border-radius: 0;
+  border: 0;
+  padding: 0;
+
 }

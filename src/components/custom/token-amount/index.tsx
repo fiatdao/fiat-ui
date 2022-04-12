@@ -31,6 +31,13 @@ export type TokenAmountProps = {
   healthFactorValue?: number | string
 }
 
+const healthFactorHint =
+  'The health factor is a score representing the risk for a given position to be liquidated. ' +
+  'A position can be liquidated if the health factor is less than 1.0. ' +
+  'The health factor is derived from the positions ratio between the deposited collateral and the outstanding ' +
+  'debt denominated in FIAT using the following formula: ' +
+  'collateral * collateralValue / debt / collateralizationRatio.'
+
 const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   const {
     className,
@@ -107,13 +114,9 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               <div className={s.safer}>Safer</div>
               <div className={s.healthFactor}>
                 <span>
-                  Health factor <span className={s.hf}>{healthFactorValue}</span>
+                  Health Factor <span className={s.hf}>{healthFactorValue}</span>
                 </span>
-                <Tooltip
-                  title={
-                    'A score representing your risk of collateral liquidation, with scores of 1 or below triggering collateral auction.'
-                  }
-                >
+                <Tooltip title={healthFactorHint}>
                   <Info />
                 </Tooltip>
               </div>
@@ -125,13 +128,9 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               <div className={s.safer}>Safer</div>
               <div className={s.healthFactor}>
                 <span>
-                  Health factor <span className={s.hf}>{healthFactorValue}</span>
+                  Health Factor <span className={s.hf}>{healthFactorValue}</span>
                 </span>
-                <Tooltip
-                  title={
-                    'A score representing your risk of collateral liquidation, with scores of 1 or below triggering collateral auction.'
-                  }
-                >
+                <Tooltip title={healthFactorHint}>
                   <Info />
                 </Tooltip>
               </div>
@@ -146,10 +145,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
             min={0}
             onChange={onSliderChange}
             step={step}
-            tipFormatter={(sliderValue) =>
-              sliderValue ? formatBigValue(new BigNumber(sliderValue), displayDecimals) : 0
-            }
-            tooltipPlacement="bottom"
+            tooltipVisible={false}
             value={bnValue?.toNumber()}
           />
         </>
