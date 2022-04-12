@@ -1,4 +1,4 @@
-import { BigNumberToDateOrCurrent } from '../dateTime'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import { getHumanValue } from '@/src/web3/utils'
 import { Transactions_positionTransactionActions as SubgraphTransaction } from '@/types/subgraph/__generated__/Transactions'
 import { WAD_DECIMALS } from '@/src/constants/misc'
@@ -31,7 +31,7 @@ const wrangleTransaction = (transaction: SubgraphTransaction): Transaction => {
     transactionHash: transaction.transactionHash,
     amount: getHumanValue(transaction.collateral, WAD_DECIMALS)?.toNumber() ?? 0,
     deltaAmount: getHumanValue(transaction.deltaCollateral, WAD_DECIMALS)?.toNumber() ?? 0,
-    date: BigNumberToDateOrCurrent(transaction.timestamp),
+    date: stringToDateOrCurrent(transaction.timestamp),
     assetAddress: transaction.position.collateralType?.address ?? '',
   }
 }

@@ -22,9 +22,8 @@ const remainingTime = (d: Date | null): string => {
   return `${diffInDays}d:${diffInHours}h:${diffInMinutes}m`
 }
 
-// FixMe: misleading function name
-const BigNumberToDateOrCurrent = (ts?: Maybe<string>): Date => {
+const stringToDateOrCurrent = (ts?: Maybe<string>): Date => {
   return new Date(ts ? +ts * 1000 : Date.now())
 }
 
-export { parseDate, remainingTime, BigNumberToDateOrCurrent }
+export { parseDate, remainingTime, stringToDateOrCurrent }
