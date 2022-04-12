@@ -1,7 +1,7 @@
-import { BigNumberToDateOrCurrent } from '../dateTime'
-import contractCall from '../contractCall'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from 'bignumber.js'
+import contractCall from '@/src/utils/contractCall'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import { Collaterals_collateralTypes as SubgraphCollateral } from '@/types/subgraph/__generated__/Collaterals'
 
 import { ChainsValues } from '@/src/constants/chains'
@@ -71,7 +71,7 @@ const wrangleCollateral = async (
 
   return {
     ...collateral,
-    maturity: BigNumberToDateOrCurrent(collateral.maturity),
+    maturity: stringToDateOrCurrent(collateral.maturity),
     faceValue: BigNumber.from(collateral.faceValue) ?? null,
     currentValue: BigNumber.from(currentValue?.toString()) ?? null,
     vault: {
