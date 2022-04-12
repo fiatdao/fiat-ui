@@ -27,8 +27,8 @@ import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -160,7 +160,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorToRender}
-                              mainAsset={position.protocol}
+                              mainAsset={position.vaultName}
                               max={maxDepositAmount}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
@@ -179,7 +179,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorToRender}
-                              mainAsset={position.protocol}
+                              mainAsset={position.vaultName}
                               max={maxWithdrawAmount}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}

@@ -5,7 +5,7 @@ import { contracts } from '@/src/constants/contracts'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { PRBProxy as PRBProxyType } from '@/types/typechain'
+import { PRBProxyRegistry } from '@/types/typechain'
 
 const useUserProxy = () => {
   const {
@@ -18,20 +18,23 @@ const useUserProxy = () => {
   const notification = useNotifications()
 
   const [proxyAddress, refetch] = useContractCall<
-    PRBProxyType,
+    PRBProxyRegistry,
     'getCurrentProxy',
     [string],
     Promise<string>
-  >(contracts.PRB_Proxy.address[appChainId], contracts.PRB_Proxy.abi, 'getCurrentProxy', [
-    currentUserAddress as string,
-  ])
+  >(
+    contracts.PRB_PROXY_REGISTRY.address[appChainId],
+    contracts.PRB_PROXY_REGISTRY.abi,
+    'getCurrentProxy',
+    [currentUserAddress as string],
+  )
 
   const setupProxy = useCallback(async () => {
     if (isAppConnected && web3Provider) {
       setLoadingProxy(true)
       const prbProxy = new Contract(
-        contracts.PRB_Proxy.address[appChainId],
-        contracts.PRB_Proxy.abi,
+        contracts.PRB_PROXY_REGISTRY.address[appChainId],
+        contracts.PRB_PROXY_REGISTRY.abi,
         web3Provider.getSigner(),
       )
 
@@ -55,13 +58,7 @@ const useUserProxy = () => {
     if (!proxyAddress || !web3Provider) {
       return null
     }
-    return new Contract(
-      proxyAddress,
-      [
-        'function execute(address target, bytes calldata data) external payable returns (bytes memory response)',
-      ],
-      web3Provider.getSigner(),
-    )
+    return new Contract(proxyAddress, contracts.PRB_PROXY.abi, web3Provider.getSigner())
   }, [proxyAddress, web3Provider])
 
   // isProxyAvailable: !!userProxy
