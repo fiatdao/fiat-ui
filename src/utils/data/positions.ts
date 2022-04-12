@@ -1,3 +1,4 @@
+import { getVirtualRate } from '../getVirtualRate'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { differenceInDays } from 'date-fns'
@@ -15,7 +16,6 @@ import {
   INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
   ONE_BIG_NUMBER,
-  VIRTUAL_RATE,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
@@ -43,6 +43,7 @@ export type Position = {
   currentValue: BigNumber
   userAddress: string
   debtFloor: BigNumber
+  virtualRate: BigNumber
 }
 
 const readValue = async (
@@ -101,13 +102,13 @@ export const getDateState = (maturityDate: Date) => {
 //        replace hardcoded value for Publican virtualRate value
 //        https://github.com/fiatdao/fiat-ui/issues/292
 // normalDebt = debt / (virtualRate*slippageMargin)
-const calculateNormalDebt = (debt: BigNumber) => {
-  return debt.div(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE))
+const calculateNormalDebt = (debt: BigNumber, virtualRate: BigNumber) => {
+  return debt.div(virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
 }
 
 // debt = normalDebt * (virtualRate*slippageMargin)
-const calculateDebt = (normalDebt: BigNumber) => {
-  return normalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE))
+const calculateDebt = (normalDebt: BigNumber, virtualRate: BigNumber) => {
+  return normalDebt.times(virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
 }
 
 // @TODO: healthFactor = totalCollateral*collateralValue/totalFIAT/collateralizationRatio
@@ -160,20 +161,21 @@ const wranglePosition = async (
     BigNumber.from(position.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER
   const totalCollateral = BigNumber.from(position.collateral) ?? ZERO_BIG_NUMBER
   const totalNormalDebt = BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER
-
-  // @TODO: totalDebt = normalDebt * RATES
-  const totalDebt = calculateDebt(BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER)
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
   const debtFloor = BigNumber.from(position.vault?.debtFloor) ?? ZERO_BIG_NUMBER
   const maturity = stringToDateOrCurrent(position.maturity)
 
-  const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
-    _getCurrentValue(position, appChainId, provider),
-    _getFaceValue(position, appChainId, provider),
-    getDecimals(position.collateralType?.address, provider), // collateral is an ERC20 token
-    getDecimals(position.collateralType?.underlierAddress, provider),
-  ])
+  const [currentValue, faceValue, collateralDecimals, underlierDecimals, virtualRate] =
+    await Promise.all([
+      _getCurrentValue(position, appChainId, provider),
+      _getFaceValue(position, appChainId, provider),
+      getDecimals(position.collateralType?.address, provider), // collateral is an ERC20 token
+      getDecimals(position.collateralType?.underlierAddress, provider),
+      getVirtualRate(position.vault?.address ?? '', appChainId, provider),
+    ])
 
+  // @TODO: totalDebt = normalDebt * RATES
+  const totalDebt = calculateDebt(totalNormalDebt, virtualRate)
   const { healthFactor, isAtRisk } = calculateHealthFactor(
     currentValue,
     vaultCollateralizationRatio,
@@ -211,6 +213,7 @@ const wranglePosition = async (
     interestPerSecond,
     userAddress,
     debtFloor,
+    virtualRate,
   }
 }
 export {

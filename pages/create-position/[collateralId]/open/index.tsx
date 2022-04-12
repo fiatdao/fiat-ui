@@ -23,7 +23,6 @@ import TokenAmount from '@/src/components/custom/token-amount'
 import {
   BELOW_MINIMUM_AMOUNT_TEXT,
   DEPOSIT_COLLATERAL_TEXT,
-  VIRTUAL_RATE,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
 } from '@/src/constants/misc'
@@ -148,7 +147,7 @@ const FormERC20: React.FC<{
       WAD_DECIMALS,
     )
 
-    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(VIRTUAL_RATE)
+    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(collateral.vault.virtualRate)
     const maxBorrowAmount = totalCollateral
       .times(collateralValue)
       .div(collateralizationRatio)
