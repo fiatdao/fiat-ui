@@ -28,6 +28,7 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -94,8 +95,7 @@ const PositionManage = () => {
     ? healthFactor?.toFixed(3)
     : DEFAULT_HEALTH_FACTOR
 
-  // @TODO: should use maxRepay instead of maxRepayAmount
-  // const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
+  const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
 
   const reset = async () => {
     setFinished(false)
@@ -241,7 +241,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorToRender}
-                              max={maxRepayAmount}
+                              max={maxRepay}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}
                               tokenIcon={<FiatIcon />}
