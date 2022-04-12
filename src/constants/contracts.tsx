@@ -6,6 +6,7 @@ import {
   moneta,
   noLossCollateralAuction,
   noLossCollateralAuctionActions,
+  prbProxyRegistry,
   prbProxy,
   publican,
   vault20,
