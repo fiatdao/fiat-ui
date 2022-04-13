@@ -11,7 +11,6 @@ import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
-import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { Balance } from '@/src/components/custom/balance'
 import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
@@ -130,7 +129,7 @@ const FormERC20: React.FC<{
     send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
   }, [hasAllowance, isProxyAvailable, send])
 
-  const [tab, setTab] = useState('bond')
+  const [tab] = useState('bond')
   const [mintFiat, setMintFiat] = useState(false)
 
   const toggleMintFiat = () => setMintFiat(!mintFiat)
@@ -214,21 +213,6 @@ const FormERC20: React.FC<{
             totalSteps={stateMachine.context.totalStepNumber}
           />
           <div className={cn(s.form)}>
-            {stateMachine.context.currentStepNumber === 1 && (
-              <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
-                <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
-                  Bond
-                </RadioTab>
-                {/* Temporary comment untill underlying is ready for production */}
-                {/* <RadioTab
-                  checked={tab === 'underlying'}
-                  disabled
-                  onClick={() => setTab('underlying')}
-                >
-                  Underlying
-                </RadioTab> */}
-              </RadioTabsWrapper>
-            )}
             {[1, 4].includes(stateMachine.context.currentStepNumber) && tab === 'bond' && (
               <Balance
                 title={`Deposit ${stateMachine.context.tokenSymbol}`}
