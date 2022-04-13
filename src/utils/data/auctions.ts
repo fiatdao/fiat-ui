@@ -41,7 +41,12 @@ export type AuctionData = {
   faceValue?: BigNumber
   collateralMaturity: number
   tokenId?: Maybe<string>
-  vault: { address?: Maybe<string>; name?: Maybe<string>; interestPerSecond?: BigNumber }
+  vault: {
+    address?: Maybe<string>
+    name?: Maybe<string>
+    interestPerSecond?: BigNumber
+    auctionDebtFloor?: BigNumber
+  }
   action: { isActive: Maybe<boolean>; id: number | string }
   tokenAddress?: string | null
   collateral: TokenData
@@ -145,7 +150,8 @@ const wrangleAuction = async (
     vault: {
       address: collateralAuction.vault?.address,
       name: collateralAuction.vault?.name,
-      interestPerSecond: BigNumber.from(collateralAuction.vault?.interestPerSecond?.toString()),
+      interestPerSecond: BigNumber.from(collateralAuction.vault?.interestPerSecond),
+      auctionDebtFloor: BigNumber.from(collateralAuction.vault?.auctionDebtFloor),
     },
     asset: vaultMetadata?.symbol,
     auctionedCollateral: BigNumber.from(auctionStatus?.collateralToSell.toString())?.unscaleBy(

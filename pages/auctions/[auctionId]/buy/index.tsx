@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useState } from 'react'
 import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
-import { FIAT_TICKER, WAD_DECIMALS } from '@/src/constants/misc'
+import { FIAT_TICKER, WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -63,6 +63,8 @@ const BuyCollateral = () => {
     maxCredit,
     maxPrice,
   } = useBuyCollateralForm(data)
+
+  const [isDebtSufficient, setIsDebtSufficient] = useState(false)
 
   const [step, setStep] = useState(0)
   const steps: Step[] = [
@@ -219,6 +221,12 @@ const BuyCollateral = () => {
     },
   ]
 
+  const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
+    if (data?.vault?.auctionDebtFloor) {
+      setIsDebtSufficient(data.vault.auctionDebtFloor.unscaleBy(WAD_DECIMALS).lte(amountToBuy))
+    }
+  }
+
   return (
     <>
       <ButtonBack href="/auctions">Back</ButtonBack>
@@ -247,14 +255,22 @@ const BuyCollateral = () => {
                 {step === 0 ? (
                   <>
                     <div className={cn(s.balanceWrapper)}>
-                      <h3 className={cn(s.balanceLabel)}>Select amount</h3>
+                      <h3 className={cn(s.balanceLabel)}>
+                        Select amount (minimum{' '}
+                        {data?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS).toFixed(2) ?? '-'})
+                      </h3>
                       <p className={cn(s.balance)}>
                         Balance: {FIATBalance.unscaleBy(WAD_DECIMALS)?.toFixed(2)}
                       </p>
                     </div>
 
                     {/* FixMe: send proper value to `mainAsset` */}
-                    <Form form={form} initialValues={{ amountToBuy: 0 }} onFinish={onSubmit}>
+                    <Form
+                      form={form}
+                      initialValues={{ amountToBuy: 0 }}
+                      onFinish={onSubmit}
+                      onValuesChange={onValuesChange}
+                    >
                       <Form.Item name="amountToBuy" required>
                         <TokenAmount
                           disabled={loading}
@@ -266,8 +282,12 @@ const BuyCollateral = () => {
                           slider
                         />
                       </Form.Item>
-                      <ButtonGradient disabled={loading} height="lg" onClick={steps[step].next}>
-                        {steps[step].buttonText}
+                      <ButtonGradient
+                        disabled={loading || !isDebtSufficient}
+                        height="lg"
+                        onClick={steps[step].next}
+                      >
+                        {isDebtSufficient ? steps[step].buttonText : 'No partial auction possible'}
                       </ButtonGradient>
                     </Form>
                   </>
