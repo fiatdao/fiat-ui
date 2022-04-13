@@ -7,7 +7,6 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import Lottie from 'lottie-react'
 import { getEtherscanAddressUrl } from '@/src/web3/utils'
-import { SummaryItem } from '@/src/components/custom/summary'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Form } from '@/src/components/antd'
@@ -178,21 +177,6 @@ const FormERC20: React.FC<{
   )
   const healthFactorNumber = hf?.toFixed(3)
 
-  const underlyingData = [
-    {
-      title: 'Market rate',
-      value: `1 Principal Token = .9949 DAI`,
-    },
-    {
-      title: 'Price impact',
-      value: '0.00%',
-    },
-    {
-      title: 'Slippage tolerance',
-      value: '0.30%',
-    },
-  ]
-
   const summaryData = [
     {
       title: 'In your wallet',
@@ -250,42 +234,6 @@ const FormERC20: React.FC<{
                 title={`Deposit ${stateMachine.context.tokenSymbol}`}
                 value={`Balance: ${tokenInfo?.humanValue?.toFixed()}`}
               />
-            )}
-            {tab === 'underlying' && (
-              <>
-                <Balance
-                  title={`Swap and Deposit`}
-                  value={`Balance:
-              ${tokenInfo?.humanValue?.toFixed()}`}
-                />
-                <Form form={form} initialValues={{ underlierAmount: 0 }}>
-                  <Form.Item name="underlierAmount" required>
-                    <TokenAmount
-                      displayDecimals={tokenInfo?.decimals}
-                      mainAsset={collateral.underlierSymbol as string}
-                      max={tokenInfo?.humanValue}
-                      maximumFractionDigits={tokenInfo?.decimals}
-                      onChange={(val) =>
-                        val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
-                      }
-                      secondaryAsset={tokenSymbol}
-                    />
-                  </Form.Item>
-                  <Summary data={underlyingData} />
-                  <SummaryItem title={'Fixed APR'} value={'2%'} />
-                  <SummaryItem title={'Interest earned'} value={'24.028 USDC'} />
-                  <SummaryItem
-                    title={'Redeemable at maturity | Dec 29 2021'}
-                    value={'10,024.028 USDC'}
-                  />
-
-                  <ButtonsWrapper>
-                    <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_DEPLOY' })}>
-                      Deposit collateral
-                    </ButtonGradient>
-                  </ButtonsWrapper>
-                </Form>
-              </>
             )}
             {tab === 'bond' && (
               <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
