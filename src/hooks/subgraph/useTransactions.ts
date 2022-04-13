@@ -26,7 +26,7 @@ export const useTransactions = (
       where['vaultName'] = protocol
     }
     if (user) {
-      where['user'] = user
+      where['user_contains_nocase'] = user.toLowerCase()
     }
     // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     where['vaultName_not_contains_nocase'] = 'deprecated'

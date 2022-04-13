@@ -19,7 +19,9 @@ const Columns: ColumnsType<Transaction> = [
   {
     align: 'left',
     dataIndex: 'protocol',
-    render: (protocol: Transaction['protocol']) => <Asset mainAsset={protocol} title={protocol} />,
+    render: (protocol: Transaction['protocol'], { vaultName }) => (
+      <Asset mainAsset={vaultName} title={protocol} />
+    ),
     title: 'Protocol',
     width: 200,
   },
