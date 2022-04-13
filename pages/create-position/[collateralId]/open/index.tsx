@@ -7,12 +7,10 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import Lottie from 'lottie-react'
 import { getEtherscanAddressUrl } from '@/src/web3/utils'
-import { SummaryItem } from '@/src/components/custom/summary'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
-import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { Balance } from '@/src/components/custom/balance'
 import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
@@ -131,7 +129,7 @@ const FormERC20: React.FC<{
     send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
   }, [hasAllowance, isProxyAvailable, send])
 
-  const [tab, setTab] = useState('bond')
+  const [tab] = useState('bond')
   const [mintFiat, setMintFiat] = useState(false)
 
   const toggleMintFiat = () => setMintFiat(!mintFiat)
@@ -178,21 +176,6 @@ const FormERC20: React.FC<{
   )
   const healthFactorNumber = hf?.toFixed(3)
 
-  const underlyingData = [
-    {
-      title: 'Market rate',
-      value: `1 Principal Token = .9949 DAI`,
-    },
-    {
-      title: 'Price impact',
-      value: '0.00%',
-    },
-    {
-      title: 'Slippage tolerance',
-      value: '0.30%',
-    },
-  ]
-
   const summaryData = [
     {
       title: 'In your wallet',
@@ -230,120 +213,26 @@ const FormERC20: React.FC<{
             totalSteps={stateMachine.context.totalStepNumber}
           />
           <div className={cn(s.form)}>
-            {stateMachine.context.currentStepNumber === 1 && (
-              <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
-                <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
-                  Bond
-                </RadioTab>
-                {/* Temporary comment untill underlying is ready for production */}
-                {/* <RadioTab
-                  checked={tab === 'underlying'}
-                  disabled
-                  onClick={() => setTab('underlying')}
-                >
-                  Underlying
-                </RadioTab> */}
-              </RadioTabsWrapper>
-            )}
-            {[1, 4].includes(stateMachine.context.currentStepNumber) && tab === 'bond' && (
-              <Balance
-                title={`Deposit ${stateMachine.context.tokenSymbol}`}
-                value={`Balance: ${tokenInfo?.humanValue?.toFixed()}`}
-              />
-            )}
-            {tab === 'underlying' && (
-              <>
-                <Balance
-                  title={`Swap and Deposit`}
-                  value={`Balance:
-              ${tokenInfo?.humanValue?.toFixed()}`}
-                />
-                <Form form={form} initialValues={{ underlierAmount: 0 }}>
-                  <Form.Item name="underlierAmount" required>
-                    <TokenAmount
-                      displayDecimals={tokenInfo?.decimals}
-                      mainAsset={collateral.underlierSymbol as string}
-                      max={tokenInfo?.humanValue}
-                      maximumFractionDigits={tokenInfo?.decimals}
-                      onChange={(val) =>
-                        val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
-                      }
-                      secondaryAsset={tokenSymbol}
-                    />
-                  </Form.Item>
-                  <Summary data={underlyingData} />
-                  <SummaryItem title={'Fixed APR'} value={'2%'} />
-                  <SummaryItem title={'Interest earned'} value={'24.028 USDC'} />
-                  <SummaryItem
-                    title={'Redeemable at maturity | Dec 29 2021'}
-                    value={'10,024.028 USDC'}
-                  />
-
-                  <ButtonsWrapper>
-                    <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_DEPLOY' })}>
-                      Deposit collateral
-                    </ButtonGradient>
-                  </ButtonsWrapper>
-                </Form>
-              </>
-            )}
             {tab === 'bond' && (
               <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
                 {[1, 4].includes(stateMachine.context.currentStepNumber) && (
-                  <Form.Item name="tokenAmount" required>
-                    <TokenAmount
-                      displayDecimals={tokenInfo?.decimals}
-                      mainAsset={collateral.vault.name}
-                      max={tokenInfo?.humanValue}
-                      maximumFractionDigits={tokenInfo?.decimals}
-                      onChange={(val) =>
-                        val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })
-                      }
-                      slider
-                    />
-                  </Form.Item>
-                )}
-                {stateMachine.context.currentStepNumber === 1 && (
-                  <ButtonsWrapper>
-                    {!isProxyAvailable && (
-                      <ButtonGradient
-                        height="lg"
-                        onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
-                      >
-                        Setup Proxy
-                      </ButtonGradient>
-                    )}
-                    {!hasAllowance && (
-                      <ButtonGradient
-                        disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
-                        height="lg"
-                        onClick={() => send({ type: 'CLICK_ALLOW' })}
-                      >
-                        {stateMachine.context.erc20Amount.gt(0)
-                          ? 'Set Allowance'
-                          : `Insufficient Balance for ${tokenSymbol}`}
-                      </ButtonGradient>
-                    )}
-                  </ButtonsWrapper>
-                )}
-                {stateMachine.context.currentStepNumber === 2 && (
-                  <ButtonsWrapper>
-                    <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
-                      Create Proxy
-                    </ButtonGradient>
-                    <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
-                      &#8592; Go back
-                    </button>
-                  </ButtonsWrapper>
-                )}
-                {stateMachine.context.currentStepNumber === 3 && (
-                  <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
-                    {`Set Allowance for Proxy`}
-                  </ButtonGradient>
-                )}
-
-                {stateMachine.context.currentStepNumber === 4 && (
                   <>
+                    <Balance
+                      title={`Deposit ${stateMachine.context.tokenSymbol}`}
+                      value={`Balance: ${tokenInfo?.humanValue?.toFixed()}`}
+                    />
+                    <Form.Item name="tokenAmount" required>
+                      <TokenAmount
+                        displayDecimals={tokenInfo?.decimals}
+                        mainAsset={collateral.vault.name}
+                        max={tokenInfo?.humanValue}
+                        maximumFractionDigits={tokenInfo?.decimals}
+                        onChange={(val) =>
+                          val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })
+                        }
+                        slider
+                      />
+                    </Form.Item>
                     {mintFiat && (
                       <FormExtraAction
                         bottom={
@@ -372,7 +261,65 @@ const FormERC20: React.FC<{
                         }
                       />
                     )}
-                    <ButtonsWrapper>
+                  </>
+                )}
+                <ButtonsWrapper>
+                  {stateMachine.context.currentStepNumber === 1 && (
+                    <>
+                      {!mintFiat && (
+                        <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
+                          Mint FIAT with this transaction
+                        </ButtonExtraFormAction>
+                      )}
+                      {!isProxyAvailable && (
+                        <ButtonGradient
+                          height="lg"
+                          onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
+                        >
+                          Setup Proxy
+                        </ButtonGradient>
+                      )}
+                      {isProxyAvailable && !hasAllowance && (
+                        <ButtonGradient
+                          disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
+                          height="lg"
+                          onClick={() => send({ type: 'CLICK_ALLOW' })}
+                        >
+                          {stateMachine.context.erc20Amount.gt(0)
+                            ? 'Set Allowance'
+                            : `Insufficient Balance for ${tokenSymbol}`}
+                        </ButtonGradient>
+                      )}
+                    </>
+                  )}
+                  {stateMachine.context.currentStepNumber === 2 && (
+                    <>
+                      <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
+                        Create Proxy
+                      </ButtonGradient>
+                      <button
+                        className={cn(s.backButton)}
+                        onClick={() => send({ type: 'GO_BACK' })}
+                      >
+                        &#8592; Go back
+                      </button>
+                    </>
+                  )}
+                  {stateMachine.context.currentStepNumber === 3 && (
+                    <>
+                      <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
+                        {`Set Allowance`}
+                      </ButtonGradient>
+                      <button
+                        className={cn(s.backButton)}
+                        onClick={() => send({ type: 'GO_BACK' })}
+                      >
+                        &#8592; Go back
+                      </button>
+                    </>
+                  )}
+                  {stateMachine.context.currentStepNumber === 4 && (
+                    <>
                       {!mintFiat && (
                         <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
                           Mint FIAT with this transaction
@@ -391,11 +338,13 @@ const FormERC20: React.FC<{
                       >
                         {hasMinimumFIAT ? DEPOSIT_COLLATERAL_TEXT : BELOW_MINIMUM_AMOUNT_TEXT}
                       </ButtonGradient>
-                    </ButtonsWrapper>
-                    <div className={cn(s.summary)}>
-                      <Summary data={summaryData} />
-                    </div>
-                  </>
+                    </>
+                  )}
+                </ButtonsWrapper>
+                {stateMachine.context.currentStepNumber === 4 && (
+                  <div className={cn(s.summary)}>
+                    <Summary data={summaryData} />
+                  </div>
                 )}
               </Form>
             )}

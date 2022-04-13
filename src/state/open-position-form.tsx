@@ -61,7 +61,7 @@ const initialContext: Context = {
   underlierAmount: BigNumber.ZERO,
   fiatAmount: BigNumber.ZERO,
   currentStepNumber: 1,
-  totalStepNumber: 5,
+  totalStepNumber: 4,
   tokenSymbol: '',
   tokenAddress: '',
   hasAllowance: false,
@@ -70,84 +70,85 @@ const initialContext: Context = {
   loadingType: '',
 }
 
+const STEP_ENTER_AMOUNTS = 'step-1-enterAmounts'
+const STEP_SETUP_PROXY = 'step-3-setupProxy'
+const STEP_APPROVE_ALLOWANCE = 'step-4-approveAllowance'
+const STEP_ADD_COLLATERAL = 'step-5-addCollateral'
+const STEP_CONFIRM_POSITION = 'confirming-position'
+const STEP_FINAL_CONGRATS = 'step-final-congrats'
+const STEP_FINAL_ERROR = 'step-final-error'
+
 const stepperMachine = createMachine<Context, Events>(
   {
     id: 'stepper',
-    initial: 'step-1-enteringERC20Amount',
+    initial: STEP_ENTER_AMOUNTS,
     context: initialContext,
     on: {
       SET_HAS_ALLOWANCE: {
         actions: 'setAllowance',
-        target: 'step-1-enteringERC20Amount',
+        target: STEP_ENTER_AMOUNTS,
       },
       SET_PROXY_AVAILABLE: {
         actions: 'setProxyAvailable',
-        target: 'step-1-enteringERC20Amount',
+        target: STEP_ENTER_AMOUNTS,
       },
       SET_ERC20_AMOUNT: { actions: 'setERC20Amount' },
       SET_FIAT_AMOUNT: { actions: 'setFiatAmount' },
       SET_LOADING: { actions: 'setLoading' },
-      GO_BACK: { target: 'step-1-enteringERC20Amount' },
+      GO_BACK: { target: STEP_ENTER_AMOUNTS },
     },
     states: {
-      'step-1-enteringERC20Amount': {
+      [STEP_ENTER_AMOUNTS]: {
         always: [
           {
-            target: 'step-4-enteringFIATAmount',
+            target: STEP_ADD_COLLATERAL,
             cond: (ctx) => ctx.hasAllowance && ctx.isProxyAvailable,
           },
         ],
         entry: [assign({ currentStepNumber: (_) => 1 })],
         on: {
-          CLICK_SETUP_PROXY: 'step-2-setupProxy',
-          CLICK_ALLOW: 'step-3-approveAllowance',
+          CLICK_SETUP_PROXY: STEP_SETUP_PROXY,
+          CLICK_ALLOW: STEP_APPROVE_ALLOWANCE,
         },
       },
-      'step-2-setupProxy': {
+      [STEP_SETUP_PROXY]: {
         always: {
-          target: 'step-1-enteringERC20Amount',
+          target: STEP_ENTER_AMOUNTS,
           cond: (ctx) => ctx.isProxyAvailable,
         },
         entry: [assign({ currentStepNumber: (_) => 2 })],
       },
-      'step-3-approveAllowance': {
+      [STEP_APPROVE_ALLOWANCE]: {
         entry: [assign({ currentStepNumber: (_) => 3 })],
       },
-      'step-4-enteringFIATAmount': {
+      [STEP_ADD_COLLATERAL]: {
         entry: [assign({ currentStepNumber: (_) => 4 })],
         on: {
-          // CLICK_DEPLOY: [{ target: 'step-5-addCollateral' }],
-          CONFIRM: 'confirming-position',
+          CONFIRM: STEP_CONFIRM_POSITION,
         },
       },
-      'step-5-addCollateral': {
-        entry: [assign({ currentStepNumber: (_) => 5 })],
-        on: {
-          CONFIRM: 'confirming-position',
-        },
-      },
-      'confirming-position': {
+      [STEP_CONFIRM_POSITION]: {
         invoke: {
           src: 'submitForm',
         },
         on: {
           POSITION_CREATED_SUCCESS: {
-            target: 'step-final-congrats',
+            target: STEP_FINAL_CONGRATS,
           },
           POSITION_CREATED_ERROR: {
-            target: 'step-4-enteringFIATAmount', // @TODO: error page?
+            target: STEP_ADD_COLLATERAL, // @TODO: error page?
           },
           USER_REJECTED: {
             // @ts-ignore TODO types
             actions: assign({ error: (_) => 'User rejected transaction' }),
-            target: 'step-4-enteringFIATAmount',
+            target: STEP_ADD_COLLATERAL,
           },
         },
       },
-      'step-final-congrats': {
+      [STEP_FINAL_CONGRATS]: {
         entry: [assign({ currentStepNumber: (_) => 7 })],
       },
-      'step-final-error': {},
+      [STEP_FINAL_ERROR]: {},
     },
   },
   {
