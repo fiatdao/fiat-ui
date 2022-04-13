@@ -1,10 +1,10 @@
 import s from './s.module.scss'
+import SelectNetworkDropdown from '../select-network-dropdown'
 import { useRouter } from 'next/router'
 import { Layout } from 'antd'
 import cn from 'classnames'
 import { Drawer } from 'antd'
 import { FC, useState } from 'react'
-import { ChainsValues, chainsConfig } from '@/src/constants/chains'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useGeneral } from '@/src/providers/generalProvider'
@@ -18,7 +18,6 @@ import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
 import { ButtonMobileMenu } from '@/src/components/custom/button-mobile-menu'
 import { HeaderInfoButton } from '@/src/components/custom/header-info-button'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import Ethereum from '@/src/resources/svg/ethereum.svg'
 
 const FiatBalanceInfo = () => {
   const [fiatBalance] = useFIATBalance(true)
@@ -28,7 +27,7 @@ const FiatBalanceInfo = () => {
 
 export const Header: FC = ({ ...restProps }) => {
   const { title: pageTitle } = useGeneral()
-  const { address, isWalletConnected, walletChainId } = useWeb3Connection()
+  const { address, isWalletConnected } = useWeb3Connection()
   const router = useRouter()
   const title: string = pageTitle ?? routesConfig[router.route]?.title ?? '-'
   const [drawerVisible, setDrawerVisible] = useState(false)
@@ -52,13 +51,7 @@ export const Header: FC = ({ ...restProps }) => {
               }
             />
           )}
-          {isConnected && (
-            <HeaderInfoButton
-              className={cn(s.infoButton)}
-              icon={<Ethereum />}
-              text={chainsConfig[walletChainId as ChainsValues]?.shortName}
-            />
-          )}
+          {isConnected && <SelectNetworkDropdown />}
           {isConnected && <ConnectedWallet />}
           <ButtonMobileMenu
             drawerVisible={drawerVisible}
