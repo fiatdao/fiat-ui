@@ -6,6 +6,7 @@ import cn from 'classnames'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import Lottie from 'lottie-react'
+import { getEtherscanAddressUrl } from '@/src/web3/utils'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
@@ -428,19 +429,20 @@ const OpenPosition = () => {
   const tokenSymbol = collateral?.symbol ?? ''
   const collateralizationRatio = collateral?.vault.collateralizationRatio ?? null
   const interestPerSecond = collateral?.vault.interestPerSecond ?? ZERO_BIG_NUMBER
+  const chainId = useWeb3Connection().appChainId
 
-  const mockedBlocks = [
+  const infoBlocks = [
     {
       title: 'Token',
       value: tokenSymbol ?? '-',
-      address: tokenAddress,
-      appChainId: useWeb3Connection().appChainId,
+      url: getEtherscanAddressUrl(tokenAddress, chainId),
     },
     {
       title: 'Underlying Asset',
       value: collateral ? collateral.underlierSymbol : '-',
-      address: collateral?.underlierAddress,
-      appChainId: useWeb3Connection().appChainId,
+      url: collateral?.underlierAddress
+        ? getEtherscanAddressUrl(collateral?.underlierAddress, chainId)
+        : '',
     },
     {
       title: 'Maturity Date',
@@ -474,7 +476,7 @@ const OpenPosition = () => {
   return (
     <>
       <ButtonBack href="/create-position">Back</ButtonBack>
-      <PositionFormsLayout infoBlocks={mockedBlocks}>
+      <PositionFormsLayout infoBlocks={infoBlocks}>
         <FormERC20
           collateral={collateral as Collateral} // TODO Fix with suspense
           tokenAddress={tokenAddress as string}

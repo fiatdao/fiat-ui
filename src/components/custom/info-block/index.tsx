@@ -1,21 +1,25 @@
 import s from './s.module.scss'
 import cn from 'classnames'
+import Link from 'next/link'
+import { FC, ReactNode } from 'react'
 import Tooltip from '@/src/components/antd/tooltip'
 import Info from '@/src/resources/svg/info.svg'
+import ExternalLink from '@/src/components/custom/externalLink'
+import InternalArrow from '@/src/resources/svg/interal-arrow.svg'
 
 interface Props {
   className?: string
   bold?: boolean
-  footer?: string | React.ReactNode
+  footer?: string | ReactNode
   title: string
   tooltip?: string
   state?: 'danger' | 'ok' | 'warning'
   textAlign?: 'left' | 'right' | 'center'
   url?: string
-  value?: string | React.ReactNode
+  value?: string | ReactNode
 }
 
-export const InfoBlock: React.FC<Props> = ({
+export const InnerInfoBlock: FC<Props> = ({
   bold,
   className,
   footer,
@@ -33,12 +37,7 @@ export const InfoBlock: React.FC<Props> = ({
         <h1 className={s.title}>{title}</h1>
         {url && (
           <a className={s.link} href={url} rel="noreferrer" target="_blank">
-            <svg fill="none" height="10" width="10" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M.902 9.052a.75.75 0 010-1.06L6.694 2.2H2.847a.75.75 0 010-1.499h5.657a.75.75 0 01.75.75v5.657a.75.75 0 11-1.5 0V3.26l-5.79 5.791a.75.75 0 01-1.062 0z"
-                fill="#fff"
-              />
-            </svg>
+            <InternalArrow />
           </a>
         )}
         {tooltip && (
@@ -63,5 +62,26 @@ export const InfoBlock: React.FC<Props> = ({
       </p>
       {footer && <div className={s.footer}>{footer}</div>}
     </div>
+  )
+}
+
+export const InfoBlock: FC<Props> = (props: Props) => {
+  const { url } = props
+  const isAbsoluteUrl = url && ['https://', 'http://'].some((substring) => url.includes(substring))
+  if (!url) {
+    return <InnerInfoBlock {...props} />
+  }
+  if (url && isAbsoluteUrl) {
+    return (
+      <ExternalLink className={s.link} href={url}>
+        <InnerInfoBlock {...props} />
+      </ExternalLink>
+    )
+  }
+
+  return (
+    <Link href={url}>
+      <InnerInfoBlock {...props} />
+    </Link>
   )
 }
