@@ -1,0 +1,13 @@
+@import '/src/styles/vars';
+
+.networkButton {
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+
+.infoButton {
+  &:hover {
+    cursor: pointer;
+  }
+}
