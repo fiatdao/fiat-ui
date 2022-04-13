@@ -221,9 +221,13 @@ const BuyCollateral = () => {
     },
   ]
 
+  const auctionDebtFloor = data?.vault?.auctionDebtFloor
+    ?.unscaleBy(WAD_DECIMALS)
+    .decimalPlaces(3)
+    .plus(0.001)
   const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
-    if (data?.vault?.auctionDebtFloor) {
-      setIsDebtSufficient(data.vault.auctionDebtFloor.unscaleBy(WAD_DECIMALS).lte(amountToBuy))
+    if (auctionDebtFloor) {
+      setIsDebtSufficient(auctionDebtFloor.lte(amountToBuy))
     }
   }
 
@@ -256,8 +260,7 @@ const BuyCollateral = () => {
                   <>
                     <div className={cn(s.balanceWrapper)}>
                       <h3 className={cn(s.balanceLabel)}>
-                        Select amount (minimum{' '}
-                        {data?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS).toFixed(2) ?? '-'})
+                        Select amount (minimum {auctionDebtFloor?.toFixed() ?? '-'} FIAT)
                       </h3>
                       <p className={cn(s.balance)}>
                         Balance: {FIATBalance.unscaleBy(WAD_DECIMALS)?.toFixed(2)}
