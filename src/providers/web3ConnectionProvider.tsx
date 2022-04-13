@@ -134,7 +134,7 @@ export type Web3Context = {
   getExplorerUrl: (hash: string) => string
   changeNetworkModalOpen: boolean
   setChangeNetworkModalOpen: Dispatch<SetStateAction<Web3Context['changeNetworkModalOpen']>>
-  setNetwork: () => void
+  setNetwork: (chainId?: ChainsValues) => void
 }
 
 const Web3ContextConnection = createContext<Web3Context | undefined>(undefined)
@@ -282,12 +282,12 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     }
   }
 
-  const setNetwork = () => {
+  const setNetwork = (chainId = appChainId) => {
     window.ethereum.request({
       method: 'wallet_switchEthereumChain',
       params: [
         {
-          chainId: getNetworkConfig(appChainId).chainIdHex,
+          chainId: getNetworkConfig(chainId).chainIdHex,
         },
       ],
     })

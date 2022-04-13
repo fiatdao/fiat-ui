@@ -338,7 +338,7 @@ const FormERC20: React.FC<{
                 )}
                 {stateMachine.context.currentStepNumber === 3 && (
                   <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
-                    {`Set Allowance for ${tokenSymbol}`}
+                    {`Set Allowance for Proxy`}
                   </ButtonGradient>
                 )}
 
