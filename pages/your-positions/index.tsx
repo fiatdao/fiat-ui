@@ -12,7 +12,7 @@ import TransactionHistoryTable from '@/src/components/custom/transaction-history
 import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 import { remainingTime } from '@/src/utils/dateTime'
 import { useYourPositionInfoPage } from '@/src/utils/data/yourPositionInfo'
-import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { INFINITE_BIG_NUMBER, WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { isValidHealthFactor } from '@/src/utils/data/positions'
@@ -46,7 +46,7 @@ const YourPositions = () => {
   const { positions } = usePositionsByUser()
   const { pageInformation } = useYourPositionInfoPage(positions)
 
-  const lowestHealthFactor = pageInformation?.lowestHealthFactor?.value ?? ZERO_BIG_NUMBER
+  const lowestHealthFactor = pageInformation?.lowestHealthFactor?.value ?? INFINITE_BIG_NUMBER
   const lowestHealthFactorPositionAddress = pageInformation?.lowestHealthFactor?.address
 
   // TODO Fix naming if necessary
