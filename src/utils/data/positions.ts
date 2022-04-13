@@ -1,4 +1,5 @@
 import { getVirtualRate } from '../getVirtualRate'
+import { getFaceValue } from '../getFaceValue'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { differenceInDays } from 'date-fns'
@@ -65,14 +66,6 @@ const _getCurrentValue = (
   provider: JsonRpcProvider,
 ): Promise<BigNumber> => {
   return readValue(position, false, appChainId, provider)
-}
-
-const _getFaceValue = (
-  position: SubgraphPosition,
-  appChainId: ChainsValues,
-  provider: JsonRpcProvider,
-): Promise<BigNumber> => {
-  return readValue(position, true, appChainId, provider)
 }
 
 const getDecimals = async (
@@ -171,7 +164,7 @@ const wranglePosition = async (
   const [currentValue, faceValue, collateralDecimals, underlierDecimals, virtualRate] =
     await Promise.all([
       _getCurrentValue(position, appChainId, provider),
-      _getFaceValue(position, appChainId, provider),
+      getFaceValue(provider, position.collateralType?.tokenId ?? 0, position.vault?.address ?? ''),
       getDecimals(position.collateralType?.address, provider), // collateral is an ERC20 token
       getDecimals(position.collateralType?.underlierAddress, provider),
       getVirtualRate(position.vault?.address ?? '', appChainId, provider),
