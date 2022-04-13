@@ -27,7 +27,7 @@ const ConnectedWallet: React.FC = () => {
         content={
           <>
             <Grid flow="row" gap={15}>
-              <Grid flow="col" gap={0}>
+              <Grid flow="col">
                 <Text color="primary" type="p2" weight="bold">
                   Select a Network
                 </Text>
