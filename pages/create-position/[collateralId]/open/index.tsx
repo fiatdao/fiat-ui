@@ -445,7 +445,7 @@ const OpenPosition = () => {
     {
       title: 'Maturity Date',
       tooltip: 'The date on which the bond is redeemable for its underlying assets.',
-      value: collateral?.maturity ? parseDate(collateral?.maturity) : '-',
+      value: collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--',
     },
     {
       title: 'Face Value',

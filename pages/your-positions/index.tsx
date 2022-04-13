@@ -12,7 +12,7 @@ import TransactionHistoryTable from '@/src/components/custom/transaction-history
 import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 import { remainingTime } from '@/src/utils/dateTime'
 import { useYourPositionInfoPage } from '@/src/utils/data/yourPositionInfo'
-import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 
@@ -64,16 +64,18 @@ const YourPositions = () => {
           }
         />
         <InfoBlock
-          state={calculateHealthFactor(
-            pageInformation?.lowestHealthFactor?.value ?? ZERO_BIG_NUMBER,
-          )}
+          state={
+            pageInformation?.lowestHealthFactor?.value
+              ? calculateHealthFactor(pageInformation.lowestHealthFactor.value)
+              : undefined
+          }
           title="Lowest Health Factor"
           url={
             pageInformation?.lowestHealthFactor?.address
               ? `/your-positions/${pageInformation.lowestHealthFactor.address}/manage`
               : undefined
           }
-          value={pageInformation?.lowestHealthFactor?.value?.toFixed(3)}
+          value={pageInformation?.lowestHealthFactor?.value?.toFixed(3) ?? '-'}
         />
         <InfoBlock
           title="Next Maturity"
@@ -83,9 +85,9 @@ const YourPositions = () => {
               : undefined
           }
           value={
-            pageInformation?.nearestMaturity
+            pageInformation?.nearestMaturity.value
               ? remainingTime(pageInformation.nearestMaturity.value)
-              : undefined
+              : '--:--:--'
           }
         />
       </InfoBlocksGrid>
