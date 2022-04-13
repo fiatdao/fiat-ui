@@ -31,6 +31,7 @@ export const scaleToDecimalsCount = (scale?: Maybe<string>): number | undefined 
 
 export type AuctionData = {
   id: string
+  debt?: BigNumber
   protocol: {
     name?: Maybe<string>
     humanReadableName: string
@@ -142,6 +143,7 @@ const wrangleAuction = async (
 
   return {
     id: collateralAuction.id,
+    debt: BigNumber.from(collateralAuction.debt),
     protocol: {
       name: collateralAuction.vault?.name,
       humanReadableName: vaultMetadata?.protocol ?? '',

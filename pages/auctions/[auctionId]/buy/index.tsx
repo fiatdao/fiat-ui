@@ -66,10 +66,47 @@ const BuyCollateral = () => {
 
   const [isDebtSufficient, setIsDebtSufficient] = useState(false)
 
+  const minimumToBuy = data?.vault?.auctionDebtFloor
+    ?.plus(1)
+    .unscaleBy(WAD_DECIMALS)
+    .dividedBy(data.currentAuctionPrice as BigNumber)
+
+  const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
+    if (data?.debt) {
+      const fiatToPay = amountToBuy.multipliedBy(data.currentAuctionPrice as BigNumber)
+
+      // TODO: Leave this for debugging purposes
+      // console.log({
+      //   auctionDebtFloor: data?.vault?.auctionDebtFloor?.toFixed(),
+      //   fiatToPay: fiatToPay.toFixed(),
+      //   debt: data.debt.toFixed(),
+      //   diff: data.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay).toFixed(),
+      // })
+
+      // 1. check if auction.debt - fiatToPay is less than or equal to auctionDebtFloor.
+      //    if true then 2. otherwise proceed and skip 2.
+      const dusty = data.debt
+        .unscaleBy(WAD_DECIMALS)
+        .minus(fiatToPay)
+        .lte(data?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
+
+      // 2. check that fiatToPay > auctionDebtFloor otherwise block
+      setIsDebtSufficient(
+        dusty
+          ? fiatToPay.gt(data.vault.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
+          : true,
+      )
+    }
+  }
+
+  const minimumMessage = !isDebtSufficient
+    ? ` (minimum: ${(minimumToBuy as BigNumber).toFixed(6)})`
+    : ''
+
   const [step, setStep] = useState(0)
   const steps: Step[] = [
     {
-      description: 'Select the amount to buy',
+      description: `Select the amount to buy${minimumMessage}`,
       buttonText: 'Buy collateral',
       next() {
         if (!hasAllowance) {
@@ -221,16 +258,6 @@ const BuyCollateral = () => {
     },
   ]
 
-  const auctionDebtFloor = data?.vault?.auctionDebtFloor
-    ?.unscaleBy(WAD_DECIMALS)
-    .decimalPlaces(3)
-    .plus(0.001)
-  const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
-    if (auctionDebtFloor) {
-      setIsDebtSufficient(auctionDebtFloor.lte(amountToBuy))
-    }
-  }
-
   return (
     <>
       <ButtonBack href="/auctions">Back</ButtonBack>
@@ -259,11 +286,9 @@ const BuyCollateral = () => {
                 {step === 0 ? (
                   <>
                     <div className={cn(s.balanceWrapper)}>
-                      <h3 className={cn(s.balanceLabel)}>
-                        Select amount (minimum {auctionDebtFloor?.toFixed() ?? '-'} FIAT)
-                      </h3>
+                      <h3 className={cn(s.balanceLabel)}>Select amount</h3>
                       <p className={cn(s.balance)}>
-                        Balance: {FIATBalance.unscaleBy(WAD_DECIMALS)?.toFixed(2)}
+                        Balance: {FIATBalance.unscaleBy(WAD_DECIMALS)?.toFixed(2)} FIAT
                       </p>
                     </div>
 
@@ -290,7 +315,7 @@ const BuyCollateral = () => {
                         height="lg"
                         onClick={steps[step].next}
                       >
-                        {isDebtSufficient ? steps[step].buttonText : 'No partial auction possible'}
+                        {isDebtSufficient ? steps[step].buttonText : 'No partial purchase possible'}
                       </ButtonGradient>
                     </Form>
                   </>
