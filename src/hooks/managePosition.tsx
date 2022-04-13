@@ -394,7 +394,7 @@ export const useManagePositionsInfoBlock = (position: Position) => {
     {
       title: 'Maturity Date',
       tooltip: 'The date on which the bond is redeemable for its underlying assets.',
-      value: position?.maturity ? parseDate(position?.maturity) : '-',
+      value: position?.maturity ? parseDate(position?.maturity) : '--:--:--',
     },
     {
       title: 'Face Value',
