@@ -1,3 +1,4 @@
+import { getFaceValue } from '../getFaceValue'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import max from 'lodash/max'
@@ -117,10 +118,13 @@ const wrangleAuction = async (
   }
 
   const auctionStatus = await getAuctionStatus(appChainId, provider, collateralAuction.id)
-
-  const faceValue = BigNumber.from(collateralAuction.collateralType?.faceValue)?.unscaleBy(
-    WAD_DECIMALS,
-  )
+  const faceValue = (
+    await getFaceValue(
+      provider,
+      collateralAuction.tokenId ?? 0,
+      collateralAuction.vault?.address ?? '',
+    )
+  ).unscaleBy(WAD_DECIMALS)
 
   const currentAuctionPrice = BigNumber.from(auctionStatus?.price.toString())?.unscaleBy(
     WAD_DECIMALS,

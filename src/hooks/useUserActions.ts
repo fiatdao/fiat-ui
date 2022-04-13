@@ -155,20 +155,13 @@ export const useUserActions = (): UseUserActions => {
 
       // please sign
       notification.requestSign()
-      // @TODO adds fixed gas amount to be able to create failing tx's
-      let gasLimit: any = 1_000_000
-      try {
-        gasLimit = await estimateGasLimit(userProxy, 'execute', [
-          userActionEPT.address,
-          modifyCollateralAndDebtEncoded,
-        ])
-      } catch (err) {
-        console.log({ err })
-      }
 
       const tx: TransactionResponse | TransactionError = await userProxy
         .execute(userActionEPT.address, modifyCollateralAndDebtEncoded, {
-          gasLimit,
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            userActionEPT.address,
+            modifyCollateralAndDebtEncoded,
+          ]),
         })
         .catch(notification.handleTxError)
 
