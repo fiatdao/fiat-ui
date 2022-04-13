@@ -1,4 +1,5 @@
 import { getVirtualRate } from '../getVirtualRate'
+import { getFaceValue } from '../getFaceValue'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from 'bignumber.js'
 import contractCall from '@/src/utils/contractCall'
@@ -72,6 +73,11 @@ const wrangleCollateral = async (
       ],
     )
   }
+  const faceValue = await getFaceValue(
+    provider,
+    collateral.tokenId ?? 0,
+    collateral.vault?.address ?? '',
+  )
   const virtualRate = await getVirtualRate(collateral.vault?.address ?? '', appChainId, provider)
 
   const { protocol = '', symbol = '' } =
@@ -85,7 +91,7 @@ const wrangleCollateral = async (
     protocol,
     symbol,
     maturity: stringToDateOrCurrent(collateral.maturity),
-    faceValue: BigNumber.from(collateral.faceValue) ?? null,
+    faceValue,
     currentValue: BigNumber.from(currentValue?.toString()) ?? null,
     vault: {
       collateralizationRatio:
