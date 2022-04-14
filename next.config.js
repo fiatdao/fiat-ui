@@ -15,20 +15,24 @@ module.exports = {
   async redirects() {
     return [
       {
-        "source": "/senatus",
-        "destination": "https://gov.fiatdao.com/senatus"
+        source: "/senatus",
+        permanent: true,
+        destination: "https://gov.fiatdao.com/senatus"
       },
       {
-        "source": "/rewards",
-        "destination": "https://gov.fiatdao.com/rewards"
+        source: "/rewards",
+        permanent: true,
+        destination: "https://gov.fiatdao.com/rewards"
       },
       {
-        "source": "/age-of-romulus",
-        "destination": "https://gov.fiatdao.com/age-of-romulus"
+        source: "/age-of-romulus",
+        permanent: true,
+        destination: "https://gov.fiatdao.com/age-of-romulus"
       },
       {
-        "source": "/airdrop",
-        "destination": "https://gov.fiatdao.com/airdrop"
+        source: "/airdrop",
+        permanent: true,
+        destination: "https://gov.fiatdao.com/airdrop"
       }
     ]
   },
