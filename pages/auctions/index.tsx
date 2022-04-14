@@ -78,7 +78,7 @@ const Auctions = () => {
       render: (value: Date) => (
         <CellValue bottomValue={parseTime(value)} value={parseDate(value)} />
       ),
-      title: 'Ends At',
+      title: 'Restarts At',
     },
     {
       align: 'left',
