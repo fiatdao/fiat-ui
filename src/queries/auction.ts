@@ -20,6 +20,7 @@ export const AUCTION_MAIN_DATA = gql`
       address
       interestPerSecond
       maxAuctionDuration
+      auctionDebtFloor
     }
     collateralType {
       id
