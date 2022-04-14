@@ -12,6 +12,30 @@ module.exports = {
 
     return config
   },
+  async redirects() {
+    return [
+      {
+        source: "/senatus",
+        permanent: true,
+        destination: "https://gov.fiatdao.com/senatus"
+      },
+      {
+        source: "/rewards",
+        permanent: true,
+        destination: "https://gov.fiatdao.com/rewards"
+      },
+      {
+        source: "/age-of-romulus",
+        permanent: true,
+        destination: "https://gov.fiatdao.com/age-of-romulus"
+      },
+      {
+        source: "/airdrop",
+        permanent: true,
+        destination: "https://gov.fiatdao.com/airdrop"
+      }
+    ]
+  },
   async rewrites() {
     return [
       {
