@@ -1,6 +1,5 @@
 import s from './s.module.scss'
 import cn from 'classnames'
-import Link from 'next/link'
 import { FC, ReactNode } from 'react'
 import Tooltip from '@/src/components/antd/tooltip'
 import Info from '@/src/resources/svg/info.svg'
@@ -80,8 +79,8 @@ export const InfoBlock: FC<Props> = (props: Props) => {
   }
 
   return (
-    <Link href={url}>
+    <a className={s.link} href={url}>
       <InnerInfoBlock {...props} />
-    </Link>
+    </a>
   )
 }
