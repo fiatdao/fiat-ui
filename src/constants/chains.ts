@@ -1,5 +1,5 @@
-import nullthrows from 'nullthrows'
 import {
+  DEFAULT_CHAIN_ID,
   RPC_URL_GOERLI,
   RPC_URL_MAINNET,
   SUBGRAPH_GOERLI,
@@ -29,6 +29,9 @@ export type ChainConfig = {
   contractsDeployed: boolean
 }
 
+// Default chain id from env var
+export const INITIAL_APP_CHAIN_ID = Number(DEFAULT_CHAIN_ID) as ChainsValues
+
 export const chainsConfig: Record<ChainsValues, ChainConfig> = {
   [Chains.mainnet]: {
     id: Chains.mainnet,
@@ -56,7 +59,16 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
   },
 }
 
-export function getNetworkConfig(chainId: ChainsValues): ChainConfig {
-  const networkConfig = chainsConfig[chainId]
-  return nullthrows(networkConfig, `No config for chain id: ${chainId}`)
+export function getNetworkConfig(chainId: ChainsValues): ChainConfig | undefined {
+  const networkConfig = chainsConfig[chainId] ?? undefined
+
+  if (chainId === undefined) {
+    console.warn(`No config for unsupported chainId: ${chainId}`)
+  }
+  return networkConfig
+}
+
+export const isValidChain = (chain: any) => {
+  const chainConfig = getNetworkConfig(chain)
+  return chainConfig ? chainConfig.contractsDeployed : false
 }

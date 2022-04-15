@@ -9,29 +9,25 @@ import {
   useMemo,
   useState,
 } from 'react'
-
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import Onboard from 'bnc-onboard'
 import { API, Wallet } from 'bnc-onboard/dist/src/interfaces'
 import { Subscriptions } from 'bnc-onboard/dist/src/interfaces'
-
-import nullthrows from 'nullthrows'
-import { DEFAULT_CHAIN_ID } from '@/src/constants/misc'
-import { Chains, ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/chains'
+import { RPC_URL_GOERLI } from '@/src/constants/misc'
+import {
+  Chains,
+  ChainsValues,
+  INITIAL_APP_CHAIN_ID,
+  chainsConfig,
+  getNetworkConfig,
+  isValidChain,
+} from '@/src/constants/chains'
 import isServer from '@/src/utils/isServer'
 import { RequiredNonNull } from '@/types/utils'
 
 const STORAGE_CONNECTED_WALLET = 'onboard_selectedWallet'
 // give onboard a window to update its internal state after certain actions
 const ONBOARD_STATE_DELAY = 100
-
-// Default chain id from env var
-const INITIAL_APP_CHAIN_ID = Number(DEFAULT_CHAIN_ID) as ChainsValues
-
-nullthrows(
-  Object.values(Chains).includes(INITIAL_APP_CHAIN_ID) ? INITIAL_APP_CHAIN_ID : null,
-  'No default chain ID is defined or is not supported',
-)
 
 // @TODO: Default VALUES to connect to multiple wallets
 const PORTIS_KEY = 'Your Portis key here'
@@ -61,7 +57,7 @@ function initOnboard(appChainId: ChainsValues, subscriptions: Subscriptions) {
 
   window.onboard = Onboard({
     networkId: appChainId,
-    networkName: getNetworkConfig(appChainId).name,
+    networkName: getNetworkConfig(appChainId)?.name,
     hideBranding: true,
     darkMode: true, // @TODO: it is a default value
     walletSelect: {
@@ -126,15 +122,14 @@ export type Web3Context = {
   isAppConnected: boolean
   isWalletConnected: boolean
   isWalletNetworkSupported: boolean
-  pushNetwork: () => Promise<void>
   readOnlyAppProvider: JsonRpcProvider
   wallet: Wallet | null
   walletChainId: number | null
   web3Provider: Web3Provider | null
-  getExplorerUrl: (hash: string) => string
+  getExplorerUrlForTxHash: (hash: string) => string
   changeNetworkModalOpen: boolean
   setChangeNetworkModalOpen: Dispatch<SetStateAction<Web3Context['changeNetworkModalOpen']>>
-  setNetwork: (chainId?: ChainsValues) => void
+  setNetwork: (chainId: ChainsValues) => void
 }
 
 const Web3ContextConnection = createContext<Web3Context | undefined>(undefined)
@@ -164,17 +159,13 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
 
   const isWalletNetworkSupported = supportedChainIds.includes(walletChainId as any)
 
-  const readOnlyAppProvider = useMemo(
-    () => new JsonRpcProvider(getNetworkConfig(appChainId).rpcUrl, appChainId),
-    [appChainId],
-  )
+  // if no config exists for the given appChainId, fall back to a default RPC
+  const rpcUrl = getNetworkConfig(appChainId)?.rpcUrl ?? RPC_URL_GOERLI
 
-  const checkForValidChain = (chain: any) => {
-    if (!Object.values(Chains).includes(chain)) {
-      return false
-    }
-    return getNetworkConfig(chain).contractsDeployed
-  }
+  // Ignore the linter warning about `rpcUrl` dependency -
+  // `rpcUrl` is already dependent on `appChainId`, so we don't need rpcUrl in the dependencies list
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const readOnlyAppProvider = useMemo(() => new JsonRpcProvider(rpcUrl, appChainId), [appChainId])
 
   const _reconnectWallet = async (): Promise<void> => {
     if (!onboard) {
@@ -226,8 +217,8 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
   }, [])
 
   useEffect(() => {
-    setValidNetwork(checkForValidChain(walletChainId))
-    if (!checkForValidChain(walletChainId) && walletChainId !== null) {
+    setValidNetwork(isValidChain(walletChainId))
+    if (!isValidChain(walletChainId) && walletChainId !== null) {
       setChangeNetworkModalOpen(true)
     }
   }, [walletChainId])
@@ -271,7 +262,7 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
       const isWalletCheck = await onboard.walletCheck()
       if (isWalletCheck) {
         const { address, network } = onboard.getState()
-        if (checkForValidChain(network)) {
+        if (isValidChain(network)) {
           setAddress(address)
           setValidNetwork(true)
         } else {
@@ -282,53 +273,49 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     }
   }
 
-  const setNetwork = (chainId = appChainId) => {
-    window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [
-        {
-          chainId: getNetworkConfig(chainId).chainIdHex,
-        },
-      ],
-    })
-  }
-
-  const pushNetwork = async (): Promise<void> => {
-    if (!onboard || !wallet || wallet.name !== 'MetaMask') {
-      console.warn('Unable to push network')
-      return
-    }
-
-    const provider = wallet.provider
-    const networkConfig = getNetworkConfig(appChainId)
-
-    try {
-      await provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: networkConfig.chainIdHex }],
-      })
-    } catch (switchError) {
-      const config = {
-        chainId: networkConfig.chainIdHex,
-        chainName: networkConfig.name,
-        rpcUrls: [networkConfig.rpcUrl],
-        blockExplorerUrls: networkConfig.blockExplorerUrls,
-        iconUrls: networkConfig.iconUrls,
-      }
-
-      // This error code indicates that the chain has not been added to MetaMask.
-      if ((switchError as { code: number }).code === 4902) {
-        await provider.request({
-          method: 'wallet_addEthereumChain',
-          params: [config],
+  const setNetwork = async (chainId: ChainsValues) => {
+    const networkConfig = getNetworkConfig(chainId)
+    if (networkConfig === undefined) {
+      setChangeNetworkModalOpen(true)
+      setValidNetwork(false)
+    } else {
+      // Prompt user through MetaMask to switch to a supported chain OR add the chain to their wallet if they don't have it yet
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [
+            {
+              chainId: networkConfig.chainIdHex,
+            },
+          ],
         })
-      } else {
-        throw switchError
+      } catch (switchError) {
+        // This error code indicates that the chain has not been added to MetaMask.
+        if ((switchError as { code: number }).code === 4902) {
+          try {
+            const addNetworkConfig = {
+              chainId: networkConfig.chainIdHex,
+              chainName: networkConfig.name,
+              rpcUrls: [networkConfig.rpcUrl],
+              blockExplorerUrls: networkConfig.blockExplorerUrls,
+              iconUrls: networkConfig.iconUrls,
+            }
+
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [addNetworkConfig],
+            })
+          } catch (addError) {
+            console.error('Error adding network: ', addError)
+          }
+        } else {
+          console.error('Switch error: ', switchError)
+        }
       }
     }
   }
 
-  const getExplorerUrl = useMemo(() => {
+  const getExplorerUrlForTxHash = useMemo(() => {
     const url = chainsConfig[appChainId]?.blockExplorerUrls[0]
     return (hash: string) => {
       const type = hash.length > 42 ? 'tx' : 'address'
@@ -347,13 +334,12 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     address,
     readOnlyAppProvider,
     web3Provider,
-    getExplorerUrl,
+    getExplorerUrlForTxHash,
     connectWallet,
     disconnectWallet,
-    pushNetwork,
     changeNetworkModalOpen,
     setChangeNetworkModalOpen,
-    setNetwork: setNetwork,
+    setNetwork,
   }
 
   if (isInitializing) {

@@ -3,12 +3,14 @@ import Modal from '@/src/components/antd/modal'
 import Grid from '@/src/components/custom/grid'
 import { Text } from '@/src/components/custom/typography'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { INITIAL_APP_CHAIN_ID } from '@/src/constants/chains'
 
+// TODO: show all the chain options (eth, goerli)
 const ChangeNetworkModal: React.FC = () => {
   const { changeNetworkModalOpen, setChangeNetworkModalOpen, setNetwork } = useWeb3Connection()
 
   const handleClick = () => {
-    setNetwork()
+    setNetwork(INITIAL_APP_CHAIN_ID)
     setChangeNetworkModalOpen(false)
   }
 

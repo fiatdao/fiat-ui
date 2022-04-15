@@ -13,6 +13,11 @@ export default async function contractCall<
   method: Method,
   params: Parameters<MyContract[Method]> | null,
 ): Promise<ReturnType<MyContract[Method]> | null> {
+  if (!address) {
+    // invalid chain selected
+    return null
+  }
+
   const contract = new Contract(address as string, abi, provider) as MyContract
   try {
     const deployedContract = await contract.deployed()
