@@ -14,13 +14,9 @@ export const graphqlFetcher = <Response, Variables = void>(
   query: DocumentNode,
   variables?: Variables,
 ) => {
-  let endpoint
-
-  if (isValidChain(appChainId)) {
-    endpoint = chainsConfig[appChainId].subgraphApi
-  } else {
-    endpoint = chainsConfig[INITIAL_APP_CHAIN_ID].subgraphApi
-  }
+  const endpoint = isValidChain(appChainId)
+    ? chainsConfig[appChainId].subgraphApi
+    : chainsConfig[INITIAL_APP_CHAIN_ID].subgraphApi
 
   return fetcher.setEndpoint(endpoint).request<Response>(query, variables)
 }

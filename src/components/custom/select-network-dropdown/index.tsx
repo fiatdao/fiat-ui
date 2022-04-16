@@ -59,7 +59,9 @@ const ConnectedWallet: React.FC = () => {
         trigger="click"
         visible={isDropdownVisible}
       >
-        {currentChainConfig === undefined ? null : (
+        {currentChainConfig === undefined ? (
+          <></>
+        ) : (
           <HeaderInfoButton
             className={cn(s.infoButton)}
             icon={<currentChainConfig.svg />}

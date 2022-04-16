@@ -14,7 +14,8 @@ export default async function contractCall<
   params: Parameters<MyContract[Method]> | null,
 ): Promise<ReturnType<MyContract[Method]> | null> {
   if (!address) {
-    // invalid chain selected
+    // Likely an invalid chain selected -
+    // Web3ConnectionProvider will prompt user to connect to supported network
     return null
   }
 
