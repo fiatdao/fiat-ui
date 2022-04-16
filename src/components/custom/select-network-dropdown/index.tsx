@@ -10,7 +10,7 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 const ConnectedWallet: React.FC = () => {
   const { setNetwork, walletChainId } = useWeb3Connection()
-  const [visible, setVisible] = useState<boolean>(false)
+  const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false)
 
   const availableChains = Object.keys(chainsConfig)
     .filter((chain) => Number(chain) !== walletChainId)
@@ -37,9 +37,13 @@ const ConnectedWallet: React.FC = () => {
                 <button
                   className={cn(s.networkButton)}
                   key={index}
-                  onClick={() => {
-                    setNetwork(item.chainId)
-                    setVisible(false)
+                  onClick={async () => {
+                    try {
+                      await setNetwork(item.chainId)
+                      setIsDropdownVisible(false)
+                    } catch (e) {
+                      console.error('Error setting network: ', e)
+                    }
                   }}
                 >
                   <Text color="primary" type="p2">
@@ -50,10 +54,10 @@ const ConnectedWallet: React.FC = () => {
             </Grid>
           </>
         }
-        onVisibleChange={setVisible}
+        onVisibleChange={setIsDropdownVisible}
         placement="bottomRight"
         trigger="click"
-        visible={visible}
+        visible={isDropdownVisible}
       >
         {currentChainConfig === undefined ? null : (
           <HeaderInfoButton

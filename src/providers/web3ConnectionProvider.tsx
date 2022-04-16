@@ -275,6 +275,7 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
 
   const setNetwork = async (chainId: ChainsValues) => {
     const networkConfig = getNetworkConfig(chainId)
+
     if (networkConfig === undefined) {
       setChangeNetworkModalOpen(true)
       setValidNetwork(false)
@@ -289,27 +290,28 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
             },
           ],
         })
+
+        setValidNetwork(true)
       } catch (switchError) {
         // This error code indicates that the chain has not been added to MetaMask.
         if ((switchError as { code: number }).code === 4902) {
-          try {
-            const addNetworkConfig = {
-              chainId: networkConfig.chainIdHex,
-              chainName: networkConfig.name,
-              rpcUrls: [networkConfig.rpcUrl],
-              blockExplorerUrls: networkConfig.blockExplorerUrls,
-              iconUrls: networkConfig.iconUrls,
-            }
-
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [addNetworkConfig],
-            })
-          } catch (addError) {
-            console.error('Error adding network: ', addError)
+          const addNetworkConfig = {
+            chainId: networkConfig.chainIdHex,
+            chainName: networkConfig.name,
+            rpcUrls: [networkConfig.rpcUrl],
+            blockExplorerUrls: networkConfig.blockExplorerUrls,
+            iconUrls: networkConfig.iconUrls,
           }
+
+          // Don't try/catch, let caller of this func catch
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [addNetworkConfig],
+          })
+
+          setValidNetwork(true)
         } else {
-          console.error('Switch error: ', switchError)
+          throw switchError
         }
       }
     }

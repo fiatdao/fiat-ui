@@ -10,12 +10,21 @@ const ChangeNetworkModal: React.FC = () => {
   const { changeNetworkModalOpen, setChangeNetworkModalOpen, setNetwork } = useWeb3Connection()
 
   const handleChangeNetwork = async (chainId: ChainsValues) => {
-    setNetwork(chainId)
-    setChangeNetworkModalOpen(false)
+    try {
+      await setNetwork(chainId)
+      setChangeNetworkModalOpen(false)
+    } catch (e) {
+      console.error('Error setting network: ', e)
+    }
   }
 
   return (
-    <Modal onCancel={() => null} visible={changeNetworkModalOpen} width={568}>
+    <Modal
+      maskStyle={{ backdropFilter: 'blur(5px)' }}
+      onCancel={() => null}
+      visible={changeNetworkModalOpen}
+      width={568}
+    >
       <Grid align="start" flow="row" gap={24}>
         <Grid flow="row" gap={16}>
           <Text color="primary" type="h2" weight="bold">
