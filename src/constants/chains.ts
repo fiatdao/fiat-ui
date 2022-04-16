@@ -5,6 +5,7 @@ import {
   SUBGRAPH_GOERLI,
   SUBGRAPH_MAINNET,
 } from '@/src/constants/misc'
+import EthLogo from '@/src/resources/svg/ethereum.svg'
 
 import { ObjectValues } from '@/types/utils'
 
@@ -25,6 +26,7 @@ export type ChainConfig = {
   rpcUrl: string
   blockExplorerUrls: string[]
   iconUrls: string[]
+  svg: React.FC
   subgraphApi: string
   contractsDeployed: boolean
 }
@@ -42,6 +44,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     rpcUrl: RPC_URL_MAINNET,
     blockExplorerUrls: ['https://etherscan.io/'],
     iconUrls: [],
+    svg: EthLogo,
     subgraphApi: SUBGRAPH_MAINNET,
     contractsDeployed: true,
   },
@@ -54,6 +57,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     rpcUrl: RPC_URL_GOERLI,
     blockExplorerUrls: ['https://goerli.etherscan.io/'],
     iconUrls: [],
+    svg: EthLogo,
     subgraphApi: SUBGRAPH_GOERLI,
     contractsDeployed: true,
   },

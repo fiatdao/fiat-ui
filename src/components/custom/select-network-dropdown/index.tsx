@@ -1,14 +1,12 @@
 import s from './s.module.scss'
-import HeaderInfoButton from '../header-info-button'
-import { ChainsValues, chainsConfig } from '../../../constants/chains'
-import { Text } from '../typography'
 import cn from 'classnames'
 import React, { useState } from 'react'
+import { Text } from '@/src/components/custom/typography'
+import HeaderInfoButton from '@/src/components/custom/header-info-button'
+import { ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/chains'
 import { Divider, Popover } from '@/src/components/antd'
-
 import Grid from '@/src/components/custom/grid'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import Ethereum from '@/src/resources/svg/ethereum.svg'
 
 const ConnectedWallet: React.FC = () => {
   const { setNetwork, walletChainId } = useWeb3Connection()
@@ -19,6 +17,8 @@ const ConnectedWallet: React.FC = () => {
     .map((chain) => {
       return chainsConfig[Number(chain) as ChainsValues]
     })
+
+  const currentChainConfig = getNetworkConfig(walletChainId as ChainsValues)
 
   return (
     <Grid align="center" flow="col" gap={20} justify="center">
@@ -55,11 +55,13 @@ const ConnectedWallet: React.FC = () => {
         trigger="click"
         visible={visible}
       >
-        <HeaderInfoButton
-          className={cn(s.infoButton)}
-          icon={<Ethereum />}
-          text={chainsConfig[walletChainId as ChainsValues]?.shortName}
-        />
+        {currentChainConfig === undefined ? null : (
+          <HeaderInfoButton
+            className={cn(s.infoButton)}
+            icon={<currentChainConfig.svg />}
+            text={currentChainConfig.shortName}
+          />
+        )}
       </Popover>
     </Grid>
   )
