@@ -2,7 +2,7 @@ import s from './s.module.scss'
 import { useRouter } from 'next/router'
 import cn from 'classnames'
 import { useState } from 'react'
-import { calculateHealthFactor } from '@/src/utils/table'
+import { getHealthFactorState } from '@/src/utils/table'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
@@ -69,7 +69,7 @@ const YourPositions = () => {
           }
         />
         <InfoBlock
-          state={calculateHealthFactor(lowestHealthFactor)}
+          state={getHealthFactorState(lowestHealthFactor)}
           title="Lowest Health Factor"
           url={
             lowestHealthFactorPositionAddress

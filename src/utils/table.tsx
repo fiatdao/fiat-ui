@@ -6,7 +6,7 @@ import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 
 // @TODO: verify this colouring
-export const calculateHealthFactor = (hf: BigNumber): 'danger' | 'ok' | 'warning' => {
+export const getHealthFactorState = (hf: BigNumber): 'danger' | 'ok' | 'warning' => {
   return hf.gte(1.5) ? 'ok' : hf.gt(1.0) ? 'warning' : 'danger'
 }
 

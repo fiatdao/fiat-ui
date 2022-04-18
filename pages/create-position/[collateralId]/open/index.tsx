@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import { getHealthFactorState } from '../../../../src/utils/table'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -196,7 +197,7 @@ const FormERC20: React.FC<{
       value: `${stateMachine.context.fiatAmount.toFixed(4)}`,
     },
     {
-      state: 'ok',
+      state: getHealthFactorState(hf),
       title: 'Updated health factor',
       value: healthFactorNumber,
     },
