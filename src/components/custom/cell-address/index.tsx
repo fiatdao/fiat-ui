@@ -1,9 +1,12 @@
 import s from './s.module.scss'
 import cn from 'classnames'
+import React from 'react'
 import { shortenAddr } from '@/src/web3/utils'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { chainsConfig } from '@/src/constants/chains'
+import { getNetworkConfig } from '@/src/constants/chains'
 
+/// A block explorer link to a specific transaction.
+/// Rendered in the "Transaction History" view
 export const CellAddress: React.FC<{
   className?: string
   textAlign?: 'left' | 'right' | 'center'
@@ -11,10 +14,8 @@ export const CellAddress: React.FC<{
   value: string
 }> = ({ className, textAlign, tooltip, value, ...restProps }) => {
   const { appChainId } = useWeb3Connection()
-  const explorer =
-    chainsConfig[appChainId].shortName === 'Goerli'
-      ? 'https://goerli.etherscan.io/'
-      : 'https://etherscan.io/'
+  const explorer = getNetworkConfig(appChainId)?.blockExplorerUrls[0]
+
   return (
     <div
       className={cn(

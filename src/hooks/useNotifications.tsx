@@ -5,7 +5,7 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { TransactionError } from '@/src/utils/TransactionError'
 
 export const useNotifications = () => {
-  const { getExplorerUrl } = useWeb3Connection()
+  const { getExplorerUrlForTxHash } = useWeb3Connection()
   antdNotification.config({
     maxCount: 1,
     duration: 0,
@@ -27,7 +27,7 @@ export const useNotifications = () => {
           message: 'Transaction error',
           description: (
             <a
-              href={getExplorerUrl(e.transactionHash)}
+              href={getExplorerUrlForTxHash(e.transactionHash)}
               referrerPolicy="no-referrer"
               rel="noreferrer"
               target="_blank"
@@ -57,7 +57,7 @@ export const useNotifications = () => {
 
       return error
     },
-    [getExplorerUrl],
+    [getExplorerUrlForTxHash],
   )
 
   const awaitingTx = useCallback(
@@ -66,7 +66,7 @@ export const useNotifications = () => {
         message: 'Awaiting tx execution',
         description: (
           <a
-            href={getExplorerUrl(txHash)}
+            href={getExplorerUrlForTxHash(txHash)}
             referrerPolicy="no-referrer"
             rel="noreferrer"
             target="_blank"
@@ -76,7 +76,7 @@ export const useNotifications = () => {
         ),
       })
     },
-    [getExplorerUrl],
+    [getExplorerUrlForTxHash],
   )
 
   const awaitingTxBlocks = useCallback(
@@ -90,7 +90,7 @@ export const useNotifications = () => {
             <>
               <p>Waiting {blocks} blocks confirmation.</p>
               <a
-                href={getExplorerUrl(txHash)}
+                href={getExplorerUrlForTxHash(txHash)}
                 referrerPolicy="no-referrer"
                 rel="noreferrer"
                 target="_blank"
@@ -102,7 +102,7 @@ export const useNotifications = () => {
         })
       }
     },
-    [awaitingTx, getExplorerUrl],
+    [awaitingTx, getExplorerUrlForTxHash],
   )
 
   const { push } = useRouter()
@@ -131,7 +131,7 @@ export const useNotifications = () => {
         message: 'Transaction successful',
         description: (
           <a
-            href={getExplorerUrl(txHash)}
+            href={getExplorerUrlForTxHash(txHash)}
             referrerPolicy="no-referrer"
             rel="noreferrer"
             target="_blank"
@@ -141,7 +141,7 @@ export const useNotifications = () => {
         ),
       })
     },
-    [getExplorerUrl],
+    [getExplorerUrlForTxHash],
   )
 
   const requestSign = () => {
