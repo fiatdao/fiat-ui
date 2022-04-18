@@ -6,6 +6,7 @@ import cn from 'classnames'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import Lottie from 'lottie-react'
+import { getHealthFactorState } from '@/src/utils/table'
 import { getEtherscanAddressUrl } from '@/src/web3/utils'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
@@ -196,7 +197,7 @@ const FormERC20: React.FC<{
       value: `${stateMachine.context.fiatAmount.toFixed(4)}`,
     },
     {
-      state: 'ok',
+      state: getHealthFactorState(hf),
       title: 'Updated health factor',
       value: healthFactorNumber,
     },
