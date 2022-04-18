@@ -1,6 +1,7 @@
 import s from './s.module.scss'
 import cn from 'classnames'
 import { HTMLAttributes } from 'react'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { AddTokenButton } from '@/src/components/custom/add-token-button'
 import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
@@ -15,6 +16,7 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
   className,
   ...restProps
 }) => {
+  const { appChainId } = useWeb3Connection()
   /// For devs only
   const logContracts = () => {
     console.log('***** Logging contracts *****')
@@ -47,17 +49,17 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
       <h5 className={cn(s.title)}>ADD TO WALLET</h5>
       <div className={cn(s.buttons)}>
         <AddTokenButton
-          address={contracts.FIAT.address[Chains.goerli]}
-          decimals={18}
+          address={contracts.FIAT.address[appChainId]}
+          decimals={contracts.FIAT.decimals}
           image={FIATTokenImage}
-          symbol="FIAT"
+          symbol={contracts.FIAT.symbol}
         />
         <AddTokenButton
-          // TODO address FDT token??
-          address={contracts.FIAT.address[Chains.goerli]}
-          decimals={18}
+          address={contracts.FIAT_DAO.address[appChainId]}
+          decimals={contracts.FIAT_DAO.decimals}
+          disabled={appChainId === Chains.goerli}
           image={FDTTokenImage}
-          symbol="FDT"
+          symbol={contracts.FIAT_DAO.symbol}
         />
       </div>
       <h6>
