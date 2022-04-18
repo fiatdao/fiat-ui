@@ -15,7 +15,7 @@ export const fetchPosition = (
   appChainId: ChainsValues,
   userAddress: Maybe<string>,
 ) => {
-  return graphqlFetcher<Positions, PositionsVariables>(POSITIONS, {
+  return graphqlFetcher<Positions, PositionsVariables>(appChainId, POSITIONS, {
     where: {
       id: positionId.toLowerCase(),
     },

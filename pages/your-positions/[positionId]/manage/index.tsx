@@ -29,7 +29,6 @@ import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 const LAST_STEP = 4
 
@@ -134,7 +133,7 @@ const PositionManage = () => {
     : DEFAULT_HEALTH_FACTOR
 
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
-  const tokenSymbol = getTokenByAddress(position?.collateral?.address)?.symbol ?? ''
+  const tokenSymbol = position?.symbol ?? ''
 
   const reset = async () => {
     setFinished(false)
@@ -278,7 +277,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorToRender}
-                              mainAsset={position.protocol}
+                              mainAsset={position.vaultName}
                               max={maxDepositAmount}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
@@ -297,7 +296,7 @@ const PositionManage = () => {
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactorToRender}
-                              mainAsset={position.protocol}
+                              mainAsset={position.vaultName}
                               max={maxWithdrawAmount}
                               maximumFractionDigits={6}
                               secondaryAsset={position.underlier.symbol}
@@ -437,7 +436,7 @@ const PositionManage = () => {
             <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
             <p className={cn(s.lastStepText)}>
               Your position has been successfully updated! It may take a couple seconds for your
-              position to show in the app.{' '}
+              position to show in the app.
             </p>
             <div className={cn(s.summary)}>
               <ButtonsWrapper>

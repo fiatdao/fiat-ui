@@ -13,7 +13,7 @@ import {
   ZERO_BIG_NUMBER,
 } from '../constants/misc'
 import { parseDate } from '../utils/dateTime'
-import { shortenAddr } from '../web3/utils'
+import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
@@ -25,7 +25,6 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 export type TokenInfo = {
@@ -285,6 +284,7 @@ export const useManagePositionForm = (
         deltaCollateral,
         deltaDebt,
         wait: 3,
+        virtualRate: position.virtualRate,
       })
 
       await updateToken()
@@ -389,30 +389,27 @@ export const useManageFormSummary = (
 }
 
 export const useManagePositionsInfoBlock = (position: Position) => {
-  const tokenSymbol = getTokenByAddress(position?.collateral.address)?.symbol ?? ''
+  const chainId = useWeb3Connection().appChainId
   return [
     {
       title: 'Asset',
-      value: position ? tokenSymbol : '-',
-      address: position ? position.collateral.address : '-',
-      appChainId: useWeb3Connection().appChainId,
+      value: position.symbol || '-',
+      url: position ? getEtherscanAddressUrl(position.collateral.address, chainId) : '-',
     },
     {
       title: 'Underlying Asset',
       value: position ? position.underlier.symbol : '-',
-      address: position ? position.underlier.address : '-',
-      appChainId: useWeb3Connection().appChainId,
+      url: position ? getEtherscanAddressUrl(position.underlier.address, chainId) : '-',
     },
     {
       title: 'Owner',
       value: position ? shortenAddr(position.owner, 8, 8) : '-',
-      address: position ? position.owner : '-',
-      appChainId: useWeb3Connection().appChainId,
+      url: position ? getEtherscanAddressUrl(position.owner, chainId) : '-',
     },
     {
       title: 'Maturity Date',
       tooltip: 'The date on which the bond is redeemable for its underlying assets.',
-      value: position?.maturity ? parseDate(position?.maturity) : '-',
+      value: position?.maturity ? parseDate(position?.maturity) : '--:--:--',
     },
     {
       title: 'Face Value',

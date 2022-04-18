@@ -9,11 +9,10 @@
     "lint": "next lint",
     "lint:fix": "eslint --fix \"./**/*.{js,jsx,ts,tsx}\"",
     "lessc": "lessc src/styles/antd.less src/styles/antd.css -js",
-    "prepare": "husky install",
+    "prepare": "husky install; yarn typechain; yarn schema",
     "prettier:fix": "prettier --write \"./**/*.{js,jsx,ts,tsx}\"",
     "start": "next start",
     "typechain": "typechain --target=ethers-v5 ./src/abis/**/*.json --out-dir ./types/typechain/",
-    "postinstall": "yarn typechain; yarn schema",
     "schema": "bash scripts/apollo-schema.sh"
   },
   "lint-staged": {
@@ -93,8 +92,8 @@
     "husky": "^7.0.2",
     "lessc": "^1.0.2",
     "lint-staged": "^11.1.2",
-    "node-sass": "6.0.1",
     "prettier": "^2.4.0",
+    "sass": "^1.50.0",
     "stylelint": "^14.1.0",
     "stylelint-config-sass-guidelines": "^9.0.1",
     "typechain": "5.0.0",

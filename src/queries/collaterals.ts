@@ -5,7 +5,6 @@ export const COLLATERALS = gql`
     collateralTypes(where: $where) {
       id
       tokenId
-      vaultName
       symbol
       underlierSymbol
       underlierAddress
@@ -25,6 +24,7 @@ export const COLLATERALS = gql`
         address
         interestPerSecond
         debtFloor
+        name
       }
     }
   }

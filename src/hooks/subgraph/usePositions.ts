@@ -25,12 +25,13 @@ export const fetchPositions = ({
 }) => {
   const userAddresses = [userAddress, proxyAddress].filter((p) => !!p) as string[]
 
-  return graphqlFetcher<Positions, PositionsVariables>(POSITIONS, {
+  return graphqlFetcher<Positions, PositionsVariables>(appChainId, POSITIONS, {
     where: {
       id,
       vaultName,
       owner_in: userAddresses.length > 0 ? userAddresses : undefined,
-      collateral_not: '0', // TODO: if collateral is 0 then position is closed (always collateral >= normalDebt)
+      collateral_not: '0', // TODO: if collateral is 0 then position is closed (always collateral >= normalDebt),
+      vaultName_not_contains_nocase: 'deprecated', // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     },
   }).then(async ({ positions }) => {
     return Promise.all(positions.map((p) => wranglePosition(p, provider, appChainId, userAddress)))
@@ -40,7 +41,7 @@ export const fetchPositions = ({
 export const usePositions = (id?: string, proxyAddress?: string, protocol?: string) => {
   const { address: userAddress, appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
   const { data, error, mutate } = useSWR(
-    ['positions', id, proxyAddress, userAddress, protocol],
+    ['positions', id, proxyAddress, userAddress, protocol, appChainId],
     () => {
       if (!userAddress) return []
       return fetchPositions({

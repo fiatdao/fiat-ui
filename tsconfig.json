@@ -30,6 +30,7 @@
     "pages/**/*",
     "src/**/*",
     "types/**/*",
+    "metadata/**/*",
     "types/global.d.ts",
     "next-env.d.ts",
     "additional-bignumber.d.ts"

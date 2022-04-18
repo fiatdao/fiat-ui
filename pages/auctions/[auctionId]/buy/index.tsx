@@ -6,8 +6,7 @@ import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useState } from 'react'
 import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
-import { FIAT_TICKER, WAD_DECIMALS } from '@/src/constants/misc'
+import { FIAT_TICKER, WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -65,10 +64,49 @@ const BuyCollateral = () => {
     maxPrice,
   } = useBuyCollateralForm(data)
 
+  const [isDebtSufficient, setIsDebtSufficient] = useState(false)
+
+  const minimumToBuy = data?.vault?.auctionDebtFloor
+    ?.plus(1)
+    .unscaleBy(WAD_DECIMALS)
+    .dividedBy(data.currentAuctionPrice as BigNumber)
+
+  const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
+    if (data?.debt) {
+      const fiatToPay = amountToBuy.multipliedBy(data.currentAuctionPrice as BigNumber)
+
+      // TODO: Leave this for debugging purposes
+      // console.log({
+      //   auctionDebtFloor: data?.vault?.auctionDebtFloor?.toFixed(),
+      //   fiatToPay: fiatToPay.toFixed(),
+      //   debt: data.debt.toFixed(),
+      //   diff: data.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay).toFixed(),
+      // })
+
+      // 1. check if auction.debt - fiatToPay is less than or equal to auctionDebtFloor.
+      //    if true then 2. otherwise proceed and skip 2.
+      const dusty = data.debt
+        .unscaleBy(WAD_DECIMALS)
+        .minus(fiatToPay)
+        .lte(data?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
+
+      // 2. check that fiatToPay > auctionDebtFloor otherwise block
+      setIsDebtSufficient(
+        dusty
+          ? fiatToPay.gt(data.vault.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
+          : true,
+      )
+    }
+  }
+
+  const minimumMessage = !isDebtSufficient
+    ? ` (minimum: ${(minimumToBuy as BigNumber).toFixed(6)})`
+    : ''
+
   const [step, setStep] = useState(0)
   const steps: Step[] = [
     {
-      description: 'Select the amount to buy',
+      description: `Select the amount to buy${minimumMessage}`,
       buttonText: 'Buy collateral',
       next() {
         if (!hasAllowance) {
@@ -143,9 +181,7 @@ const BuyCollateral = () => {
     },
   ]
 
-  useDynamicTitle(
-    data?.collateral.address && `Buy ${getTokenByAddress(data.collateral.address)?.symbol ?? ''}`,
-  )
+  useDynamicTitle(data?.protocol && `Buy ${data.protocol.humanReadableName}`)
 
   const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
@@ -252,24 +288,34 @@ const BuyCollateral = () => {
                     <div className={cn(s.balanceWrapper)}>
                       <h3 className={cn(s.balanceLabel)}>Select amount</h3>
                       <p className={cn(s.balance)}>
-                        Balance: {FIATBalance.unscaleBy(WAD_DECIMALS)?.toFixed(2)}
+                        Balance: {FIATBalance.unscaleBy(WAD_DECIMALS)?.toFixed(2)} FIAT
                       </p>
                     </div>
 
-                    <Form form={form} initialValues={{ amountToBuy: 0 }} onFinish={onSubmit}>
+                    {/* FixMe: send proper value to `mainAsset` */}
+                    <Form
+                      form={form}
+                      initialValues={{ amountToBuy: 0 }}
+                      onFinish={onSubmit}
+                      onValuesChange={onValuesChange}
+                    >
                       <Form.Item name="amountToBuy" required>
                         <TokenAmount
                           disabled={loading}
                           displayDecimals={4}
-                          mainAsset={data?.protocol.name}
+                          mainAsset={data?.protocol.name ?? ''}
                           max={maxCredit}
                           maximumFractionDigits={6}
                           secondaryAsset={data?.underlier.symbol}
                           slider
                         />
                       </Form.Item>
-                      <ButtonGradient disabled={loading} height="lg" onClick={steps[step].next}>
-                        {steps[step].buttonText}
+                      <ButtonGradient
+                        disabled={loading || !isDebtSufficient}
+                        height="lg"
+                        onClick={steps[step].next}
+                      >
+                        {isDebtSufficient ? steps[step].buttonText : 'No partial purchase possible'}
                       </ButtonGradient>
                     </Form>
                   </>

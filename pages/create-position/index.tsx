@@ -23,7 +23,6 @@ import { WAD_DECIMALS } from '@/src/constants/misc'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { tablePagination } from '@/src/utils/table'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { getTokenByAddress } from '@/src/constants/bondTokens'
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactNode }>
 
@@ -58,26 +57,20 @@ const CreatePosition = () => {
     .map((f) => f.name)
   const collaterals = useCollaterals(inMyWallet, activeFilters)
 
-  const columns: ColumnsType<any> = [
+  const columns: ColumnsType<Collateral> = [
     {
       align: 'left',
-      dataIndex: 'address',
-      render: (value: Collateral['address'], collateral: Collateral) => (
-        <Asset
-          mainAsset={getTokenByAddress(value)?.protocol ?? ''}
-          secondaryAsset={collateral.underlierSymbol ?? ''}
-          title={getTokenByAddress(value)?.protocol ?? ''}
-        />
-      ),
+      dataIndex: 'protocol',
+      render: (protocol: Collateral['protocol'], { vault: { name } }) => {
+        return <Asset mainAsset={name} title={protocol} />
+      },
       title: 'Protocol',
       width: 200,
     },
     {
       align: 'left',
-      dataIndex: 'address',
-      render: (value: Collateral['address']) => (
-        <CellValue value={getTokenByAddress(value)?.symbol ?? '-'} />
-      ),
+      dataIndex: 'symbol',
+      render: (symbol: Collateral['symbol']) => <CellValue value={symbol} />,
       title: 'Asset',
     },
     {

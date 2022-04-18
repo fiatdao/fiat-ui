@@ -1,17 +1,16 @@
 import {
   codex,
-  collateralAuction,
   collybus,
-  erc1155,
   erc20,
   fiat,
   moneta,
+  noLossCollateralAuction,
   noLossCollateralAuctionActions,
   prbProxy,
-  vault1155,
+  prbProxyRegistry,
+  publican,
   vault20,
   vaultEptActions,
-  vaultFcActions,
 } from '@/src/abis'
 import { Chains, ChainsValues } from '@/src/constants/chains'
 
@@ -43,17 +42,10 @@ export const contracts = constantContracts({
     },
     abi: erc20,
   },
-  ERC_1155: {
-    address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '',
-    },
-    abi: erc1155,
-  },
   FIAT: {
     address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0x004e84d9eea17Bdad2912B475f7C473064A3Ca1C',
+      [Chains.mainnet]: '0x586Aa273F262909EEF8fA02d90Ab65F5015e0516',
+      [Chains.goerli]: '0x7c9571148968d05608d324463E38F04a7eAAd53e',
     },
     abi: fiat,
     decimals: 18,
@@ -62,15 +54,15 @@ export const contracts = constantContracts({
   },
   CODEX: {
     address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0xBB789154514c0E04CA40b988a2Fa94AF1b80a840',
+      [Chains.mainnet]: '0x6bF5EB06201e4ea7C315b1C23BfE79fAE30541F9',
+      [Chains.goerli]: '0x56974fC4bB4Dc18dDDa06B2056f1Bdfef0eCA0FF',
     },
     abi: codex,
   },
   COLLYBUS: {
     address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0xe1c58e1BAD975b4882902783Ca458B6719aE3533',
+      [Chains.mainnet]: '0xD503383fFABbec8Eb85eAED448fE1fFEc0a8148A',
+      [Chains.goerli]: '0xB894853D5771B588530394065D44A33BcB314aC5',
     },
     abi: collybus,
   },
@@ -81,53 +73,53 @@ export const contracts = constantContracts({
     },
     abi: vault20,
   },
-  VAULT_1155: {
+  NO_LOSS_COLLATERAL_AUCTION: {
+    address: {
+      [Chains.mainnet]: '0x69E65740a4db91e7e18c69A2180251Cf929E035E',
+      [Chains.goerli]: '0x2651d4Bf4EDe0A65d3439f10e69dCe419d9e63D9',
+    },
+    abi: noLossCollateralAuction,
+  },
+  PRB_PROXY: {
     address: {
       [Chains.mainnet]: '',
       [Chains.goerli]: '',
     },
-    abi: vault1155,
+    abi: prbProxy,
   },
-  COLLATERAL_AUCTION: {
+  PRB_PROXY_REGISTRY: {
     address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0x4e21296DB6366dF6380C34a5bd47e79C80231E16',
-    },
-    abi: collateralAuction,
-  },
-  PRB_Proxy: {
-    address: {
-      [Chains.mainnet]: '',
+      [Chains.mainnet]: '0x9b6e12B5d59339a2cA34Af36455BF0A0396069C6',
       [Chains.goerli]: '0xc918902ef2f428f2dc77e3b4b5e5e153aab9d1b0',
     },
-    abi: prbProxy,
+    abi: prbProxyRegistry,
   },
   USER_ACTIONS_EPT: {
     address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0x99D9ad4C752b7499B4C45c1c72B3E3bb2298305D',
+      [Chains.mainnet]: '0x0021DCEeb93130059C2BbBa7DacF14fe34aFF23c',
+      [Chains.goerli]: '0xEEf2b5B29007FDCd31b9961a1D2691b69B3640aa',
     },
     abi: vaultEptActions,
   },
-  USER_ACTIONS_FC: {
-    address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0x67ab5F4F18078a238A2428e73d45A6385C5F5a49',
-    },
-    abi: vaultFcActions,
-  },
   MONETA: {
     address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0xA9387089A3863F9160099257ad3368245796D980',
+      [Chains.mainnet]: '0xEA8Efd605845F4cFAa8Ee6c757390196E1b3f736',
+      [Chains.goerli]: '0xacB75532D1D83321f9B95f9b1eE6Bf3F9c2c475D',
     },
     abi: moneta,
   },
   NO_LOSS_COLLATERAL_AUCTION_ACTIONS: {
     address: {
-      [Chains.mainnet]: '',
-      [Chains.goerli]: '0x5592d5FdCaEC77Ba47f07B024F7e445F9661FD24',
+      [Chains.mainnet]: '0x8ec9d8Af2C0922c5c39388148C136f31E07209Bd',
+      [Chains.goerli]: '0x72614e33ba8fBE89ff2c7c6Edf8c56D43f51E577',
     },
     abi: noLossCollateralAuctionActions,
+  },
+  PUBLICAN: {
+    address: {
+      [Chains.mainnet]: '0x3fF548c77A82B377258b5220164E7Ae267eD8978',
+      [Chains.goerli]: '0x9278785Fd998f527B2dBad2ed83d18a69DD50C14',
+    },
+    abi: publican,
   },
 })

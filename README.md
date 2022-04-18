@@ -10,10 +10,7 @@
 - USDC: https://goerli.etherscan.io/address/0x08034634bbd210485c9c8f798afdc5432782fd18#writeContract
 - Element.fi: https://testnet.element.fi/mint
 
-=======
-
-
-# UI dev stack for BN
+## UI dev stack for BN
 
 > This document is a collection of all the best practices that we think will work better for us to speed-up project development.
 >

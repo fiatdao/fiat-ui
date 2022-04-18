@@ -1,8 +1,11 @@
-import contractCall from '../contractCall'
-import { BigNumberToDateOrCurrent } from '../dateTime'
+import { getVirtualRate } from '../getVirtualRate'
+import { getFaceValue } from '../getFaceValue'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { differenceInDays } from 'date-fns'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
+import contractCall from '@/src/utils/contractCall'
+import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
@@ -15,7 +18,6 @@ import {
   INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
   ONE_BIG_NUMBER,
-  VIRTUAL_RATE,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
@@ -27,6 +29,7 @@ export type Position = {
   tokenId: string
   owner: string
   protocol: string
+  symbol: string
   protocolAddress: string
   maturity: Date
   collateral: TokenData
@@ -43,9 +46,9 @@ export type Position = {
   currentValue: BigNumber
   userAddress: string
   debtFloor: BigNumber
+  vaultName: string
+  virtualRate: BigNumber
 }
-
-// TODO pass tokenId depends on protocol
 
 const readValue = async (
   position: SubgraphPosition,
@@ -53,6 +56,7 @@ const readValue = async (
   appChainId: ChainsValues,
   provider: JsonRpcProvider,
 ): Promise<BigNumber> => {
+  // TODO: tokenId depends on protocol (0 is for element-fi)
   return getCurrentValue(provider, appChainId, 0, position?.vault?.address || null, isFaceValue)
 }
 
@@ -62,14 +66,6 @@ const _getCurrentValue = (
   provider: JsonRpcProvider,
 ): Promise<BigNumber> => {
   return readValue(position, false, appChainId, provider)
-}
-
-const _getFaceValue = (
-  position: SubgraphPosition,
-  appChainId: ChainsValues,
-  provider: JsonRpcProvider,
-): Promise<BigNumber> => {
-  return readValue(position, true, appChainId, provider)
 }
 
 const getDecimals = async (
@@ -102,13 +98,13 @@ export const getDateState = (maturityDate: Date) => {
 //        replace hardcoded value for Publican virtualRate value
 //        https://github.com/fiatdao/fiat-ui/issues/292
 // normalDebt = debt / (virtualRate*slippageMargin)
-const calculateNormalDebt = (debt: BigNumber) => {
-  return debt.div(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE))
+const calculateNormalDebt = (debt: BigNumber, virtualRate: BigNumber) => {
+  return debt.div(virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
 }
 
 // debt = normalDebt * (virtualRate*slippageMargin)
-const calculateDebt = (normalDebt: BigNumber) => {
-  return normalDebt.times(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE))
+const calculateDebt = (normalDebt: BigNumber, virtualRate: BigNumber) => {
+  return normalDebt.times(virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
 }
 
 // @TODO: healthFactor = totalCollateral*collateralValue/totalFIAT/collateralizationRatio
@@ -156,25 +152,26 @@ const wranglePosition = async (
   appChainId: ChainsValues,
   userAddress: string,
 ): Promise<Position> => {
-  const { id, vaultName: protocol } = position
   const vaultCollateralizationRatio =
     BigNumber.from(position.vault?.collateralizationRatio) ?? ONE_BIG_NUMBER
   const totalCollateral = BigNumber.from(position.collateral) ?? ZERO_BIG_NUMBER
   const totalNormalDebt = BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER
-
-  // @TODO: totalDebt = normalDebt * RATES
-  const totalDebt = calculateDebt(BigNumber.from(position.normalDebt) ?? ZERO_BIG_NUMBER)
   const interestPerSecond = BigNumber.from(position.vault?.interestPerSecond) ?? ZERO_BIG_NUMBER
   const debtFloor = BigNumber.from(position.vault?.debtFloor) ?? ZERO_BIG_NUMBER
-  const maturity = BigNumberToDateOrCurrent(position.maturity)
+  const maturity = stringToDateOrCurrent(position.maturity)
+  const vaultName = position.vaultName ?? ''
 
-  const [currentValue, faceValue, collateralDecimals, underlierDecimals] = await Promise.all([
-    _getCurrentValue(position, appChainId, provider),
-    _getFaceValue(position, appChainId, provider),
-    getDecimals(position.collateralType?.address, provider), // collateral is an ERC20 token
-    getDecimals(position.collateralType?.underlierAddress, provider),
-  ])
+  const [currentValue, faceValue, collateralDecimals, underlierDecimals, virtualRate] =
+    await Promise.all([
+      _getCurrentValue(position, appChainId, provider),
+      getFaceValue(provider, position.collateralType?.tokenId ?? 0, position.vault?.address ?? ''),
+      getDecimals(position.collateralType?.address, provider), // collateral is an ERC20 token
+      getDecimals(position.collateralType?.underlierAddress, provider),
+      getVirtualRate(position.vault?.address ?? '', appChainId, provider),
+    ])
 
+  // @TODO: totalDebt = normalDebt * RATES
+  const totalDebt = calculateDebt(totalNormalDebt, virtualRate)
   const { healthFactor, isAtRisk } = calculateHealthFactor(
     currentValue,
     vaultCollateralizationRatio,
@@ -182,12 +179,19 @@ const wranglePosition = async (
     totalDebt,
   )
 
+  const { protocol = '', symbol = '' } =
+    getCollateralMetadata(appChainId, {
+      vaultAddress: position.vault?.address,
+      tokenId: position.collateralType?.tokenId,
+    }) ?? {}
+
   // TODO Interest rate
   return {
-    id,
+    id: position.id,
     tokenId: position.collateralType?.tokenId ?? '',
     protocolAddress: position.vault?.address ?? '',
-    protocol: protocol ?? '',
+    protocol,
+    symbol,
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
@@ -212,6 +216,8 @@ const wranglePosition = async (
     interestPerSecond,
     userAddress,
     debtFloor,
+    vaultName,
+    virtualRate,
   }
 }
 export {

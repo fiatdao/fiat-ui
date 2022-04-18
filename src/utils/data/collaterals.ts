@@ -1,7 +1,9 @@
-import { BigNumberToDateOrCurrent } from '../dateTime'
-import contractCall from '../contractCall'
+import { getVirtualRate } from '../getVirtualRate'
+import { getFaceValue } from '../getFaceValue'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from 'bignumber.js'
+import contractCall from '@/src/utils/contractCall'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import { Collaterals_collateralTypes as SubgraphCollateral } from '@/types/subgraph/__generated__/Collaterals'
 
 import { ChainsValues } from '@/src/constants/chains'
@@ -10,12 +12,13 @@ import { contracts } from '@/src/constants/contracts'
 import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { Collybus } from '@/types/typechain/Collybus'
 import { getHumanValue } from '@/src/web3/utils'
+import { getCollateralMetadata } from '@/src/constants/bondTokens'
 
 export type Collateral = {
   id: string
   tokenId: Maybe<string>
-  vaultName: Maybe<string>
-  symbol: Maybe<string>
+  symbol: string
+  protocol: string
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
   maturity: Date
@@ -33,6 +36,8 @@ export type Collateral = {
     address: string
     interestPerSecond: Maybe<BigNumber>
     debtFloor: BigNumber
+    name: string
+    virtualRate: BigNumber
   }
   manageId?: string
 }
@@ -68,11 +73,25 @@ const wrangleCollateral = async (
       ],
     )
   }
+  const faceValue = await getFaceValue(
+    provider,
+    collateral.tokenId ?? 0,
+    collateral.vault?.address ?? '',
+  )
+  const virtualRate = await getVirtualRate(collateral.vault?.address ?? '', appChainId, provider)
+
+  const { protocol = '', symbol = '' } =
+    getCollateralMetadata(appChainId, {
+      vaultAddress: collateral.vault?.address,
+      tokenId: collateral.tokenId,
+    }) ?? {}
 
   return {
     ...collateral,
-    maturity: BigNumberToDateOrCurrent(collateral.maturity),
-    faceValue: BigNumber.from(collateral.faceValue) ?? null,
+    protocol,
+    symbol,
+    maturity: stringToDateOrCurrent(collateral.maturity),
+    faceValue,
     currentValue: BigNumber.from(currentValue?.toString()) ?? null,
     vault: {
       collateralizationRatio:
@@ -80,6 +99,8 @@ const wrangleCollateral = async (
       address: collateral.vault?.address ?? '',
       interestPerSecond: BigNumber.from(collateral.vault?.interestPerSecond) ?? null,
       debtFloor: BigNumber.from(collateral.vault?.debtFloor) ?? ZERO_BIG_NUMBER,
+      name: collateral.vault?.name ?? '',
+      virtualRate,
     },
     eptData: {
       balancerVault: collateral.eptData?.balancerVault ?? '',

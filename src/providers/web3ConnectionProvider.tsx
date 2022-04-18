@@ -16,6 +16,7 @@ import { API, Wallet } from 'bnc-onboard/dist/src/interfaces'
 import { Subscriptions } from 'bnc-onboard/dist/src/interfaces'
 
 import nullthrows from 'nullthrows'
+import { DEFAULT_CHAIN_ID } from '@/src/constants/misc'
 import { Chains, ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/chains'
 import isServer from '@/src/utils/isServer'
 import { RequiredNonNull } from '@/types/utils'
@@ -25,12 +26,10 @@ const STORAGE_CONNECTED_WALLET = 'onboard_selectedWallet'
 const ONBOARD_STATE_DELAY = 100
 
 // Default chain id from env var
-const INITAL_APP_CHAIN_ID = Number(
-  process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 5,
-) as ChainsValues
+const INITIAL_APP_CHAIN_ID = Number(DEFAULT_CHAIN_ID) as ChainsValues
 
 nullthrows(
-  Object.values(Chains).includes(INITAL_APP_CHAIN_ID) ? INITAL_APP_CHAIN_ID : null,
+  Object.values(Chains).includes(INITIAL_APP_CHAIN_ID) ? INITIAL_APP_CHAIN_ID : null,
   'No default chain ID is defined or is not supported',
 )
 
@@ -129,14 +128,13 @@ export type Web3Context = {
   isWalletNetworkSupported: boolean
   pushNetwork: () => Promise<void>
   readOnlyAppProvider: JsonRpcProvider
-  setAppChainId: Dispatch<SetStateAction<ChainsValues>>
   wallet: Wallet | null
   walletChainId: number | null
   web3Provider: Web3Provider | null
   getExplorerUrl: (hash: string) => string
   changeNetworkModalOpen: boolean
   setChangeNetworkModalOpen: Dispatch<SetStateAction<Web3Context['changeNetworkModalOpen']>>
-  setNetwork: () => void
+  setNetwork: (chainId?: ChainsValues) => void
 }
 
 const Web3ContextConnection = createContext<Web3Context | undefined>(undefined)
@@ -149,10 +147,9 @@ type Props = {
 export default function Web3ConnectionProvider({ children, fallback }: Props) {
   const [isInitializing, setIsInitializing] = useState(true)
   const [address, setAddress] = useState<string | null>(null)
-  const [walletChainId, setWalletChainId] = useState<number | null>(null)
+  const [walletChainId, setWalletChainId] = useState<ChainsValues | null>(null)
   const [tmpWallet, setTmpWallet] = useState<Wallet | null>(null)
   const [wallet, setWallet] = useState<Wallet | null>(null)
-  const [appChainId, setAppChainId] = useState<ChainsValues>(INITAL_APP_CHAIN_ID)
   const [validNetwork, setValidNetwork] = useState<boolean>(false)
   const [changeNetworkModalOpen, setChangeNetworkModalOpen] = useState(false)
   const supportedChainIds = Object.values(Chains)
@@ -160,6 +157,8 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
   const web3Provider = wallet?.provider ? new Web3Provider(wallet.provider) : null
 
   const isWalletConnected = web3Provider != null && address != null && validNetwork
+
+  const appChainId = walletChainId ?? INITIAL_APP_CHAIN_ID
 
   const isAppConnected = isWalletConnected && walletChainId === appChainId
 
@@ -174,7 +173,7 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     if (!Object.values(Chains).includes(chain)) {
       return false
     }
-    return getNetworkConfig(chain).constractsDeployed
+    return getNetworkConfig(chain).contractsDeployed
   }
 
   const _reconnectWallet = async (): Promise<void> => {
@@ -201,14 +200,14 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
 
   // Instantiate Onboard
   useEffect(() => {
-    initOnboard(INITAL_APP_CHAIN_ID, {
-      network: (network: number) => {
-        setWalletChainId(network || null)
+    initOnboard(INITIAL_APP_CHAIN_ID, {
+      network: (network) => {
+        setWalletChainId((network as ChainsValues) || null)
       },
-      address: async (address: string | undefined) => {
+      address: async (address) => {
         setAddress(address || null)
       },
-      wallet: async (wallet: Wallet) => {
+      wallet: async (wallet) => {
         if (wallet.name === undefined) {
           setWallet(null)
           setTmpWallet(null)
@@ -283,12 +282,12 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     }
   }
 
-  const setNetwork = () => {
+  const setNetwork = (chainId = appChainId) => {
     window.ethereum.request({
       method: 'wallet_switchEthereumChain',
       params: [
         {
-          chainId: getNetworkConfig(appChainId).chainIdHex,
+          chainId: getNetworkConfig(chainId).chainIdHex,
         },
       ],
     })
@@ -352,7 +351,6 @@ export default function Web3ConnectionProvider({ children, fallback }: Props) {
     connectWallet,
     disconnectWallet,
     pushNetwork,
-    setAppChainId: setAppChainId,
     changeNetworkModalOpen,
     setChangeNetworkModalOpen,
     setNetwork: setNetwork,

@@ -1,4 +1,10 @@
 import nullthrows from 'nullthrows'
+import {
+  RPC_URL_GOERLI,
+  RPC_URL_MAINNET,
+  SUBGRAPH_GOERLI,
+  SUBGRAPH_MAINNET,
+} from '@/src/constants/misc'
 
 import { ObjectValues } from '@/types/utils'
 
@@ -19,7 +25,8 @@ export type ChainConfig = {
   rpcUrl: string
   blockExplorerUrls: string[]
   iconUrls: string[]
-  constractsDeployed: boolean
+  subgraphApi: string
+  contractsDeployed: boolean
 }
 
 export const chainsConfig: Record<ChainsValues, ChainConfig> = {
@@ -29,10 +36,11 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     shortName: 'Mainnet',
     chainId: Chains.mainnet,
     chainIdHex: '0x1',
-    rpcUrl: 'https://main-light.eth.linkpool.io',
+    rpcUrl: RPC_URL_MAINNET,
     blockExplorerUrls: ['https://etherscan.io/'],
     iconUrls: [],
-    constractsDeployed: false,
+    subgraphApi: SUBGRAPH_MAINNET,
+    contractsDeployed: true,
   },
   [Chains.goerli]: {
     id: Chains.goerli,
@@ -40,10 +48,11 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     shortName: 'Goerli',
     chainId: Chains.goerli,
     chainIdHex: '0x5',
-    rpcUrl: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    rpcUrl: RPC_URL_GOERLI,
     blockExplorerUrls: ['https://goerli.etherscan.io/'],
     iconUrls: [],
-    constractsDeployed: true,
+    subgraphApi: SUBGRAPH_GOERLI,
+    contractsDeployed: true,
   },
 }
 

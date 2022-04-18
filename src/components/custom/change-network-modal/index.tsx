@@ -5,12 +5,10 @@ import { Text } from '@/src/components/custom/typography'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 const ChangeNetworkModal: React.FC = () => {
-  const { changeNetworkModalOpen, connectWallet, setChangeNetworkModalOpen, setNetwork } =
-    useWeb3Connection()
+  const { changeNetworkModalOpen, setChangeNetworkModalOpen, setNetwork } = useWeb3Connection()
 
   const handleClick = () => {
     setNetwork()
-    connectWallet
     setChangeNetworkModalOpen(false)
   }
 

@@ -13,10 +13,16 @@ export const TRANSACTIONS = gql`
       transactionHash
       tokenId
       timestamp
-      user
+      user {
+        id
+      }
+      vault {
+        address
+      }
       position {
         maturity
         collateralType {
+          tokenId
           address
           underlierAddress
           underlierSymbol

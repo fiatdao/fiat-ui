@@ -1,28 +1,79 @@
-import { AddressMappedToken } from '@/types/token'
+import { memoize } from 'lodash'
+import { ChainsValues } from '@/src/constants/chains'
+import { Maybe } from '@/types/utils'
+import { metadataByNetwork } from '@/metadata'
 
-// Tokens
-const eyUSDC = {
-  protocol: 'Element Finance',
-  symbol: 'USDC Principal Token',
-  decimals: 6,
-  name: 'eyUSDC:10-AUG-22-GMT',
+type PTokenMap = {
+  [vaultAddress: string]: {
+    [tokenId: string]: {
+      protocol: string
+      symbol: string
+      decimals: number
+      name: string
+      icons: {
+        main: string
+        secondary: string
+      }
+    }
+  }
 }
 
-// Address Mappings
-const goerliEyUSDC: AddressMappedToken = {
-  address: '0xdcf80c068b7ffdf7273d8adae4b076bf384f711a',
-  token: eyUSDC,
-  chain: 'Goerli',
+type MetadataByNetwork = {
+  [chainId: number]: PTokenMap
 }
 
-const ethEyUSDC: AddressMappedToken = {
-  address: '', // ETH Mainnet token address
-  token: eyUSDC,
-  chain: 'Ethereum',
+const getVaults = memoize((appChainId: ChainsValues) => {
+  const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
+
+  return Object.fromEntries(
+    Object.entries(vaultsMetadata).map(([vaultAddress, metadata]) => [
+      // transform addresses to lowerCase
+      vaultAddress.toLowerCase(),
+      metadata,
+    ]),
+  )
+})
+
+// memoized as the metadata information will remain unchanged from build to build
+// so, we need to only re-execute the search if the `chainId` changes
+export const getCollateralMetadata = (
+  appChainId: ChainsValues,
+  {
+    tokenId,
+    vaultAddress,
+  }: {
+    tokenId?: Maybe<string>
+    vaultAddress?: Maybe<string>
+  },
+) => {
+  if (!vaultAddress || !tokenId || !metadataByNetwork) {
+    return
+  }
+
+  const vaults = getVaults(appChainId)
+
+  // lookup by vaultAddress and tokenId
+  return vaults[vaultAddress.toLowerCase()][tokenId]
 }
 
-const addressMap: AddressMappedToken[] = [goerliEyUSDC, ethEyUSDC]
+export const getPTokenIconFromMetadata = memoize((protocolName?: string) => {
+  if (!metadataByNetwork || !protocolName) {
+    return
+  }
 
-export function getTokenByAddress(address: string | null | undefined) {
-  return addressMap.find((token) => token?.address?.toLowerCase() === address?.toLowerCase())?.token
-}
+  const iconsByProtocolName: Record<string, { main: string; secondary: string }> =
+    Object.fromEntries(
+      Object.entries(metadataByNetwork)
+        .map(([, byNetwork]) =>
+          Object.entries(byNetwork).map(([, metadataByTokenId]) =>
+            Object.entries(metadataByTokenId).map(([, metadata]) => [
+              metadata.name.toLowerCase(),
+              metadata.icons,
+            ]),
+          ),
+        )
+        .flat(2),
+    )
+
+  return iconsByProtocolName[protocolName.toLowerCase()]
+})

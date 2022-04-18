@@ -12,9 +12,11 @@ import TransactionHistoryTable from '@/src/components/custom/transaction-history
 import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 import { remainingTime } from '@/src/utils/dateTime'
 import { useYourPositionInfoPage } from '@/src/utils/data/yourPositionInfo'
-import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { INFINITE_BIG_NUMBER, WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { isValidHealthFactor } from '@/src/utils/data/positions'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 
 enum TabState {
   Inventory = 'inventory',
@@ -44,6 +46,9 @@ const YourPositions = () => {
   const { positions } = usePositionsByUser()
   const { pageInformation } = useYourPositionInfoPage(positions)
 
+  const lowestHealthFactor = pageInformation?.lowestHealthFactor?.value ?? INFINITE_BIG_NUMBER
+  const lowestHealthFactorPositionAddress = pageInformation?.lowestHealthFactor?.address
+
   // TODO Fix naming if necessary
   return (
     <>
@@ -64,16 +69,18 @@ const YourPositions = () => {
           }
         />
         <InfoBlock
-          state={calculateHealthFactor(
-            pageInformation?.lowestHealthFactor?.value ?? ZERO_BIG_NUMBER,
-          )}
+          state={calculateHealthFactor(lowestHealthFactor)}
           title="Lowest Health Factor"
           url={
-            pageInformation?.lowestHealthFactor?.address
-              ? `/your-positions/${pageInformation.lowestHealthFactor.address}/manage`
+            lowestHealthFactorPositionAddress
+              ? `/your-positions/${lowestHealthFactorPositionAddress}/manage`
               : undefined
           }
-          value={pageInformation?.lowestHealthFactor?.value?.toFixed(3)}
+          value={
+            isValidHealthFactor(lowestHealthFactor)
+              ? lowestHealthFactor.toFixed(3)
+              : DEFAULT_HEALTH_FACTOR
+          }
         />
         <InfoBlock
           title="Next Maturity"
@@ -83,9 +90,9 @@ const YourPositions = () => {
               : undefined
           }
           value={
-            pageInformation?.nearestMaturity
+            pageInformation?.nearestMaturity.value
               ? remainingTime(pageInformation.nearestMaturity.value)
-              : undefined
+              : '--:--:--'
           }
         />
       </InfoBlocksGrid>
