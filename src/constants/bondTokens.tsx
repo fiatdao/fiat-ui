@@ -25,6 +25,10 @@ type MetadataByNetwork = {
 const getVaults = memoize((appChainId: ChainsValues) => {
   const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
 
+  if (vaultsMetadata === undefined) {
+    return {}
+  }
+
   return Object.fromEntries(
     Object.entries(vaultsMetadata).map(([vaultAddress, metadata]) => [
       // transform addresses to lowerCase
@@ -46,11 +50,11 @@ export const getCollateralMetadata = (
     vaultAddress?: Maybe<string>
   },
 ) => {
-  if (!vaultAddress || !tokenId || !metadataByNetwork) {
+  const vaults = getVaults(appChainId)
+
+  if (!vaultAddress || !tokenId || !metadataByNetwork || Object.keys(vaults).length === 0) {
     return
   }
-
-  const vaults = getVaults(appChainId)
 
   // lookup by vaultAddress and tokenId
   return vaults[vaultAddress.toLowerCase()][tokenId]

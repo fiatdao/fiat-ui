@@ -115,4 +115,5 @@ const formatColRatio = (ratio: BigNumber) => {
   // We want it as 0-100+ value, not a 0-1+
   return `${getHumanValue(ratio ?? 0, WAD_DECIMALS - 2)}`
 }
+
 export { wrangleCollateral, formatColRatio }

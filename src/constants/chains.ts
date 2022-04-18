@@ -1,10 +1,11 @@
-import nullthrows from 'nullthrows'
 import {
+  DEFAULT_CHAIN_ID,
   RPC_URL_GOERLI,
   RPC_URL_MAINNET,
   SUBGRAPH_GOERLI,
   SUBGRAPH_MAINNET,
 } from '@/src/constants/misc'
+import EthLogo from '@/src/resources/svg/ethereum.svg'
 
 import { ObjectValues } from '@/types/utils'
 
@@ -25,9 +26,13 @@ export type ChainConfig = {
   rpcUrl: string
   blockExplorerUrls: string[]
   iconUrls: string[]
+  svg: React.FC
   subgraphApi: string
   contractsDeployed: boolean
 }
+
+// Default chain id from env var
+export const INITIAL_APP_CHAIN_ID = Number(DEFAULT_CHAIN_ID) as ChainsValues
 
 export const chainsConfig: Record<ChainsValues, ChainConfig> = {
   [Chains.mainnet]: {
@@ -39,6 +44,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     rpcUrl: RPC_URL_MAINNET,
     blockExplorerUrls: ['https://etherscan.io/'],
     iconUrls: [],
+    svg: EthLogo,
     subgraphApi: SUBGRAPH_MAINNET,
     contractsDeployed: true,
   },
@@ -51,12 +57,22 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     rpcUrl: RPC_URL_GOERLI,
     blockExplorerUrls: ['https://goerli.etherscan.io/'],
     iconUrls: [],
+    svg: EthLogo,
     subgraphApi: SUBGRAPH_GOERLI,
     contractsDeployed: true,
   },
 }
 
-export function getNetworkConfig(chainId: ChainsValues): ChainConfig {
-  const networkConfig = chainsConfig[chainId]
-  return nullthrows(networkConfig, `No config for chain id: ${chainId}`)
+export function getNetworkConfig(chainId: ChainsValues): ChainConfig | undefined {
+  const networkConfig = chainsConfig[chainId] ?? undefined
+
+  if (chainId === undefined) {
+    console.warn(`No config for unsupported chainId: ${chainId}`)
+  }
+  return networkConfig
+}
+
+export const isValidChain = (chain: any) => {
+  const chainConfig = getNetworkConfig(chain)
+  return chainConfig ? chainConfig.contractsDeployed : false
 }
