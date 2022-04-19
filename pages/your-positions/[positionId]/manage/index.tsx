@@ -264,7 +264,12 @@ const PositionManage = () => {
                   </ButtonsWrapper>
                   <div className={cn(s.summary)}>
                     {summary.map((item, index) => (
-                      <SummaryItem key={index} title={item.title} value={item.value} />
+                      <SummaryItem
+                        key={index}
+                        state={item?.state}
+                        title={item.title}
+                        value={item.value}
+                      />
                     ))}
                   </div>
                 </div>
