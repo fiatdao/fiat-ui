@@ -40,7 +40,7 @@ export const useManagePositionForm = (
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { approveFIAT, modifyCollateralAndDebt } = useUserActions()
-  const { userProxyAddress } = useUserProxy()
+  const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [finished, setFinished] = useState<boolean>(false)
@@ -60,11 +60,19 @@ export const useManagePositionForm = (
   const [buttonText, setButtonText] = useState<string>('Execute')
   const tokenAddress = position?.collateral.address
 
+  const [isRepayingFIAT, setIsRepayingFIAT] = useState<boolean>(false)
+  const [loadingMonetaAllowanceApprove, setLoadingMonetaAllowanceApprove] = useState<boolean>(false)
+
   const { tokenInfo, updateToken } = useTokenDecimalsAndBalance({
     address,
     readOnlyAppProvider,
     tokenAddress,
   })
+  const {
+    approve: approveTokenAllowance,
+    hasAllowance: hasTokenAllowance,
+    loadingApprove: loadingTokenAllowanceApprove,
+  } = useERC20Allowance(tokenAddress ?? '', userProxyAddress ?? '')
 
   const calculateHealthFactorFromPosition = useCallback(
     (collateral: BigNumber, debt: BigNumber) => {
@@ -85,10 +93,11 @@ export const useManagePositionForm = (
     [position?.currentValue, position?.vaultCollateralizationRatio],
   )
 
-  const { approve: approveFiatAllowance, hasAllowance: hasFiatAllowance } = useERC20Allowance(
-    contracts.FIAT.address[appChainId] ?? '',
-    userProxyAddress ?? '',
-  )
+  const {
+    approve: approveFiatAllowance,
+    hasAllowance: hasFiatAllowance,
+    loadingApprove: loadingFiatAllowanceApprove,
+  } = useERC20Allowance(contracts.FIAT.address[appChainId] ?? '', userProxyAddress ?? '')
 
   const MONETA = contracts.MONETA.address[appChainId]
   const [monetaFiatAllowance] = useContractCall(
@@ -145,7 +154,12 @@ export const useManagePositionForm = (
 
   const approveMonetaAllowance = useCallback(async () => {
     const MONETA = contracts.MONETA.address[appChainId]
-    await approveFIAT(MONETA)
+    try {
+      setLoadingMonetaAllowanceApprove(true)
+      await approveFIAT(MONETA)
+    } finally {
+      setLoadingMonetaAllowanceApprove(false)
+    }
     setHasMonetaAllowance(true)
   }, [approveFIAT, appChainId])
 
@@ -220,8 +234,10 @@ export const useManagePositionForm = (
         ? BELOW_MINIMUM_AMOUNT_TEXT
         : EXECUTE_TEXT
       setButtonText(text)
+      setIsRepayingFIAT(true)
     } else {
       setButtonText(!hasMinimumFIAT ? BELOW_MINIMUM_AMOUNT_TEXT : EXECUTE_TEXT)
+      setIsRepayingFIAT(false)
     }
   }, [
     getPositionValues,
@@ -262,18 +278,6 @@ export const useManagePositionForm = (
       const deltaDebt = toMint.minus(toBurn)
 
       setIsLoading(true)
-      if (!toBurn.isZero()) {
-        if (!hasFiatAllowance) {
-          await approveFiatAllowance()
-          setIsLoading(false)
-          return
-        } else if (!hasMonetaAllowance) {
-          await approveMonetaAllowance()
-          setIsLoading(false)
-          return
-        }
-      }
-
       await modifyCollateralAndDebt({
         vault: position?.protocolAddress,
         token: position?.collateral.address,
@@ -313,6 +317,19 @@ export const useManagePositionForm = (
     isDisabledCreatePosition,
     finished,
     setFinished,
+    isProxyAvailable,
+    setupProxy,
+    loadingProxy,
+    approveTokenAllowance,
+    hasTokenAllowance,
+    loadingTokenAllowanceApprove,
+    hasFiatAllowance,
+    approveFiatAllowance,
+    loadingFiatAllowanceApprove,
+    hasMonetaAllowance,
+    approveMonetaAllowance,
+    loadingMonetaAllowanceApprove,
+    isRepayingFIAT,
   }
 }
 

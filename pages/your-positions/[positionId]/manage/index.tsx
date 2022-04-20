@@ -1,6 +1,6 @@
 import s from './s.module.scss'
 import cn from 'classnames'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import Lottie from 'lottie-react'
@@ -27,8 +27,32 @@ import { contracts } from '@/src/constants/contracts'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
-import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+
+const LAST_STEP = 4
+
+const StepperTitle: React.FC<{
+  currentStep: number
+  description: string
+  title: string
+  totalSteps: number
+}> = ({ currentStep, description, title, totalSteps }) => (
+  <div className={cn(s.stepperWrapper)}>
+    <div className={cn(s.stepperTitleWrapper)}>
+      <h2 className={cn(s.stepperTitle)}>{title}</h2>
+      <div className={s.steps}>
+        <span className={s.currentStep}>{currentStep}</span>/{totalSteps}
+      </div>
+    </div>
+    <p className={cn(s.stepperDescription)}>{description}</p>
+  </div>
+)
+
+type Step = {
+  id: number
+  description: string
+}
 
 const FIAT_KEYS = ['burn', 'mint'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
@@ -74,20 +98,33 @@ const PositionManage = () => {
   }
 
   const {
+    approveFiatAllowance,
+    approveMonetaAllowance,
+    approveTokenAllowance,
     availableDepositAmount,
     availableWithdrawAmount,
     buttonText,
     finished,
     handleFormChange,
     handleManage,
+    hasFiatAllowance,
+    hasMonetaAllowance,
+    hasTokenAllowance,
     healthFactor,
     isDisabledCreatePosition,
     isLoading,
+    isProxyAvailable,
+    isRepayingFIAT,
+    loadingFiatAllowanceApprove,
+    loadingMonetaAllowanceApprove,
+    loadingProxy,
+    loadingTokenAllowanceApprove,
     maxBorrowAmount,
     maxDepositAmount,
     maxRepayAmount,
     maxWithdrawAmount,
     setFinished,
+    setupProxy,
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
@@ -96,10 +133,85 @@ const PositionManage = () => {
     : DEFAULT_HEALTH_FACTOR
 
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
+  const tokenSymbol = position?.symbol ?? ''
 
   const reset = async () => {
     setFinished(false)
   }
+  const [step, setStep] = useState(0)
+  const steps: Step[] = [
+    {
+      id: 1,
+      description: 'Create a Proxy Contract',
+    },
+    {
+      id: 2,
+      description: 'Set Collateral Allowance',
+    },
+    {
+      id: 3,
+      description: 'Set Allowance for FIAT',
+    },
+    {
+      id: 4,
+      description: 'Enable Proxy for FIAT',
+    },
+    {
+      id: 5,
+      description: 'Confirm the Details',
+    },
+  ]
+
+  const updateNextState = useCallback(
+    (state: number) => {
+      if (state <= 0 && !isProxyAvailable) {
+        setStep(0)
+      } else if (state <= 1 && !hasTokenAllowance) {
+        setStep(1)
+      } else if (state <= 2 && !hasFiatAllowance && isRepayingFIAT) {
+        setStep(2)
+      } else if (state <= 3 && !hasMonetaAllowance && isRepayingFIAT) {
+        setStep(3)
+      } else {
+        setStep(4)
+      }
+    },
+    [hasMonetaAllowance, isRepayingFIAT, hasFiatAllowance, hasTokenAllowance, isProxyAvailable],
+  )
+
+  useEffect(() => {
+    updateNextState(0)
+  }, [updateNextState])
+
+  const onSetupProxy = useCallback(async () => {
+    await setupProxy()
+    updateNextState(1)
+  }, [setupProxy, updateNextState])
+
+  const onApproveTokenAllowance = useCallback(async () => {
+    await approveTokenAllowance()
+    updateNextState(2)
+  }, [approveTokenAllowance, updateNextState])
+
+  const onApproveFiatAllowance = useCallback(async () => {
+    await approveFiatAllowance()
+    updateNextState(3)
+  }, [approveFiatAllowance, updateNextState])
+
+  const onApproveMonetaAllowance = useCallback(async () => {
+    await approveMonetaAllowance()
+    updateNextState(4)
+  }, [approveMonetaAllowance, updateNextState])
+
+  const onHandleManage = useCallback(async () => {
+    await handleManage(formValues)
+  }, [handleManage, formValues])
+
+  const enableButtons =
+    !isProxyAvailable ||
+    !hasTokenAllowance ||
+    (!hasFiatAllowance && isRepayingFIAT) ||
+    (!hasMonetaAllowance && isRepayingFIAT)
 
   return (
     <>
@@ -108,6 +220,12 @@ const PositionManage = () => {
       <PositionFormsLayout infoBlocks={infoBlocks}>
         {!finished ? (
           <>
+            <StepperTitle
+              currentStep={step + 1}
+              description={steps[step].description}
+              title={'Manage your position'}
+              totalSteps={steps.length}
+            />
             <div className={cn(s.top)}>
               <RadioTabsWrapper>
                 <RadioTab
@@ -124,7 +242,6 @@ const PositionManage = () => {
                 </RadioTab>
               </RadioTabsWrapper>
             </div>
-
             <Form form={form} onValuesChange={handleFormChange}>
               <fieldset>
                 <div className={cn(s.component)}>
@@ -190,7 +307,6 @@ const PositionManage = () => {
                       )}
                     </>
                   )}
-
                   {'fiat' === activeSection && isFiatTab(activeTabKey) && (
                     <>
                       <Tabs className={cn(s.tabs)}>
@@ -251,17 +367,58 @@ const PositionManage = () => {
                       )}
                     </>
                   )}
-
-                  <ButtonsWrapper>
-                    <ButtonGradient
-                      disabled={isDisabledCreatePosition}
-                      height="lg"
-                      loading={isLoading}
-                      onClick={() => handleManage(formValues)}
-                    >
-                      {buttonText}
-                    </ButtonGradient>
-                  </ButtonsWrapper>
+                  {enableButtons && (
+                    <ButtonsWrapper>
+                      {!isProxyAvailable && (
+                        <ButtonGradient disabled={loadingProxy} height="lg" onClick={onSetupProxy}>
+                          Setup Proxy
+                        </ButtonGradient>
+                      )}
+                      {!hasTokenAllowance && (
+                        <ButtonGradient
+                          disabled={
+                            (availableDepositAmount && availableDepositAmount.lte(0)) ||
+                            loadingTokenAllowanceApprove
+                          }
+                          height="lg"
+                          onClick={onApproveTokenAllowance}
+                        >
+                          {availableDepositAmount?.gt(0)
+                            ? 'Set Allowance'
+                            : `Insufficient Balance for ${tokenSymbol}`}
+                        </ButtonGradient>
+                      )}
+                      {!hasFiatAllowance && isRepayingFIAT && (
+                        <ButtonGradient
+                          disabled={loadingFiatAllowanceApprove}
+                          height="lg"
+                          onClick={onApproveFiatAllowance}
+                        >
+                          Set Allowance for FIAT
+                        </ButtonGradient>
+                      )}
+                      {hasFiatAllowance && !hasMonetaAllowance && isRepayingFIAT && (
+                        <ButtonGradient
+                          disabled={loadingMonetaAllowanceApprove}
+                          height="lg"
+                          onClick={onApproveMonetaAllowance}
+                        >
+                          Enable Proxy for FIAT
+                        </ButtonGradient>
+                      )}
+                    </ButtonsWrapper>
+                  )}
+                  {step === LAST_STEP && (
+                    <ButtonsWrapper>
+                      <ButtonGradient
+                        disabled={isLoading || isDisabledCreatePosition}
+                        height="lg"
+                        onClick={onHandleManage}
+                      >
+                        {buttonText}
+                      </ButtonGradient>
+                    </ButtonsWrapper>
+                  )}
                   <div className={cn(s.summary)}>
                     {summary.map((item, index) => (
                       <SummaryItem
@@ -282,7 +439,10 @@ const PositionManage = () => {
               <Lottie animationData={SuccessAnimation} autoplay loop />
             </div>
             <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
-            <p className={cn(s.lastStepText)}>Your position has been successfully updated.</p>
+            <p className={cn(s.lastStepText)}>
+              Your position has been successfully updated! It may take a couple seconds for your
+              position to show in the app.
+            </p>
             <div className={cn(s.summary)}>
               <ButtonsWrapper>
                 <ButtonGradient height="lg" onClick={reset}>
