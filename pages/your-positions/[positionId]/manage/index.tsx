@@ -142,7 +142,7 @@ const PositionManage = () => {
   const steps: Step[] = [
     {
       id: 1,
-      description: 'Create a Proxy contract',
+      description: 'Create a Proxy Contract',
     },
     {
       id: 2,
@@ -158,7 +158,7 @@ const PositionManage = () => {
     },
     {
       id: 5,
-      description: 'Confirm the details',
+      description: 'Confirm the Details',
     },
   ]
 
@@ -397,7 +397,7 @@ const PositionManage = () => {
                           Set Allowance for FIAT
                         </ButtonGradient>
                       )}
-                      {!hasMonetaAllowance && isRepayingFIAT && (
+                      {hasFiatAllowance && !hasMonetaAllowance && isRepayingFIAT && (
                         <ButtonGradient
                           disabled={loadingMonetaAllowanceApprove}
                           height="lg"
