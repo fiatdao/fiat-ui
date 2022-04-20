@@ -14,6 +14,7 @@ import {
 } from '../constants/misc'
 import { parseDate } from '../utils/dateTime'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
+import { getHealthFactorState } from '../utils/table'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
@@ -360,12 +361,14 @@ export const useManageFormSummary = (
     },
     {
       title: 'Current Health Factor',
+      state: getHealthFactorState(position.healthFactor),
       value: isValidHealthFactor(position.healthFactor)
         ? position.healthFactor?.toFixed(3)
         : DEFAULT_HEALTH_FACTOR,
     },
     {
       title: 'New Health Factor',
+      state: getHealthFactorState(healthFactor),
       value: isValidHealthFactor(healthFactor) ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
   ]
