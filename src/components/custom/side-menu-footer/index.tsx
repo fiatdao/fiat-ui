@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import InternalArrow from '../../../resources/svg/interal-arrow.svg'
 import cn from 'classnames'
 import { HTMLAttributes } from 'react'
 import { AddTokenButton } from '@/src/components/custom/add-token-button'
@@ -24,26 +25,31 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
 
   return (
     <div className={cn(s.sideMenuFooter, className)} {...restProps}>
-      {/*
+      {/*/!**/}
       <ul className={cn(s.links)}>
         <li className={cn(s.item)}>
-          <a className={cn(s.link)} href="https://google.com" title="Buy and sell on Matcha">
-            Buy and sell on Matcha
+          <a
+            className={cn(s.link)}
+            href="https://app.rari.capital/fuse/pool/130"
+            rel="noreferrer"
+            target={'_blank'}
+            title="Borrow and lend on Rari Fuse"
+          >
+            Borrow and lend on Rari Fuse <InternalArrow />
           </a>
         </li>
         <li className={cn(s.item)}>
-          <a className={cn(s.link)} href="https://google.com" title="Borrow and lend on Rari Fuse">
-            Borrow and lend on Rari Fuse <ExternalLink />
-          </a>
-        </li>
-        <li className={cn(s.item)}>
-          <a className={cn(s.link)} href="https://google.com" title="FIAT's Dune Dashboard">
-            FIAT's Dune Dashboard <ExternalLink />
+          <a
+            className={cn(s.link)}
+            href="https://curve.fi/factory/107"
+            rel="noreferrer"
+            target={'_blank'}
+            title="Buy and sell on Curve"
+          >
+            Buy and sell on Curve <InternalArrow />
           </a>
         </li>
       </ul>
-      */}
-
       <h5 className={cn(s.title)}>ADD TO WALLET</h5>
       <div className={cn(s.buttons)}>
         <AddTokenButton
