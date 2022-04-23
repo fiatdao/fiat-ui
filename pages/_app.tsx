@@ -1,4 +1,7 @@
+import isDev from '../src/utils/isDev'
 import Head from 'next/head'
+import Script from 'next/script'
+
 import type { AppProps } from 'next/app'
 import { SWRConfig } from 'swr'
 import { Layout } from 'antd'
@@ -23,6 +26,7 @@ function App({ Component, pageProps }: AppProps) {
   const title = 'FIAT'
   const description = 'FIAT'
   const twitterHandle = '@'
+  const gaMeasurementId = process.env.NEXT_PUBLIC_REACT_APP_GA_MEASUREMENT_ID
 
   return (
     <>
@@ -46,6 +50,23 @@ function App({ Component, pageProps }: AppProps) {
         <link color="#5bbad5" href="/favicon/safari-pinned-tab.svg" rel="mask-icon" />
         <meta content="#da532c" name="msapplication-TileColor" />
         <meta content="#ffffff" name="theme-color" />
+        {gaMeasurementId && !isDev && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){window.dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', '${gaMeasurementId}', { 'debug_mode': true });
+        `}
+            </Script>
+          </>
+        )}
       </Head>
       <GeneralContextProvider>
         <SWRConfig
