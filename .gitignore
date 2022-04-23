@@ -42,3 +42,6 @@ yarn-error.log*
 /types/typechain
 /types/subgraph/*
 tsconfig.tsbuildinfo
+
+# Sentry
+.sentryclirc
