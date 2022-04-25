@@ -49,7 +49,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   const [collaterals, setCollaterals] = useState<Collateral[]>([])
   const { positions } = usePositionsByUser()
 
-  const { data, error } = useSWR(['collaterals', undefined, protocols?.join(''), appChainId], () =>
+  const { data, error } = useSWR(['collaterals', protocols?.join(''), appChainId], () =>
     fetchCollaterals({
       protocols: protocols?.length > 0 ? protocols : undefined,
       collaterals: undefined,
@@ -58,7 +58,6 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
     }),
   )
 
-  // const userTokens = useUserTokensInWallet(data?.map(c => c.address))
   const userTokens = useUserTokensInWallet({
     tokenAddresses: data?.map((c) => c.address),
     address: currentUserAddress,
