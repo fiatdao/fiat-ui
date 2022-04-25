@@ -8,4 +8,4 @@ export type Protocol = typeof PROTOCOLS[number]
 
 // TODO Add typeguard to check protocol
 
-export const ELEMENT_SUBGRAPH_PROTOCOL = 'Element Finance pToken Vault'
+export const ELEMENT_SUBGRAPH_PROTOCOL = 'VaultEPT'

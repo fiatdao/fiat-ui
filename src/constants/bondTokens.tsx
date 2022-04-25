@@ -81,3 +81,20 @@ export const getPTokenIconFromMetadata = memoize((protocolName?: string) => {
 
   return iconsByProtocolName[protocolName.toLowerCase()]
 })
+
+export const getVaultAddressesByName = memoize((appChainId: ChainsValues, name: string) => {
+  // vaults for the current chain
+  const vaults = getVaults(appChainId)
+
+  const uniqueNameAddressMap = Object.fromEntries(
+    Object.entries(vaults).map(([vaultAddress, byTokenId]) => {
+      // extract the name from the first entry in the tokens map
+      const [, { name }] = Object.entries(byTokenId)[0]
+      return [name, vaultAddress]
+    }),
+  )
+
+  return Object.entries(uniqueNameAddressMap)
+    .filter(([vaultName]) => vaultName.toLowerCase().startsWith(name.toLowerCase()))
+    .map(([, vaultAddress]) => vaultAddress)
+})

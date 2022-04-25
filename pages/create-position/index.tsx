@@ -53,8 +53,8 @@ const CreatePosition = () => {
   const { isWalletConnected } = useWeb3Connection()
 
   const activeFilters = Object.values(filters)
-    .filter((f) => f.active)
-    .map((f) => f.name)
+    .filter(({ active }) => active)
+    .map(({ name }) => name)
   const collaterals = useCollaterals(inMyWallet, activeFilters)
 
   const columns: ColumnsType<Collateral> = [
