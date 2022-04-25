@@ -98,3 +98,25 @@ export const getVaultAddressesByName = memoize((appChainId: ChainsValues, name: 
     .filter(([vaultName]) => vaultName.toLowerCase().startsWith(name.toLowerCase()))
     .map(([, vaultAddress]) => vaultAddress)
 })
+
+export const getProtocolsWithIcon = memoize((appChainId: ChainsValues) => {
+  const vaults = getVaults(appChainId)
+
+  return Object.fromEntries(
+    Object.entries(vaults).map(([, byTokenId]) => {
+      const [
+        ,
+        {
+          // extracts the `main` icon...
+          icons: { main },
+          // and the name...
+          name,
+        },
+        // from the first entry in the tokens map
+      ] = Object.entries(byTokenId)[0]
+
+      // creates a map with vault's name in lowercase and its icon
+      return [name.split('_')[0].toLowerCase(), main]
+    }),
+  )
+})
