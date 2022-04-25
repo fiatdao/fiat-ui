@@ -13,7 +13,7 @@ export const Asset: React.FC<{
     <div className={cn(s.component, className)} {...restProps}>
       <AssetIcons
         className={cn(s.icon)}
-        dimensions="32px"
+        dimensions="30px"
         mainAsset={getPTokenIconFromMetadata(mainAsset)?.main}
         secondaryAsset={getPTokenIconFromMetadata(mainAsset)?.secondary}
       />
