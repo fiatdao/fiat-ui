@@ -2,7 +2,6 @@ import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useERC20Allowance } from './useERC20Allowance'
 import {
-  BELOW_MINIMUM_AMOUNT_TEXT,
   ENABLE_PROXY_FOR_FIAT_TEXT,
   EXECUTE_TEXT,
   INFINITE_BIG_NUMBER,
@@ -11,6 +10,7 @@ import {
   SET_ALLOWANCE_PROXY_TEXT,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
+  getBorrowAmountBelowDebtFloorText,
 } from '../constants/misc'
 import { parseDate } from '../utils/dateTime'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
@@ -132,6 +132,7 @@ export const useManagePositionForm = (
       if (borrowAmount.isPositive()) {
         result = borrowAmount
       }
+
       return getHumanValue(result, WAD_DECIMALS)
     },
     [position?.vaultCollateralizationRatio, position?.currentValue],
@@ -189,6 +190,10 @@ export const useManagePositionForm = (
   }, [getPositionValues, position?.debtFloor])
 
   const isDisabledCreatePosition = useMemo(() => {
+    console.log('[is disabled create position]')
+    console.log('isloading', isLoading)
+    console.log('has min fiat?', hasMinimumFIAT)
+    console.log('[/is disabled create position]')
     return isLoading || !hasMinimumFIAT
   }, [isLoading, hasMinimumFIAT])
 
@@ -216,11 +221,13 @@ export const useManagePositionForm = (
         : !hasMonetaAllowance
         ? ENABLE_PROXY_FOR_FIAT_TEXT
         : !hasMinimumFIAT
-        ? BELOW_MINIMUM_AMOUNT_TEXT
+        ? getBorrowAmountBelowDebtFloorText(position?.debtFloor)
         : EXECUTE_TEXT
       setButtonText(text)
     } else {
-      setButtonText(!hasMinimumFIAT ? BELOW_MINIMUM_AMOUNT_TEXT : EXECUTE_TEXT)
+      setButtonText(
+        !hasMinimumFIAT ? getBorrowAmountBelowDebtFloorText(position?.debtFloor) : EXECUTE_TEXT,
+      )
     }
   }, [
     getPositionValues,
@@ -232,6 +239,7 @@ export const useManagePositionForm = (
     hasMinimumFIAT,
     hasFiatAllowance,
     hasMonetaAllowance,
+    position?.debtFloor,
   ])
 
   const handleFormChange = () => {
