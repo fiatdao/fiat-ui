@@ -14,7 +14,11 @@ export const AssetIcons: React.FC<{
       {...restProps}
     >
       <div className={cn(s.mainAsset)}>
-        <img alt={mainAsset} src={mainAsset} />
+        <img
+          alt={mainAsset}
+          src={mainAsset}
+          style={dimensions ? { width: dimensions, height: dimensions, margin: '2px' } : undefined}
+        />
       </div>
       {secondaryAsset && (
         <div className={cn(s.secondaryAsset)}>

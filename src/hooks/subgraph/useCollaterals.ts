@@ -3,6 +3,7 @@ import useSWR from 'swr'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
+import { getVaultAddressesByName } from '@/src/constants/bondTokens'
 import isDev from '@/src/utils/isDev'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
@@ -23,11 +24,15 @@ export const fetchCollaterals = ({
   provider: Web3Provider | JsonRpcProvider
   appChainId: ChainsValues
 }) => {
+  const vaultsAddresses = vaultNames
+    ?.map((vaultName) => getVaultAddressesByName(appChainId, vaultName))
+    .flat()
+
   return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
     // @TODO: add maturity filter maturity_gte (Date.now()/1000).toString()
     // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     where: {
-      vaultName_in: vaultNames,
+      vault_in: vaultsAddresses,
       address_in: userCollaterals,
       vaultName_not_contains_nocase: 'deprecated',
     },
