@@ -25,6 +25,10 @@ type MetadataByNetwork = {
 const getVaults = memoize((appChainId: ChainsValues) => {
   const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
 
+  if (vaultsMetadata === undefined) {
+    return {}
+  }
+
   return Object.fromEntries(
     Object.entries(vaultsMetadata).map(([vaultAddress, metadata]) => [
       // transform addresses to lowerCase
@@ -46,11 +50,11 @@ export const getCollateralMetadata = (
     vaultAddress?: Maybe<string>
   },
 ) => {
-  if (!vaultAddress || !tokenId || !metadataByNetwork) {
+  const vaults = getVaults(appChainId)
+
+  if (!vaultAddress || !tokenId || !metadataByNetwork || Object.keys(vaults).length === 0) {
     return
   }
-
-  const vaults = getVaults(appChainId)
 
   // lookup by vaultAddress and tokenId
   return vaults[vaultAddress.toLowerCase()][tokenId]
@@ -76,4 +80,43 @@ export const getPTokenIconFromMetadata = memoize((protocolName?: string) => {
     )
 
   return iconsByProtocolName[protocolName.toLowerCase()]
+})
+
+export const getVaultAddressesByName = memoize((appChainId: ChainsValues, name: string) => {
+  // vaults for the current chain
+  const vaults = getVaults(appChainId)
+
+  const uniqueNameAddressMap = Object.fromEntries(
+    Object.entries(vaults).map(([vaultAddress, byTokenId]) => {
+      // extract the name from the first entry in the tokens map
+      const [, { name }] = Object.entries(byTokenId)[0]
+      return [name, vaultAddress]
+    }),
+  )
+
+  return Object.entries(uniqueNameAddressMap)
+    .filter(([vaultName]) => vaultName.toLowerCase().startsWith(name.toLowerCase()))
+    .map(([, vaultAddress]) => vaultAddress)
+})
+
+export const getProtocolsWithIcon = memoize((appChainId: ChainsValues) => {
+  const vaults = getVaults(appChainId)
+
+  return Object.fromEntries(
+    Object.entries(vaults).map(([, byTokenId]) => {
+      const [
+        ,
+        {
+          // extracts the `main` icon...
+          icons: { main },
+          // and the name...
+          name,
+        },
+        // from the first entry in the tokens map
+      ] = Object.entries(byTokenId)[0]
+
+      // creates a map with vault's name in lowercase and its icon
+      return [name.split('_')[0].toLowerCase(), main]
+    }),
+  )
 })
