@@ -8,6 +8,7 @@ import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom
 import Popover from '@/src/components/antd/popover'
 import { parseDate, remainingTime } from '@/src/utils/table'
 import Element from '@/src/resources/svg/element.svg'
+import Notional from '@/src/resources/svg/notional.svg'
 import { Table } from '@/src/components/antd'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import { CellValue } from '@/src/components/custom/cell-value'
@@ -15,7 +16,12 @@ import { Asset } from '@/src/components/custom/asset'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Filter from '@/src/resources/svg/filter.svg'
-import { ELEMENT_SUBGRAPH_PROTOCOL, PROTOCOLS, Protocol } from '@/types/protocols'
+import {
+  ELEMENT_SUBGRAPH_PROTOCOL,
+  NOTIONAL_SUBGRAPH_PROTOCOL,
+  PROTOCOLS,
+  Protocol,
+} from '@/types/protocols'
 import { useCollaterals } from '@/src/hooks/subgraph/useCollaterals'
 import { Collateral, formatColRatio } from '@/src/utils/data/collaterals'
 import { getHumanValue } from '@/src/web3/utils'
@@ -29,7 +35,7 @@ type FilterData = Record<Protocol, { active: boolean; name: string; icon: ReactN
 const FILTERS: FilterData = {
   // BarnBridge: { active: false, name: 'BarnBridge', icon: <BarnBridge /> },
   Element: { active: false, name: ELEMENT_SUBGRAPH_PROTOCOL, icon: <Element /> },
-  // Notional: { active: false, name: 'Notional', icon: <Notional /> },
+  Notional: { active: false, name: NOTIONAL_SUBGRAPH_PROTOCOL, icon: <Notional /> },
 }
 
 // TODO fix types here
