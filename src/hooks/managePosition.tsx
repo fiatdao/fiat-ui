@@ -190,10 +190,6 @@ export const useManagePositionForm = (
   }, [getPositionValues, position?.debtFloor])
 
   const isDisabledCreatePosition = useMemo(() => {
-    console.log('[is disabled create position]')
-    console.log('isloading', isLoading)
-    console.log('has min fiat?', hasMinimumFIAT)
-    console.log('[/is disabled create position]')
     return isLoading || !hasMinimumFIAT
   }, [isLoading, hasMinimumFIAT])
 
