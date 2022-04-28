@@ -57,7 +57,7 @@ export const getCollateralMetadata = (
   }
 
   // lookup by vaultAddress and tokenId
-  return vaults[vaultAddress.toLowerCase()][tokenId]
+  return vaults[vaultAddress.toLowerCase()]?.[tokenId]
 }
 
 export const getPTokenIconFromMetadata = memoize((protocolName?: string) => {
