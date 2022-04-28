@@ -1,7 +1,6 @@
 import { usePositionsByUser } from './usePositionsByUser'
 import useSWR from 'swr'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
-import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { getVaultAddressesByName } from '@/src/constants/bondTokens'
 import isDev from '@/src/utils/isDev'
@@ -11,6 +10,7 @@ import { ChainsValues } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { COLLATERALS } from '@/src/queries/collaterals'
 import { Collateral, wrangleCollateral } from '@/src/utils/data/collaterals'
+import { useUserTokensInWallet } from '@/src/hooks/useUserTokensInWallet'
 
 // TODO Import readonly provider from singleton
 export const fetchCollaterals = ({
@@ -46,34 +46,45 @@ export const fetchCollaterals = ({
 }
 
 export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
-  const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
+  const {
+    address: currentUserAddress,
+    appChainId,
+    readOnlyAppProvider: provider,
+  } = useWeb3Connection()
   const [collaterals, setCollaterals] = useState<Collateral[]>([])
   const { positions } = usePositionsByUser()
 
-  // TODO Make this more performante avoiding wrangle of positions or the whole query when inMyWallet is false
-  const userPositionCollaterals = inMyWallet
-    ? _.uniq(positions.map((p) => p.collateral.address))
-    : undefined
-
-  const { data, error } = useSWR(
-    ['collaterals', userPositionCollaterals?.join(''), protocols?.join(''), appChainId],
-    () =>
-      fetchCollaterals({
-        protocols: protocols?.length > 0 ? protocols : undefined,
-        collaterals: userPositionCollaterals,
-        provider,
-        appChainId,
-      }),
+  const { data, error } = useSWR(['collaterals', protocols?.join(''), appChainId], () =>
+    fetchCollaterals({
+      protocols: protocols?.length > 0 ? protocols : undefined,
+      collaterals: undefined,
+      provider,
+      appChainId,
+    }),
   )
+
+  const userTokens = useUserTokensInWallet({
+    tokenAddresses: data?.map((c) => c.address),
+    address: currentUserAddress,
+    readOnlyAppProvider: provider,
+  })
+
   useEffect(() => {
-    const newCollaterals = data?.map((collateral) => {
+    const filteredData = inMyWallet
+      ? data?.filter(
+          (collateral) =>
+            !!userTokens?.find((userToken: string) => collateral.address === userToken),
+        )
+      : data
+
+    const newCollaterals = filteredData?.map((collateral) => {
       const position = positions.find(
         (p) => p.collateral.address.toLowerCase() === collateral.address?.toLowerCase(),
       )
       return { ...collateral, manageId: position?.id }
     })
     setCollaterals(newCollaterals || [])
-  }, [data, positions])
+  }, [data, positions, inMyWallet, userTokens])
 
   if (isDev() && error) {
     console.error(error)
