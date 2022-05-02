@@ -52,3 +52,9 @@
     @include cell-padding();
   }
 }
+
+.margin-bottom {
+  :global(.ant-table) {
+    margin-bottom: 30px;
+  }
+}
