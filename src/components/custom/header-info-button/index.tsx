@@ -6,6 +6,7 @@ export const HeaderInfoButton: React.FC<{
   className?: string
   icon: React.ReactNode
   text: string | React.ReactNode
+  onClick?: (event: React.MouseEvent<HTMLElement>) => void
 }> = ({ className, icon, text, ...restProps }) => {
   return (
     <div className={cn(s.component, className)} {...restProps}>

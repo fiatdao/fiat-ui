@@ -2,7 +2,7 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
 import { extractFieldsFromPositionId } from '@/src/utils/managePosition'
 import ButtonGradient from '@/src/components/antd/button-gradient'
-import { calculateHealthFactor, parseDate, remainingTime } from '@/src/utils/table'
+import { getHealthFactorState, parseDate, remainingTime } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
 import { CellValue } from '@/src/components/custom/cell-value'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
@@ -65,7 +65,7 @@ const Columns: ColumnsType<Position> = [
       const healthFactorToRender = isValidHealthFactor(healthFactor)
         ? healthFactor.toFixed(3)
         : DEFAULT_HEALTH_FACTOR
-      return <CellValue state={calculateHealthFactor(healthFactor)} value={healthFactorToRender} />
+      return <CellValue state={getHealthFactorState(healthFactor)} value={healthFactorToRender} />
     },
     responsive: ['md'],
     title: 'Health Factor',

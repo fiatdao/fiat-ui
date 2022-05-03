@@ -6,6 +6,7 @@ import cn from 'classnames'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import Lottie from 'lottie-react'
+import { getHealthFactorState } from '@/src/utils/table'
 import { getEtherscanAddressUrl } from '@/src/web3/utils'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
@@ -20,10 +21,10 @@ import { PositionFormsLayout } from '@/src/components/custom/position-forms-layo
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
 import {
-  BELOW_MINIMUM_AMOUNT_TEXT,
   DEPOSIT_COLLATERAL_TEXT,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
+  getBorrowAmountBelowDebtFloorText,
 } from '@/src/constants/misc'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
@@ -196,7 +197,7 @@ const FormERC20: React.FC<{
       value: `${stateMachine.context.fiatAmount.toFixed(4)}`,
     },
     {
-      state: 'ok',
+      state: getHealthFactorState(hf),
       title: 'Updated health factor',
       value: healthFactorNumber,
     },
@@ -336,7 +337,9 @@ const FormERC20: React.FC<{
                           })
                         }
                       >
-                        {hasMinimumFIAT ? DEPOSIT_COLLATERAL_TEXT : BELOW_MINIMUM_AMOUNT_TEXT}
+                        {hasMinimumFIAT
+                          ? DEPOSIT_COLLATERAL_TEXT
+                          : getBorrowAmountBelowDebtFloorText(collateral.vault.debtFloor)}
                       </ButtonGradient>
                     </>
                   )}

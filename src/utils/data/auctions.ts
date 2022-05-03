@@ -114,12 +114,14 @@ const wrangleAuction = async (
     ) as BigNumber
 
     // endsAt = vault.maxAuctionDuration * (auction.startPrice - auction.floorPrice)/auction.startPrice
-    endsAt = BigNumber.from(collateralAuction.vault.maxAuctionDuration)
+    endsAt = BigNumber.from(collateralAuction.collateralType?.maturity)
+      ?.plus(collateralAuction.vault.maxAuctionDuration as string)
       ?.times(
         (BigNumber.from(collateralAuction.startPrice) as BigNumber)
           .minus(floorPrice)
           .dividedBy(collateralAuction.startPrice),
       )
+      .decimalPlaces(0)
       .toString()
   }
 

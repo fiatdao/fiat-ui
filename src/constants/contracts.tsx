@@ -6,8 +6,8 @@ import {
   moneta,
   noLossCollateralAuction,
   noLossCollateralAuctionActions,
-  prbProxyRegistry,
   prbProxy,
+  prbProxyRegistry,
   publican,
   vault20,
   vaultEptActions,
@@ -51,6 +51,15 @@ export const contracts = constantContracts({
     decimals: 18,
     symbol: 'FIAT',
     priceTokenId: 'fiat-coin',
+  },
+  FIAT_DAO: {
+    address: {
+      [Chains.mainnet]: '0xed1480d12be41d92f36f5f7bdd88212e381a3677',
+      [Chains.goerli]: '0xe10afb811c4ea6d5fd99aa48b0a894401c5cd72c',
+    },
+    abi: [],
+    decimals: 18,
+    symbol: 'FDT',
   },
   CODEX: {
     address: {
