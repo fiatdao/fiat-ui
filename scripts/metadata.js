@@ -8,13 +8,13 @@ const path = require('path')
 
 const metadataFilemap = {
   'metadata-goerli':
-    'https://raw.githubusercontent.com/fiatdao/changelog/main/metadata/metadata-goerli.json',
+    'https://raw.githubusercontent.com/fiatdao/changelog/e157d23c29814b9a2bb485aa34d6bdfa344c5b8e/metadata/metadata-goerli.json',
   'deployment-goerli':
-    'https://raw.githubusercontent.com/fiatdao/changelog/main/deployment/deployment-goerli.json',
+    'https://raw.githubusercontent.com/fiatdao/changelog/e157d23c29814b9a2bb485aa34d6bdfa344c5b8e/deployment/deployment-goerli.json',
   'metadata-mainnet':
-    'https://raw.githubusercontent.com/fiatdao/changelog/main/metadata/metadata-mainnet.json',
+    'https://raw.githubusercontent.com/fiatdao/changelog/e157d23c29814b9a2bb485aa34d6bdfa344c5b8e/metadata/metadata-mainnet.json',
   'deployment-mainnet':
-    'https://raw.githubusercontent.com/fiatdao/changelog/main/deployment/deployment-mainnet.json',
+    'https://raw.githubusercontent.com/fiatdao/changelog/e157d23c29814b9a2bb485aa34d6bdfa344c5b8e/deployment/deployment-mainnet.json',
 }
 
 const getMetadata = async () => {

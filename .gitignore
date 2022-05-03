@@ -43,5 +43,4 @@ yarn-error.log*
 /types/subgraph/*
 tsconfig.tsbuildinfo
 
-metadata/*-goerli.json
-metadata/*-mainnet.json
+metadata/*.json
