@@ -10,6 +10,7 @@ import { COLLATERALS } from '@/src/queries/collaterals'
 import { Collateral, wrangleCollateral } from '@/src/utils/data/collaterals'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import isDev from '@/src/utils/isDev'
+import sortByMaturity from '@/src/utils/sortByMaturity'
 import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
 import { CollateralType_orderBy, OrderDirection } from '@/types/subgraph/__generated__/globalTypes'
 
@@ -86,6 +87,9 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
       )
       return { ...collateral, manageId: position?.id }
     })
+
+    sortByMaturity(newCollaterals)
+
     setCollaterals(newCollaterals || [])
   }, [data, positions, inMyWallet, userTokens])
 
