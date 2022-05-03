@@ -2,7 +2,7 @@ import s from './s.module.scss'
 import React from 'react'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { MAX_UINT_256, MIN_EPSILON_OFFSET } from '@/src/constants/misc'
+import { MAX_UINT_256 } from '@/src/constants/misc'
 import Slider from '@/src/components/antd/slider'
 import { formatBigValue } from '@/src/web3/utils'
 
@@ -68,15 +68,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   }
 
   function onSliderChange(sliderValue: number) {
-    const bigNumberSliderValue = BigNumber.from(sliderValue)
-    if (bigNumberSliderValue.plus(MIN_EPSILON_OFFSET).gte(bnMaxValue)) {
-      // Dragging slider to max can result in a `sliderValue` slightly lower than max
-      // due to precision differences between the `number` and `BigNumber` types
-      // So, if `sliderValue` is extremely close to max slider value, just max out the slider
-      onChange?.(BigNumber.from(bnMaxValue))
-    } else {
-      onChange?.(bigNumberSliderValue)
-    }
+    onChange?.(BigNumber.from(sliderValue))
   }
 
   return (

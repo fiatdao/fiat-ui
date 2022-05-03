@@ -1,4 +1,3 @@
-import { getHumanValue } from '../web3/utils'
 import BigNumber from 'bignumber.js'
 
 export const ZERO_BIG_NUMBER = new BigNumber(0)
@@ -32,15 +31,6 @@ export const MIN_EPSILON_OFFSET = new BigNumber(0.005)
 
 export const SET_ALLOWANCE_PROXY_TEXT = 'Set allowance for Proxy'
 export const ENABLE_PROXY_FOR_FIAT_TEXT = 'Enable Proxy for FIAT'
+export const BELOW_MINIMUM_AMOUNT_TEXT = 'Below minimum amount'
 export const EXECUTE_TEXT = 'Execute'
 export const DEPOSIT_COLLATERAL_TEXT = 'Deposit collateral'
-
-export function getBorrowAmountBelowDebtFloorText(debtFloor: BigNumber | undefined): string {
-  const belowMinimumAmountText = 'Below minimum borrow amount'
-  if (!debtFloor) {
-    return belowMinimumAmountText
-  }
-
-  const humanReadableDebtFloor = getHumanValue(debtFloor, WAD_DECIMALS).toFixed(2)
-  return `${belowMinimumAmountText} (${humanReadableDebtFloor} FIAT)`
-}
