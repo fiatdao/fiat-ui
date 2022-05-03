@@ -1,8 +1,12 @@
 import gql from 'graphql-tag'
 
 export const COLLATERALS = gql`
-  query Collaterals($where: CollateralType_filter) {
-    collateralTypes(where: $where) {
+  query Collaterals(
+    $where: CollateralType_filter
+    $orderBy: CollateralType_orderBy
+    $orderDirection: OrderDirection
+  ) {
+    collateralTypes(where: $where, orderBy: $orderBy, orderDirection: $orderDirection) {
       id
       tokenId
       symbol
