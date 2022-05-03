@@ -79,6 +79,7 @@ const PositionManage = () => {
   const [form] = AntdForm.useForm<PositionManageFormFields>()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
+  const [formDisabled, setFormDisabled] = useState(false)
   // @TODO: useFIATBalance hook can't be moved into another hook it trigger infinite updates
   const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { position, refetch: refetchPosition } = useManagePositionInfo()
@@ -204,7 +205,14 @@ const PositionManage = () => {
   }, [approveMonetaAllowance, updateNextState])
 
   const onHandleManage = useCallback(async () => {
-    await handleManage(formValues)
+    setFormDisabled(true)
+    handleManage(formValues)
+      .then(() => {
+        setFormDisabled(false)
+      })
+      .catch(() => {
+        setFormDisabled(false)
+      })
   }, [handleManage, formValues])
 
   const enableButtons =
@@ -230,12 +238,14 @@ const PositionManage = () => {
               <RadioTabsWrapper>
                 <RadioTab
                   checked={activeSection === 'collateral'}
+                  disabled={formDisabled}
                   onClick={() => setActiveSection('collateral')}
                 >
                   Collateral
                 </RadioTab>
                 <RadioTab
                   checked={activeSection === 'fiat'}
+                  disabled={formDisabled}
                   onClick={() => setActiveSection('fiat')}
                 >
                   FIAT
@@ -275,6 +285,7 @@ const PositionManage = () => {
                           />
                           <Form.Item name="deposit" required>
                             <TokenAmount
+                              disabled={formDisabled}
                               displayDecimals={4}
                               healthFactorValue={healthFactorToRender}
                               mainAsset={position.vaultName}
@@ -294,6 +305,7 @@ const PositionManage = () => {
                           />
                           <Form.Item name="withdraw" required>
                             <TokenAmount
+                              disabled={formDisabled}
                               displayDecimals={4}
                               healthFactorValue={healthFactorToRender}
                               mainAsset={position.vaultName}
@@ -337,6 +349,7 @@ const PositionManage = () => {
                           />
                           <Form.Item name="mint" required>
                             <TokenAmount
+                              disabled={formDisabled}
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorToRender}
                               max={maxBorrowAmount}
@@ -355,6 +368,7 @@ const PositionManage = () => {
                           />
                           <Form.Item name="burn" required>
                             <TokenAmount
+                              disabled={formDisabled}
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactorToRender}
                               max={maxRepay}

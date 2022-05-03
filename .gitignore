@@ -44,3 +44,6 @@ yarn-error.log*
 tsconfig.tsbuildinfo
 
 metadata/*.json
+
+# Sentry
+.sentryclirc
