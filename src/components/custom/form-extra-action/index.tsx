@@ -8,19 +8,21 @@ type Props = {
   className?: string
   top: React.ReactNode
   onClick: () => void
+  disabled?: boolean
 }
 
 export const FormExtraAction: React.FC<Props> = ({
   bottom,
   buttonText,
   className,
+  disabled,
   onClick,
   top,
   ...restProps
 }) => {
   return (
     <div className={cn(s.component, className)} {...restProps}>
-      <button className={cn(s.button)} onClick={onClick}>
+      <button className={cn(s.button)} disabled={disabled} onClick={onClick}>
         <span className={cn(s.buttonInner)}>
           <Less />
           <span>{buttonText}</span>
