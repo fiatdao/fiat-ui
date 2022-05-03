@@ -22,10 +22,13 @@ function App({ Component, pageProps }: AppProps) {
       ? window.location
       : { hostname: 'localhost', port: 3000, protocol: 'http:' }
   const portString = port ? `:${port}` : ''
-  const siteURL = typeof window !== 'undefined' ? `${protocol}//${hostname}${portString}` : ''
+  const siteURL =
+    typeof window !== 'undefined'
+      ? `${protocol}//${hostname}${portString}`
+      : 'https://app.fiatdao.com'
   const title = 'FIAT'
-  const description = 'FIAT'
-  const twitterHandle = '@'
+  const description = 'Leverage and secondary liquidity for your DeFi fixed income assets'
+  const twitterHandle = '@fiatdao'
   const gaMeasurementId = process.env.NEXT_PUBLIC_REACT_APP_GA_MEASUREMENT_ID
 
   return (

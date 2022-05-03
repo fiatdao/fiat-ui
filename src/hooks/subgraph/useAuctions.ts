@@ -1,4 +1,5 @@
 import useSWR from 'swr'
+import { getVaultAddressesByName } from '@/src/constants/bondTokens'
 import { ChainsValues } from '@/src/constants/chains'
 import { CollateralAuction_filter } from '@/types/subgraph/__generated__/globalTypes'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -20,13 +21,17 @@ type UseAuctions = {
 export const useAuctions = (protocols: string[]): UseAuctions => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
 
+  const vaultsAddresses = protocols
+    ?.map((vaultName) => getVaultAddressesByName(appChainId, vaultName))
+    .flat()
+
   // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
   const { data, error } = useSWR(['auctions', protocols.join(), appChainId, provider], async () => {
     const [{ collateralAuctions }, { timestamp }] = await Promise.all([
       fetchAuctions(
         appChainId,
         protocols.length
-          ? { vaultName_in: protocols, vaultName_not_contains_nocase: 'deprecated' }
+          ? { vault_in: vaultsAddresses, vaultName_not_contains_nocase: 'deprecated' }
           : null,
       ),
       provider.getBlock('latest'),

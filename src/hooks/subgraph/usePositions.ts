@@ -4,6 +4,7 @@ import { POSITIONS } from '@/src/queries/positions'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { Positions, PositionsVariables } from '@/types/subgraph/__generated__/Positions'
 import { wranglePosition } from '@/src/utils/data/positions'
+import sortByMaturity from '@/src/utils/sortByMaturity'
 import { ChainsValues } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
@@ -54,6 +55,8 @@ export const usePositions = (id?: string, proxyAddress?: string, protocol?: stri
       })
     },
   )
+
+  sortByMaturity(data)
 
   // TODO Remove positionTransactions from here
   return { positions: data, error, refetch: mutate, loading: !error && !data }
