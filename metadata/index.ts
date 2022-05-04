@@ -1,5 +1,5 @@
-import goerli from './goerli.json'
-import mainnet from './mainnet.json'
+import goerli from './metadata-goerli.json'
+import mainnet from './metadata-mainnet.json'
 
 export const metadataByNetwork = {
   1: mainnet,
