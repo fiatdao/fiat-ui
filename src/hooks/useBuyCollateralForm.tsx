@@ -41,7 +41,7 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
     userProxyAddress ?? '',
   )
 
-  const { approveFIAT } = useUserActions()
+  const { approveFIAT } = useUserActions(auctionData?.collateral)
   const [loadingMonetaApprove, setLoadingMonetaApprove] = useState(false)
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState(false)
 

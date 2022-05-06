@@ -81,14 +81,14 @@ const FormERC20: React.FC<{
     userProxyAddress ?? '',
   )
   const { tokenInfo } = useTokenDecimalsAndBalance({
-    tokenAddress,
+    collateral,
     address: currentUserAddress,
     readOnlyAppProvider,
   })
 
   const [FIATBalance] = useFIATBalance(true)
 
-  const { depositCollateral } = useUserActions()
+  const { depositCollateral } = useUserActions(collateral)
   const [stateMachine, send] = useMachine(stepperMachine, {
     context: {
       isProxyAvailable,

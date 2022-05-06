@@ -1,10 +1,12 @@
 import { TokenInfo } from './managePosition'
 import { contracts } from '../constants/contracts'
 import { getHumanValue } from '../web3/utils'
+import { Collateral } from '../utils/data/collaterals'
+import { ERC1155 } from '../../types/typechain'
 import useSWR, { KeyedMutator } from 'swr'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
-import { Contract } from 'ethers'
+import { BigNumberish, Contract } from 'ethers'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { ERC20 } from '@/types/typechain'
 
@@ -15,36 +17,46 @@ type UseDecimalsAndTokenValue = {
 
 export const useTokenDecimalsAndBalance = ({
   address,
+  collateral,
   readOnlyAppProvider,
-  tokenAddress,
 }: {
-  tokenAddress?: string
+  collateral: Collateral
   address: string | null
   readOnlyAppProvider: JsonRpcProvider
 }): UseDecimalsAndTokenValue => {
   const { data: tokenInfo, mutate: updateToken } = useSWR(
-    [tokenAddress, readOnlyAppProvider, address],
+    [collateral, readOnlyAppProvider, address],
     async (): Promise<TokenInfo> => {
-      if (!tokenAddress || !address) {
+      if (!collateral || !address) {
         return {
           decimals: 0,
           humanValue: ZERO_BIG_NUMBER,
         }
       }
-      const collateral = new Contract(
-        tokenAddress,
-        contracts.ERC_20.abi,
-        readOnlyAppProvider,
-      ) as ERC20
+      const is1155 = collateral.address === '0xd8229b55bd73c61d840d339491219ec6fa667b0a'
+      const collateralContract: ERC1155 | ERC20 = is1155
+        ? (new Contract(
+            collateral.address as string,
+            contracts.ERC_1155.abi,
+            readOnlyAppProvider,
+          ) as ERC1155)
+        : (new Contract(
+            collateral.address as string,
+            contracts.ERC_20.abi,
+            readOnlyAppProvider,
+          ) as ERC20)
 
-      return Promise.all([collateral.decimals(), collateral.balanceOf(address)]).then(
-        ([decimals, balance]) => {
-          return {
-            decimals,
-            humanValue: getHumanValue(BigNumber.from(balance.toString()), decimals),
-          }
-        },
-      )
+      return Promise.all(
+        is1155
+          ? [18, collateralContract.balanceOf(address, collateral.tokenId as BigNumberish)]
+          : // @ts-ignore
+            [contract.decimals(), collateralContract.balanceOf(address)],
+      ).then(([decimals, balance]) => {
+        return {
+          decimals,
+          humanValue: getHumanValue(BigNumber.from(balance.toString()), decimals),
+        }
+      })
     },
   )
 

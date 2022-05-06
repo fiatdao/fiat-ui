@@ -1,5 +1,6 @@
 import { calculateNormalDebt } from '../utils/data/positions'
 import { getVirtualRate } from '../utils/getVirtualRate'
+import { Collateral } from '../utils/data/collaterals'
 import { TransactionResponse } from '@ethersproject/providers'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
@@ -59,7 +60,7 @@ export type UseUserActions = {
   ) => ReturnType<TransactionResponse['wait']>
 }
 
-export const useUserActions = (): UseUserActions => {
+export const useUserActions = ({ collateral }: { collateral: Collateral }): UseUserActions => {
   const { address, appChainId, web3Provider } = useWeb3Connected()
   const { userProxy, userProxyAddress } = useUserProxy()
   const notification = useNotifications()
@@ -76,6 +77,15 @@ export const useUserActions = (): UseUserActions => {
     return new Contract(
       contracts.USER_ACTIONS_EPT.address[appChainId],
       contracts.USER_ACTIONS_EPT.abi,
+      web3Provider?.getSigner(),
+    ) as VaultEPTActions
+  }, [web3Provider, appChainId])
+
+  // Element User Action: ERC1155
+  const userActionFC = useMemo(() => {
+    return new Contract(
+      contracts.USER_ACTIONS_FC.address[appChainId],
+      contracts.USER_ACTIONS_FC.abi,
       web3Provider?.getSigner(),
     ) as VaultEPTActions
   }, [web3Provider, appChainId])

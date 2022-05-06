@@ -1,4 +1,5 @@
 import { contractsByNetwork } from '../../metadata'
+import { erc1155 } from '../abis'
 import {
   codex,
   collybus,
@@ -42,6 +43,13 @@ export const contracts = constantContracts({
       [Chains.goerli]: '',
     },
     abi: erc20,
+  },
+  ERC_1155: {
+    address: {
+      [Chains.mainnet]: '',
+      [Chains.goerli]: '',
+    },
+    abi: erc1155,
   },
   FIAT: {
     address: {
@@ -108,6 +116,14 @@ export const contracts = constantContracts({
     address: {
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultEPTActions.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultEPTActions.address,
+    },
+    abi: vaultEptActions,
+  },
+  USER_ACTIONS_FC: {
+    address: {
+      // TODO: Replace me with prod address
+      [Chains.mainnet]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
+      [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
     },
     abi: vaultEptActions,
   },
