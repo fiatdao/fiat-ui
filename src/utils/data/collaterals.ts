@@ -68,7 +68,7 @@ const wrangleCollateral = async (
     const denominator = discountRate
       .unscaleBy(WAD_DECIMALS)
       .plus(1)
-      .pow(Number(collateral.maturity) - currentBlockTimestamp)
+      .pow(Math.max(Number(collateral.maturity) - currentBlockTimestamp, 0))
 
     // Numerator units 10**18, Denominator units 10**0, currentValue units 10**18
     currentValue = numerator.div(denominator)
