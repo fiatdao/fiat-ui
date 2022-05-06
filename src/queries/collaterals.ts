@@ -31,5 +31,19 @@ export const COLLATERALS = gql`
         name
       }
     }
+    collybusSpots(orderDirection: $orderDirection) {
+      id
+      token
+      spot
+    }
+    collybusDiscountRates {
+      id
+      rateId
+      discountRate
+    }
+    vaults {
+      defaultRateId
+      id
+    }
   }
 `
