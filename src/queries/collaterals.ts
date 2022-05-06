@@ -23,6 +23,7 @@ export const COLLATERALS = gql`
       }
       vault {
         id
+        defaultRateId
         type
         collateralizationRatio
         address
@@ -40,10 +41,6 @@ export const COLLATERALS = gql`
       id
       rateId
       discountRate
-    }
-    vaults {
-      defaultRateId
-      id
     }
   }
 `

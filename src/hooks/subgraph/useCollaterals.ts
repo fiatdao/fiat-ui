@@ -46,18 +46,17 @@ export const fetchCollaterals = ({
     },
     orderBy: CollateralType_orderBy.maturity,
     orderDirection: OrderDirection.desc,
-  }).then(async ({ collateralTypes, collybusDiscountRates, collybusSpots, vaults }) => {
+  }).then(async ({ collateralTypes, collybusDiscountRates, collybusSpots }) => {
     return Promise.all(
       collateralTypes
         .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
         .map((p) => {
           const spotPrice: Maybe<Collaterals_collybusSpots> =
             collybusSpots.find((s) => s.token === p.underlierAddress) ?? null
-          const vaultRateId: Maybe<string> =
-            vaults.find(({ id }) => id === p.vault?.id)?.defaultRateId ?? null
           const discountRate: Maybe<BigNumber> =
             BigNumber.from(
-              collybusDiscountRates.find(({ rateId }) => rateId === vaultRateId)?.discountRate,
+              collybusDiscountRates.find(({ rateId }) => rateId === p.vault?.defaultRateId)
+                ?.discountRate,
             ) ?? null
 
           return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
