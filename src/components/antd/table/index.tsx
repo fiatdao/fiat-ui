@@ -7,11 +7,12 @@ const Table = <T extends Record<string, any>>(
   props: React.PropsWithChildren<AntdTableProps<T>>,
 ): React.ReactElement => {
   const { className, pagination, ...tableProps } = props
+  const adjustedMargins = pagination && s['margin-bottom']
 
   return (
     <AntdTable<T>
       bordered={false}
-      className={cn(s.component, className)}
+      className={cn(s.component, adjustedMargins, className)}
       pagination={
         pagination
           ? {

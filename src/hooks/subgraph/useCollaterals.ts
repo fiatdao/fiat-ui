@@ -1,16 +1,18 @@
 import { usePositionsByUser } from './usePositionsByUser'
-import useSWR from 'swr'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { useEffect, useState } from 'react'
+import useSWR from 'swr'
 import { getVaultAddressesByName } from '@/src/constants/bondTokens'
-import isDev from '@/src/utils/isDev'
-import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
-import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
 import { ChainsValues } from '@/src/constants/chains'
+import { useUserTokensInWallet } from '@/src/hooks/useUserTokensInWallet'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { COLLATERALS } from '@/src/queries/collaterals'
 import { Collateral, wrangleCollateral } from '@/src/utils/data/collaterals'
-import { useUserTokensInWallet } from '@/src/hooks/useUserTokensInWallet'
+import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
+import isDev from '@/src/utils/isDev'
+import sortByMaturity from '@/src/utils/sortByMaturity'
+import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
+import { CollateralType_orderBy, OrderDirection } from '@/types/subgraph/__generated__/globalTypes'
 
 // TODO Import readonly provider from singleton
 export const fetchCollaterals = ({
@@ -36,6 +38,8 @@ export const fetchCollaterals = ({
       address_in: userCollaterals,
       vaultName_not_contains_nocase: 'deprecated',
     },
+    orderBy: CollateralType_orderBy.maturity,
+    orderDirection: OrderDirection.desc,
   }).then(async ({ collateralTypes }) => {
     return Promise.all(
       collateralTypes
@@ -83,6 +87,9 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
       )
       return { ...collateral, manageId: position?.id }
     })
+
+    sortByMaturity(newCollaterals)
+
     setCollaterals(newCollaterals || [])
   }, [data, positions, inMyWallet, userTokens])
 

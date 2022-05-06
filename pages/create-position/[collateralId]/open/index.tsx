@@ -224,6 +224,7 @@ const FormERC20: React.FC<{
                     />
                     <Form.Item name="tokenAmount" required>
                       <TokenAmount
+                        disabled={loading}
                         displayDecimals={tokenInfo?.decimals}
                         mainAsset={collateral.vault.name}
                         max={tokenInfo?.humanValue}
@@ -239,7 +240,7 @@ const FormERC20: React.FC<{
                         bottom={
                           <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
                             <TokenAmount
-                              disabled={false}
+                              disabled={loading}
                               displayDecimals={4}
                               healthFactorValue={healthFactorNumber}
                               max={maxBorrowAmountCalculated}
@@ -253,6 +254,7 @@ const FormERC20: React.FC<{
                           </Form.Item>
                         }
                         buttonText="Mint FIAT with this transaction"
+                        disabled={loading}
                         onClick={toggleMintFiat}
                         top={
                           <Balance
