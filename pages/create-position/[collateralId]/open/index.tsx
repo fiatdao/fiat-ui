@@ -21,10 +21,10 @@ import { PositionFormsLayout } from '@/src/components/custom/position-forms-layo
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
 import {
-  BELOW_MINIMUM_AMOUNT_TEXT,
   DEPOSIT_COLLATERAL_TEXT,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
+  getBorrowAmountBelowDebtFloorText,
 } from '@/src/constants/misc'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
@@ -339,7 +339,9 @@ const FormERC20: React.FC<{
                           })
                         }
                       >
-                        {hasMinimumFIAT ? DEPOSIT_COLLATERAL_TEXT : BELOW_MINIMUM_AMOUNT_TEXT}
+                        {hasMinimumFIAT
+                          ? DEPOSIT_COLLATERAL_TEXT
+                          : getBorrowAmountBelowDebtFloorText(collateral.vault.debtFloor)}
                       </ButtonGradient>
                     </>
                   )}
