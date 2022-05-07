@@ -16,6 +16,7 @@
     }
 
     :local(.logoWrapper) {
+      margin-left: 16px;
       display: none;
 
       @media (max-width: #{$max-width-mobile}) {
