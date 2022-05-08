@@ -33,6 +33,7 @@ export type Collateral = {
   faceValue: Maybe<BigNumber>
   currentValue: Maybe<BigNumber>
   vault: {
+    type: string
     vaultType: string
     collateralizationRatio: Maybe<BigNumber>
     address: string
@@ -102,6 +103,7 @@ const wrangleCollateral = async (
       interestPerSecond: BigNumber.from(collateral.vault?.interestPerSecond) ?? null,
       debtFloor: BigNumber.from(collateral.vault?.debtFloor) ?? ZERO_BIG_NUMBER,
       name: collateral.vault?.name ?? '',
+      type: collateral.vault?.type ?? '',
       vaultType: collateral.vault?.vaultType
         ? // TODO: Improve this logic
           hexToAscii(collateral.vault?.vaultType).split(':')[0]

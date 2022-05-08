@@ -47,6 +47,7 @@ export type Position = {
   userAddress: string
   debtFloor: BigNumber
   vaultName: string
+  vaultType: string
   virtualRate: BigNumber
 }
 
@@ -160,6 +161,7 @@ const wranglePosition = async (
   const debtFloor = BigNumber.from(position.vault?.debtFloor) ?? ZERO_BIG_NUMBER
   const maturity = stringToDateOrCurrent(position.maturity)
   const vaultName = position.vaultName ?? ''
+  const vaultType = position.vault?.type ?? ''
 
   const [currentValue, faceValue, collateralDecimals, underlierDecimals, virtualRate] =
     await Promise.all([
@@ -197,6 +199,7 @@ const wranglePosition = async (
     totalNormalDebt,
     totalDebt,
     currentValue,
+    vaultType,
     owner: position.owner,
     collateralValue: getHumanValue(currentValue.times(totalCollateral), WAD_DECIMALS),
     faceValue,

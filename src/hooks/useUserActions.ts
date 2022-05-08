@@ -1,6 +1,5 @@
 import { calculateNormalDebt } from '../utils/data/positions'
 import { getVirtualRate } from '../utils/getVirtualRate'
-import { Collateral } from '../utils/data/collaterals'
 import { TransactionResponse } from '@ethersproject/providers'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
@@ -49,7 +48,7 @@ type BuyCollateralAndModifyDebt = {
   }
 }
 
-export type UseEPTUserActions = {
+export type UseUserActions = {
   approveFIAT: (to: string) => ReturnType<TransactionResponse['wait']>
   depositCollateral: (params: DepositCollateral) => ReturnType<TransactionResponse['wait']>
   modifyCollateralAndDebt: (
@@ -60,7 +59,7 @@ export type UseEPTUserActions = {
   ) => ReturnType<TransactionResponse['wait']>
 }
 
-export const useEPTUserActions = (): UseEPTUserActions => {
+export const useUserActions = (type?: string): UseUserActions => {
   const { address, appChainId, web3Provider } = useWeb3Connected()
   const { userProxy, userProxyAddress } = useUserProxy()
   const notification = useNotifications()
@@ -81,7 +80,7 @@ export const useEPTUserActions = (): UseEPTUserActions => {
     ) as VaultEPTActions
   }, [web3Provider, appChainId])
 
-  // Element User Action: ERC1155
+  // Notional User Action: ERC1155
   const userActionFC = useMemo(() => {
     return new Contract(
       contracts.USER_ACTIONS_FC.address[appChainId],
@@ -90,6 +89,8 @@ export const useEPTUserActions = (): UseEPTUserActions => {
     ) as VaultEPTActions
   }, [web3Provider, appChainId])
 
+  const activeContract = type && type === 'NOTIONAL' ? userActionFC : userActionEPT
+
   const approveFIAT = useCallback(
     async (to: string) => {
       if (!userProxy) {
@@ -97,7 +98,7 @@ export const useEPTUserActions = (): UseEPTUserActions => {
       }
 
       // TODO: check if vault/protocol type so we can use EPT or FC
-      const approveFIAT = userActionEPT.interface.encodeFunctionData('approveFIAT', [
+      const approveFIAT = activeContract.interface.encodeFunctionData('approveFIAT', [
         to,
         ethers.constants.MaxUint256, // Max available amount
       ])
@@ -105,9 +106,9 @@ export const useEPTUserActions = (): UseEPTUserActions => {
       notification.requestSign()
 
       const tx: TransactionResponse | TransactionError = await userProxy
-        .execute(userActionEPT.address, approveFIAT, {
+        .execute(activeContract.address, approveFIAT, {
           gasLimit: await estimateGasLimit(userProxy, 'execute', [
-            userActionEPT.address,
+            activeContract.address,
             approveFIAT,
           ]),
         })
@@ -127,7 +128,7 @@ export const useEPTUserActions = (): UseEPTUserActions => {
 
       return receipt
     },
-    [userProxy, userActionEPT.interface, userActionEPT.address, notification],
+    [userProxy, activeContract.interface, activeContract.address, notification],
   )
 
   const modifyCollateralAndDebt = useCallback(
@@ -149,7 +150,7 @@ export const useEPTUserActions = (): UseEPTUserActions => {
       )
 
       // TODO: check if vault/protocol type so we can use EPT or FC
-      const modifyCollateralAndDebtEncoded = userActionEPT.interface.encodeFunctionData(
+      const modifyCollateralAndDebtEncoded = activeContract.interface.encodeFunctionData(
         'modifyCollateralAndDebt',
         [
           params.vault,
@@ -167,9 +168,9 @@ export const useEPTUserActions = (): UseEPTUserActions => {
       notification.requestSign()
 
       const tx: TransactionResponse | TransactionError = await userProxy
-        .execute(userActionEPT.address, modifyCollateralAndDebtEncoded, {
+        .execute(activeContract.address, modifyCollateralAndDebtEncoded, {
           gasLimit: await estimateGasLimit(userProxy, 'execute', [
-            userActionEPT.address,
+            activeContract.address,
             modifyCollateralAndDebtEncoded,
           ]),
         })
@@ -201,8 +202,8 @@ export const useEPTUserActions = (): UseEPTUserActions => {
       address,
       userProxy,
       userProxyAddress,
-      userActionEPT.interface,
-      userActionEPT.address,
+      activeContract.interface,
+      activeContract.address,
       notification,
       _getVirtualRate,
     ],
@@ -214,7 +215,7 @@ export const useEPTUserActions = (): UseEPTUserActions => {
         throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
       }
 
-      const buyCollateralAndModifyDebtEncoded = userActionEPT.interface.encodeFunctionData(
+      const buyCollateralAndModifyDebtEncoded = activeContract.interface.encodeFunctionData(
         'buyCollateralAndModifyDebt',
         [
           params.vault,
@@ -231,9 +232,9 @@ export const useEPTUserActions = (): UseEPTUserActions => {
       notification.requestSign()
 
       const tx: TransactionResponse | TransactionError = await userProxy
-        .execute(userActionEPT.address, buyCollateralAndModifyDebtEncoded, {
+        .execute(activeContract.address, buyCollateralAndModifyDebtEncoded, {
           gasLimit: await estimateGasLimit(userProxy, 'execute', [
-            userActionEPT.address,
+            activeContract.address,
             buyCollateralAndModifyDebtEncoded,
           ]),
         })
@@ -261,8 +262,8 @@ export const useEPTUserActions = (): UseEPTUserActions => {
       address,
       userProxy,
       userProxyAddress,
-      userActionEPT.interface,
-      userActionEPT.address,
+      activeContract.interface,
+      activeContract.address,
       notification,
     ],
   )

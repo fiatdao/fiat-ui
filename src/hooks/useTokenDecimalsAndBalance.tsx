@@ -51,7 +51,7 @@ export const useTokenDecimalsAndBalance = ({
         is1155
           ? [18, collateralContract.balanceOf(address, collateral.tokenId as BigNumberish)]
           : // @ts-ignore
-            [collateralContract.decimals(), collateralContract.balanceOf(address)],
+            [collateralContract?.decimals(), collateralContract.balanceOf(address)],
       ).then(([decimals, balance]) => {
         return {
           decimals,

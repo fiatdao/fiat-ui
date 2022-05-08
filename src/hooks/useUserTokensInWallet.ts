@@ -28,6 +28,7 @@ export const useUserTokensInWallet = ({
 
       collaterals?.forEach((collateral) => {
         const is1155 = collateral.vault?.vaultType === 'ERC1155'
+
         const collateralContract: ERC1155 | ERC20 = is1155
           ? (new Contract(
               collateral.address as string,
