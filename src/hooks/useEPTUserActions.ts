@@ -49,7 +49,7 @@ type BuyCollateralAndModifyDebt = {
   }
 }
 
-export type UseUserActions = {
+export type UseEPTUserActions = {
   approveFIAT: (to: string) => ReturnType<TransactionResponse['wait']>
   depositCollateral: (params: DepositCollateral) => ReturnType<TransactionResponse['wait']>
   modifyCollateralAndDebt: (
@@ -60,7 +60,7 @@ export type UseUserActions = {
   ) => ReturnType<TransactionResponse['wait']>
 }
 
-export const useUserActions = ({ collateral }: { collateral: Collateral }): UseUserActions => {
+export const useEPTUserActions = (): UseEPTUserActions => {
   const { address, appChainId, web3Provider } = useWeb3Connected()
   const { userProxy, userProxyAddress } = useUserProxy()
   const notification = useNotifications()

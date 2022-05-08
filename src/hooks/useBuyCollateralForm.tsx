@@ -2,7 +2,7 @@ import { Contract } from '@ethersproject/contracts'
 import { TransactionResponse } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useUserActions } from '@/src/hooks/useUserActions'
+import { useUserEPTActions } from '@/src/hooks/useUserEPTActions'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { SLIPPAGE } from '@/src/constants/auctions'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
@@ -41,7 +41,7 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
     userProxyAddress ?? '',
   )
 
-  const { approveFIAT } = useUserActions(auctionData?.collateral)
+  const { approveFIAT } = useUserEPTActions()
   const [loadingMonetaApprove, setLoadingMonetaApprove] = useState(false)
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState(false)
 

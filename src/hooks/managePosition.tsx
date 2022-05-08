@@ -20,7 +20,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
-import { useUserActions } from '@/src/hooks/useUserActions'
+import { useUserEPTActions } from '@/src/hooks/useUserEPTActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
@@ -39,7 +39,7 @@ export const useManagePositionForm = (
   onSuccess?: () => void,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
-  const { approveFIAT, modifyCollateralAndDebt } = useUserActions()
+  const { approveFIAT, modifyCollateralAndDebt } = useUserEPTActions()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
