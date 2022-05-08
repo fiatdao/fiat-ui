@@ -19,7 +19,7 @@ import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
-import { Summary } from '@/src/components/custom/summary'
+import { Summary, SummaryItem } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
 import {
   DEPOSIT_COLLATERAL_TEXT,
@@ -83,6 +83,12 @@ const FormERC20: React.FC<{
   )
   const { tokenInfo } = useTokenDecimalsAndBalance({
     tokenAddress,
+    address: currentUserAddress,
+    readOnlyAppProvider,
+  })
+
+  const { tokenInfo: collateralInfo } = useTokenDecimalsAndBalance({
+    tokenAddress: collateral?.underlierAddress ?? '',
     address: currentUserAddress,
     readOnlyAppProvider,
   })
@@ -178,6 +184,22 @@ const FormERC20: React.FC<{
   )
   const healthFactorNumber = hf?.toFixed(3)
 
+  // how are these values defined? Right now they are hardcoded but I need to find that correct way to define them
+  const underlyingData = [
+    {
+      title: 'Market rate',
+      value: `1 Principal Token = .9949 ${collateral ? collateral.underlierSymbol : '-'}`,
+    },
+    {
+      title: 'Price impact',
+      value: '0.00%',
+    },
+    {
+      title: 'Slippage tolerance',
+      value: '0.30%',
+    },
+  ]
+
   const summaryData = [
     {
       title: 'In your wallet',
@@ -215,19 +237,53 @@ const FormERC20: React.FC<{
             totalSteps={stateMachine.context.totalStepNumber}
           />
           <div className={cn(s.form)}>
-            {stateMachine.context.currentStepNumber === 1 && (
+            {[1, 4].includes(stateMachine.context.currentStepNumber) && (
               <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
                 <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
                   Bond
                 </RadioTab>
-                <RadioTab
-                  checked={tab === 'underlying'}
-                  disabled
-                  onClick={() => setTab('underlying')}
-                >
+                <RadioTab checked={tab === 'underlying'} onClick={() => setTab('underlying')}>
                   Underlying
                 </RadioTab>
               </RadioTabsWrapper>
+            )}
+
+            {tab === 'underlying' && (
+              <>
+                <Balance
+                  title={`Swap and Deposit`}
+                  value={`Balance: ${collateralInfo?.humanValue?.toFixed(2)}`}
+                />
+                <Form form={form} initialValues={{ underlierAmount: 0 }}>
+                  <Form.Item name="underlierAmount" required>
+                    <TokenAmount
+                      displayDecimals={collateralInfo?.decimals}
+                      mainAsset={collateral.vault.name} //only being used to fetch icon from metadata
+                      max={collateralInfo?.humanValue}
+                      maximumFractionDigits={collateralInfo?.decimals}
+                      onChange={(val) =>
+                        val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
+                      }
+                      secondaryAsset={tokenSymbol}
+                    />
+                  </Form.Item>{' '}
+                  {/*all of this is hardcoded */}
+                  <Summary data={underlyingData} />
+                  <SummaryItem title={'Fixed APR'} value={'2%'} />
+                  <SummaryItem title={'Interest earned'} value={'24.028 USDC'} />
+                  <SummaryItem
+                    title={`Redeemable at maturity | ${
+                      collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
+                    }`}
+                    value={'10,024.028 USDC'}
+                  />
+                  <ButtonsWrapper>
+                    <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_DEPLOY' })}>
+                      Deposit collateral
+                    </ButtonGradient>
+                  </ButtonsWrapper>
+                </Form>
+              </>
             )}
 
             {tab === 'bond' && (
