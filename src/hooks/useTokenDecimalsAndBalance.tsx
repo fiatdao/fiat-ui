@@ -35,17 +35,11 @@ export const useTokenDecimalsAndBalance = ({
       }
 
       const is1155 = collateral.vault?.vaultType === 'ERC1155'
-      const collateralContract: ERC1155 | ERC20 = collateral.vault
-        ? (new Contract(
-            collateral.address as string,
-            contracts.ERC_1155.abi,
-            readOnlyAppProvider,
-          ) as ERC1155)
-        : (new Contract(
-            collateral.address as string,
-            contracts.ERC_20.abi,
-            readOnlyAppProvider,
-          ) as ERC20)
+      const collateralContract = new Contract(
+        collateral.address as string,
+        is1155 ? contracts.ERC_1155.abi : contracts.ERC_20.abi,
+        readOnlyAppProvider,
+      ) as ERC1155 | ERC20
 
       return Promise.all(
         is1155
