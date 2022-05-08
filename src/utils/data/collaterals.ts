@@ -2,6 +2,7 @@ import { getVirtualRate } from '../getVirtualRate'
 import { getFaceValue } from '../getFaceValue'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from 'bignumber.js'
+import { hexToAscii } from 'web3-utils'
 import contractCall from '@/src/utils/contractCall'
 import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import { Collaterals_collateralTypes as SubgraphCollateral } from '@/types/subgraph/__generated__/Collaterals'
@@ -32,6 +33,7 @@ export type Collateral = {
   faceValue: Maybe<BigNumber>
   currentValue: Maybe<BigNumber>
   vault: {
+    vaultType: string
     collateralizationRatio: Maybe<BigNumber>
     address: string
     interestPerSecond: Maybe<BigNumber>
@@ -100,6 +102,10 @@ const wrangleCollateral = async (
       interestPerSecond: BigNumber.from(collateral.vault?.interestPerSecond) ?? null,
       debtFloor: BigNumber.from(collateral.vault?.debtFloor) ?? ZERO_BIG_NUMBER,
       name: collateral.vault?.name ?? '',
+      vaultType: collateral.vault?.vaultType
+        ? // TODO: Improve this logic
+          hexToAscii(collateral.vault?.vaultType).split(':')[0]
+        : '',
       virtualRate,
     },
     eptData: {

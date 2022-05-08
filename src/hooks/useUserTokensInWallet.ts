@@ -27,8 +27,7 @@ export const useUserTokensInWallet = ({
       const tokenList: string[] = []
 
       collaterals?.forEach((collateral) => {
-        // TODO: get type from subgraph
-        const is1155 = collateral.address === '0xd8229b55bd73c61d840d339491219ec6fa667b0a'
+        const is1155 = collateral.vault?.vaultType === 'ERC1155'
         const collateralContract: ERC1155 | ERC20 = is1155
           ? (new Contract(
               collateral.address as string,
@@ -45,7 +44,7 @@ export const useUserTokensInWallet = ({
           is1155
             ? [18, collateralContract.balanceOf(address, collateral.tokenId as BigNumberish)]
             : // @ts-ignore
-              [contract.decimals(), collateralContract.balanceOf(address)],
+              [collateralContract.decimals(), collateralContract.balanceOf(address)],
         ).then(([decimals, balance]) => {
           const humanValue = getHumanValue(BigNumber.from(balance.toString()), decimals)
           !humanValue?.isZero() ? tokenList.push(collateral.address as string) : null

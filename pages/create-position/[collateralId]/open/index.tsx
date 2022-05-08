@@ -28,7 +28,7 @@ import {
 } from '@/src/constants/misc'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
-import { useEPTUserActions } from '@/src/hooks/useUserEPTActions'
+import { useEPTUserActions } from '@/src/hooks/useEPTUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
@@ -88,7 +88,7 @@ const FormERC20: React.FC<{
 
   const [FIATBalance] = useFIATBalance(true)
 
-  const { depositCollateral } = useUserEPTActions(collateral)
+  const { depositCollateral } = useEPTUserActions()
   const [stateMachine, send] = useMachine(stepperMachine, {
     context: {
       isProxyAvailable,

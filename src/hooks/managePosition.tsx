@@ -20,7 +20,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
-import { useUserEPTActions } from '@/src/hooks/useUserEPTActions'
+import { useEPTUserActions } from '@/src/hooks/useEPTUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
@@ -39,7 +39,7 @@ export const useManagePositionForm = (
   onSuccess?: () => void,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
-  const { approveFIAT, modifyCollateralAndDebt } = useUserEPTActions()
+  const { approveFIAT, modifyCollateralAndDebt } = useEPTUserActions()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -66,7 +66,8 @@ export const useManagePositionForm = (
   const { tokenInfo, updateToken } = useTokenDecimalsAndBalance({
     address,
     readOnlyAppProvider,
-    tokenAddress,
+    // @ts-ignore
+    collateral: position?.collateral,
   })
   const {
     approve: approveTokenAllowance,

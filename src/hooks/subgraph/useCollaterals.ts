@@ -68,7 +68,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   )
 
   const userTokens = useUserTokensInWallet({
-    tokens: data,
+    collaterals: data,
     address: currentUserAddress,
     readOnlyAppProvider: provider,
   })

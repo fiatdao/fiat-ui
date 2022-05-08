@@ -33,8 +33,9 @@ export const useTokenDecimalsAndBalance = ({
           humanValue: ZERO_BIG_NUMBER,
         }
       }
-      const is1155 = collateral.address === '0xd8229b55bd73c61d840d339491219ec6fa667b0a'
-      const collateralContract: ERC1155 | ERC20 = is1155
+
+      const is1155 = collateral.vault?.vaultType === 'ERC1155'
+      const collateralContract: ERC1155 | ERC20 = collateral.vault
         ? (new Contract(
             collateral.address as string,
             contracts.ERC_1155.abi,
@@ -50,7 +51,7 @@ export const useTokenDecimalsAndBalance = ({
         is1155
           ? [18, collateralContract.balanceOf(address, collateral.tokenId as BigNumberish)]
           : // @ts-ignore
-            [contract.decimals(), collateralContract.balanceOf(address)],
+            [collateralContract.decimals(), collateralContract.balanceOf(address)],
       ).then(([decimals, balance]) => {
         return {
           decimals,
