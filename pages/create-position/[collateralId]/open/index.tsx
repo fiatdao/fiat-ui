@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import { useERC155Allowance } from '../../../../src/hooks/useERC1155Allowance'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -76,10 +77,12 @@ const FormERC20: React.FC<{
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [loading, setLoading] = useState(false)
 
-  const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
-    tokenAddress,
-    userProxyAddress ?? '',
-  )
+  const erc20 = useERC20Allowance(tokenAddress, userProxyAddress ?? '')
+  const erc1155 = useERC155Allowance(tokenAddress, userProxyAddress ?? '')
+
+  const activeToken = collateral.vault.type === 'NOTIONAL' ? erc1155 : erc20
+  const { approve, hasAllowance, loadingApprove } = activeToken
+
   const { tokenInfo } = useTokenDecimalsAndBalance({
     collateral,
     address: currentUserAddress,
@@ -109,10 +112,11 @@ const FormERC20: React.FC<{
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
     try {
       setLoading(true)
+
       await depositCollateral({
         vault: collateral.vault.address,
         token: tokenAddress,
-        tokenId: 0,
+        tokenId: Number(collateral.tokenId) ?? 0,
         toDeposit: _erc20Amount,
         toMint: _fiatAmount,
       })
