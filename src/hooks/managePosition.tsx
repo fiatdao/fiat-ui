@@ -401,7 +401,7 @@ export const useManagePositionsInfoBlock = (position: Position) => {
   return [
     {
       title: 'Asset',
-      value: position.symbol || '-',
+      value: position.asset || '-',
       url: position ? getEtherscanAddressUrl(position.collateral.address, chainId) : '-',
     },
     {

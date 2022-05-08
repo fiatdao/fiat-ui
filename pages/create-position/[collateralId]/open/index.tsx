@@ -69,6 +69,7 @@ type FormProps = { tokenAmount: BigNumber; fiatAmount: BigNumber }
 
 const FormERC20: React.FC<{
   tokenSymbol: string
+  tokenAsset: string
   tokenAddress: string
   collateral: Collateral
 }> = ({ collateral, tokenAddress, tokenSymbol }) => {
@@ -385,6 +386,7 @@ const OpenPosition = () => {
   const { data: collateral } = useCollateral(tokenAddress)
 
   const tokenSymbol = collateral?.symbol ?? ''
+  const tokenAsset = collateral?.asset ?? ''
   const collateralizationRatio = collateral?.vault.collateralizationRatio ?? null
   const interestPerSecond = collateral?.vault.interestPerSecond ?? ZERO_BIG_NUMBER
   const chainId = useWeb3Connection().appChainId
@@ -438,6 +440,7 @@ const OpenPosition = () => {
         <FormERC20
           collateral={collateral as Collateral} // TODO Fix with suspense
           tokenAddress={tokenAddress as string}
+          tokenAsset={tokenAsset}
           tokenSymbol={tokenSymbol}
         />
       </PositionFormsLayout>

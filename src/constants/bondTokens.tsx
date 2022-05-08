@@ -7,6 +7,7 @@ type PTokenMap = {
   [vaultAddress: string]: {
     [tokenId: string]: {
       protocol: string
+      asset: string
       symbol: string
       decimals: number
       name: string

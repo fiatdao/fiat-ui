@@ -49,8 +49,8 @@ const CreatePosition = () => {
     },
     {
       align: 'left',
-      dataIndex: 'symbol',
-      render: (symbol: Collateral['symbol']) => <CellValue value={symbol} />,
+      dataIndex: 'asset',
+      render: (asset: Collateral['asset']) => <CellValue value={asset} />,
       title: 'Asset',
     },
     {

@@ -19,6 +19,7 @@ export type Collateral = {
   id: string
   tokenId: Maybe<string>
   symbol: string
+  asset: string
   protocol: string
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
@@ -83,16 +84,20 @@ const wrangleCollateral = async (
   )
   const virtualRate = await getVirtualRate(collateral.vault?.address ?? '', appChainId, provider)
 
-  const { protocol = '', symbol = '' } =
-    getCollateralMetadata(appChainId, {
-      vaultAddress: collateral.vault?.address,
-      tokenId: collateral.tokenId,
-    }) ?? {}
+  const {
+    asset = '',
+    protocol = '',
+    symbol = '',
+  } = getCollateralMetadata(appChainId, {
+    vaultAddress: collateral.vault?.address,
+    tokenId: collateral.tokenId,
+  }) ?? {}
 
   return {
     ...collateral,
     protocol,
     symbol,
+    asset,
     maturity: stringToDateOrCurrent(collateral.maturity),
     faceValue,
     currentValue: BigNumber.from(currentValue?.toString()) ?? null,

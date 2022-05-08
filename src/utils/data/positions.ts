@@ -27,6 +27,7 @@ import { Maybe } from '@/types/utils'
 export type Position = {
   id: string
   tokenId: string
+  asset: string
   owner: string
   protocol: string
   symbol: string
@@ -57,8 +58,13 @@ const readValue = async (
   appChainId: ChainsValues,
   provider: JsonRpcProvider,
 ): Promise<BigNumber> => {
-  // TODO: tokenId depends on protocol (0 is for element-fi)
-  return getCurrentValue(provider, appChainId, 0, position?.vault?.address || null, isFaceValue)
+  return getCurrentValue(
+    provider,
+    appChainId,
+    position?.collateralType?.tokenId ?? 0,
+    position?.vault?.address || null,
+    isFaceValue,
+  )
 }
 
 const _getCurrentValue = (
@@ -76,6 +82,9 @@ const getDecimals = async (
   if (!address) {
     return 18
   }
+
+  console.log('getDecimals')
+  console.log(address)
 
   const decimals = await contractCall<ERC20, 'decimals'>(
     address,
@@ -181,11 +190,14 @@ const wranglePosition = async (
     totalDebt,
   )
 
-  const { protocol = '', symbol = '' } =
-    getCollateralMetadata(appChainId, {
-      vaultAddress: position.vault?.address,
-      tokenId: position.collateralType?.tokenId,
-    }) ?? {}
+  const {
+    asset = '',
+    protocol = '',
+    symbol = '',
+  } = getCollateralMetadata(appChainId, {
+    vaultAddress: position.vault?.address,
+    tokenId: position.collateralType?.tokenId,
+  }) ?? {}
 
   // TODO Interest rate
   return {
@@ -194,6 +206,7 @@ const wranglePosition = async (
     protocolAddress: position.vault?.address ?? '',
     protocol,
     symbol,
+    asset,
     vaultCollateralizationRatio,
     totalCollateral,
     totalNormalDebt,
