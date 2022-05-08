@@ -6,6 +6,7 @@ import cn from 'classnames'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import Lottie from 'lottie-react'
+import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { getHealthFactorState } from '@/src/utils/table'
 import { getEtherscanAddressUrl } from '@/src/web3/utils'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
@@ -130,7 +131,7 @@ const FormERC20: React.FC<{
     send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
   }, [hasAllowance, isProxyAvailable, send])
 
-  const [tab] = useState('bond')
+  const [tab, setTab] = useState('bond')
   const [mintFiat, setMintFiat] = useState(false)
 
   const toggleMintFiat = () => setMintFiat(!mintFiat)
@@ -214,6 +215,21 @@ const FormERC20: React.FC<{
             totalSteps={stateMachine.context.totalStepNumber}
           />
           <div className={cn(s.form)}>
+            {stateMachine.context.currentStepNumber === 1 && (
+              <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
+                <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
+                  Bond
+                </RadioTab>
+                <RadioTab
+                  checked={tab === 'underlying'}
+                  disabled
+                  onClick={() => setTab('underlying')}
+                >
+                  Underlying
+                </RadioTab>
+              </RadioTabsWrapper>
+            )}
+
             {tab === 'bond' && (
               <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
                 {[1, 4].includes(stateMachine.context.currentStepNumber) && (
