@@ -400,7 +400,7 @@ const OpenPosition = () => {
   const infoBlocks = [
     {
       title: 'Token',
-      value: tokenSymbol ?? '-',
+      value: tokenAsset ?? '-',
       url: getEtherscanAddressUrl(tokenAddress, chainId),
     },
     {
