@@ -113,7 +113,7 @@ export const useProtocolFilters = () => {
             checked={inMyWallet}
             className={cn(s.switch)}
             disabled={!isWalletConnected}
-            label="In my wallet"
+            label="Assets in my wallet"
             onChange={toggleInMyWallet}
           />
         )}
