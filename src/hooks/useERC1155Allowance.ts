@@ -1,6 +1,6 @@
 import { ERC1155 } from '../../types/typechain'
 import { Contract } from 'ethers'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import { TransactionError } from '@/src/utils/TransactionError'
 import { useNotifications } from '@/src/hooks/useNotifications'
@@ -8,8 +8,9 @@ import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { contracts } from '@/src/constants/contracts'
 
 export const useERC155Allowance = (tokenAddress: string, spender: string) => {
-  const { isAppConnected, web3Provider } = useWeb3Connected()
+  const { address: currentUserAddress, isAppConnected, web3Provider } = useWeb3Connected()
   const [loadingApprove, setLoadingApprove] = useState(false)
+  const [hasAllowance, setHasAllowance] = useState(false)
   const notification = useNotifications()
 
   const erc1155 = useMemo(
@@ -55,10 +56,22 @@ export const useERC155Allowance = (tokenAddress: string, spender: string) => {
     }
   }, [erc1155, isAppConnected, notification, spender])
 
+  useEffect(() => {
+    if (erc1155 && isAddress(spender) && currentUserAddress) {
+      erc1155
+        .isApprovedForAll(currentUserAddress, spender)
+        .then((isApprovedForAll) => setHasAllowance(isApprovedForAll))
+        .catch((allowance) => {
+          console.log('allowance')
+          console.error(allowance)
+        })
+    }
+  }, [currentUserAddress, erc1155, spender])
+
   return {
     erc1155,
     approve,
     loadingApprove,
-    hasAllowance: true,
+    hasAllowance,
   }
 }
