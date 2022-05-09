@@ -63,6 +63,16 @@ export const useProtocolFilters = () => {
 
   const toggleInMyWallet = () => setInMyWallet((prev) => !prev)
 
+  const clearButton = () => {
+    return activeFilters.length !== 0 ? (
+      <button className={cn(s.clear)} onClick={clearAllFilters}>
+        Clear
+      </button>
+    ) : (
+      <></>
+    )
+  }
+
   const renderFilters = () => (
     <>
       <ButtonOutline
@@ -97,6 +107,7 @@ export const useProtocolFilters = () => {
     <>
       <div className={cn(s.filters)}>
         {renderFilters()}
+        {clearButton()}
         {withWalletFilter && (
           <ToggleSwitch
             checked={inMyWallet}
