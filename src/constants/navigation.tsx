@@ -61,8 +61,8 @@ const routesConfig: Record<string, RouteItem> = {
 
 const routes: RouteItem[] = [
   // DashboardRoute,
-  CreatePositionRoute,
   YourPositionsRoute,
+  CreatePositionRoute,
   LiquidationsRoute,
 ]
 
