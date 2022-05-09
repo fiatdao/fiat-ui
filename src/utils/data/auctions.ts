@@ -43,6 +43,7 @@ export type AuctionData = {
   collateralMaturity: number
   tokenId?: Maybe<string>
   vault: {
+    type?: string
     address?: Maybe<string>
     name?: Maybe<string>
     interestPerSecond?: BigNumber
@@ -152,6 +153,7 @@ const wrangleAuction = async (
     },
     tokenId: collateralAuction.tokenId,
     vault: {
+      type: collateralAuction.vault?.type ?? '',
       address: collateralAuction.vault?.address,
       name: collateralAuction.vault?.name,
       interestPerSecond: BigNumber.from(collateralAuction.vault?.interestPerSecond),

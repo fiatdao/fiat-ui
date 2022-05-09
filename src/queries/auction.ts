@@ -18,6 +18,7 @@ export const AUCTION_MAIN_DATA = gql`
       id
       name
       address
+      type
       interestPerSecond
       maxAuctionDuration
       auctionDebtFloor

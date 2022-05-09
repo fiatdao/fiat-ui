@@ -22,6 +22,7 @@ export type AddressMappedToken = {
     protocol: string
     symbol: string
     decimals: number
+    asset: string
     name: string
   }
   chain: string

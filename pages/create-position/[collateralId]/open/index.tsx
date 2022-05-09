@@ -1,4 +1,5 @@
 import s from './s.module.scss'
+import { useERC155Allowance } from '../../../../src/hooks/useERC1155Allowance'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -68,6 +69,7 @@ type FormProps = { tokenAmount: BigNumber; fiatAmount: BigNumber }
 
 const FormERC20: React.FC<{
   tokenSymbol: string
+  tokenAsset: string
   tokenAddress: string
   collateral: Collateral
 }> = ({ collateral, tokenAddress, tokenSymbol }) => {
@@ -76,19 +78,27 @@ const FormERC20: React.FC<{
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [loading, setLoading] = useState(false)
 
-  const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
-    tokenAddress,
-    userProxyAddress ?? '',
-  )
+  const erc20 = useERC20Allowance(tokenAddress, userProxyAddress ?? '')
+  const erc1155 = useERC155Allowance(tokenAddress, userProxyAddress ?? '')
+
+  const activeToken = collateral.vault.type === 'NOTIONAL' ? erc1155 : erc20
+  const { approve, hasAllowance, loadingApprove } = activeToken
+
   const { tokenInfo } = useTokenDecimalsAndBalance({
-    tokenAddress,
+    tokenData: {
+      symbol: collateral.symbol ?? '',
+      address: collateral.address ?? '',
+      decimals: 8, // TODO: Fix me
+    },
+    vaultType: collateral.vault.type ?? '',
+    tokenId: collateral.tokenId ?? '0',
     address: currentUserAddress,
     readOnlyAppProvider,
   })
 
   const [FIATBalance] = useFIATBalance(true)
 
-  const { depositCollateral } = useUserActions()
+  const { depositCollateral } = useUserActions(collateral.vault?.type)
   const [stateMachine, send] = useMachine(stepperMachine, {
     context: {
       isProxyAvailable,
@@ -109,10 +119,11 @@ const FormERC20: React.FC<{
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
     try {
       setLoading(true)
+
       await depositCollateral({
         vault: collateral.vault.address,
         token: tokenAddress,
-        tokenId: 0,
+        tokenId: Number(collateral.tokenId) ?? 0,
         toDeposit: _erc20Amount,
         toMint: _fiatAmount,
       })
@@ -381,6 +392,7 @@ const OpenPosition = () => {
   const { data: collateral } = useCollateral(tokenAddress)
 
   const tokenSymbol = collateral?.symbol ?? ''
+  const tokenAsset = collateral?.asset ?? ''
   const collateralizationRatio = collateral?.vault.collateralizationRatio ?? null
   const interestPerSecond = collateral?.vault.interestPerSecond ?? ZERO_BIG_NUMBER
   const chainId = useWeb3Connection().appChainId
@@ -388,7 +400,7 @@ const OpenPosition = () => {
   const infoBlocks = [
     {
       title: 'Token',
-      value: tokenSymbol ?? '-',
+      value: tokenAsset ?? '-',
       url: getEtherscanAddressUrl(tokenAddress, chainId),
     },
     {
@@ -434,6 +446,7 @@ const OpenPosition = () => {
         <FormERC20
           collateral={collateral as Collateral} // TODO Fix with suspense
           tokenAddress={tokenAddress as string}
+          tokenAsset={tokenAsset}
           tokenSymbol={tokenSymbol}
         />
       </PositionFormsLayout>
