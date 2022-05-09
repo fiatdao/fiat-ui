@@ -11,6 +11,7 @@ export enum KnownTokens {
   USDC = 'USDC',
   BOND = 'BOND',
   UMA = 'UMA',
+  DAI = 'DAI',
   MKR = 'MKR',
   YFI = 'YFI',
   RGT = 'RGT',
@@ -46,6 +47,16 @@ export const UsdcToken: TokenMeta = {
   decimals: 6,
   icon: 'token-usdc',
   coinGeckoId: 'usd-coin',
+  contract: {} as any,
+}
+
+export const DaiToken: TokenMeta = {
+  address: config.tokens.dai,
+  symbol: KnownTokens.DAI,
+  name: 'DAI',
+  decimals: 18,
+  icon: 'token-dai',
+  coinGeckoId: 'dai',
   contract: {} as any,
 }
 

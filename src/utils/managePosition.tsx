@@ -1,5 +1,6 @@
 import isDev from './isDev'
 import { ReactNode } from 'react'
+import NotionalIcon from '@/src/resources/svg/notional.svg'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
@@ -9,6 +10,7 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 export const iconByAddress = new Proxy<Record<string, ReactNode>>(
   {
     '0xdcf80c068b7ffdf7273d8adae4b076bf384f711a': <ElementIcon />,
+    '0xd8229b55bd73c61d840d339491219ec6fa667b0a': <NotionalIcon />,
     [contracts.FIAT.address[Chains.goerli].toLowerCase()]: <FiatIcon />,
   },
   {
