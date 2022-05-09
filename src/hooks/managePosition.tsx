@@ -1,6 +1,7 @@
 import { usePosition } from './subgraph/usePosition'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useERC20Allowance } from './useERC20Allowance'
+import { useERC155Allowance } from './useERC1155Allowance'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
   EXECUTE_TEXT,
@@ -66,14 +67,24 @@ export const useManagePositionForm = (
   const { tokenInfo, updateToken } = useTokenDecimalsAndBalance({
     address,
     readOnlyAppProvider,
-    // @ts-ignore
-    collateral: position?.collateral,
+    tokenData: {
+      symbol: position?.collateral.symbol ?? '',
+      address: position?.collateral.address ?? '',
+      decimals: 8, // TODO: Fix me
+    },
+    vaultType: position?.vaultType ?? '',
+    tokenId: position?.tokenId ?? '0',
   })
+
+  const erc20 = useERC20Allowance(tokenAddress ?? '', userProxyAddress ?? '')
+  const erc1155 = useERC155Allowance(tokenAddress ?? '', userProxyAddress ?? '')
+
+  const activeToken = position?.vaultType === 'NOTIONAL' ? erc1155 : erc20
   const {
     approve: approveTokenAllowance,
     hasAllowance: hasTokenAllowance,
     loadingApprove: loadingTokenAllowanceApprove,
-  } = useERC20Allowance(tokenAddress ?? '', userProxyAddress ?? '')
+  } = activeToken
 
   const calculateHealthFactorFromPosition = useCallback(
     (collateral: BigNumber, debt: BigNumber) => {

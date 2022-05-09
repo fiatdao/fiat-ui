@@ -1,8 +1,8 @@
 import { TokenInfo } from './managePosition'
 import { contracts } from '../constants/contracts'
 import { getHumanValue } from '../web3/utils'
-import { Collateral } from '../utils/data/collaterals'
 import { ERC1155 } from '../../types/typechain'
+import { TokenData } from '../../types/token'
 import useSWR, { KeyedMutator } from 'swr'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
@@ -17,35 +17,41 @@ type UseDecimalsAndTokenValue = {
 
 export const useTokenDecimalsAndBalance = ({
   address,
-  collateral,
   readOnlyAppProvider,
+  tokenData,
+  tokenId,
+  vaultType,
 }: {
-  collateral: Collateral
+  tokenId: string
+  vaultType: string
+  tokenData: TokenData
   address: string | null
   readOnlyAppProvider: JsonRpcProvider
 }): UseDecimalsAndTokenValue => {
   const { data: tokenInfo, mutate: updateToken } = useSWR(
-    [collateral, readOnlyAppProvider, address],
+    [tokenData, readOnlyAppProvider, address],
     async (): Promise<TokenInfo> => {
-      if (!collateral || !address) {
+      if (!tokenData || !address) {
         return {
           decimals: 0,
           humanValue: ZERO_BIG_NUMBER,
         }
       }
 
-      const is1155 = collateral.vault?.vaultType === 'ERC1155'
+      const is1155 = vaultType === 'NOTIONAL'
       const collateralContract = new Contract(
-        collateral.address as string,
+        tokenData.address as string,
         is1155 ? contracts.ERC_1155.abi : contracts.ERC_20.abi,
         readOnlyAppProvider,
       ) as ERC1155 | ERC20
 
       return Promise.all(
         is1155
-          ? [8, collateralContract.balanceOf(address, collateral.tokenId as BigNumberish)]
-          : // @ts-ignore
-            [collateralContract?.decimals(), collateralContract.balanceOf(address)],
+          ? [8, (collateralContract as ERC1155).balanceOf(address, tokenId as BigNumberish)]
+          : [
+              (collateralContract as ERC20)?.decimals(),
+              (collateralContract as ERC20).balanceOf(address),
+            ],
       ).then(([decimals, balance]) => {
         return {
           decimals,

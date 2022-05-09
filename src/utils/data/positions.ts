@@ -83,9 +83,6 @@ const getDecimals = async (
     return 18
   }
 
-  console.log('getDecimals')
-  console.log(address)
-
   const decimals = await contractCall<ERC20, 'decimals'>(
     address,
     contracts.ERC_20.abi,

@@ -85,7 +85,13 @@ const FormERC20: React.FC<{
   const { approve, hasAllowance, loadingApprove } = activeToken
 
   const { tokenInfo } = useTokenDecimalsAndBalance({
-    collateral,
+    tokenData: {
+      symbol: collateral.symbol ?? '',
+      address: collateral.address ?? '',
+      decimals: 8, // TODO: Fix me
+    },
+    vaultType: collateral.vault.type ?? '',
+    tokenId: collateral.tokenId ?? '0',
     address: currentUserAddress,
     readOnlyAppProvider,
   })
