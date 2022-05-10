@@ -2,6 +2,7 @@ import { getVirtualRate } from '../getVirtualRate'
 import { getFaceValue } from '../getFaceValue'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from 'bignumber.js'
+import { hexToAscii } from 'web3-utils'
 import contractCall from '@/src/utils/contractCall'
 import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import {
@@ -21,6 +22,7 @@ export type Collateral = {
   id: string
   tokenId: Maybe<string>
   symbol: string
+  asset: string
   protocol: string
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
@@ -35,6 +37,8 @@ export type Collateral = {
   faceValue: Maybe<BigNumber>
   currentValue: Maybe<BigNumber>
   vault: {
+    type: string
+    vaultType: string
     collateralizationRatio: Maybe<BigNumber>
     address: string
     interestPerSecond: Maybe<BigNumber>
@@ -100,16 +104,20 @@ const wrangleCollateral = async (
   )
   const virtualRate = await getVirtualRate(collateral.vault?.address ?? '', appChainId, provider)
 
-  const { protocol = '', symbol = '' } =
-    getCollateralMetadata(appChainId, {
-      vaultAddress: collateral.vault?.address,
-      tokenId: collateral.tokenId,
-    }) ?? {}
+  const {
+    asset = '',
+    protocol = '',
+    symbol = '',
+  } = getCollateralMetadata(appChainId, {
+    vaultAddress: collateral.vault?.address,
+    tokenId: collateral.tokenId,
+  }) ?? {}
 
   return {
     ...collateral,
     protocol,
     symbol,
+    asset,
     maturity: stringToDateOrCurrent(collateral.maturity),
     faceValue,
     currentValue: BigNumber.from(currentValue?.toString()) ?? null,
@@ -120,6 +128,11 @@ const wrangleCollateral = async (
       interestPerSecond: BigNumber.from(collateral.vault?.interestPerSecond) ?? null,
       debtFloor: BigNumber.from(collateral.vault?.debtFloor) ?? ZERO_BIG_NUMBER,
       name: collateral.vault?.name ?? '',
+      type: collateral.vault?.type ?? '',
+      vaultType: collateral.vault?.vaultType
+        ? // TODO: Improve this logic
+          hexToAscii(collateral.vault?.vaultType).split(':')[0]
+        : '',
       virtualRate,
     },
     eptData: {

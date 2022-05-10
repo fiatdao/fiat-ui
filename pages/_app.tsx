@@ -53,7 +53,7 @@ function App({ Component, pageProps }: AppProps) {
         <link color="#5bbad5" href="/favicon/safari-pinned-tab.svg" rel="mask-icon" />
         <meta content="#da532c" name="msapplication-TileColor" />
         <meta content="#ffffff" name="theme-color" />
-        {gaMeasurementId && !isDev && (
+        {gaMeasurementId && !isDev() && (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}

@@ -15,12 +15,11 @@ export default async function callCollybus<
   params: Params,
 ): Promise<Return | null> {
   const { abi, address } = contracts.COLLYBUS
-  const collybus = new Contract(address[network] as string, abi, provider!)
+  const collybus = new Contract(address[network] as string, abi, provider)
   const deployedCollybus = await collybus.deployed()
   if (deployedCollybus) {
     const contractMethod = deployedCollybus[method]
     const result = Array.isArray(params) ? await contractMethod(...params) : await contractMethod()
-    // console.log(`result of ${method} with ${params} is `, result)
     return result
   }
   return null

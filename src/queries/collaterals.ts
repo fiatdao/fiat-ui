@@ -28,6 +28,7 @@ export const COLLATERALS = gql`
         collateralizationRatio
         address
         interestPerSecond
+        vaultType
         debtFloor
         name
       }
