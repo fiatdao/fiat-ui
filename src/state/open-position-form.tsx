@@ -49,6 +49,7 @@ type Events =
   | { type: 'CLICK_ALLOW' }
   | { type: 'CLICK_DEPLOY' }
   | { type: 'CONFIRM' }
+  | { type: 'CONFIRM_UNDERLYING' }
   | { type: 'CONFIRMED' }
   | { type: 'FAILED' }
   | { type: 'POSITION_CREATED_SUCCESS' }
@@ -75,6 +76,7 @@ const STEP_SETUP_PROXY = 'step-3-setupProxy'
 const STEP_APPROVE_ALLOWANCE = 'step-4-approveAllowance'
 const STEP_ADD_COLLATERAL = 'step-5-addCollateral'
 const STEP_CONFIRM_POSITION = 'confirming-position'
+const STEP_CONFIRM_UNDERLYING_POSITION = 'confirming-underlying-position'
 const STEP_FINAL_CONGRATS = 'step-final-congrats'
 const STEP_FINAL_ERROR = 'step-final-error'
 
@@ -125,11 +127,30 @@ const stepperMachine = createMachine<Context, Events>(
         entry: [assign({ currentStepNumber: (_) => 4 })],
         on: {
           CONFIRM: STEP_CONFIRM_POSITION,
+          CONFIRM_UNDERLYING: STEP_CONFIRM_UNDERLYING_POSITION,
         },
       },
       [STEP_CONFIRM_POSITION]: {
         invoke: {
           src: 'submitForm',
+        },
+        on: {
+          POSITION_CREATED_SUCCESS: {
+            target: STEP_FINAL_CONGRATS,
+          },
+          POSITION_CREATED_ERROR: {
+            target: STEP_ADD_COLLATERAL, // @TODO: error page?
+          },
+          USER_REJECTED: {
+            // @ts-ignore TODO types
+            actions: assign({ error: (_) => 'User rejected transaction' }),
+            target: STEP_ADD_COLLATERAL,
+          },
+        },
+      },
+      [STEP_CONFIRM_UNDERLYING_POSITION]: {
+        invoke: {
+          src: 'submitUnderlyingForm',
         },
         on: {
           POSITION_CREATED_SUCCESS: {
@@ -184,6 +205,32 @@ const stepperMachine = createMachine<Context, Events>(
         (callback: any) => {
           try {
             createPosition({ erc20Amount, fiatAmount })
+              .then(() => {
+                callback('POSITION_CREATED_SUCCESS')
+              })
+              .catch((e: any) => {
+                if (e.code === 4001) {
+                  callback('USER_REJECTED')
+                } else {
+                  callback('POSITION_CREATED_ERROR')
+                }
+              })
+          } catch (e) {
+            callback('POSITION_CREATED_ERROR')
+          }
+        },
+      submitUnderlyingForm:
+        (
+          { fiatAmount, underlierAmount },
+          // TODO: types
+          {
+            // @ts-ignore
+            createUnderlyingPosition,
+          },
+        ) =>
+        (callback: any) => {
+          try {
+            createUnderlyingPosition({ underlierAmount, fiatAmount })
               .then(() => {
                 callback('POSITION_CREATED_SUCCESS')
               })

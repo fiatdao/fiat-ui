@@ -34,6 +34,7 @@ export const SET_ALLOWANCE_PROXY_TEXT = 'Set allowance for Proxy'
 export const ENABLE_PROXY_FOR_FIAT_TEXT = 'Enable Proxy for FIAT'
 export const EXECUTE_TEXT = 'Execute'
 export const DEPOSIT_COLLATERAL_TEXT = 'Deposit collateral'
+export const DEPOSIT_UNDERLYING_TEXT = 'Deposit Underlying'
 
 export function getBorrowAmountBelowDebtFloorText(debtFloor: BigNumber | undefined): string {
   const belowMinimumAmountText = 'Below minimum borrow amount'
