@@ -9,6 +9,8 @@ import {
   MIN_EPSILON_OFFSET,
   ONE_BIG_NUMBER,
   SET_ALLOWANCE_PROXY_TEXT,
+  VIRTUAL_RATE,
+  VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
   getBorrowAmountBelowDebtFloorText,
@@ -391,6 +393,13 @@ export const useManageFormSummary = (
     {
       title: 'New FIAT debt',
       value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(3),
+    },
+    {
+      title: 'Estimated FIAT debited',
+      value: getHumanValue(
+        deltaDebt.gt(0) ? deltaDebt.div(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE)) : 0,
+        WAD_DECIMALS,
+      ).toFixed(3),
     },
     {
       title: 'Current Health Factor',

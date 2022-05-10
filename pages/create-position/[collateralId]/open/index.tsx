@@ -23,6 +23,7 @@ import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
 import {
   DEPOSIT_COLLATERAL_TEXT,
+  VIRTUAL_RATE,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   getBorrowAmountBelowDebtFloorText,
@@ -205,6 +206,14 @@ const FormERC20: React.FC<{
     },
     {
       title: 'FIAT to be minted',
+      // normalDebt
+      value: `${stateMachine.context.fiatAmount
+        .div(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE))
+        .toFixed(4)}`,
+    },
+    {
+      title: 'Estimated FIAT debited',
+      // debt
       value: `${stateMachine.context.fiatAmount.toFixed(4)}`,
     },
     {
