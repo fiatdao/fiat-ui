@@ -1,34 +1,34 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import React, { useCallback, useEffect, useState } from 'react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import cn from 'classnames'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
-import withRequiredConnection from '@/src/hooks/RequiredConnection'
-import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
-import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
-import { ButtonBack } from '@/src/components/custom/button-back'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Form } from '@/src/components/antd'
+import ButtonGradient from '@/src/components/antd/button-gradient'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
+import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
+import { Balance } from '@/src/components/custom/balance'
+import { ButtonBack } from '@/src/components/custom/button-back'
+import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
+import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
+import { SummaryItem } from '@/src/components/custom/summary'
+import { contracts } from '@/src/constants/contracts'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import {
   useManageFormSummary,
   useManagePositionForm,
   useManagePositionInfo,
   useManagePositionsInfoBlock,
 } from '@/src/hooks/managePosition'
-import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
-import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
-import ButtonGradient from '@/src/components/antd/button-gradient'
-import { SummaryItem } from '@/src/components/custom/summary'
-import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
-import { Balance } from '@/src/components/custom/balance'
-import { Form } from '@/src/components/antd'
-import { contracts } from '@/src/constants/contracts'
-import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
+import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
 
 const LAST_STEP = 4
 
@@ -439,6 +439,7 @@ const PositionManage = () => {
                         key={index}
                         state={item?.state}
                         title={item.title}
+                        titleTooltip={item?.titleTooltip}
                         value={item.value}
                       />
                     ))}

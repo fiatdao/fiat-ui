@@ -168,7 +168,7 @@ const StepsContent: React.FC<StepsContentProps> = ({ context, send, step }: Step
               </div>
             </div>
           </Grid>
-          <Button onClick={() => send({ type: 'NEXT' })}>Mint FIAT</Button>
+          <Button onClick={() => send({ type: 'NEXT' })}>Borrow FIAT</Button>
         </>
       )
     }
