@@ -5,6 +5,7 @@ import Modal from '@/src/components/antd/modal'
 import { ChainsValues, chainsConfig } from '@/src/constants/chains'
 import { Text } from '@/src/components/custom/typography'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import isDev from '@/src/utils/isDev'
 
 const ChangeNetworkModal: React.FC = () => {
   const { changeNetworkModalOpen, setChangeNetworkModalOpen, setNetwork } = useWeb3Connection()
@@ -42,6 +43,11 @@ const ChangeNetworkModal: React.FC = () => {
           {Object.keys(chainsConfig).map((chainIdStr: string) => {
             const chainId = parseInt(chainIdStr) as ChainsValues
             const chainConfig = chainsConfig[chainId]
+
+            if (chainConfig.isDev && !isDev()) {
+              // Only recommend dev chains in dev environments
+              return
+            }
 
             return (
               <HeaderInfoButton
