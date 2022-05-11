@@ -17,6 +17,8 @@ export const POSITIONS = gql`
         tokenId
       }
       vault {
+        type
+        vaultType
         address
         maxDiscount
         collateralizationRatio
