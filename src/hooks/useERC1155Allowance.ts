@@ -31,7 +31,7 @@ export const useERC155Allowance = (tokenAddress: string, spender: string) => {
         setLoadingApprove(true)
 
         // approve spender
-        // notification.requestSign()
+        notification.requestSign()
 
         const tx = await erc1155.setApprovalForAll(spender, true).catch(notification.handleTxError)
 
