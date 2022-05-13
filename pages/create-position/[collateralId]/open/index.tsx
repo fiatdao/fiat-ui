@@ -86,6 +86,10 @@ const FormERC20: React.FC<{
   const erc20 = useERC20Allowance(tokenAddress, userProxyAddress ?? '')
   const erc1155 = useERC155Allowance(tokenAddress, userProxyAddress ?? '')
 
+  const virtualRate = useMemo(() => {
+    return collateral.vault.virtualRate.shiftedBy(-1 * WAD_DECIMALS)
+  }, [collateral.vault.virtualRate])
+
   const activeToken = collateral.vault.type === 'NOTIONAL' ? erc1155 : erc20
   const { approve, hasAllowance, loadingApprove } = activeToken
 
@@ -127,7 +131,7 @@ const FormERC20: React.FC<{
 
       await depositCollateral({
         vault: collateral.vault.address,
-        virtualRate: collateral.vault.virtualRate.shiftedBy(-1 * WAD_DECIMALS),
+        virtualRate: virtualRate,
         token: tokenAddress,
         tokenId: Number(collateral.tokenId) ?? 0,
         toDeposit: _erc20Amount,
@@ -160,9 +164,7 @@ const FormERC20: React.FC<{
       WAD_DECIMALS,
     )
 
-    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(
-      collateral.vault.virtualRate.shiftedBy(-1 * WAD_DECIMALS),
-    )
+    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(virtualRate)
 
     const maxBorrowAmount = totalCollateral
       .times(collateralValue)
@@ -170,7 +172,7 @@ const FormERC20: React.FC<{
       .div(virtualRateWithMargin)
 
     return maxBorrowAmount
-  }, [stateMachine.context.erc20Amount, collateral])
+  }, [stateMachine.context.erc20Amount, collateral, virtualRate])
 
   const hasMinimumFIAT = useMemo(() => {
     const fiatAmount = stateMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
@@ -219,12 +221,7 @@ const FormERC20: React.FC<{
       title: 'FIAT to be minted',
       titleTooltip: FIAT_TO_MINT_TOOLTIP_TEXT,
       value: `${stateMachine.context.fiatAmount
-        // TODO: memoize the shiftedBy val
-        .div(
-          collateral.vault.virtualRate
-            .shiftedBy(-1 * WAD_DECIMALS)
-            .times(VIRTUAL_RATE_MAX_SLIPPAGE),
-        )
+        .div(virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
         .toFixed(4)}`,
     },
     {

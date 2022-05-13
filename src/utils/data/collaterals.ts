@@ -77,7 +77,6 @@ const wrangleCollateral = async (
     'virtualRate',
     [collateral.vault.address],
   )) as BigNumber | null
-  console.log('virtualrate : ', virtualRate?.toString())
 
   if (virtualRate === null) {
     throw new Error(`Error, unable to fetch virtual rate for vault: ${collateral.vault}`)
