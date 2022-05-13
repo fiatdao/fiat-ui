@@ -160,7 +160,10 @@ const FormERC20: React.FC<{
       WAD_DECIMALS,
     )
 
-    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(collateral.vault.virtualRate)
+    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(
+      collateral.vault.virtualRate.shiftedBy(-1 * WAD_DECIMALS),
+    )
+
     const maxBorrowAmount = totalCollateral
       .times(collateralValue)
       .div(collateralizationRatio)
