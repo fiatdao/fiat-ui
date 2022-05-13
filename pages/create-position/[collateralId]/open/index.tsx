@@ -127,7 +127,7 @@ const FormERC20: React.FC<{
 
       await depositCollateral({
         vault: collateral.vault.address,
-        virtualRate: collateral.vault.virtualRate,
+        virtualRate: collateral.vault.virtualRate.shiftedBy(-1 * WAD_DECIMALS),
         token: tokenAddress,
         tokenId: Number(collateral.tokenId) ?? 0,
         toDeposit: _erc20Amount,
@@ -219,7 +219,12 @@ const FormERC20: React.FC<{
       title: 'FIAT to be minted',
       titleTooltip: FIAT_TO_MINT_TOOLTIP_TEXT,
       value: `${stateMachine.context.fiatAmount
-        .div(collateral.vault.virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
+        // TODO: memoize the shiftedBy val
+        .div(
+          collateral.vault.virtualRate
+            .shiftedBy(-1 * WAD_DECIMALS)
+            .times(VIRTUAL_RATE_MAX_SLIPPAGE),
+        )
         .toFixed(4)}`,
     },
     {
