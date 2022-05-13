@@ -18,8 +18,6 @@ export const RPC_URL_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_RPC_URL_MAINNET
 export const WAD_DECIMALS = 18
 
 export const WAIT_BLOCKS = 8
-// @TODO use virtualRate method from publican contract
-export const VIRTUAL_RATE = new BigNumber(1.01)
 // @TODO virtualRateSafetyMargin is a constant in the UI (a margin of 1.000002 reflects the increase in virtualRate for an interest rate of 2% p.a. over 1 hr)
 export const VIRTUAL_RATE_MAX_SLIPPAGE = new BigNumber(1.000002)
 

@@ -1,4 +1,3 @@
-import { getVirtualRate } from '../getVirtualRate'
 import { getFaceValue } from '../getFaceValue'
 import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -13,7 +12,7 @@ import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__gene
 import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
-import { ERC20 } from '@/types/typechain'
+import { ERC20, Publican } from '@/types/typechain'
 import {
   INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
@@ -169,14 +168,28 @@ const wranglePosition = async (
   const vaultName = position.vaultName ?? ''
   const vaultType = position.vault?.type ?? ''
 
+  if (!position.vault || !position.vault.address) {
+    throw new Error(`Position has invalid vault ${position.vault}`)
+  }
+
   const [currentValue, faceValue, collateralDecimals, underlierDecimals, virtualRate] =
     await Promise.all([
       _getCurrentValue(position, appChainId, provider),
       getFaceValue(provider, position.collateralType?.tokenId ?? 0, position.vault?.address ?? ''),
       getDecimals(position.collateralType?.address, provider), // collateral is an ERC20 token
       getDecimals(position.collateralType?.underlierAddress, provider),
-      getVirtualRate(position.vault?.address ?? '', appChainId, provider),
+      (await contractCall<Publican, 'virtualRate'>(
+        contracts.PUBLICAN.address[appChainId],
+        contracts.PUBLICAN.abi,
+        provider,
+        'virtualRate',
+        [position.vault.address],
+      )) as BigNumber | null,
     ])
+
+  if (!virtualRate) {
+    throw new Error(`No virtual rate for vault: ${position.vault} `)
+  }
 
   // @TODO: totalDebt = normalDebt * RATES
   const totalDebt = calculateDebt(totalNormalDebt, virtualRate)
