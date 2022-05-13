@@ -1,16 +1,15 @@
 import { calculateNormalDebt } from '../utils/data/positions'
-import { getVirtualRate } from '../utils/getVirtualRate'
-import { TransactionResponse } from '@ethersproject/providers'
+import BigNumber from 'bignumber.js'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
-import BigNumber from 'bignumber.js'
-import { useNotifications } from '@/src/hooks/useNotifications'
-import { TransactionError } from '@/src/utils/TransactionError'
-import useUserProxy from '@/src/hooks/useUserProxy'
+import { TransactionResponse } from '@ethersproject/providers'
 import { contracts } from '@/src/constants/contracts'
+import { useNotifications } from '@/src/hooks/useNotifications'
+import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
-import { VaultEPTActions } from '@/types/typechain'
+import { TransactionError } from '@/src/utils/TransactionError'
 import { estimateGasLimit } from '@/src/web3/utils'
+import { VaultEPTActions } from '@/types/typechain'
 
 type BaseModify = {
   vault: string
@@ -22,12 +21,13 @@ type BaseModify = {
 type DepositCollateral = BaseModify & {
   toDeposit: BigNumber
   toMint: BigNumber
+  virtualRate: BigNumber
 }
 
 type ModifyCollateralAndDebt = BaseModify & {
   deltaCollateral: BigNumber
   deltaDebt: BigNumber
-  virtualRate?: BigNumber
+  virtualRate: BigNumber
 }
 
 type BuyCollateralAndModifyDebt = {
@@ -63,13 +63,6 @@ export const useUserActions = (type?: string): UseUserActions => {
   const { address, appChainId, web3Provider } = useWeb3Connected()
   const { userProxy, userProxyAddress } = useUserProxy()
   const notification = useNotifications()
-
-  const _getVirtualRate = useCallback(
-    (vaultAddress: string) => {
-      return getVirtualRate(vaultAddress, appChainId, web3Provider)
-    },
-    [appChainId, web3Provider],
-  )
 
   // Element User Action: ERC20
   const userActionEPT = useMemo(() => {
@@ -135,14 +128,12 @@ export const useUserActions = (type?: string): UseUserActions => {
     async (params: ModifyCollateralAndDebt) => {
       // @TODO: it is not possible to use this hook when user is not connected nor have created a Proxy
       if (!address || !userProxy || !userProxyAddress) {
-        throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
+        throw new Error(`Missing information: ${{ address, userProxy, userProxyAddress }}`)
       }
 
       // @TODO: toFixed(0, ROUNDED) transforms BigNumber into String without decimals
       const deltaCollateral = params.deltaCollateral.toFixed(0, 8)
-      if (!params.virtualRate) {
-        params.virtualRate = await _getVirtualRate(params.vault)
-      }
+
       // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
       const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
         0,
@@ -205,7 +196,6 @@ export const useUserActions = (type?: string): UseUserActions => {
       activeContract.interface,
       activeContract.address,
       notification,
-      _getVirtualRate,
     ],
   )
 

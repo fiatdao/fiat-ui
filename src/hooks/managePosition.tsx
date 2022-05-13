@@ -18,7 +18,6 @@ import {
   MIN_EPSILON_OFFSET,
   ONE_BIG_NUMBER,
   SET_ALLOWANCE_PROXY_TEXT,
-  VIRTUAL_RATE,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
@@ -399,7 +398,7 @@ export const useManageFormSummary = (
       title: 'FIAT to be minted',
       titleTooltip: FIAT_TO_MINT_TOOLTIP_TEXT,
       value: getHumanValue(
-        deltaDebt.gt(0) ? deltaDebt.div(VIRTUAL_RATE.times(VIRTUAL_RATE_MAX_SLIPPAGE)) : 0,
+        deltaDebt.gt(0) ? deltaDebt.div(position.virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE)) : 0,
         WAD_DECIMALS,
       ).toFixed(3),
     },
