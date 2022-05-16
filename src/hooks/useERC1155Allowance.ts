@@ -62,7 +62,6 @@ export const useERC155Allowance = (tokenAddress: string, spender: string) => {
         .isApprovedForAll(currentUserAddress, spender)
         .then((isApprovedForAll) => setHasAllowance(isApprovedForAll))
         .catch((allowance) => {
-          console.log('allowance')
           console.error(allowance)
         })
     }
