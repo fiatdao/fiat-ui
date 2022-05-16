@@ -14,6 +14,7 @@ import Tooltip from '@/src/components/antd/tooltip'
 import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 import Info from '@/src/resources/svg/info.svg'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { getHealthFactorState } from '@/src/utils/table'
 
 export type TokenAmountProps = {
   className?: string
@@ -69,16 +70,33 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     onChange?.(inputValue ? BigNumber.min(inputValue, bnMaxValue) : undefined)
   }
 
-  function onSliderChange(sliderValue: number) {
+  function coerceMaxyValueToMax(sliderValue: number): any {
+    // Dragging slider to max can result in a `sliderValue` slightly lower than max
+    // due to precision differences between the `number` and `BigNumber` types
+    // So, if `sliderValue` is extremely close to max slider value, just max out the slider
     const bigNumberSliderValue = BigNumber.from(sliderValue)
     if (bigNumberSliderValue.plus(MIN_EPSILON_OFFSET).gte(bnMaxValue)) {
-      // Dragging slider to max can result in a `sliderValue` slightly lower than max
-      // due to precision differences between the `number` and `BigNumber` types
-      // So, if `sliderValue` is extremely close to max slider value, just max out the slider
       onChange?.(BigNumber.from(bnMaxValue))
     } else {
       onChange?.(bigNumberSliderValue)
     }
+  }
+
+  function updateSliderTrackColor(sliderValue: number) {
+    const slidePct = sliderValue / bnMaxValue.toNumber()
+    console.log('slidepct: ', slidePct)
+    if (slidePct < 0.5) {
+      console.log('gren')
+    } else if (slidePct < 0.75) {
+      console.log('warn ylw')
+    } else {
+      console.log('muy danger red')
+    }
+  }
+
+  function handleSliderChange(sliderValue: number) {
+    coerceMaxyValueToMax(sliderValue)
+    updateSliderTrackColor(sliderValue)
   }
 
   return (
@@ -148,11 +166,19 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
           )}
           <Slider
             disabled={disabled}
+            className={cn(
+              s.component,
+              {
+                [s.healthFactorVariant]: slider === 'healthFactorVariant',
+                [s.healthFactorVariantReverse]: slider === 'healthFactorVariantReverse',
+              },
+              className,
+            )}
             healthFactorVariant={slider === 'healthFactorVariant'}
             healthFactorVariantReverse={slider === 'healthFactorVariantReverse'}
             max={bnMaxValue.toNumber()}
             min={0}
-            onChange={onSliderChange}
+            onChange={handleSliderChange}
             step={step}
             tooltipVisible={false}
             value={bnValue?.toNumber()}

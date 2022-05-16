@@ -15,10 +15,6 @@ const Slider: React.FC<SliderProps> = (props) => {
     <AntdSlider
       className={cn(
         s.component,
-        {
-          [s.healthFactorVariant]: healthFactorVariant,
-          [s.healthFactorVariantReverse]: healthFactorVariantReverse,
-        },
         className,
       )}
       tooltipPlacement="bottom"
