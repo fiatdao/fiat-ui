@@ -1,5 +1,5 @@
 import { contractsByNetwork } from '../../metadata'
-import { erc1155 } from '../abis'
+import { erc1155, vaultFcActions } from '../abis'
 import {
   codex,
   collybus,
@@ -125,7 +125,7 @@ export const contracts = constantContracts({
       [Chains.mainnet]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
     },
-    abi: vaultEptActions,
+    abi: vaultFcActions,
   },
   MONETA: {
     address: {
