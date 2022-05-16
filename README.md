@@ -9,7 +9,7 @@
 ## Testnet Links
 - USDC: https://goerli.etherscan.io/address/0x08034634bbd210485c9c8f798afdc5432782fd18#writeContract
 - Element.fi: https://testnet.element.fi/mint
-- Notional: https://goerli.notional.finance/
+- Notional: https://goerli.notional.finance/lend/DAI
 
 ## UI dev stack for BN
 
