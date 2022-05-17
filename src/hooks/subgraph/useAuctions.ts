@@ -22,7 +22,7 @@ export const useAuctions = (protocols: string[]): UseAuctions => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
 
   const vaultsAddresses = protocols
-    ?.map((vaultName) => getVaultAddressesByName(appChainId, vaultName))
+    ?.map((vaultName) => getVaultAddressesByName(vaultName, appChainId))
     .flat()
 
   // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated

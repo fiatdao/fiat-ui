@@ -27,7 +27,7 @@ export const fetchCollaterals = ({
   appChainId: ChainsValues
 }) => {
   const vaultsAddresses = vaultNames
-    ?.map((vaultName) => getVaultAddressesByName(appChainId, vaultName))
+    ?.map((vaultName) => getVaultAddressesByName(vaultName, appChainId))
     .flat()
 
   return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {

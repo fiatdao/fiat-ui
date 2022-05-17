@@ -98,8 +98,8 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
             ) : (
               <AssetIcons
                 dimensions={'32px'}
-                mainAsset={getPTokenIconFromMetadata(mainAsset, appChainId)?.main}
-                secondaryAsset={getPTokenIconFromMetadata(mainAsset, appChainId)?.secondary}
+                mainAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.main}
+                secondaryAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.secondary}
               />
             )}
           </div>

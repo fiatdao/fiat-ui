@@ -17,8 +17,8 @@ export const Asset: React.FC<{
       <AssetIcons
         className={cn(s.icon)}
         dimensions="30px"
-        mainAsset={getPTokenIconFromMetadata(mainAsset, appChainId)?.main}
-        secondaryAsset={getPTokenIconFromMetadata(mainAsset, appChainId)?.secondary}
+        mainAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.main}
+        secondaryAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.secondary}
       />
       <div className={cn(s.title)}>{title}</div>
     </div>

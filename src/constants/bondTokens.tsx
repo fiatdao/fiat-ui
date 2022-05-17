@@ -67,11 +67,10 @@ export const getCollateralMetadata = (
 }
 
 /// Returns primary and secondary icon links for asset with name protocolName
-/// Should look like {main: <main_link>, secondary: <secondary_link}
-/// @ts-ignore: The `memoize` function caches only the first argument. Putting `appChainId` in front of the optional `protocolName` param
-/// results in incorrect outputs
-export const getPTokenIconFromMetadata = memoize(
-  (protocolName?: string, appChainId: ChainsValues) => {
+/// Return Object should look like {main: <main_link>, secondary: <secondary_link}
+/// TODO: memoize. See https://github.com/fiatdao/fiat-ui/issues/520
+export const getPTokenIconFromMetadata =
+  (appChainId: ChainsValues, protocolName?: string) => {
     if (!metadataByNetwork || !protocolName) {
       return
     }
@@ -83,17 +82,15 @@ export const getPTokenIconFromMetadata = memoize(
     })
 
     return vaultMetadataForProtocol.icons
-  },
-)
+  }
 
-export const getVaultAddressesByName = memoize((appChainId: ChainsValues, name: string) => {
+export const getVaultAddressesByName = memoize((name: string, appChainId: ChainsValues) => {
   const vaults = getVaults(appChainId)
 
   const uniqueNameAddressMap = Object.fromEntries(
-    Object.entries(vaults).map(([vaultAddress, byTokenId]) => {
+    Object.entries(vaults).map(([vaultAddress, vaultMetadata]) => {
       // extract the name from the first entry in the tokens map
-      const [, { name }] = Object.entries(byTokenId)[0]
-      return [name, vaultAddress]
+      return [vaultMetadata.name, vaultAddress]
     }),
   )
 
