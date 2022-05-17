@@ -3,28 +3,32 @@ import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { metadataByNetwork } from '@/metadata'
 
-type PTokenMap = {
-  [vaultAddress: string]: {
-    [tokenId: string]: {
-      protocol: string
-      asset: string
-      symbol: string
-      decimals: number
-      name: string
-      icons: {
-        main: string
-        secondary: string
-      }
-    }
-  }
-}
+// TODO: Create interface that can support all token types
+// type PTokenMap = {
+//   [vaultAddress: string]: {
+//     [tokenId: string]: {
+//       protocol: string
+//       asset: string
+//       symbol: string
+//       decimals: number
+//       name: string
+//       icons: {
+//         main: string
+//         secondary: string
+//       }
+//     }
+//   }
+// }
 
-type MetadataByNetwork = {
-  [chainId: number]: PTokenMap
-}
+// type MetadataByNetwork = {
+//   [chainId: number]: PTokenMap
+// }
 
-const getVaults = memoize((appChainId: ChainsValues) => {
-  const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
+// TODO: Create interface that can support all token types
+const getVaults = memoize((appChainId: ChainsValues): Record<string, any> => {
+  // const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
+
+  const vaultsMetadata = metadataByNetwork[appChainId]
 
   if (vaultsMetadata === undefined) {
     return {}
@@ -61,30 +65,27 @@ export const getCollateralMetadata = (
   return vaults[vaultAddress.toLowerCase()]?.[tokenId]
 }
 
-export const getPTokenIconFromMetadata = memoize((protocolName?: string) => {
-  if (!metadataByNetwork || !protocolName) {
-    return
-  }
+/// Returns primary and secondary icon links for asset with name protocolName
+/// Should look like {main: <main_link>, secondary: <secondary_link}
+/// @ts-ignore: The `memoize` function caches only the first argument. Putting `appChainId` in front of the optional `protocolName` param
+/// results in incorrect outputs
+export const getPTokenIconFromMetadata = memoize(
+  (protocolName?: string, appChainId: ChainsValues) => {
+    if (!metadataByNetwork || !protocolName) {
+      return
+    }
 
-  const iconsByProtocolName: Record<string, { main: string; secondary: string }> =
-    Object.fromEntries(
-      Object.entries(metadataByNetwork)
-        .map(([, byNetwork]) =>
-          Object.entries(byNetwork).map(([, metadataByTokenId]) =>
-            Object.entries(metadataByTokenId).map(([, metadata]) => [
-              metadata.name.toLowerCase(),
-              metadata.icons,
-            ]),
-          ),
-        )
-        .flat(2),
-    )
+    const vaults = getVaults(appChainId)
+    const vaultMetadatas = Object.values(vaults)
+    const vaultMetadataForProtocol = vaultMetadatas.find((metadata) => {
+      return metadata.name === protocolName
+    })
 
-  return iconsByProtocolName[protocolName.toLowerCase()]
-})
+    return vaultMetadataForProtocol.icons
+  },
+)
 
 export const getVaultAddressesByName = memoize((appChainId: ChainsValues, name: string) => {
-  // vaults for the current chain
   const vaults = getVaults(appChainId)
 
   const uniqueNameAddressMap = Object.fromEntries(
@@ -100,24 +101,15 @@ export const getVaultAddressesByName = memoize((appChainId: ChainsValues, name: 
     .map(([, vaultAddress]) => vaultAddress)
 })
 
+/// return map of {vaultName: iconLink}
 export const getProtocolsWithIcon = memoize((appChainId: ChainsValues) => {
   const vaults = getVaults(appChainId)
 
-  return Object.fromEntries(
-    Object.entries(vaults).map(([, byTokenId]) => {
-      const [
-        ,
-        {
-          // extracts the `main` icon...
-          icons: { main },
-          // and the name...
-          name,
-        },
-        // from the first entry in the tokens map
-      ] = Object.entries(byTokenId)[0]
+  let vaultNameToIconMap = {}
+  Object.values(vaults).forEach((vaultMetadata) => {
+    const lcName = vaultMetadata.name.split('_')[0].toLowerCase()
+    vaultNameToIconMap = Object.assign({ [lcName]: vaultMetadata.icons.main }, vaultNameToIconMap)
+  })
 
-      // creates a map with vault's name in lowercase and its icon
-      return [name.split('_')[0].toLowerCase(), main]
-    }),
-  )
+  return vaultNameToIconMap
 })
