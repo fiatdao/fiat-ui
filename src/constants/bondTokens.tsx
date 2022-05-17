@@ -80,7 +80,7 @@ export const getPTokenIconFromMetadata = (appChainId: ChainsValues, protocolName
     return metadata.name === protocolName
   })
 
-  return vaultMetadataForProtocol.icons
+  return vaultMetadataForProtocol?.icons
 }
 
 export const getVaultAddresses = memoize((appChainId: ChainsValues) => {
