@@ -61,8 +61,9 @@ export const getCollateralMetadata = (
     return
   }
 
-  // lookup by vaultAddress and tokenId
-  return vaults[vaultAddress.toLowerCase()]?.[tokenId]
+  // seems to be previous structure of vault metadata. keeping here just in case
+  // return vaults[vaultAddress.toLowerCase()]?.[tokenId]
+  return vaults[vaultAddress.toLowerCase()]
 }
 
 /// Returns primary and secondary icon links for asset with name protocolName
