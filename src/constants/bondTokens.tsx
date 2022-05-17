@@ -69,34 +69,23 @@ export const getCollateralMetadata = (
 /// Returns primary and secondary icon links for asset with name protocolName
 /// Return Object should look like {main: <main_link>, secondary: <secondary_link}
 /// TODO: memoize. See https://github.com/fiatdao/fiat-ui/issues/520
-export const getPTokenIconFromMetadata =
-  (appChainId: ChainsValues, protocolName?: string) => {
-    if (!metadataByNetwork || !protocolName) {
-      return
-    }
-
-    const vaults = getVaults(appChainId)
-    const vaultMetadatas = Object.values(vaults)
-    const vaultMetadataForProtocol = vaultMetadatas.find((metadata) => {
-      return metadata.name === protocolName
-    })
-
-    return vaultMetadataForProtocol.icons
+export const getPTokenIconFromMetadata = (appChainId: ChainsValues, protocolName?: string) => {
+  if (!metadataByNetwork || !protocolName) {
+    return
   }
 
-export const getVaultAddressesByName = memoize((name: string, appChainId: ChainsValues) => {
   const vaults = getVaults(appChainId)
+  const vaultMetadatas = Object.values(vaults)
+  const vaultMetadataForProtocol = vaultMetadatas.find((metadata) => {
+    return metadata.name === protocolName
+  })
 
-  const uniqueNameAddressMap = Object.fromEntries(
-    Object.entries(vaults).map(([vaultAddress, vaultMetadata]) => {
-      // extract the name from the first entry in the tokens map
-      return [vaultMetadata.name, vaultAddress]
-    }),
-  )
+  return vaultMetadataForProtocol.icons
+}
 
-  return Object.entries(uniqueNameAddressMap)
-    .filter(([vaultName]) => vaultName.toLowerCase().startsWith(name.toLowerCase()))
-    .map(([, vaultAddress]) => vaultAddress)
+export const getVaultAddresses = memoize((appChainId: ChainsValues) => {
+  const vaults = getVaults(appChainId)
+  return Object.keys(vaults)
 })
 
 /// return map of {vaultName: iconLink}
