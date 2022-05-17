@@ -2,7 +2,7 @@ import { usePositionsByUser } from './usePositionsByUser'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
-import { getVaultAddressesByName } from '@/src/constants/bondTokens'
+import { getVaultAddresses } from '@/src/constants/bondTokens'
 import { ChainsValues } from '@/src/constants/chains'
 import { useUserTokensInWallet } from '@/src/hooks/useUserTokensInWallet'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -18,7 +18,6 @@ import { CollateralType_orderBy, OrderDirection } from '@/types/subgraph/__gener
 export const fetchCollaterals = ({
   appChainId,
   collaterals: userCollaterals,
-  protocols: vaultNames,
   provider,
 }: {
   protocols?: string[]
@@ -26,9 +25,7 @@ export const fetchCollaterals = ({
   provider: Web3Provider | JsonRpcProvider
   appChainId: ChainsValues
 }) => {
-  const vaultsAddresses = vaultNames
-    ?.map((vaultName) => getVaultAddressesByName(appChainId, vaultName))
-    .flat()
+  const vaultsAddresses = getVaultAddresses(appChainId)
 
   return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
     // @TODO: add maturity filter maturity_gte (Date.now()/1000).toString()
