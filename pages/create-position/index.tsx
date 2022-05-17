@@ -41,8 +41,8 @@ const CreatePosition = () => {
     {
       align: 'left',
       dataIndex: 'protocol',
-      render: (protocol: Collateral['protocol'], { vault: { name } }) => {
-        return <Asset mainAsset={name} title={protocol} />
+      render: (protocol: Collateral['protocol'], { url, vault: { name } }) => {
+        return <Asset mainAsset={name} title={protocol} url={url} />
       },
       title: 'Protocol',
       width: 200,
