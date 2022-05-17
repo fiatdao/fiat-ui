@@ -50,6 +50,7 @@ export type Position = {
   vaultName: string
   vaultType: string
   virtualRate: BigNumber
+  url?: string
 }
 
 const readValue = async (
@@ -191,6 +192,7 @@ const wranglePosition = async (
     asset = '',
     protocol = '',
     symbol = '',
+    urls,
   } = getCollateralMetadata(appChainId, {
     vaultAddress: position.vault?.address,
     tokenId: position.collateralType?.tokenId,
@@ -231,6 +233,7 @@ const wranglePosition = async (
     debtFloor,
     vaultName,
     virtualRate,
+    url: urls?.asset,
   }
 }
 export {
