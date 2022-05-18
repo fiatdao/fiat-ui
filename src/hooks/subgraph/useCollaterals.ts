@@ -2,6 +2,7 @@ import { usePositionsByUser } from './usePositionsByUser'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
+import BigNumber from 'bignumber.js'
 import { getVaultAddressesByName } from '@/src/constants/bondTokens'
 import { ChainsValues } from '@/src/constants/chains'
 import { useUserTokensInWallet } from '@/src/hooks/useUserTokensInWallet'
@@ -11,8 +12,13 @@ import { Collateral, wrangleCollateral } from '@/src/utils/data/collaterals'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import isDev from '@/src/utils/isDev'
 import sortByMaturity from '@/src/utils/sortByMaturity'
-import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
+import {
+  Collaterals,
+  CollateralsVariables,
+  Collaterals_collybusSpots,
+} from '@/types/subgraph/__generated__/Collaterals'
 import { CollateralType_orderBy, OrderDirection } from '@/types/subgraph/__generated__/globalTypes'
+import { Maybe } from '@/types/utils'
 
 // TODO Import readonly provider from singleton
 export const fetchCollaterals = ({
@@ -34,11 +40,21 @@ export const fetchCollaterals = ({
     },
     orderBy: CollateralType_orderBy.maturity,
     orderDirection: OrderDirection.desc,
-  }).then(async ({ collateralTypes }) => {
+  }).then(async ({ collateralTypes, collybusDiscountRates, collybusSpots }) => {
     return Promise.all(
       collateralTypes
         .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
-        .map((p) => wrangleCollateral(p, provider, appChainId)),
+        .map((p) => {
+          const spotPrice: Maybe<Collaterals_collybusSpots> =
+            collybusSpots.find((s) => s.token === p.underlierAddress) ?? null
+          const discountRate: Maybe<BigNumber> =
+            BigNumber.from(
+              collybusDiscountRates.find(({ rateId }) => rateId === p.vault?.defaultRateId)
+                ?.discountRate,
+            ) ?? null
+
+          return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
+        }),
     )
   })
 }

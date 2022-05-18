@@ -23,6 +23,7 @@ export const COLLATERALS = gql`
       }
       vault {
         id
+        defaultRateId
         type
         collateralizationRatio
         address
@@ -31,6 +32,16 @@ export const COLLATERALS = gql`
         debtFloor
         name
       }
+    }
+    collybusSpots(orderDirection: $orderDirection) {
+      id
+      token
+      spot
+    }
+    collybusDiscountRates {
+      id
+      rateId
+      discountRate
     }
   }
 `
