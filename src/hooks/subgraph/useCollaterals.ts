@@ -24,7 +24,6 @@ import { Maybe } from '@/types/utils'
 export const fetchCollaterals = ({
   appChainId,
   collaterals: userCollaterals,
-  protocols: vaultNames,
   provider,
 }: {
   protocols?: string[]
@@ -32,15 +31,10 @@ export const fetchCollaterals = ({
   provider: Web3Provider | JsonRpcProvider
   appChainId: ChainsValues
 }) => {
-  const vaultsAddresses = vaultNames
-    ?.map((vaultName) => getVaultAddressesByName(appChainId, vaultName))
-    .flat()
-
   return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
     // @TODO: add maturity filter maturity_gte (Date.now()/1000).toString()
     // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     where: {
-      vault_in: vaultsAddresses,
       address_in: userCollaterals,
       vaultName_not_contains_nocase: 'deprecated',
     },
@@ -74,7 +68,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   const [collaterals, setCollaterals] = useState<Collateral[]>([])
   const { positions } = usePositionsByUser()
 
-  const { data, error } = useSWR(['collaterals', protocols?.join(''), appChainId], () =>
+  const { data, error } = useSWR(['collaterals', appChainId], () =>
     fetchCollaterals({
       protocols: protocols?.length > 0 ? protocols : undefined,
       collaterals: undefined,
@@ -90,12 +84,18 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   })
 
   useEffect(() => {
-    const filteredData = inMyWallet
+    const walletFilteredData = inMyWallet
       ? data?.filter(
           (collateral) =>
             !!userTokens?.find((userToken: string) => collateral.address === userToken),
         )
       : data
+    const vaultAddresses = protocols
+      .map((protocol) => getVaultAddressesByName(appChainId, protocol))
+      .flat()
+    const filteredData = walletFilteredData?.filter(({ vault }) =>
+      vaultAddresses.includes(vault.address),
+    )
 
     const newCollaterals = filteredData?.map((collateral) => {
       const position = positions.find(
@@ -107,7 +107,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
     sortByMaturity(newCollaterals)
 
     setCollaterals(newCollaterals || [])
-  }, [data, positions, inMyWallet, userTokens])
+  }, [data, positions, inMyWallet, userTokens, protocols, appChainId])
 
   if (isDev() && error) {
     console.error(error)

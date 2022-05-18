@@ -17,7 +17,7 @@ export const AssetIcons: React.FC<{
         <img
           alt={mainAsset}
           src={mainAsset}
-          style={dimensions ? { width: dimensions, height: dimensions, margin: '2px' } : undefined}
+          style={dimensions ? { width: dimensions, height: dimensions } : undefined}
         />
       </div>
       {secondaryAsset && (

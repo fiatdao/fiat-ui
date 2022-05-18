@@ -113,7 +113,7 @@ const TransactionHistoryTable = () => {
     { label: 'All Assets', value: 'all' },
     ...uniqBy(
       transactions.map((transaction) => {
-        return { label: transaction.symbol || transaction.asset, value: transaction.asset }
+        return { label: transaction.asset, value: transaction.asset }
       }),
       'value',
     ),

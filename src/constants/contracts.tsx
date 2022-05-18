@@ -1,5 +1,5 @@
 import { contractsByNetwork } from '../../metadata'
-import { erc1155 } from '../abis'
+import { erc1155, vaultFcActions } from '../abis'
 import {
   codex,
   collybus,
@@ -12,6 +12,7 @@ import {
   prbProxyRegistry,
   publican,
   vault20,
+  vaultFcActions,
   vaultEptActions,
 } from '@/src/abis'
 import { Chains, ChainsValues } from '@/src/constants/chains'
@@ -122,10 +123,17 @@ export const contracts = constantContracts({
   USER_ACTIONS_FC: {
     address: {
       // TODO: Replace me with prod address
-      [Chains.mainnet]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
+      [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultFCActions.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
     },
-    abi: vaultEptActions,
+    abi: vaultFcActions,
+  },
+  USER_ACTIONS_FC: {
+    address: {
+      [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultFCActions.address,
+      [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
+    },
+    abi: vaultFcActions,
   },
   MONETA: {
     address: {
