@@ -12,7 +12,7 @@ const withRequiredConnection = (Component: React.FC) =>
       return (
         // Todo FIXME text and styles
         <Grid align="center" flow="row" justify="center" rowsTemplate="auto">
-          <h2 style={{ textAlign: 'center' }}>You need a wallet connected</h2>
+          <h2 style={{ textAlign: 'center' }}>Wallet is not connected</h2>
           <div style={{ maxWidth: 300, marginTop: 50 }}>
             <ConnectButton />
           </div>
