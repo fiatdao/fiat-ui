@@ -1,1 +1,13 @@
-<svg fill="none" height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg"><g clip-rule="evenodd" fill="#28b0e6" fill-rule="evenodd"><g fill-opacity=".6"><path d="m20 0h-1.8182v18.1678l1.8182 1.8321z"/><path d="m16.3636 0h-1.8182v14.5038l1.8182 1.8319z"/><path d="m12.7274 0h-1.8182v10.8396l1.8182 1.8321z"/></g><path d="m7.27228 7.25171v12.74789h1.81817v-10.91586z"/><path d="m3.63727 3.58765v16.41245h1.81816v-14.58042z"/><path d="m.0763254 0h-.0763254v19.9997h1.81817v-18.24457z"/></g></svg>
+<svg
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        width="30"
+        height="28"
+        viewBox="0 0 175 166"
+>
+    <image
+            width="175"
+            height="166"
+            xlink:href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjhweCIgaGVpZ2h0PSIyOHB4IiB2aWV3Qm94PSIwIDAgMjggMjgiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICAgICAgPGcgaWQ9Ikdyb3VwIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2LjAwMDAwMCwgNS4wMDAwMDApIiBmaWxsPSIjMjhCMEU2Ij4KICAgICAgICAgICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOC43MTc1OTQsIC0wLjAwMDAwMCkiIGZpbGwtb3BhY2l0eT0iMC42IiBpZD0iUGF0aCI+CiAgICAgICAgICAgICAgICA8cG9seWdvbiBwb2ludHM9IjguMjgyNDkzNzQgMCA2LjIxMTg3MDMxIDAgNi4yMTE4NzAzMSAxNS40NDI4NjE2IDguMjgyNDkzNzQgMTcuMDAwMTciPjwvcG9seWdvbj4KICAgICAgICAgICAgICAgIDxwb2x5Z29uIHBvaW50cz0iNS4xNzY1NTg1OSAwIDMuMTA1OTM1MTUgMCAzLjEwNTkzNTE1IDEyLjQzMDE1MTggNS4xNzY1NTg1OSAxNC4wMDAxNCI+PC9wb2x5Z29uPgogICAgICAgICAgICAgICAgPHBvbHlnb24gcG9pbnRzPSIyLjA3MDYyMzQ0IDAgMS43NzYzNTY4NGUtMTUgMCAxLjc3NjM1Njg0ZS0xNSA5LjQwOTY5MTg2IDIuMDcwNjIzNDQgMTEuMDAwMTEiPjwvcG9seWdvbj4KICAgICAgICAgICAgPC9nPgogICAgICAgICAgICA8cG9seWdvbiBpZD0iUGF0aCIgcG9pbnRzPSI2IDYgNiAxNyA4IDE3IDggNy41ODA4MzY1MSI+PC9wb2x5Z29uPgogICAgICAgICAgICA8cG9seWdvbiBpZD0iUGF0aCIgcG9pbnRzPSIzIDMgMyAxNyA1IDE3IDUgNC41NjI3NDE3Ij48L3BvbHlnb24+CiAgICAgICAgICAgIDxwb2x5Z29uIGlkPSJQYXRoIiBwb2ludHM9IjAuMDgzOTU4NDg1NyAwIDAgMCAwIDE3IDIgMTcgMiAxLjQ5MTg4Mjg4Ij48L3BvbHlnb24+CiAgICAgICAgPC9nPgo8L3N2Zz4="
+    />
+</svg>

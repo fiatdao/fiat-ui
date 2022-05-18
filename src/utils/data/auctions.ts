@@ -55,6 +55,7 @@ export type AuctionData = {
   underlier: TokenData
   endsAt: Date
   apy: string
+  url?: string
 }
 
 const getTimeToMaturity = (maturity: number, blockTimestamp: number) => {
@@ -184,6 +185,7 @@ const wrangleAuction = async (
       Number(collateralAuction.collateralType?.maturity ?? 0),
       blockTimestamp,
     ),
+    url: vaultMetadata?.urls?.asset,
   }
 }
 
