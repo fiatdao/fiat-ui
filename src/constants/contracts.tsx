@@ -121,8 +121,7 @@ export const contracts = constantContracts({
   },
   USER_ACTIONS_FC: {
     address: {
-      // TODO: Replace me with prod address
-      [Chains.mainnet]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
+      [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultFCActions.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
     },
     abi: vaultFcActions,
