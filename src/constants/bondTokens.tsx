@@ -3,32 +3,28 @@ import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { metadataByNetwork } from '@/metadata'
 
-// TODO: Create interface that can support all token types
-// type PTokenMap = {
-//   [vaultAddress: string]: {
-//     [tokenId: string]: {
-//       protocol: string
-//       asset: string
-//       symbol: string
-//       decimals: number
-//       name: string
-//       icons: {
-//         main: string
-//         secondary: string
-//       }
-//     }
-//   }
-// }
+type PTokenMap = {
+  [vaultAddress: string]: {
+    [tokenId: string]: {
+      protocol: string
+      asset: string
+      symbol: string
+      decimals: number
+      name: string
+      icons: {
+        main: string
+        secondary: string
+      }
+    }
+  }
+}
 
-// type MetadataByNetwork = {
-//   [chainId: number]: PTokenMap
-// }
+type MetadataByNetwork = {
+  [chainId: number]: PTokenMap
+}
 
-// TODO: Create interface that can support all token types
-const getVaults = memoize((appChainId: ChainsValues): Record<string, any> => {
-  // const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
-
-  const vaultsMetadata = metadataByNetwork[appChainId]
+const getVaults = memoize((appChainId: ChainsValues) => {
+  const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
 
   if (vaultsMetadata === undefined) {
     return {}
@@ -61,42 +57,67 @@ export const getCollateralMetadata = (
     return
   }
 
-  // seems to be previous structure of vault metadata. keeping here just in case
-  // return vaults[vaultAddress.toLowerCase()]?.[tokenId]
-  return vaults[vaultAddress.toLowerCase()]
+  // lookup by vaultAddress and tokenId
+  return vaults[vaultAddress.toLowerCase()]?.[tokenId]
 }
 
-/// Returns primary and secondary icon links for asset with name protocolName
-/// Return Object should look like {main: <main_link>, secondary: <secondary_link}
-/// TODO: memoize. See https://github.com/fiatdao/fiat-ui/issues/520
-export const getPTokenIconFromMetadata = (appChainId: ChainsValues, protocolName?: string) => {
+export const getPTokenIconFromMetadata = memoize((protocolName?: string) => {
   if (!metadataByNetwork || !protocolName) {
     return
   }
 
-  const vaults = getVaults(appChainId)
-  const vaultMetadatas = Object.values(vaults)
-  const vaultMetadataForProtocol = vaultMetadatas.find((metadata) => {
-    return metadata.name === protocolName
-  })
+  const iconsByProtocolName: Record<string, { main: string; secondary: string }> =
+    Object.fromEntries(
+      Object.entries(metadataByNetwork)
+        .map(([, byNetwork]) =>
+          Object.entries(byNetwork).map(([, metadataByTokenId]) =>
+            Object.entries(metadataByTokenId).map(([, metadata]) => [
+              metadata.name.toLowerCase(),
+              metadata.icons,
+            ]),
+          ),
+        )
+        .flat(2),
+    )
 
-  return vaultMetadataForProtocol?.icons
-}
-
-export const getVaultAddresses = memoize((appChainId: ChainsValues) => {
-  const vaults = getVaults(appChainId)
-  return Object.keys(vaults)
+  return iconsByProtocolName[protocolName.toLowerCase()]
 })
 
-/// return map of {vaultName: iconLink}
+export const getVaultAddressesByName = memoize((appChainId: ChainsValues, name: string) => {
+  // vaults for the current chain
+  const vaults = getVaults(appChainId)
+
+  const uniqueNameAddressMap = Object.fromEntries(
+    Object.entries(vaults).map(([vaultAddress, byTokenId]) => {
+      // extract the name from the first entry in the tokens map
+      const [, { name }] = Object.entries(byTokenId)[0]
+      return [name, vaultAddress]
+    }),
+  )
+
+  return Object.entries(uniqueNameAddressMap)
+    .filter(([vaultName]) => vaultName.toLowerCase().startsWith(name.toLowerCase()))
+    .map(([, vaultAddress]) => vaultAddress)
+})
+
 export const getProtocolsWithIcon = memoize((appChainId: ChainsValues) => {
   const vaults = getVaults(appChainId)
 
-  let vaultNameToIconMap = {}
-  Object.values(vaults).forEach((vaultMetadata) => {
-    const lcName = vaultMetadata.name.split('_')[0].toLowerCase()
-    vaultNameToIconMap = Object.assign({ [lcName]: vaultMetadata.icons.main }, vaultNameToIconMap)
-  })
+  return Object.fromEntries(
+    Object.entries(vaults).map(([, byTokenId]) => {
+      const [
+        ,
+        {
+          // extracts the `main` icon...
+          icons: { main },
+          // and the name...
+          name,
+        },
+        // from the first entry in the tokens map
+      ] = Object.entries(byTokenId)[0]
 
-  return vaultNameToIconMap
+      // creates a map with vault's name in lowercase and its icon
+      return [name.split('_')[0].toLowerCase(), main]
+    }),
+  )
 })
