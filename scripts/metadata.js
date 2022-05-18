@@ -6,7 +6,7 @@ const { promisify } = require('util')
 const path = require('path')
 /* eslint-enable  @typescript-eslint/no-var-requires */
 
-const sha = '6be67c94920e4e8a7d2e511f0c2ab1309159ff6f'
+const sha = 'a8be2e1a9dee268c186aa1d402c6f5f84d9f7fb2'
 
 const metadataFilemap = {
   'metadata-goerli': `https://raw.githubusercontent.com/fiatdao/changelog/${sha}/metadata/metadata-goerli.json`,
