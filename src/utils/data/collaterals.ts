@@ -71,7 +71,7 @@ const wrangleCollateral = async (
       [
         collateral.vault.address,
         collateral.underlierAddress,
-        0, // FIXME Check protocol if is not an ERC20?
+        collateral.tokenId ?? 0,
         collateral.maturity,
         false,
       ],
