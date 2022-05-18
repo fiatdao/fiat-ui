@@ -12,7 +12,6 @@ import {
   prbProxyRegistry,
   publican,
   vault20,
-  vaultFcActions,
   vaultEptActions,
 } from '@/src/abis'
 import { Chains, ChainsValues } from '@/src/constants/chains'
@@ -119,14 +118,6 @@ export const contracts = constantContracts({
       [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultEPTActions.address,
     },
     abi: vaultEptActions,
-  },
-  USER_ACTIONS_FC: {
-    address: {
-      // TODO: Replace me with prod address
-      [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultFCActions.address,
-      [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
-    },
-    abi: vaultFcActions,
   },
   USER_ACTIONS_FC: {
     address: {
