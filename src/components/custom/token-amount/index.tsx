@@ -13,7 +13,6 @@ import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient
 import Tooltip from '@/src/components/antd/tooltip'
 import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 import Info from '@/src/resources/svg/info.svg'
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 export type TokenAmountProps = {
   className?: string
@@ -57,9 +56,8 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
 
   const step = 1 / 10 ** Math.min(displayDecimals, 6)
   const bnMaxValue = BigNumber.from(max) ?? MAX_UINT_256
-  const bnValue = value !== undefined ? BigNumber.min(value, bnMaxValue) : undefined
 
-  const { appChainId } = useWeb3Connection()
+  const bnValue = value !== undefined ? BigNumber.min(value, bnMaxValue) : undefined
 
   function onMaxHandle() {
     onChange?.(bnMaxValue)
@@ -98,8 +96,8 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
             ) : (
               <AssetIcons
                 dimensions={'32px'}
-                mainAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.main}
-                secondaryAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.secondary}
+                mainAsset={getPTokenIconFromMetadata(mainAsset)?.main}
+                secondaryAsset={getPTokenIconFromMetadata(mainAsset)?.secondary}
               />
             )}
           </div>
