@@ -15,6 +15,10 @@ type PTokenMap = {
         main: string
         secondary: string
       }
+      urls?: {
+        asset?: string
+        project?: string
+      }
     }
   }
 }

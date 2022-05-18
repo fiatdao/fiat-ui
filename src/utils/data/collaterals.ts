@@ -44,6 +44,7 @@ export type Collateral = {
     virtualRate: BigNumber
   }
   manageId?: string
+  url?: string
 }
 
 const wrangleCollateral = async (
@@ -88,6 +89,7 @@ const wrangleCollateral = async (
     asset = '',
     protocol = '',
     symbol = '',
+    urls,
   } = getCollateralMetadata(appChainId, {
     vaultAddress: collateral.vault?.address,
     tokenId: collateral.tokenId,
@@ -121,6 +123,7 @@ const wrangleCollateral = async (
       id: collateral.eptData?.id ?? '',
       poolId: collateral.eptData?.poolId ?? '',
     },
+    url: urls?.asset,
   }
 }
 

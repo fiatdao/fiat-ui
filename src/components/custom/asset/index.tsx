@@ -8,7 +8,8 @@ export const Asset: React.FC<{
   className?: string
   mainAsset: string
   title: string
-}> = ({ className, mainAsset, title, ...restProps }) => {
+  url?: string
+}> = ({ className, mainAsset, title, url, ...restProps }) => {
   return (
     <div className={cn(s.component, className)} {...restProps}>
       <AssetIcons
@@ -17,7 +18,14 @@ export const Asset: React.FC<{
         mainAsset={getPTokenIconFromMetadata(mainAsset)?.main}
         secondaryAsset={getPTokenIconFromMetadata(mainAsset)?.secondary}
       />
-      <div className={cn(s.title)}>{title}</div>
+
+      {url ? (
+        <a href={url} rel="no-referrer noreferrer" target="_blank">
+          <div className={cn(s.title)}>{title}</div>
+        </a>
+      ) : (
+        <div className={cn(s.title)}>{title}</div>
+      )}
     </div>
   )
 }
