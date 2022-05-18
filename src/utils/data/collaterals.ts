@@ -5,7 +5,10 @@ import { BigNumber } from 'bignumber.js'
 import { hexToAscii } from 'web3-utils'
 import contractCall from '@/src/utils/contractCall'
 import { stringToDateOrCurrent } from '@/src/utils/dateTime'
-import { Collaterals_collateralTypes as SubgraphCollateral } from '@/types/subgraph/__generated__/Collaterals'
+import {
+  Collaterals_collateralTypes as SubgraphCollateral,
+  Collaterals_collybusSpots as SubgraphSpot,
+} from '@/types/subgraph/__generated__/Collaterals'
 
 import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
@@ -44,12 +47,15 @@ export type Collateral = {
     virtualRate: BigNumber
   }
   manageId?: string
+  url?: string
 }
 
 const wrangleCollateral = async (
   collateral: SubgraphCollateral,
   provider: Web3Provider | JsonRpcProvider,
   appChainId: ChainsValues,
+  spotPrice: Maybe<SubgraphSpot>,
+  discountRate: Maybe<BigNumber>,
 ): Promise<Collateral> => {
   const {
     abi: collybusAbi,
@@ -57,7 +63,22 @@ const wrangleCollateral = async (
   } = contracts.COLLYBUS
 
   let currentValue = null
-  if (
+
+  if (spotPrice && collateral.faceValue && collateral.maturity && discountRate) {
+    const numerator = (BigNumber.from(collateral.faceValue) as BigNumber).multipliedBy(
+      (BigNumber.from(spotPrice.spot) as BigNumber).unscaleBy(WAD_DECIMALS),
+    )
+    const currentBlockTimestamp = (await provider.getBlock(await provider.getBlockNumber()))
+      .timestamp
+    const denominator = discountRate
+      .unscaleBy(WAD_DECIMALS)
+      .plus(1)
+      .pow(Math.max(Number(collateral.maturity) - currentBlockTimestamp, 0))
+
+    // Numerator units 10**18, Denominator units 10**0, currentValue units 10**18
+    currentValue = numerator.div(denominator)
+  } else if (
+    // Revert to contract call if relevant data not found on subgraph
     collateral.underlierAddress &&
     collateral.vault?.address &&
     collateral.maturity &&
@@ -71,7 +92,7 @@ const wrangleCollateral = async (
       [
         collateral.vault.address,
         collateral.underlierAddress,
-        0, // FIXME Check protocol if is not an ERC20?
+        collateral.tokenId ?? 0,
         collateral.maturity,
         false,
       ],
@@ -88,6 +109,7 @@ const wrangleCollateral = async (
     asset = '',
     protocol = '',
     symbol = '',
+    urls,
   } = getCollateralMetadata(appChainId, {
     vaultAddress: collateral.vault?.address,
     tokenId: collateral.tokenId,
@@ -121,6 +143,7 @@ const wrangleCollateral = async (
       id: collateral.eptData?.id ?? '',
       poolId: collateral.eptData?.poolId ?? '',
     },
+    url: urls?.asset,
   }
 }
 

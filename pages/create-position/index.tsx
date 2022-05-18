@@ -13,7 +13,7 @@ import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { useProtocolFilters } from '@/src/hooks/useProtocolFilters'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { Collateral, formatColRatio } from '@/src/utils/data/collaterals'
+import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate, remainingTime, tablePagination } from '@/src/utils/table'
 import { getHumanValue } from '@/src/web3/utils'
 
@@ -41,8 +41,8 @@ const CreatePosition = () => {
     {
       align: 'left',
       dataIndex: 'protocol',
-      render: (protocol: Collateral['protocol'], { vault: { name } }) => {
-        return <Asset mainAsset={name} title={protocol} />
+      render: (protocol: Collateral['protocol'], { url, vault: { name } }) => {
+        return <Asset mainAsset={name} title={protocol} url={url} />
       },
       title: 'Protocol',
       width: 200,
@@ -74,14 +74,6 @@ const CreatePosition = () => {
         />
       ),
       title: 'Collateral Value',
-    },
-    {
-      align: 'left',
-      dataIndex: 'vault',
-      render: ({ collateralizationRatio: value }: Collateral['vault']) => {
-        return <CellValue value={value ? `${formatColRatio(value)}%` : '-'} />
-      },
-      title: 'Collateralization Threshold',
     },
     {
       align: 'left',

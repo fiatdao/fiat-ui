@@ -16,6 +16,10 @@ import { metadataByNetwork } from '@/metadata'
 //         main: string
 //         secondary: string
 //       }
+//       urls?: {
+//         asset?: string
+//         project?: string
+//       }
 //     }
 //   }
 // }
