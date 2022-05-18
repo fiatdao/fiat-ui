@@ -14,6 +14,35 @@ import sortByMaturity from '@/src/utils/sortByMaturity'
 import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
 import { CollateralType_orderBy, OrderDirection } from '@/types/subgraph/__generated__/globalTypes'
 
+export const fetchCollateralById = ({
+  appChainId,
+  collateralId,
+  provider,
+}: {
+  protocols?: string[]
+  collateralId: string
+  provider: Web3Provider | JsonRpcProvider
+  appChainId: ChainsValues
+}) => {
+  const vaultsAddresses = getVaultAddresses(appChainId)
+
+  return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
+    where: {
+      vault_in: vaultsAddresses,
+      id_in: [collateralId],
+      vaultName_not_contains_nocase: 'deprecated',
+    },
+    orderBy: CollateralType_orderBy.maturity,
+    orderDirection: OrderDirection.desc,
+  }).then(async ({ collateralTypes }) => {
+    return Promise.all(
+      collateralTypes
+        .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
+        .map((p) => wrangleCollateral(p, provider, appChainId)),
+    )
+  })
+}
+
 // TODO Import readonly provider from singleton
 export const fetchCollaterals = ({
   appChainId,
