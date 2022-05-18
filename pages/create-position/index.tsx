@@ -91,7 +91,7 @@ const CreatePosition = () => {
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
         ) : (
-          <Link href={`/create-position/${collateral.address}/open`} passHref>
+          <Link href={`/create-position/${collateral.id}/open`} passHref>
             <ButtonGradient disabled={!isWalletConnected}>Create Position</ButtonGradient>
           </Link>
         )

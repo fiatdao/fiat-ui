@@ -7,6 +7,7 @@ import cn from 'classnames'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import Lottie from 'lottie-react'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { getHealthFactorState } from '@/src/utils/table'
 import { getEtherscanAddressUrl } from '@/src/web3/utils'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
@@ -387,9 +388,9 @@ const FormERC20: React.FC<{
 }
 
 const OpenPosition = () => {
-  const tokenAddress = useQueryParam('collateralId')
+  const collateralId = useQueryParam('collateralId')
   useDynamicTitle(`Create Position`)
-  const { data: collateral } = useCollateral(tokenAddress)
+  const { data: collateral } = useCollateral(collateralId)
 
   const tokenSymbol = collateral?.symbol ?? ''
   const tokenAsset = collateral?.asset ?? ''
@@ -401,7 +402,7 @@ const OpenPosition = () => {
     {
       title: 'Token',
       value: tokenAsset ?? '-',
-      url: getEtherscanAddressUrl(tokenAddress, chainId),
+      url: getEtherscanAddressUrl(collateral?.address as string, chainId),
     },
     {
       title: 'Underlying Asset',
@@ -443,12 +444,14 @@ const OpenPosition = () => {
     <>
       <ButtonBack href="/create-position">Back</ButtonBack>
       <PositionFormsLayout infoBlocks={infoBlocks}>
-        <FormERC20
-          collateral={collateral as Collateral} // TODO Fix with suspense
-          tokenAddress={tokenAddress as string}
-          tokenAsset={tokenAsset}
-          tokenSymbol={tokenSymbol}
-        />
+        <SafeSuspense>
+          <FormERC20
+            collateral={collateral as Collateral}
+            tokenAddress={collateral?.address as string}
+            tokenAsset={tokenAsset}
+            tokenSymbol={tokenSymbol}
+          />
+        </SafeSuspense>
       </PositionFormsLayout>
     </>
   )

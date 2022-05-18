@@ -3,7 +3,7 @@ import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import BigNumber from 'bignumber.js'
-import { getVaultAddressesByName } from '@/src/constants/bondTokens'
+import { getVaultAddresses } from '@/src/constants/bondTokens'
 import { ChainsValues } from '@/src/constants/chains'
 import { useUserTokensInWallet } from '@/src/hooks/useUserTokensInWallet'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -19,6 +19,47 @@ import {
 } from '@/types/subgraph/__generated__/Collaterals'
 import { CollateralType_orderBy, OrderDirection } from '@/types/subgraph/__generated__/globalTypes'
 import { Maybe } from '@/types/utils'
+
+// TODO: reuse collateral fetching so fetching multiple by collateral address is the same code path as fetching one
+export const fetchCollateralById = ({
+  appChainId,
+  collateralId,
+  provider,
+}: {
+  protocols?: string[]
+  collateralId: string
+  provider: Web3Provider | JsonRpcProvider
+  appChainId: ChainsValues
+}) => {
+  const vaultsAddresses = getVaultAddresses(appChainId)
+
+  return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
+    where: {
+      vault_in: vaultsAddresses,
+      id_in: [collateralId],
+      vaultName_not_contains_nocase: 'deprecated',
+    },
+    orderBy: CollateralType_orderBy.maturity,
+    orderDirection: OrderDirection.desc,
+  }).then(async ({ collateralTypes, collybusDiscountRates, collybusSpots }) => {
+    // TODO: get discountRate arg in here
+    return Promise.all(
+      collateralTypes
+        .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
+        .map((p) => {
+          const spotPrice: Maybe<Collaterals_collybusSpots> =
+            collybusSpots.find((s) => s.token === p.underlierAddress) ?? null
+          const discountRate: Maybe<BigNumber> =
+            BigNumber.from(
+              collybusDiscountRates.find(({ rateId }) => rateId === p.vault?.defaultRateId)
+                ?.discountRate,
+            ) ?? null
+
+          return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
+        }),
+    )
+  })
+}
 
 // TODO Import readonly provider from singleton
 export const fetchCollaterals = ({
@@ -90,9 +131,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
             !!userTokens?.find((userToken: string) => collateral.address === userToken),
         )
       : data
-    const vaultAddresses = protocols
-      .map((protocol) => getVaultAddressesByName(appChainId, protocol))
-      .flat()
+    const vaultAddresses = getVaultAddresses(appChainId)
     const filteredData = walletFilteredData?.filter(({ vault }) =>
       vaultAddresses.includes(vault.address),
     )

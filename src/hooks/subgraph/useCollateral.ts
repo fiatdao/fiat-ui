@@ -1,16 +1,16 @@
-import { fetchCollaterals } from './useCollaterals'
+import { fetchCollateralById } from './useCollaterals'
 import useSWR from 'swr'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import isDev from '@/src/utils/isDev'
 
-export const useCollateral = (address: string) => {
+export const useCollateral = (collateralId: string) => {
   const { appChainId, web3Provider: provider } = useWeb3Connection()
 
-  const { data, error } = useSWR(['collaterals', address], () =>
+  const { data, error } = useSWR(['collaterals', collateralId], () =>
     provider
-      ? fetchCollaterals({
+      ? fetchCollateralById({
           protocols: undefined,
-          collaterals: [address],
+          collateralId: collateralId,
           provider,
           appChainId,
         })
