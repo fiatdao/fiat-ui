@@ -196,8 +196,6 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               className,
             )}
             disabled={disabled}
-            healthFactorVariant={isHealthFactorVariant}
-            healthFactorVariantReverse={isHealthFactorVariantReverse}
             max={bnMaxValue.toNumber()}
             min={0}
             onChange={(sliderValue) => {
