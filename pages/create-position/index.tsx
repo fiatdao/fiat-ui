@@ -16,6 +16,7 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate, remainingTime, tablePagination } from '@/src/utils/table'
 import { getHumanValue } from '@/src/web3/utils'
+import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
 
 const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
   const collaterals = useCollaterals(inMyWallet, filters)
@@ -117,4 +118,4 @@ const CreatePosition = () => {
   )
 }
 
-export default CreatePosition
+export default withRequiredValidChain(CreatePosition)
