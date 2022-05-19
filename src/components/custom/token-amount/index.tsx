@@ -160,10 +160,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               <div className={s.safer}>Safer</div>
               <div className={s.healthFactor}>
                 <span>
-                  Health Factor{' '}
-                  <span className={s.hf} style={{ color: sliderTrackColor }}>
-                    {healthFactorValue}
-                  </span>
+                  Health Factor<span className={s.hf}>{healthFactorValue}</span>
                 </span>
                 <Tooltip title={healthFactorHint}>
                   <Info />
