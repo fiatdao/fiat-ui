@@ -43,8 +43,8 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'protocol',
-      render: (protocol: AuctionData['protocol'], { url }) => (
-        <Asset mainAsset={protocol.name ?? ''} title={protocol.humanReadableName ?? ''} url={url} />
+      render: (protocol: AuctionData['protocol']) => (
+        <Asset mainAsset={protocol.name ?? ''} title={protocol.humanReadableName ?? ''} />
       ),
       title: 'Protocol',
       width: 200,
@@ -52,7 +52,7 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'asset',
-      render: (value: string) => <CellValue value={value} />,
+      render: (value: string, { url }) => <CellValue url={url} value={value} />,
       title: 'Asset',
     },
     {

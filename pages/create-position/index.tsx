@@ -41,8 +41,8 @@ const CreatePosition = () => {
     {
       align: 'left',
       dataIndex: 'protocol',
-      render: (protocol: Collateral['protocol'], { url, vault: { name } }) => {
-        return <Asset mainAsset={name} title={protocol} url={url} />
+      render: (protocol: Collateral['protocol'], { vault: { name } }) => {
+        return <Asset mainAsset={name} title={protocol} />
       },
       title: 'Protocol',
       width: 200,
@@ -50,7 +50,7 @@ const CreatePosition = () => {
     {
       align: 'left',
       dataIndex: 'asset',
-      render: (asset: Collateral['asset']) => <CellValue value={asset} />,
+      render: (asset: Collateral['asset'], { url }) => <CellValue url={url} value={asset} />,
       title: 'Asset',
     },
     {
