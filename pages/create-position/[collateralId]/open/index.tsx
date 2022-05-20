@@ -1,12 +1,16 @@
 import s from './s.module.scss'
 import { useERC155Allowance } from '../../../../src/hooks/useERC1155Allowance'
+import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { useMachine } from '@xstate/react'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
+import { getHealthFactorState } from '@/src/utils/table'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { Balance } from '@/src/components/custom/balance'
@@ -26,11 +30,9 @@ import {
   ZERO_BIG_NUMBER,
   getBorrowAmountBelowDebtFloorText,
 } from '@/src/constants/misc'
-import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
-import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -42,7 +44,6 @@ import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { calculateHealthFactor } from '@/src/utils/data/positions'
 import { parseDate } from '@/src/utils/dateTime'
-import { getHealthFactorState } from '@/src/utils/table'
 import {
   getEtherscanAddressUrl,
   getHumanValue,
@@ -404,9 +405,9 @@ const FormERC20: React.FC<{
 }
 
 const OpenPosition = () => {
-  const tokenAddress = useQueryParam('collateralId')
+  const collateralId = useQueryParam('collateralId')
   useDynamicTitle(`Create Position`)
-  const { data: collateral } = useCollateral(tokenAddress)
+  const { data: collateral } = useCollateral(collateralId)
 
   const tokenSymbol = collateral?.symbol ?? ''
   const tokenAsset = collateral?.asset ?? ''
@@ -418,7 +419,7 @@ const OpenPosition = () => {
     {
       title: 'Token',
       value: tokenAsset ?? '-',
-      url: getEtherscanAddressUrl(tokenAddress, chainId),
+      url: getEtherscanAddressUrl(collateral?.address as string, chainId),
     },
     {
       title: 'Underlying Asset',
@@ -460,12 +461,14 @@ const OpenPosition = () => {
     <>
       <ButtonBack href="/create-position">Back</ButtonBack>
       <PositionFormsLayout infoBlocks={infoBlocks}>
-        <FormERC20
-          collateral={collateral as Collateral} // TODO Fix with suspense
-          tokenAddress={tokenAddress as string}
-          tokenAsset={tokenAsset}
-          tokenSymbol={tokenSymbol}
-        />
+        <SafeSuspense>
+          <FormERC20
+            collateral={collateral as Collateral}
+            tokenAddress={collateral?.address as string}
+            tokenAsset={tokenAsset}
+            tokenSymbol={tokenSymbol}
+          />
+        </SafeSuspense>
       </PositionFormsLayout>
     </>
   )

@@ -20,7 +20,7 @@ export const useProtocolFilters = () => {
     return Object.fromEntries(
       Object.entries(getProtocolsWithIcon(appChainId)).map(([name, icon]) => {
         const protocolName = protocolNamesByKeyword[name.replace('vault', '')]
-        return [protocolName, { active: false, name, icon }]
+        return [protocolName, { active: true, name, icon }]
       }),
     ) as FilterData
   }, [appChainId])
@@ -63,12 +63,6 @@ export const useProtocolFilters = () => {
 
   const toggleInMyWallet = () => setInMyWallet((prev) => !prev)
 
-  const clearButton = () => (
-    <button className={cn(s.clear)} onClick={clearAllFilters}>
-      Clear
-    </button>
-  )
-
   const renderFilters = () => (
     <>
       <ButtonOutline
@@ -87,7 +81,7 @@ export const useProtocolFilters = () => {
             key={asset}
             onClick={() => {
               clearAllFilters()
-              setFilter(asset, !filters[asset].active)
+              setFilter(asset, true)
             }}
             rounded
           >
@@ -103,7 +97,6 @@ export const useProtocolFilters = () => {
     <>
       <div className={cn(s.filters)}>
         {renderFilters()}
-        {clearButton()}
         {withWalletFilter && (
           <ToggleSwitch
             checked={inMyWallet}
@@ -119,7 +112,6 @@ export const useProtocolFilters = () => {
         content={
           <>
             <div className={cn(s.filtersGrid)}>{renderFilters()}</div>
-            <div className={cn(s.buttonContainer)}>{clearButton()}</div>
           </>
         }
         placement="bottomLeft"
@@ -137,7 +129,6 @@ export const useProtocolFilters = () => {
     areAllFiltersActive,
     setFilter,
     activateAllFilters,
-    clearAllFilters,
     activeFilters,
     FILTERS,
     filters,

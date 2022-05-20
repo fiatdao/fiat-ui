@@ -15,6 +15,7 @@ import { CellValue } from '@/src/components/custom/cell-value'
 import { Asset } from '@/src/components/custom/asset'
 import { AuctionData } from '@/src/utils/data/auctions'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
 
 const AuctionsTable = ({ columns, filters }: any) => {
   const { auctions } = useAuctions(filters)
@@ -43,8 +44,8 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'protocol',
-      render: (protocol: AuctionData['protocol']) => (
-        <Asset mainAsset={protocol.name ?? ''} title={protocol.humanReadableName ?? ''} />
+      render: (protocol: AuctionData['protocol'], { url }) => (
+        <Asset mainAsset={protocol.name ?? ''} title={protocol.humanReadableName ?? ''} url={url} />
       ),
       title: 'Protocol',
       width: 200,
@@ -120,4 +121,4 @@ const Auctions = () => {
   )
 }
 
-export default Auctions
+export default withRequiredValidChain(Auctions)

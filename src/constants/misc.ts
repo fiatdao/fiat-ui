@@ -1,6 +1,9 @@
 import { getHumanValue } from '../web3/utils'
 import BigNumber from 'bignumber.js'
 
+// BigNumber config
+BigNumber.config({ POW_PRECISION: 80 })
+
 export const ZERO_BIG_NUMBER = new BigNumber(0)
 export const ONE_BIG_NUMBER = new BigNumber(1)
 export const TWO_BIG_NUMBER = new BigNumber(2)
