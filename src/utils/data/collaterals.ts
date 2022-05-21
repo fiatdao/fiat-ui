@@ -1,4 +1,5 @@
 import { getFaceValue } from '../getFaceValue'
+import { getVirtualRate } from '../getVirtualRate'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from 'bignumber.js'
 import { hexToAscii } from 'web3-utils'
@@ -14,7 +15,6 @@ import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
-import { Publican } from '@/types/typechain'
 import { Collybus } from '@/types/typechain/Collybus'
 import { Maybe } from '@/types/utils'
 
@@ -62,9 +62,13 @@ const wrangleCollateral = async (
     address: { [appChainId]: collybusAddress },
   } = contracts.COLLYBUS
 
-  let currentValue = null
-  let virtualRate = null
+  const virtualRate = await getVirtualRate(
+    appChainId,
+    provider,
+    collateral.vault?.address ?? undefined,
+  )
 
+  let currentValue = null
   if (spotPrice && collateral.faceValue && collateral.maturity && discountRate) {
     const numerator = (BigNumber.from(collateral.faceValue) as BigNumber).multipliedBy(
       (BigNumber.from(spotPrice.spot) as BigNumber).unscaleBy(WAD_DECIMALS),
@@ -85,33 +89,6 @@ const wrangleCollateral = async (
     collateral.maturity &&
     collateral.underlierAddress !== ZERO_ADDRESS
   ) {
-    if (
-      !collateral.underlierAddress ||
-      !collateral.vault?.address ||
-      !collateral.maturity ||
-      collateral.underlierAddress === ZERO_ADDRESS
-    ) {
-      throw new Error(
-        `Cannot wrangle collateral with invalid properties: ${{
-          underlierAddress: collateral.underlierAddress,
-          vault: collateral.vault,
-          maturity: collateral.maturity,
-        }}`,
-      )
-    }
-
-    virtualRate = (await contractCall<Publican, 'virtualRate'>(
-      contracts.PUBLICAN.address[appChainId],
-      contracts.PUBLICAN.abi,
-      provider,
-      'virtualRate',
-      [collateral.vault.address],
-    )) as BigNumber | null
-
-    if (virtualRate === null) {
-      throw new Error(`Error, unable to fetch virtual rate for vault: ${collateral.vault}`)
-    }
-
     currentValue = await contractCall<Collybus, 'read'>(
       collybusAddress,
       collybusAbi,
@@ -126,6 +103,7 @@ const wrangleCollateral = async (
       ],
     )
   }
+
   const faceValue = await getFaceValue(
     provider,
     collateral.tokenId ?? 0,
