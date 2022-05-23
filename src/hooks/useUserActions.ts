@@ -11,6 +11,7 @@ import { contracts } from '@/src/constants/contracts'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { VaultEPTActions } from '@/types/typechain'
 import { estimateGasLimit } from '@/src/web3/utils'
+import { WAD_DECIMALS } from '@/src/constants/misc'
 
 type BaseModify = {
   vault: string
@@ -30,21 +31,25 @@ type ModifyCollateralAndDebt = BaseModify & {
   virtualRate?: BigNumber
 }
 
-type BuyCollateralAndModifyDebt = {
+type BuyCollateralAndModifyDebtNotional = BaseModify & {
+  deltaDebt: BigNumber
+  virtualRate?: BigNumber
+  underlierAmount: BigNumber
+}
+
+type BuyCollateralAndModifyDebtElement = {
   vault: string
-  position: string
-  collateralizer: string
-  creditor: string
-  underlierAmount: BigNumberish
-  deltaNormalDebt: BigNumberish
+  deltaDebt: BigNumber
+  virtualRate?: BigNumber
+  underlierAmount: BigNumber
   swapParams: {
-    balancerVault: string
-    poolId: string
-    assetIn: string
-    assetOut: string
-    minOutput: BigNumberish
-    deadline: BigNumberish
-    approve: BigNumberish
+    balancerVault: string // Address of the Balancer Vault
+    poolId: string // Id bytes32 of the Element Convergent Curve Pool containing the collateral token
+    assetIn: string// Underlier token address when adding collateral and `collateral` when removing
+    assetOut: string // Collateral token address when adding collateral and `underlier` when removing
+    minOutput?: BigNumberish // uint256 Min. amount of tokens we would accept to receive from the swap, whether it is collateral or underlier
+    deadline: BigNumberish // uint256 Timestamp at which swap must be confirmed by [seconds]
+    approve: number // uint256 Amount of `assetIn` to approve for `balancerVault` for swapping `assetIn` for `assetOut`
   }
 }
 
@@ -54,8 +59,11 @@ export type UseUserActions = {
   modifyCollateralAndDebt: (
     params: ModifyCollateralAndDebt,
   ) => ReturnType<TransactionResponse['wait']>
-  buyCollateralAndModifyDebt: (
-    params: BuyCollateralAndModifyDebt,
+  buyCollateralAndModifyDebtElement: (
+    params: BuyCollateralAndModifyDebtElement,
+  ) => ReturnType<TransactionResponse['wait']>
+  buyCollateralAndModifyDebtNotional: (
+    params: BuyCollateralAndModifyDebtNotional,
   ) => ReturnType<TransactionResponse['wait']>
 }
 
@@ -198,22 +206,37 @@ export const useUserActions = (): UseUserActions => {
     ],
   )
 
-  const buyCollateralAndModifyDebt = useCallback(
-    async (params: BuyCollateralAndModifyDebt) => {
+  // VaultFCActions buyCollateralAndModifyDebt
+  const buyCollateralAndModifyDebtNotional = useCallback(
+    async (params: BuyCollateralAndModifyDebtNotional) => {
       if (!address || !userProxy || !userProxyAddress) {
         throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
       }
 
+      if (!params.virtualRate) {
+        params.virtualRate = await _getVirtualRate(params.vault)
+      }
+
+      // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
+      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
+        0,
+        8,
+      )
+
       const buyCollateralAndModifyDebtEncoded = userActionEPT.interface.encodeFunctionData(
         'buyCollateralAndModifyDebt',
         [
-          params.vault,
-          params.position,
-          params.collateralizer,
-          params.creditor,
-          params.underlierAmount,
-          params.deltaNormalDebt,
-          params.swapParams,
+
+          params.vault, // address vault
+          params.token, // address token
+          params.tokenId, // uint256 tokenId
+          userProxyAddress, // address position
+          address, // address collateralizer
+          address, // address creditor
+          // fCashAmount, // uint256 fCashAmount                     //need to update
+          deltaNormalDebt, // int256 deltaNormalDebt
+          // minImpliedRate, // uint32 minImpliedRate                //need to update
+          params.underlierAmount // uint256 maxUnderlierAmount
         ],
       )
 
@@ -254,6 +277,82 @@ export const useUserActions = (): UseUserActions => {
       userActionEPT.interface,
       userActionEPT.address,
       notification,
+      _getVirtualRate
+    ],
+  )
+
+  // VaultEPTActions buyCollateralAndModifyDebt
+  const buyCollateralAndModifyDebtElement = useCallback(
+    async (params: BuyCollateralAndModifyDebtElement) => {
+      if (!address || !userProxy || !userProxyAddress) {
+        throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
+      }
+
+      if (!params.virtualRate) {
+        params.virtualRate = await _getVirtualRate(params.vault)
+      }
+
+      params.virtualRate = new BigNumber(1)
+      //hardcoded because virtual rate not working... need to change
+
+      // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
+      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
+        0,
+        8,
+      )
+
+      const buyCollateralAndModifyDebtEncoded = userActionEPT.interface.encodeFunctionData(
+        'buyCollateralAndModifyDebt',
+        [
+
+          params.vault, // address vault
+          userProxyAddress, // address position
+          address, // address collateralizer
+          address, // address creditor
+          params.underlierAmount.unscaleBy(WAD_DECIMALS).toNumber(), // uint256 underlierAmount,
+          deltaNormalDebt, // int256 deltaNormalDebt,
+          params.swapParams, // calldata swapParams
+        ],
+      )
+
+      // please sign
+      notification.requestSign()
+
+      const tx: TransactionResponse | TransactionError = await userProxy
+        .execute(userActionEPT.address, buyCollateralAndModifyDebtEncoded, {
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            userActionEPT.address,
+            buyCollateralAndModifyDebtEncoded,
+          ]),
+        })
+        .catch(notification.handleTxError)
+
+      if (tx instanceof TransactionError) {
+        throw tx
+      }
+
+      // awaiting exec
+      notification.awaitingTx(tx.hash)
+
+      const receipt = await tx.wait().catch(notification.handleTxError)
+
+      if (receipt instanceof TransactionError) {
+        throw receipt
+      }
+
+      // tx successful
+      notification.successfulTx(tx.hash)
+
+      return receipt
+    },
+    [
+      address,
+      userProxy,
+      userProxyAddress,
+      userActionEPT.interface,
+      userActionEPT.address,
+      notification,
+      _getVirtualRate
     ],
   )
 
@@ -272,6 +371,8 @@ export const useUserActions = (): UseUserActions => {
     approveFIAT,
     depositCollateral,
     modifyCollateralAndDebt,
-    buyCollateralAndModifyDebt,
+    buyCollateralAndModifyDebtElement,
+    buyCollateralAndModifyDebtNotional,
+
   }
 }

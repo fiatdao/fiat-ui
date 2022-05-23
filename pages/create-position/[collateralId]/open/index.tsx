@@ -21,6 +21,8 @@ import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Summary, SummaryItem } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
+// import InternalArrow from '../../../../src/resources/svg/interal-arrow.svg'
+// import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
 import {
   DEPOSIT_COLLATERAL_TEXT,
   DEPOSIT_UNDERLYING_TEXT,
@@ -77,6 +79,7 @@ const FormERC20: React.FC<{
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [loading, setLoading] = useState(false)
+  // const [swapSettingsOpen, setSwapSettingsOpen] = useState(false)
 
   const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
     tokenAddress,
@@ -96,10 +99,7 @@ const FormERC20: React.FC<{
 
   const [FIATBalance] = useFIATBalance(true)
 
-  const {
-    depositCollateral,
-    // buyCollateralAndModifyDebt
-  } = useUserActions()
+  const { depositCollateral, buyCollateralAndModifyDebtElement, buyCollateralAndModifyDebtNotional } = useUserActions()
   const [stateMachine, send] = useMachine(stepperMachine, {
     context: {
       isProxyAvailable,
@@ -108,6 +108,79 @@ const FormERC20: React.FC<{
       tokenSymbol,
     },
   })
+
+  // hasAllowance comes in false on init.
+  // This useEffect change hasAllowance value on Machine
+  useEffect(() => {
+    send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
+    send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
+  }, [hasAllowance, isProxyAvailable, send])
+
+  const [tab, setTab] = useState('bond')
+  const [mintFiat, setMintFiat] = useState(false)
+
+  const toggleMintFiat = () => setMintFiat(!mintFiat)
+
+  const createUnderlyingPositionNotional = async ({
+    fiatAmount,
+    underlierAmount,
+  }: {
+    underlierAmount: BigNumber
+    fiatAmount: BigNumber
+  }): Promise<void> => {
+    const _underlierAmount = underlierAmount
+      ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
+      : ZERO_BIG_NUMBER
+    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+    try {
+      setLoading(true)
+      await buyCollateralAndModifyDebtNotional({
+        vault: collateral.vault.address,
+        token: tokenAddress,
+        tokenId: 0,
+        deltaDebt: _fiatAmount,
+        underlierAmount: _underlierAmount
+      })
+      setLoading(false)
+    } catch (err) {
+      setLoading(false)
+      throw err
+    }
+  }
+
+  const createUnderlyingPositionElement = async ({
+    fiatAmount,
+    underlierAmount,
+  }: {
+    underlierAmount: BigNumber
+    fiatAmount: BigNumber
+  }): Promise<void> => {
+    const _underlierAmount = underlierAmount
+      ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
+      : ZERO_BIG_NUMBER
+    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+    try {
+      setLoading(true)
+      await buyCollateralAndModifyDebtElement({
+        vault: collateral.vault.address,
+        deltaDebt: _fiatAmount,
+        underlierAmount: _underlierAmount,
+        swapParams: {
+          balancerVault: collateral.vault.address,
+          poolId: collateral.eptData?.poolId ?? '',
+          assetIn: collateral.underlierAddress ?? '',
+          assetOut: collateral.address ?? '',
+          minOutput: 4, //currently hardcaded default... need to update this
+          deadline: 300, //currently hardcaded default... need to update this
+          approve: _underlierAmount.unscaleBy(WAD_DECIMALS).toNumber(),
+        }
+      })
+      setLoading(false)
+    } catch (err) {
+      setLoading(false)
+      throw err
+    }
+  }
 
   const createPosition = async ({
     erc20Amount,
@@ -134,56 +207,26 @@ const FormERC20: React.FC<{
     }
   }
 
-  const createUnderlyingPosition = async ({
-    fiatAmount,
-    underlierAmount,
-  }: {
-    underlierAmount: BigNumber
-    fiatAmount: BigNumber
-  }): Promise<void> => {
-    const _underlierAmount = underlierAmount
-      ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
-      : ZERO_BIG_NUMBER
-    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
-    console.log(_underlierAmount, _fiatAmount)
-    try {
-      // setLoading(true)
-      // await buyCollateralAndModifyDebt({
-      //   vault: collateral.vault.address,
-      //   position: string,
-      //   collateralizer: string,
-      //   creditor: string,
-      //   underlierAmount: _underlierAmount,
-      //   deltaNormalDebt: BigNumberish,
-      //   swapParams: {
-      //     balancerVault: string,
-      //     poolId: string,
-      //     assetIn: string,
-      //     assetOut: string,
-      //     minOutput: BigNumberish,
-      //     deadline: BigNumberish,
-      //     approve: BigNumberish,
-      //   }
-      // })
-      setLoading(false)
-    } catch (err) {
-      setLoading(false)
-      throw err
+  const createUnderlyingPosition = 
+    collateral.vault.name.substring(0,8) === 'vaultEPT' 
+    ? createUnderlyingPositionElement 
+    : createUnderlyingPositionNotional
+
+  const handleCreatePosition: any = () => {
+    if (tab === 'bond') {
+      send({
+        type: 'CONFIRM',
+        // @ts-ignore TODO types
+        createPosition,
+      })
+    } else if (tab === 'underlying') {
+      send({
+        type: 'CONFIRM_UNDERLYING',
+        // @ts-ignore TODO types
+        createUnderlyingPosition,
+      })
     }
   }
-
-  // hasAllowance comes in false on init.
-  // This useEffect change hasAllowance value on Machine
-
-  useEffect(() => {
-    send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
-    send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
-  }, [hasAllowance, isProxyAvailable, send])
-
-  const [tab, setTab] = useState('bond')
-  const [mintFiat, setMintFiat] = useState(false)
-
-  const toggleMintFiat = () => setMintFiat(!mintFiat)
 
   // @TODO: not working max amount
   // maxFIAT = totalCollateral*collateralValue/collateralizationRatio/(virtualRateSafetyMargin*virtualRate)-debt
@@ -291,7 +334,7 @@ const FormERC20: React.FC<{
               </RadioTabsWrapper>
             )}
 
-            <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
+            <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0, underlierAmount: 0 }}>
               {[1, 4].includes(stateMachine.context.currentStepNumber) && (
                 <>
                   {tab === 'underlying' && (
@@ -300,59 +343,62 @@ const FormERC20: React.FC<{
                         title={`Swap and Deposit`}
                         value={`Balance: ${collateralInfo?.humanValue?.toFixed(2)}`}
                       />
-                      <Form form={form} initialValues={{ underlierAmount: 0 }}>
-                        <Form.Item name="underlierAmount" required>
-                          <TokenAmount
-                            displayDecimals={collateralInfo?.decimals}
-                            mainAsset={collateral.vault.name} //only being used to fetch icon from metadata
-                            max={collateralInfo?.humanValue}
-                            maximumFractionDigits={collateralInfo?.decimals}
-                            onChange={(val) =>
-                              val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
-                            }
-                            secondaryAsset={tokenSymbol}
-                          />
-                        </Form.Item>
-                        {/*all of this is hardcoded */}
-                        <Summary data={underlyingData} />
-                        <SummaryItem title={'Fixed APR'} value={'2%'} />
-                        <SummaryItem title={'Interest earned'} value={'24.028 USDC'} />
-                        <SummaryItem
-                          title={`Redeemable at maturity | ${
-                            collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
-                          }`}
-                          value={'10,024.028 USDC'}
+                      {/* <InternalArrow onClick={setSwapSettingsOpen(true)}/>
+                      <SwapSettingsModal 
+                        isOpen={swapSettingsOpen}
+                        // toggleOpen={setSwapSettingsOpen}
+                      /> */}
+                      <Form.Item name="underlierAmount" required>
+                        <TokenAmount
+                          disabled={loading}
+                          displayDecimals={collateralInfo?.decimals}
+                          mainAsset={collateral.vault.name} //only being used to fetch icon from metadata
+                          max={collateralInfo?.humanValue}
+                          maximumFractionDigits={collateralInfo?.decimals}
+                          onChange={(val) =>
+                            val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
+                          }
                         />
-                        {mintFiat && (
-                          <FormExtraAction
-                            bottom={
-                              <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-                                <TokenAmount
-                                  disabled={loading}
-                                  displayDecimals={4}
-                                  healthFactorValue={healthFactorNumber}
-                                  max={maxBorrowAmountCalculated}
-                                  maximumFractionDigits={6}
-                                  onChange={(val) =>
-                                    val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
-                                  }
-                                  slider="healthFactorVariant"
-                                  tokenIcon={<FiatIcon />}
-                                />
-                              </Form.Item>
-                            }
-                            buttonText="Mint FIAT with this transaction"
-                            disabled={loading}
-                            onClick={toggleMintFiat}
-                            top={
-                              <Balance
-                                title={`Mint FIAT`}
-                                value={`Balance: ${FIATBalance.toFixed(4)}`}
+                      </Form.Item>
+                      {/*all of this is hardcoded */}
+                      <Summary data={underlyingData} />
+                      <SummaryItem title={'Fixed APR'} value={'2%'} />
+                      <SummaryItem title={'Interest earned'} value={'24.028 USDC'} />
+                      <SummaryItem
+                        title={`Redeemable at maturity | ${
+                          collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
+                        }`}
+                        value={'10,024.028 USDC'}
+                      />
+                      {mintFiat && (
+                        <FormExtraAction
+                          bottom={
+                            <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
+                              <TokenAmount
+                                disabled={loading}
+                                displayDecimals={4}
+                                healthFactorValue={healthFactorNumber}
+                                max={maxBorrowAmountCalculated}
+                                maximumFractionDigits={6}
+                                onChange={(val) =>
+                                  val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
+                                }
+                                slider="healthFactorVariant"
+                                tokenIcon={<FiatIcon />}
                               />
-                            }
-                          />
-                        )}
-                      </Form>
+                            </Form.Item>
+                          }
+                          buttonText="Mint FIAT with this transaction"
+                          disabled={loading}
+                          onClick={toggleMintFiat}
+                          top={
+                            <Balance
+                              title={`Mint FIAT`}
+                              value={`Balance: ${FIATBalance.toFixed(4)}`}
+                            />
+                          }
+                        />
+                      )}
                     </>
                   )}
 
@@ -467,19 +513,7 @@ const FormERC20: React.FC<{
                     <ButtonGradient
                       disabled={isDisabledCreatePosition()}
                       height="lg"
-                      onClick={() =>
-                        tab === 'bond'
-                          ? send({
-                              type: 'CONFIRM',
-                              // @ts-ignore TODO types
-                              createPosition,
-                            })
-                          : send({
-                              type: 'CONFIRM_UNDERLYING',
-                              // @ts-ignore TODO types
-                              createUnderlyingPosition,
-                            })
-                      }
+                      onClick={handleCreatePosition}
                     >
                       {tab === 'underlying'
                         ? DEPOSIT_UNDERLYING_TEXT

@@ -95,6 +95,7 @@ const stepperMachine = createMachine<Context, Events>(
         target: STEP_ENTER_AMOUNTS,
       },
       SET_ERC20_AMOUNT: { actions: 'setERC20Amount' },
+      SET_UNDERLIER_AMOUNT: { actions: 'setUnderlierAmount' },
       SET_FIAT_AMOUNT: { actions: 'setFiatAmount' },
       SET_LOADING: { actions: 'setLoading' },
       GO_BACK: { target: STEP_ENTER_AMOUNTS },
@@ -183,6 +184,9 @@ const stepperMachine = createMachine<Context, Events>(
       })),
       setERC20Amount: assign<Context, any>((_ctx, { erc20Amount }) => ({
         erc20Amount,
+      })),
+      setUnderlierAmount: assign<Context, any>((_ctx, { underlierAmount }) => ({
+        underlierAmount,
       })),
       setFiatAmount: assign<Context, any>((_ctx, { fiatAmount }) => ({
         fiatAmount,
