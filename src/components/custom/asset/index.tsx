@@ -9,8 +9,7 @@ export const Asset: React.FC<{
   className?: string
   mainAsset: string
   title: string
-  url?: string
-}> = ({ className, mainAsset, title, url, ...restProps }) => {
+}> = ({ className, mainAsset, title, ...restProps }) => {
   const { appChainId } = useWeb3Connection()
 
   return (
@@ -21,14 +20,7 @@ export const Asset: React.FC<{
         mainAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.main}
         secondaryAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.secondary}
       />
-
-      {url ? (
-        <a href={url} rel="no-referrer noreferrer" target="_blank">
-          <div className={cn(s.title)}>{title}</div>
-        </a>
-      ) : (
-        <div className={cn(s.title)}>{title}</div>
-      )}
+      <div className={cn(s.title)}>{title}</div>
     </div>
   )
 }
