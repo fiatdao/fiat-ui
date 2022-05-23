@@ -32,7 +32,6 @@ export const fetchCollateralById = ({
   appChainId: ChainsValues
 }) => {
   const vaultsAddresses = getVaultAddresses(appChainId)
-
   return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
     where: {
       vault_in: vaultsAddresses,
@@ -63,8 +62,9 @@ export const fetchCollateralById = ({
 
 // TODO Import readonly provider from singleton
 export const fetchCollaterals = ({
-  appChainId,
+  protocols,
   collaterals: userCollaterals,
+  appChainId,
   provider,
 }: {
   protocols?: string[]
@@ -72,12 +72,15 @@ export const fetchCollaterals = ({
   provider: Web3Provider | JsonRpcProvider
   appChainId: ChainsValues
 }) => {
+  console.log('[fetchCollaterals] protocols: ', protocols)
   return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
     // @TODO: add maturity filter maturity_gte (Date.now()/1000).toString()
     // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     where: {
       address_in: userCollaterals,
       vaultName_not_contains_nocase: 'deprecated',
+      // should filter on collateral.vault.type (Element) or collateral.protocol (Element Finance) name ackshually
+      // vaultName_in: ["vaultEPT_eP:eyUSDC:10-AUG-22-GMT"],
     },
     orderBy: CollateralType_orderBy.maturity,
     orderDirection: OrderDirection.desc,
@@ -109,6 +112,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   const [collaterals, setCollaterals] = useState<Collateral[]>([])
   const { positions } = usePositionsByUser()
 
+  console.log('[useCollaterals] filters: ', protocols)
   const { data, error } = useSWR(['collaterals', appChainId], () =>
     fetchCollaterals({
       protocols: protocols?.length > 0 ? protocols : undefined,
@@ -117,6 +121,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
       appChainId,
     }),
   )
+  console.log('[useCollaterals] data: ', data)
 
   const userTokens = useUserTokensInWallet({
     collaterals: data,

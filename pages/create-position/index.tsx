@@ -19,7 +19,9 @@ import { getHumanValue } from '@/src/web3/utils'
 import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
 
 const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
+  console.log('[positionsTable] filters: ', filters)
   const collaterals = useCollaterals(inMyWallet, filters)
+  console.log('[positionsTable] collaterals: ', collaterals)
 
   return (
     <Table

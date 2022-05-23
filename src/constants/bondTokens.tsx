@@ -1,4 +1,4 @@
-import { memoize } from 'lodash'
+import { initial, memoize } from 'lodash'
 import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { metadataByNetwork } from '@/metadata'
@@ -28,24 +28,32 @@ import { metadataByNetwork } from '@/metadata'
 //   [chainId: number]: PTokenMap
 // }
 
+export interface ProtocolFilter {
+  protocolName: string
+  isActive: boolean
+  iconLink: string
+}
+
 // TODO: Create interface that can support all token types
-const getVaults = memoize((appChainId: ChainsValues): Record<string, any> => {
-  // const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
+const getVaults = memoize(
+  (appChainId: ChainsValues): Record<string, any> => {
+    // const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
 
-  const vaultsMetadata = metadataByNetwork[appChainId]
+    const vaultsMetadata = metadataByNetwork[appChainId]
 
-  if (vaultsMetadata === undefined) {
-    return {}
-  }
+    if (vaultsMetadata === undefined) {
+      return {}
+    }
 
-  return Object.fromEntries(
-    Object.entries(vaultsMetadata).map(([vaultAddress, metadata]) => [
-      // transform addresses to lowerCase
-      vaultAddress.toLowerCase(),
-      metadata,
-    ]),
-  )
-})
+    return Object.fromEntries(
+      Object.entries(vaultsMetadata).map(([vaultAddress, metadata]) => [
+        // transform addresses to lowerCase
+        vaultAddress.toLowerCase(),
+        metadata,
+      ]),
+    )
+  },
+)
 
 // memoized as the metadata information will remain unchanged from build to build
 // so, we need to only re-execute the search if the `chainId` changes
@@ -92,15 +100,26 @@ export const getVaultAddresses = memoize((appChainId: ChainsValues) => {
   return Object.keys(vaults)
 })
 
-/// return map of {vaultName: iconLink}
-export const getProtocolsWithIcon = memoize((appChainId: ChainsValues) => {
-  const vaults = getVaults(appChainId)
+export const getInitialProtocolFilters = memoize(
+  (appChainId: ChainsValues): Array<ProtocolFilter> => {
+    const vaults = getVaults(appChainId)
 
-  let vaultNameToIconMap = {}
-  Object.values(vaults).forEach((vaultMetadata) => {
-    const lcName = vaultMetadata.name.split('_')[0].toLowerCase()
-    vaultNameToIconMap = Object.assign({ [lcName]: vaultMetadata.icons.main }, vaultNameToIconMap)
-  })
+    const protocolNamesSeen = new Set()
+    let initialProtocolFilters: Array<any> = []
+    Object.values(vaults).forEach((vaultMetadata) => {
+      const protocolName = vaultMetadata.protocol
+      if (!protocolNamesSeen.has(protocolName)) {
+        // If we haven't seen this protocol yet, add it to the initialProtocolFilters
+        const protocolFilter = {
+          protocolName,
+          iconLink: vaultMetadata.icons.main,
+          isActive: false,
+        } as ProtocolFilter
+        initialProtocolFilters.push(protocolFilter)
+        protocolNamesSeen.add(protocolName)
+      }
+    })
 
-  return vaultNameToIconMap
-})
+    return initialProtocolFilters as Array<ProtocolFilter>
+  },
+)
