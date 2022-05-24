@@ -223,6 +223,8 @@ export const useUserActions = (): UseUserActions => {
         8,
       )
 
+      const fCashAmount = params.underlierAmount // probably needs to be multiplied by virtual rate
+
       const buyCollateralAndModifyDebtEncoded = userActionEPT.interface.encodeFunctionData(
         'buyCollateralAndModifyDebt',
         [
@@ -233,7 +235,7 @@ export const useUserActions = (): UseUserActions => {
           userProxyAddress, // address position
           address, // address collateralizer
           address, // address creditor
-          // fCashAmount, // uint256 fCashAmount                     //need to update
+          fCashAmount, // uint256 fCashAmount                     
           deltaNormalDebt, // int256 deltaNormalDebt
           // minImpliedRate, // uint32 minImpliedRate                //need to update
           params.underlierAmount // uint256 maxUnderlierAmount
