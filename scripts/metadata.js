@@ -6,15 +6,14 @@ const { promisify } = require('util')
 const path = require('path')
 /* eslint-enable  @typescript-eslint/no-var-requires */
 
+// const sha = '796c6d9fcaa570999ec6b6c2acc35292f997adad' // old structure, token id as parent
+const sha = '6ed2a818f5dee0a2adf28922a3b94966244a34b1' // new structure, token id as child
+
 const metadataFilemap = {
-  'metadata-goerli':
-    'https://raw.githubusercontent.com/fiatdao/changelog/e157d23c29814b9a2bb485aa34d6bdfa344c5b8e/metadata/metadata-goerli.json',
-  'deployment-goerli':
-    'https://raw.githubusercontent.com/fiatdao/changelog/e157d23c29814b9a2bb485aa34d6bdfa344c5b8e/deployment/deployment-goerli.json',
-  'metadata-mainnet':
-    'https://raw.githubusercontent.com/fiatdao/changelog/e157d23c29814b9a2bb485aa34d6bdfa344c5b8e/metadata/metadata-mainnet.json',
-  'deployment-mainnet':
-    'https://raw.githubusercontent.com/fiatdao/changelog/e157d23c29814b9a2bb485aa34d6bdfa344c5b8e/deployment/deployment-mainnet.json',
+  'metadata-goerli': `https://raw.githubusercontent.com/fiatdao/changelog/${sha}/metadata/metadata-goerli.json`,
+  'deployment-goerli': `https://raw.githubusercontent.com/fiatdao/changelog/${sha}/deployment/deployment-goerli.json`,
+  'metadata-mainnet': `https://raw.githubusercontent.com/fiatdao/changelog/${sha}/metadata/metadata-mainnet.json`,
+  'deployment-mainnet': `https://raw.githubusercontent.com/fiatdao/changelog/${sha}/deployment/deployment-mainnet.json`,
 }
 
 const getMetadata = async () => {

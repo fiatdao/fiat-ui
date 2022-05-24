@@ -13,9 +13,10 @@ import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { useProtocolFilters } from '@/src/hooks/useProtocolFilters'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { Collateral, formatColRatio } from '@/src/utils/data/collaterals'
+import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate, remainingTime, tablePagination } from '@/src/utils/table'
 import { getHumanValue } from '@/src/web3/utils'
+import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
 
 const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
   const collaterals = useCollaterals(inMyWallet, filters)
@@ -49,8 +50,8 @@ const CreatePosition = () => {
     },
     {
       align: 'left',
-      dataIndex: 'symbol',
-      render: (symbol: Collateral['symbol']) => <CellValue value={symbol} />,
+      dataIndex: 'asset',
+      render: (asset: Collateral['asset'], { url }) => <CellValue url={url} value={asset} />,
       title: 'Asset',
     },
     {
@@ -77,14 +78,6 @@ const CreatePosition = () => {
     },
     {
       align: 'left',
-      dataIndex: 'vault',
-      render: ({ collateralizationRatio: value }: Collateral['vault']) => {
-        return <CellValue value={value ? `${formatColRatio(value)}%` : '-'} />
-      },
-      title: 'Collateralization Threshold',
-    },
-    {
-      align: 'left',
       dataIndex: 'maturity',
       render: (date: Collateral['maturity']) => (
         <CellValue bottomValue={parseDate(date)} value={`${remainingTime(date)} Left`} />
@@ -99,7 +92,7 @@ const CreatePosition = () => {
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
         ) : (
-          <Link href={`/create-position/${collateral.address}/open`} passHref>
+          <Link href={`/create-position/${collateral.id}/open`} passHref>
             <ButtonGradient disabled={!isWalletConnected}>Create Position</ButtonGradient>
           </Link>
         )
@@ -125,4 +118,4 @@ const CreatePosition = () => {
   )
 }
 
-export default CreatePosition
+export default withRequiredValidChain(CreatePosition)

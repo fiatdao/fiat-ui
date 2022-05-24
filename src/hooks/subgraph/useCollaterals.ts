@@ -2,7 +2,8 @@ import { usePositionsByUser } from './usePositionsByUser'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
-import { getVaultAddressesByName } from '@/src/constants/bondTokens'
+import BigNumber from 'bignumber.js'
+import { getVaultAddresses } from '@/src/constants/bondTokens'
 import { ChainsValues } from '@/src/constants/chains'
 import { useUserTokensInWallet } from '@/src/hooks/useUserTokensInWallet'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -11,14 +12,59 @@ import { Collateral, wrangleCollateral } from '@/src/utils/data/collaterals'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import isDev from '@/src/utils/isDev'
 import sortByMaturity from '@/src/utils/sortByMaturity'
-import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
+import {
+  Collaterals,
+  CollateralsVariables,
+  Collaterals_collybusSpots,
+} from '@/types/subgraph/__generated__/Collaterals'
 import { CollateralType_orderBy, OrderDirection } from '@/types/subgraph/__generated__/globalTypes'
+import { Maybe } from '@/types/utils'
+
+// TODO: reuse collateral fetching so fetching multiple by collateral address is the same code path as fetching one
+export const fetchCollateralById = ({
+  appChainId,
+  collateralId,
+  provider,
+}: {
+  protocols?: string[]
+  collateralId: string
+  provider: Web3Provider | JsonRpcProvider
+  appChainId: ChainsValues
+}) => {
+  const vaultsAddresses = getVaultAddresses(appChainId)
+
+  return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
+    where: {
+      vault_in: vaultsAddresses,
+      id_in: [collateralId],
+      vaultName_not_contains_nocase: 'deprecated',
+    },
+    orderBy: CollateralType_orderBy.maturity,
+    orderDirection: OrderDirection.desc,
+  }).then(async ({ collateralTypes, collybusDiscountRates, collybusSpots }) => {
+    // TODO: get discountRate arg in here
+    return Promise.all(
+      collateralTypes
+        .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
+        .map((p) => {
+          const spotPrice: Maybe<Collaterals_collybusSpots> =
+            collybusSpots.find((s) => s.token === p.underlierAddress) ?? null
+          const discountRate: Maybe<BigNumber> =
+            BigNumber.from(
+              collybusDiscountRates.find(({ rateId }) => rateId === p.vault?.defaultRateId)
+                ?.discountRate,
+            ) ?? null
+
+          return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
+        }),
+    )
+  })
+}
 
 // TODO Import readonly provider from singleton
 export const fetchCollaterals = ({
   appChainId,
   collaterals: userCollaterals,
-  protocols: vaultNames,
   provider,
 }: {
   protocols?: string[]
@@ -26,25 +72,30 @@ export const fetchCollaterals = ({
   provider: Web3Provider | JsonRpcProvider
   appChainId: ChainsValues
 }) => {
-  const vaultsAddresses = vaultNames
-    ?.map((vaultName) => getVaultAddressesByName(appChainId, vaultName))
-    .flat()
-
   return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
     // @TODO: add maturity filter maturity_gte (Date.now()/1000).toString()
     // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     where: {
-      vault_in: vaultsAddresses,
       address_in: userCollaterals,
       vaultName_not_contains_nocase: 'deprecated',
     },
     orderBy: CollateralType_orderBy.maturity,
     orderDirection: OrderDirection.desc,
-  }).then(async ({ collateralTypes }) => {
+  }).then(async ({ collateralTypes, collybusDiscountRates, collybusSpots }) => {
     return Promise.all(
       collateralTypes
         .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
-        .map((p) => wrangleCollateral(p, provider, appChainId)),
+        .map((p) => {
+          const spotPrice: Maybe<Collaterals_collybusSpots> =
+            collybusSpots.find((s) => s.token === p.underlierAddress) ?? null
+          const discountRate: Maybe<BigNumber> =
+            BigNumber.from(
+              collybusDiscountRates.find(({ rateId }) => rateId === p.vault?.defaultRateId)
+                ?.discountRate,
+            ) ?? null
+
+          return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
+        }),
     )
   })
 }
@@ -58,7 +109,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   const [collaterals, setCollaterals] = useState<Collateral[]>([])
   const { positions } = usePositionsByUser()
 
-  const { data, error } = useSWR(['collaterals', protocols?.join(''), appChainId], () =>
+  const { data, error } = useSWR(['collaterals', appChainId], () =>
     fetchCollaterals({
       protocols: protocols?.length > 0 ? protocols : undefined,
       collaterals: undefined,
@@ -68,18 +119,22 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   )
 
   const userTokens = useUserTokensInWallet({
-    tokenAddresses: data?.map((c) => c.address),
+    collaterals: data,
     address: currentUserAddress,
     readOnlyAppProvider: provider,
   })
 
   useEffect(() => {
-    const filteredData = inMyWallet
+    const walletFilteredData = inMyWallet
       ? data?.filter(
           (collateral) =>
             !!userTokens?.find((userToken: string) => collateral.address === userToken),
         )
       : data
+    const vaultAddresses = getVaultAddresses(appChainId)
+    const filteredData = walletFilteredData?.filter(({ vault }) =>
+      vaultAddresses.includes(vault.address),
+    )
 
     const newCollaterals = filteredData?.map((collateral) => {
       const position = positions.find(
@@ -91,7 +146,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
     sortByMaturity(newCollaterals)
 
     setCollaterals(newCollaterals || [])
-  }, [data, positions, inMyWallet, userTokens])
+  }, [data, positions, inMyWallet, userTokens, protocols, appChainId])
 
   if (isDev() && error) {
     console.error(error)

@@ -43,6 +43,7 @@ export type AuctionData = {
   collateralMaturity: number
   tokenId?: Maybe<string>
   vault: {
+    type?: string
     address?: Maybe<string>
     name?: Maybe<string>
     interestPerSecond?: BigNumber
@@ -54,6 +55,7 @@ export type AuctionData = {
   underlier: TokenData
   endsAt: Date
   apy: string
+  url?: string
 }
 
 const getTimeToMaturity = (maturity: number, blockTimestamp: number) => {
@@ -152,6 +154,7 @@ const wrangleAuction = async (
     },
     tokenId: collateralAuction.tokenId,
     vault: {
+      type: collateralAuction.vault?.type ?? '',
       address: collateralAuction.vault?.address,
       name: collateralAuction.vault?.name,
       interestPerSecond: BigNumber.from(collateralAuction.vault?.interestPerSecond),
@@ -182,6 +185,7 @@ const wrangleAuction = async (
       Number(collateralAuction.collateralType?.maturity ?? 0),
       blockTimestamp,
     ),
+    url: vaultMetadata?.urls?.asset,
   }
 }
 

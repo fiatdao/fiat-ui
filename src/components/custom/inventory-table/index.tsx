@@ -26,8 +26,8 @@ const Columns: ColumnsType<Position> = [
   },
   {
     align: 'left',
-    dataIndex: 'symbol',
-    render: (symbol: Position['symbol']) => <CellValue bold value={symbol} />,
+    dataIndex: 'asset',
+    render: (symbol: Position['asset'], { url }) => <CellValue bold url={url} value={symbol} />,
     title: 'Asset',
     width: 200,
   },

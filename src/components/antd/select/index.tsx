@@ -29,7 +29,6 @@ const Select: React.FC<SelectProps<AntdSelectValue>> = <T extends AntdSelectValu
       {...selectProps}
       className={cn(s.button, className)}
       getPopupContainer={fixScroll ? (trigger) => trigger.parentNode : undefined}
-      onChange={() => console.log('onChange')}
       optionLabelProp="label"
       suffixIcon={
         loading ? (
