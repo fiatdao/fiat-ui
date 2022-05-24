@@ -17,6 +17,7 @@ import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate, remainingTime, tablePagination } from '@/src/utils/table'
 import { getHumanValue } from '@/src/web3/utils'
 import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
+import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 
 const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
   const collaterals = useCollaterals(inMyWallet, filters)
@@ -37,6 +38,7 @@ const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
 const CreatePosition = () => {
   const { isWalletConnected } = useWeb3Connection()
   const { activeFilters, displayFilters, inMyWallet } = useProtocolFilters()
+  const { positions } = usePositionsByUser()
 
   const columns: ColumnsType<Collateral> = [
     {
@@ -87,7 +89,12 @@ const CreatePosition = () => {
     {
       align: 'right',
       render: (collateral: Collateral) => {
-        return collateral.manageId ? (
+        // use combo of collateral manageId & collateral tokenId matching a position tokenId to determine if position exists for collateral
+        const hasPositionForCollateral =
+          collateral.manageId &&
+          positions.filter((position) => collateral.tokenId === position.tokenId).length > 0
+
+        return hasPositionForCollateral ? (
           <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
