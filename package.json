@@ -14,7 +14,7 @@
     "metadata": "node scripts/metadata.js",
     "start": "next start",
     "typechain": "typechain --target=ethers-v5 ./src/abis/**/*.json --out-dir ./types/typechain/",
-    "schema": "bash scripts/apollo-schema.sh"
+    "schema": "yarn add apollo; bash scripts/apollo-schema.sh"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
