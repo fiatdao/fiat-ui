@@ -14,6 +14,8 @@ then
   exit 1
 fi
 
-apollo service:download --endpoint="$NEXT_PUBLIC_REACT_APP_SUBGRAPH_GOERLI" $SCHEMA_OUTPUT_FILE
+npm install -g npx
 
-apollo codegen:generate --localSchemaFile=$SCHEMA_OUTPUT_FILE --target=typescript $GENERATED_OUTPUT_FOLDER --outputFlat --passthroughCustomScalars --customScalarsPrefix=Subgraph_
+npx apollo service:download --endpoint="$NEXT_PUBLIC_REACT_APP_SUBGRAPH_GOERLI" $SCHEMA_OUTPUT_FILE
+
+npx apollo codegen:generate --localSchemaFile=$SCHEMA_OUTPUT_FILE --target=typescript $GENERATED_OUTPUT_FOLDER --outputFlat --passthroughCustomScalars --customScalarsPrefix=Subgraph_
