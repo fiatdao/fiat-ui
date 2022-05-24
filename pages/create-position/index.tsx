@@ -89,20 +89,12 @@ const CreatePosition = () => {
     {
       align: 'right',
       render: (collateral: Collateral) => {
-        // use combo of token id + manageId to determine if should show manage or create position
-        console.log('positions: ', positions)
-        const tokenIds = positions.map((position) => position.tokenId)
-        console.log('tokenids: ', tokenIds)
-        const positionIds = positions.map((position) => position.id)
-        console.log('positionIds: ', positionIds)
-        console.log('collateral: ', collateral)
-
-        const hasPositionInCollateral =
+        // use combo of collateral manageId & collateral tokenId matching a position tokenId to determine if position exists for collateral
+        const hasPositionForCollateral =
           collateral.manageId &&
-          positions.filter((position) => collateral.tokenId === position.tokenId)
+          positions.filter((position) => collateral.tokenId === position.tokenId).length > 0
 
-        // return collateral.manageId ? (
-        return hasPositionInCollateral ? (
+        return hasPositionForCollateral ? (
           <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
