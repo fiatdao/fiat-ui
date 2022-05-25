@@ -51,17 +51,6 @@ const moduleExports = {
   },
   // Required for Fleek.io deploy
   trailingSlash: true,
-  exportPathMap: async function (
-    defaultPathMap,
-    { dev, dir, outDir, distDir, buildId }
-  ) {
-    return {
-      '/': { page: '/create-position' },
-      '/create-position': { page: '/create-position' },
-      '/auctions': { page: '/auctions' },
-      '/404': { page: '/404' }
-    }
-  },
 }
 
 const sentryWebpackPluginOptions = {
