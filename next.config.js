@@ -56,7 +56,7 @@ const moduleExports = {
     { dev, dir, outDir, distDir, buildId }
   ) {
     return {
-      '/': { page: '/' },
+      '/': { page: '/create-position' },
       '/create-position': { page: '/create-position' },
       '/auctions': { page: '/auctions' },
       '/404': { page: '/404' }
