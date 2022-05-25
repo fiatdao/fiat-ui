@@ -51,6 +51,23 @@ const moduleExports = {
   },
   // Required for Fleek.io deploy
   trailingSlash: true,
+  exportPathMap: async function (
+    defaultPathMap,
+    { dev, dir, outDir, distDir, buildId }
+  ) {
+    return {
+      '/': { page: '/create-position' },
+      '/create-position': { page: '/create-position' },
+      '/create-position/:collateralId/open': { page: '/create-position/:collateralId/open' },
+      '/getting-started': { page: '/getting-started' },
+      '/auctions': { page: '/auctions' },
+      '/auctions/:auctionId': { page: '/auctions/:auctionId' },
+      '/auctions/:auctionId/buy': { page: '/auctions/:auctionId/buy' },
+      '/your-positions': { page: '/your-positions' },
+      '/your-positions/:positionId/manage': { page: '/your-positions/:positionId/manage' },
+      '/404': { page: '/404' }
+    }
+  },
 }
 
 const sentryWebpackPluginOptions = {
