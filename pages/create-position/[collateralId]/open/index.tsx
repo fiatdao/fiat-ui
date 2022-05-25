@@ -90,6 +90,15 @@ const FormERC20: React.FC<{
   const activeToken = collateral.vault.type === 'NOTIONAL' ? erc1155 : erc20
   const { approve, hasAllowance, loadingApprove } = activeToken
 
+  // const erc20Underlying = useERC20Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
+  // const erc1155Underlying = useERC155Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
+  // const activeTokenUnderlying = collateral.vault.type === 'NOTIONAL' ? erc1155Underlying : erc20Underlying
+  // const { 
+  //   approve: approveUnderlying, 
+  //   hasAllowance: hasAllowanceUnderlying, 
+  //   loadingApprove: loadingApproveUnderlying 
+  // } = activeTokenUnderlying
+
   const { tokenInfo } = useTokenDecimalsAndBalance({
     tokenData: {
       symbol: collateral.symbol ?? '',
@@ -190,7 +199,7 @@ const FormERC20: React.FC<{
           assetOut: collateral.address ?? '',
           minOutput: 4, //currently hardcaded default... need to update this
           deadline: 300, //currently hardcaded default... need to update this
-          approve: _underlierAmount.unscaleBy(WAD_DECIMALS).toNumber(),
+          approve: _underlierAmount.unscaleBy(WAD_DECIMALS).toNumber() * 1.2,  //approve 1.2x to give buffer 
         }
       })
       setLoading(false)
@@ -239,6 +248,7 @@ const FormERC20: React.FC<{
         createPosition,
       })
     } else if (tab === 'underlying') {
+      // approveUnderlying()
       send({
         type: 'CONFIRM_UNDERLYING',
         // @ts-ignore TODO types

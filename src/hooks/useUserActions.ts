@@ -305,16 +305,23 @@ export const useUserActions = (type?: string): UseUserActions => {
         params.virtualRate = await _getVirtualRate(params.vault)
       }
 
-      params.virtualRate = new BigNumber(1)
-      //hardcoded because virtual rate not working... need to change
-
       // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
       const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
         0,
         8,
       )
 
-      const buyCollateralAndModifyDebtEncoded = userActionEPT.interface.encodeFunctionData(
+      // console.log('',88,  '\n',         
+      //   params.vault, '\n',// address vault
+      //   userProxyAddress, '\n',// address position
+      //   address, '\n',// address collateralizer
+      //   address, '\n',// address creditor
+      //   params.underlierAmount.unscaleBy(WAD_DECIMALS).toNumber(), '\n',// uint256 underlierAmount,
+      //   deltaNormalDebt, '\n',// int256 deltaNormalDebt,
+      //   params.swapParams, '\n',// calldata swapParams
+      // )
+
+      const buyCollateralAndModifyDebtEncoded = activeContract.interface.encodeFunctionData(
         'buyCollateralAndModifyDebt',
         [
 
@@ -332,9 +339,9 @@ export const useUserActions = (type?: string): UseUserActions => {
       notification.requestSign()
 
       const tx: TransactionResponse | TransactionError = await userProxy
-        .execute(userActionEPT.address, buyCollateralAndModifyDebtEncoded, {
+        .execute(activeContract.address, buyCollateralAndModifyDebtEncoded, {
           gasLimit: await estimateGasLimit(userProxy, 'execute', [
-            userActionEPT.address,
+            activeContract.address,
             buyCollateralAndModifyDebtEncoded,
           ]),
         })
@@ -362,8 +369,8 @@ export const useUserActions = (type?: string): UseUserActions => {
       address,
       userProxy,
       userProxyAddress,
-      userActionEPT.interface,
-      userActionEPT.address,
+      activeContract.interface,
+      activeContract.address,
       notification,
       _getVirtualRate
     ],
