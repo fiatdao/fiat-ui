@@ -4,7 +4,7 @@ import { FDTTokenImage, FIATTokenImage } from '@/src/components/custom/side-menu
 import { contracts } from '@/src/constants/contracts'
 import { Chains } from '@/src/constants/chains'
 import { AddTokenButton } from '@/src/components/custom/add-token-button'
-import { Step, stepsData } from '@/src/components/custom/getting-started-wizard/steps-data'
+import { stepsData } from '@/src/components/custom/getting-started-wizard/steps-data'
 import gettingStartedMachine, {
   Context,
 } from '@/src/components/custom/getting-started-wizard/state'
