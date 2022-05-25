@@ -8,7 +8,7 @@ Get leverage and access secondary liquidity for your favorite DeFi fixed income 
 4. Start the app with `yarn dev`.
 
 ## How to Contribute
-To contribute, start by grabbing one of the open issues on the repo, assign it to yourself. Once the task has been completed, open a PR against the `main` branch.
+To contribute, start by grabbing one of the open issues on the repo, and assigning it to yourself. Once the task has been completed, open a PR against the `main` branch.
 
 ## Helpful Testnet Links
 - Goerli USDC Faucet: https://goerli.etherscan.io/address/0x08034634bbd210485c9c8f798afdc5432782fd18#writeContract
