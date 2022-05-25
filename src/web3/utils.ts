@@ -1,6 +1,6 @@
+import { SECONDS_IN_A_YEAR, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'ethers'
-import { SECONDS_IN_A_YEAR, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 BigNumber.prototype.scaleBy = function (decimals: any = 0): any {
   return this.multipliedBy(10 ** decimals)
@@ -188,6 +188,7 @@ export function formatToken(
   const { compact = false, decimals = 4, minDecimals, scale = 0, tokenName } = options ?? {}
 
   if (scale > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     val = val.unscaleBy(scale)!
   }
 

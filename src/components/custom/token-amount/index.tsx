@@ -1,7 +1,4 @@
 import s from './s.module.scss'
-import React from 'react'
-import BigNumber from 'bignumber.js'
-import cn from 'classnames'
 import { MAX_UINT_256, MIN_EPSILON_OFFSET } from '@/src/constants/misc'
 import Slider from '@/src/components/antd/slider'
 import { formatBigValue } from '@/src/web3/utils'
@@ -14,6 +11,9 @@ import Tooltip from '@/src/components/antd/tooltip'
 import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 import Info from '@/src/resources/svg/info.svg'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import cn from 'classnames'
+import BigNumber from 'bignumber.js'
+import React from 'react'
 
 export type TokenAmountProps = {
   className?: string

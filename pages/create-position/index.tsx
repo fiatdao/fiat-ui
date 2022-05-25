@@ -1,7 +1,4 @@
 import s from './s.module.scss'
-import { ColumnsType } from 'antd/lib/table/interface'
-import cn from 'classnames'
-import Link from 'next/link'
 import { useCollaterals } from '@/src/hooks/subgraph/useCollaterals'
 import { Table } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -18,6 +15,9 @@ import { parseDate, remainingTime, tablePagination } from '@/src/utils/table'
 import { getHumanValue } from '@/src/web3/utils'
 import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
 import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
+import Link from 'next/link'
+import cn from 'classnames'
+import { ColumnsType } from 'antd/lib/table/interface'
 
 const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
   const collaterals = useCollaterals(inMyWallet, filters)

@@ -1,12 +1,5 @@
 import s from './s.module.scss'
 import { useERC155Allowance } from '../../../../src/hooks/useERC1155Allowance'
-import { useMachine } from '@xstate/react'
-import AntdForm from 'antd/lib/form'
-import BigNumber from 'bignumber.js'
-import cn from 'classnames'
-import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
-import Lottie from 'lottie-react'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { getHealthFactorState } from '@/src/utils/table'
 import { getEtherscanAddressUrl } from '@/src/web3/utils'
@@ -45,6 +38,13 @@ import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalan
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 
 import { calculateHealthFactor } from '@/src/utils/data/positions'
+import Lottie from 'lottie-react'
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import cn from 'classnames'
+import BigNumber from 'bignumber.js'
+import AntdForm from 'antd/lib/form'
+import { useMachine } from '@xstate/react'
 
 // @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7

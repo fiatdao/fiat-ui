@@ -1,9 +1,4 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import { ColumnsType } from 'antd/lib/table/interface'
-import { useEffect, useState } from 'react'
-import { SelectValue } from 'antd/lib/select'
-import { uniqBy } from 'lodash'
 import { elapsedTime, parseDate } from '@/src/utils/table'
 import { Table } from '@/src/components/antd'
 import Select from '@/src/components/antd/select'
@@ -14,6 +9,11 @@ import { ACTIONS_TYPES, ActionTransaction, Transaction } from '@/src/utils/data/
 import { tablePagination } from '@/src/utils/table'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import { useTransactionsByUser } from '@/src/hooks/subgraph/useTransactions'
+import { uniqBy } from 'lodash'
+import { SelectValue } from 'antd/lib/select'
+import { useEffect, useState } from 'react'
+import { ColumnsType } from 'antd/lib/table/interface'
+import cn from 'classnames'
 
 const Columns: ColumnsType<Transaction> = [
   {

@@ -1,7 +1,7 @@
 import useTransaction from './useTransaction'
-import { ContractReceipt } from '@ethersproject/contracts'
 import { AppContractInfo } from '@/src/constants/contracts'
 import { ERC20 } from '@/types/typechain'
+import { ContractReceipt } from '@ethersproject/contracts'
 
 export default function useERC20Transaction<
   MethodName extends keyof ERC20['functions'],

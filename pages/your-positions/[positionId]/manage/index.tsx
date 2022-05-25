@@ -1,15 +1,10 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import React, { useCallback, useEffect, useState } from 'react'
-import AntdForm from 'antd/lib/form'
-import BigNumber from 'bignumber.js'
-import Lottie from 'lottie-react'
-import Link from 'next/link'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
+
 import {
   useManageFormSummary,
   useManagePositionForm,
@@ -29,6 +24,12 @@ import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+import Link from 'next/link'
+import Lottie from 'lottie-react'
+import BigNumber from 'bignumber.js'
+import AntdForm from 'antd/lib/form'
+import React, { useCallback, useEffect, useState } from 'react'
+import cn from 'classnames'
 
 const LAST_STEP = 4
 
