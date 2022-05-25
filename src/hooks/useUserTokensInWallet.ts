@@ -2,11 +2,11 @@ import { contracts } from '../constants/contracts'
 import { getHumanValue } from '../web3/utils'
 import { ERC1155 } from '../../types/typechain'
 import { Collateral } from '../utils/data/collaterals'
+import { ERC20 } from '@/types/typechain'
 import useSWR from 'swr'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import { BigNumberish, Contract } from 'ethers'
-import { ERC20 } from '@/types/typechain'
 
 export const useUserTokensInWallet = ({
   address,

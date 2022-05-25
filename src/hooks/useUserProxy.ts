@@ -1,11 +1,11 @@
 import { useNotifications } from './useNotifications'
-import { useCallback, useMemo, useState } from 'react'
-import { Contract } from 'ethers'
 import { contracts } from '@/src/constants/contracts'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { PRBProxyRegistry } from '@/types/typechain'
+import { Contract } from 'ethers'
+import { useCallback, useMemo, useState } from 'react'
 
 const useUserProxy = () => {
   const {

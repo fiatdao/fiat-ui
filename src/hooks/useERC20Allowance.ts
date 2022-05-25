@@ -1,13 +1,13 @@
-import { Contract, ethers } from 'ethers'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { isAddress } from 'ethers/lib/utils'
-import BigNumber from 'bignumber.js'
 import { TransactionError } from '@/src/utils/TransactionError'
 import { useNotifications } from '@/src/hooks/useNotifications'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { contracts } from '@/src/constants/contracts'
 import { ERC20 } from '@/types/typechain'
+import BigNumber from 'bignumber.js'
+import { isAddress } from 'ethers/lib/utils'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Contract, ethers } from 'ethers'
 
 /**
  * Only handles the allowance of a tokenAddress for the EOA/connected account to a specified spender

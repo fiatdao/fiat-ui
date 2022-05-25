@@ -1,10 +1,10 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import { FC, ReactNode } from 'react'
 import Tooltip from '@/src/components/antd/tooltip'
 import Info from '@/src/resources/svg/info.svg'
 import ExternalLink from '@/src/components/custom/externalLink'
 import InternalArrow from '@/src/resources/svg/interal-arrow.svg'
+import { FC, ReactNode } from 'react'
+import cn from 'classnames'
 
 interface Props {
   className?: string

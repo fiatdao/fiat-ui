@@ -1,8 +1,5 @@
 import { getVirtualRate } from '../getVirtualRate'
 import { getFaceValue } from '../getFaceValue'
-import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
-import { BigNumber } from 'bignumber.js'
-import { hexToAscii } from 'web3-utils'
 import contractCall from '@/src/utils/contractCall'
 import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import {
@@ -17,6 +14,9 @@ import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/s
 import { Collybus } from '@/types/typechain/Collybus'
 import { getHumanValue } from '@/src/web3/utils'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
+import { hexToAscii } from 'web3-utils'
+import { BigNumber } from 'bignumber.js'
+import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 
 export type Collateral = {
   id: string

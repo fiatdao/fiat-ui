@@ -1,9 +1,9 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import React from 'react'
 import { shortenAddr } from '@/src/web3/utils'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getNetworkConfig } from '@/src/constants/chains'
+import React from 'react'
+import cn from 'classnames'
 
 /// A block explorer link to a specific transaction.
 /// Rendered in the "Transaction History" view
