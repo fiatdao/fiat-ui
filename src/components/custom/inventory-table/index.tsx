@@ -1,5 +1,5 @@
-import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
+import { ColumnsType } from 'antd/lib/table/interface'
 import { extractFieldsFromPositionId } from '@/src/utils/managePosition'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { getHealthFactorState, parseDate, remainingTime } from '@/src/utils/table'

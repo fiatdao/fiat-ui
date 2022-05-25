@@ -1,6 +1,6 @@
 import s from './s.module.scss'
-import cn from 'classnames'
 
+import cn from 'classnames'
 import { AssetIcons } from '@/src/components/custom/asset-icons'
 import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'

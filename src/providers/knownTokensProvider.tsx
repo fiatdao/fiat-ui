@@ -9,7 +9,6 @@ import {
 } from '../constants/knownTokens'
 import React, { FC, createContext, useCallback, useContext, useEffect } from 'react'
 import BigNumber from 'bignumber.js'
-
 import { formatUSD } from '@/src/web3/utils'
 import { TokenMeta } from '@/types/token'
 

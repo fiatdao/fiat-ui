@@ -1,7 +1,7 @@
 import s from './s.module.scss'
-import { ColumnsType } from 'antd/lib/table/interface'
-import cn from 'classnames'
 import Link from 'next/link'
+import cn from 'classnames'
+import { ColumnsType } from 'antd/lib/table/interface'
 import { useCollaterals } from '@/src/hooks/subgraph/useCollaterals'
 import { Table } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -17,6 +17,7 @@ import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate, remainingTime, tablePagination } from '@/src/utils/table'
 import { getHumanValue } from '@/src/web3/utils'
 import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
+import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
 
 const PositionsTable = ({ columns, filterByInMyWallet, protocolsToFilterBy }: any) => {
   const collaterals = useCollaterals(filterByInMyWallet, protocolsToFilterBy)
@@ -37,6 +38,7 @@ const PositionsTable = ({ columns, filterByInMyWallet, protocolsToFilterBy }: an
 const CreatePosition = () => {
   const { isWalletConnected } = useWeb3Connection()
   const { filterByInMyWallet, protocolsToFilterBy, renderFilters } = useProtocolFilters()
+  const { positions } = usePositionsByUser()
 
   const columns: ColumnsType<Collateral> = [
     {
@@ -87,7 +89,12 @@ const CreatePosition = () => {
     {
       align: 'right',
       render: (collateral: Collateral) => {
-        return collateral.manageId ? (
+        // use combo of collateral manageId & collateral tokenId matching a position tokenId to determine if position exists for collateral
+        const hasPositionForCollateral =
+          collateral.manageId &&
+          positions.filter((position) => collateral.tokenId === position.tokenId).length > 0
+
+        return hasPositionForCollateral ? (
           <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>

@@ -1,7 +1,6 @@
 import s from './s.module.scss'
 import React from 'react'
 import cn from 'classnames'
-
 import { Text } from '@/src/components/custom/typography'
 
 export type StatusTagProps = {
