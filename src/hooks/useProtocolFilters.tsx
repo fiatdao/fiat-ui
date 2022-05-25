@@ -26,20 +26,19 @@ export const useProtocolFilters = () => {
 
   const [filterState, setFilterState] = useState(initialFilters)
 
-  // TODO: memoize protocolsToFilterBy() and areAllProtocolFiltersActive() (obj dep)
-  const protocolsToFilterBy = filterState.protocolFilters.reduce<Array<string>>(
-    (protocolNames, protocolFilter) => {
+  const protocolsToFilterBy = useMemo(() => {
+    // Reduce `filterState.protocolFilters` to the list of protocol names whose filters are active
+    return filterState.protocolFilters.reduce<Array<string>>((protocolNames, protocolFilter) => {
       if (protocolFilter.isActive) {
         protocolNames.push(protocolFilter.protocolName)
       }
       return protocolNames
-    },
-    [],
-  )
+    }, [])
+  }, [filterState.protocolFilters])
 
-  const areAllProtocolFiltersActive = filterState.protocolFilters.every(
-    (protocolFilter) => protocolFilter.isActive,
-  )
+  const areAllProtocolFiltersActive = useMemo(() => {
+    return filterState.protocolFilters.every((protocolFilter) => protocolFilter.isActive)
+  }, [filterState.protocolFilters])
 
   const activateAllFilters = () => {
     const newProtocolFilters = filterState.protocolFilters.map((protocolFilter) =>
@@ -47,14 +46,6 @@ export const useProtocolFilters = () => {
     )
     setFilterState({ ...filterState, protocolFilters: newProtocolFilters })
   }
-
-  // maybe todo: this works. add back clear button if desired
-  // const clearAllFilters = () => {
-  //   const newProtocolFilters = filterState.protocolFilters.map((protocolFilter) =>
-  //     Object.assign({ ...protocolFilter, isActive: false }),
-  //   )
-  //   setFilterState({ ...filterState, protocolFilters: newProtocolFilters })
-  // }
 
   const activateFilterForProtocolName = (protocolName: string) => {
     const newProtocolFilters = filterState.protocolFilters.map((protocolFilter) => {
