@@ -6,45 +6,38 @@ import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import Filter from '@/src/resources/svg/filter.svg'
 import s from '@/pages/create-position/s.module.scss'
 import ButtonOutline from '@/src/components/antd/button-outline'
-import { getInitialProtocolFilters, ProtocolFilter } from '@/src/constants/bondTokens'
+import { ProtocolFilter, getInitialProtocolFilters } from '@/src/constants/bondTokens'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 interface FilterState {
-  inMyWallet: boolean
+  filterByInMyWallet: boolean
   protocolFilters: Array<ProtocolFilter>
 }
 
 export const useProtocolFilters = () => {
   const { appChainId, isWalletConnected } = useWeb3Connection()
 
-  const initialProtocolFilters = useMemo(() => {
-    return getInitialProtocolFilters(appChainId)
-  }, [appChainId])
-
   const initialFilters = useMemo(() => {
     return {
-      inMyWallet: false,
-      protocolFilters: initialProtocolFilters,
+      filterByInMyWallet: false,
+      protocolFilters: getInitialProtocolFilters(appChainId),
     } as FilterState
-  }, [initialProtocolFilters])
+  }, [appChainId])
 
   const [filterState, setFilterState] = useState(initialFilters)
-  // const [filters, setFilters] = useState(FILTERS)
 
-  // const activeProtocols = useMemo(
-  //   () => PROTOCOLS.filter((protocol) => FILTERS[protocol]),
-  //   [FILTERS],
-  // )
+  // TODO: memoize protocolsToFilterBy() and areAllProtocolFiltersActive() (obj dep)
+  const protocolsToFilterBy = filterState.protocolFilters.reduce<Array<string>>(
+    (protocolNames, protocolFilter) => {
+      if (protocolFilter.isActive) {
+        protocolNames.push(protocolFilter.protocolName)
+      }
+      return protocolNames
+    },
+    [],
+  )
 
-  // const activeFilters = useMemo(
-  //   () =>
-  //     Object.values(filters)
-  //       .filter(({ active }) => active)
-  //       .map(({ name }) => name),
-  //   [filters],
-  // )
-
-  const areAllFiltersActive = filterState.protocolFilters.every(
+  const areAllProtocolFiltersActive = filterState.protocolFilters.every(
     (protocolFilter) => protocolFilter.isActive,
   )
 
@@ -55,7 +48,7 @@ export const useProtocolFilters = () => {
     setFilterState({ ...filterState, protocolFilters: newProtocolFilters })
   }
 
-  // TODO: this works. add back clear button. 
+  // TODO: this works. add back clear button.
   // const clearAllFilters = () => {
   //   const newProtocolFilters = filterState.protocolFilters.map((protocolFilter) =>
   //     Object.assign({ ...protocolFilter, isActive: false }),
@@ -82,7 +75,7 @@ export const useProtocolFilters = () => {
   const toggleInMyWallet = () => {
     setFilterState({
       ...filterState,
-      inMyWallet: !filterState.inMyWallet,
+      filterByInMyWallet: !filterState.filterByInMyWallet,
     })
   }
 
@@ -90,7 +83,7 @@ export const useProtocolFilters = () => {
     <>
       <ButtonOutline
         height="lg"
-        isActive={areAllFiltersActive}
+        isActive={areAllProtocolFiltersActive}
         onClick={activateAllFilters}
         rounded
       >
@@ -115,13 +108,13 @@ export const useProtocolFilters = () => {
     </>
   )
 
-  const displayFilters = (withWalletFilter = true) => (
+  const renderFilters = (withWalletFilter = true) => (
     <>
       <div className={cn(s.filters)}>
         {renderFilterButtons()}
         {withWalletFilter && (
           <ToggleSwitch
-            checked={filterState.inMyWallet}
+            checked={filterState.filterByInMyWallet}
             className={cn(s.switch)}
             disabled={!isWalletConnected}
             label="In my wallet"
@@ -148,8 +141,9 @@ export const useProtocolFilters = () => {
   )
 
   return {
-    // activeFilters,
-    // inMyWallet,
-    displayFilters,
+    areAllProtocolFiltersActive,
+    protocolsToFilterBy,
+    filterByInMyWallet: filterState.filterByInMyWallet,
+    renderFilters,
   }
 }

@@ -1,4 +1,4 @@
-import { initial, memoize } from 'lodash'
+import { memoize } from 'lodash'
 import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { metadataByNetwork } from '@/metadata'
@@ -35,25 +35,23 @@ export interface ProtocolFilter {
 }
 
 // TODO: Create interface that can support all token types
-const getVaults = memoize(
-  (appChainId: ChainsValues): Record<string, any> => {
-    // const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
+const getVaults = memoize((appChainId: ChainsValues): Record<string, any> => {
+  // const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
 
-    const vaultsMetadata = metadataByNetwork[appChainId]
+  const vaultsMetadata = metadataByNetwork[appChainId]
 
-    if (vaultsMetadata === undefined) {
-      return {}
-    }
+  if (vaultsMetadata === undefined) {
+    return {}
+  }
 
-    return Object.fromEntries(
-      Object.entries(vaultsMetadata).map(([vaultAddress, metadata]) => [
-        // transform addresses to lowerCase
-        vaultAddress.toLowerCase(),
-        metadata,
-      ]),
-    )
-  },
-)
+  return Object.fromEntries(
+    Object.entries(vaultsMetadata).map(([vaultAddress, metadata]) => [
+      // transform addresses to lowerCase
+      vaultAddress.toLowerCase(),
+      metadata,
+    ]),
+  )
+})
 
 // memoized as the metadata information will remain unchanged from build to build
 // so, we need to only re-execute the search if the `chainId` changes
@@ -105,7 +103,7 @@ export const getInitialProtocolFilters = memoize(
     const vaults = getVaults(appChainId)
 
     const protocolNamesSeen = new Set()
-    let initialProtocolFilters: Array<any> = []
+    const initialProtocolFilters: Array<any> = []
     Object.values(vaults).forEach((vaultMetadata) => {
       const protocolName = vaultMetadata.protocol
       if (!protocolNamesSeen.has(protocolName)) {
@@ -113,7 +111,7 @@ export const getInitialProtocolFilters = memoize(
         const protocolFilter = {
           protocolName,
           iconLink: vaultMetadata.icons.main,
-          isActive: false,
+          isActive: true,
         } as ProtocolFilter
         initialProtocolFilters.push(protocolFilter)
         protocolNamesSeen.add(protocolName)

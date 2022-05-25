@@ -18,10 +18,8 @@ import { parseDate, remainingTime, tablePagination } from '@/src/utils/table'
 import { getHumanValue } from '@/src/web3/utils'
 import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
 
-const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
-  console.log('[positionsTable] filters: ', filters)
-  const collaterals = useCollaterals(inMyWallet, filters)
-  console.log('[positionsTable] collaterals: ', collaterals)
+const PositionsTable = ({ columns, filterByInMyWallet, protocolsToFilterBy }: any) => {
+  const collaterals = useCollaterals(filterByInMyWallet, protocolsToFilterBy)
 
   return (
     <Table
@@ -38,7 +36,7 @@ const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
 
 const CreatePosition = () => {
   const { isWalletConnected } = useWeb3Connection()
-  const { activeFilters, displayFilters, inMyWallet } = useProtocolFilters()
+  const { filterByInMyWallet, protocolsToFilterBy, renderFilters } = useProtocolFilters()
 
   const columns: ColumnsType<Collateral> = [
     {
@@ -107,14 +105,18 @@ const CreatePosition = () => {
   return (
     <>
       <h2 className={cn(s.title)}>Select a collateral type to add to your FIAT positions</h2>
-      {displayFilters()}
+      {renderFilters()}
 
       <SafeSuspense
         fallback={
           <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
         }
       >
-        <PositionsTable columns={columns} filters={activeFilters} inMyWallet={inMyWallet} />
+        <PositionsTable
+          columns={columns}
+          filterByInMyWallet={filterByInMyWallet}
+          protocolsToFilterBy={protocolsToFilterBy}
+        />
       </SafeSuspense>
     </>
   )

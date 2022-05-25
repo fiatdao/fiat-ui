@@ -26,7 +26,6 @@ export const fetchCollateralById = ({
   collateralId,
   provider,
 }: {
-  protocols?: string[]
   collateralId: string
   provider: Web3Provider | JsonRpcProvider
   appChainId: ChainsValues
@@ -62,25 +61,20 @@ export const fetchCollateralById = ({
 
 // TODO Import readonly provider from singleton
 export const fetchCollaterals = ({
-  protocols,
-  collaterals: userCollaterals,
   appChainId,
+  collaterals: userCollaterals,
   provider,
 }: {
-  protocols?: string[]
   collaterals?: string[]
   provider: Web3Provider | JsonRpcProvider
   appChainId: ChainsValues
 }) => {
-  console.log('[fetchCollaterals] protocols: ', protocols)
   return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
     // @TODO: add maturity filter maturity_gte (Date.now()/1000).toString()
     // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     where: {
       address_in: userCollaterals,
       vaultName_not_contains_nocase: 'deprecated',
-      // should filter on collateral.vault.type (Element) or collateral.protocol (Element Finance) name ackshually
-      // vaultName_in: ["vaultEPT_eP:eyUSDC:10-AUG-22-GMT"],
     },
     orderBy: CollateralType_orderBy.maturity,
     orderDirection: OrderDirection.desc,
@@ -97,13 +91,15 @@ export const fetchCollaterals = ({
                 ?.discountRate,
             ) ?? null
 
+          // should filter on collateral.vault.type (Element) or collateral.protocol (Element Finance) name ackshually
+          // vaultName_in: ["vaultEPT_eP:eyUSDC:10-AUG-22-GMT"],
           return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
         }),
     )
   })
 }
 
-export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
+export const useCollaterals = (filterByInMyWallet: boolean, protocolsToFilterBy: string[]) => {
   const {
     address: currentUserAddress,
     appChainId,
@@ -112,16 +108,13 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   const [collaterals, setCollaterals] = useState<Collateral[]>([])
   const { positions } = usePositionsByUser()
 
-  console.log('[useCollaterals] filters: ', protocols)
   const { data, error } = useSWR(['collaterals', appChainId], () =>
     fetchCollaterals({
-      protocols: protocols?.length > 0 ? protocols : undefined,
       collaterals: undefined,
       provider,
       appChainId,
     }),
   )
-  console.log('[useCollaterals] data: ', data)
 
   const userTokens = useUserTokensInWallet({
     collaterals: data,
@@ -130,18 +123,24 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
   })
 
   useEffect(() => {
-    const walletFilteredData = inMyWallet
+    // apply filters
+    const walletFilteredData = filterByInMyWallet
       ? data?.filter(
           (collateral) =>
             !!userTokens?.find((userToken: string) => collateral.address === userToken),
         )
       : data
+
+    const protocolFilteredData = walletFilteredData?.filter((c) =>
+      protocolsToFilterBy.includes(c.protocol),
+    )
+
     const vaultAddresses = getVaultAddresses(appChainId)
-    const filteredData = walletFilteredData?.filter(({ vault }) =>
+    const validVaultFilteredData = protocolFilteredData?.filter(({ vault }) =>
       vaultAddresses.includes(vault.address),
     )
 
-    const newCollaterals = filteredData?.map((collateral) => {
+    const newCollaterals = validVaultFilteredData?.map((collateral) => {
       const position = positions.find(
         (p) => p.collateral.address.toLowerCase() === collateral.address?.toLowerCase(),
       )
@@ -151,7 +150,7 @@ export const useCollaterals = (inMyWallet: boolean, protocols: string[]) => {
     sortByMaturity(newCollaterals)
 
     setCollaterals(newCollaterals || [])
-  }, [data, positions, inMyWallet, userTokens, protocols, appChainId])
+  }, [data, positions, filterByInMyWallet, userTokens, protocolsToFilterBy, appChainId])
 
   if (isDev() && error) {
     console.error(error)
