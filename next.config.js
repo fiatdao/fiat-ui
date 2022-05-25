@@ -49,6 +49,18 @@ const moduleExports = {
   env: {
     commitHash: Buffer.from(require('child_process').execSync('git rev-parse --short HEAD')).toString().trim()
   },
+  exportPathMap: async function (
+    defaultPathMap,
+    { dev, dir, outDir, distDir, buildId }
+  ) {
+    return {
+      '/': { page: '/' },
+      '/create-position': { page: '/create-position' },
+      '/auctions': { page: '/auctions' },
+      '/404': { page: '/404' },
+      '/p/deploy-nextjs': { page: '/post', query: { title: 'deploy-nextjs' } },
+    }
+  },
 }
 
 const sentryWebpackPluginOptions = {
