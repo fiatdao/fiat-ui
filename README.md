@@ -1,4 +1,5 @@
 # FIAT UI
+Get leverage and access secondary liquidity for your favorite DeFi fixed income assets.
 
 ## Getting Started Instructions
 1. Clone the project: `git clone git@github.com:fiatdao/fiat-ui.git`.
