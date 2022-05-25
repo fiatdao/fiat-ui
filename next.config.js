@@ -50,7 +50,7 @@ const moduleExports = {
     commitHash: Buffer.from(require('child_process').execSync('git rev-parse --short HEAD')).toString().trim()
   },
   // Required for Fleek.io deploy
-  exportTrailingSlash: true,
+  trailingSlash: true,
   exportPathMap: async function (
     defaultPathMap,
     { dev, dir, outDir, distDir, buildId }
