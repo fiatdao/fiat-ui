@@ -17,9 +17,8 @@ import { AuctionData } from '@/src/utils/data/auctions'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
 
-const AuctionsTable = ({ columns, filters }: any) => {
-  // TODO: make sure auctions returned are filtered
-  const { auctions } = useAuctions(filters)
+const AuctionsTable = ({ columns, protocolsToFilterBy }: any) => {
+  const { auctions } = useAuctions(protocolsToFilterBy)
 
   return (
     <Table
@@ -116,7 +115,7 @@ const Auctions = () => {
           <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
         }
       >
-        <AuctionsTable columns={columns} filters={protocolsToFilterBy} />
+        <AuctionsTable columns={columns} protocolsToFilterBy={protocolsToFilterBy} />
       </SafeSuspense>
     </>
   )
