@@ -112,7 +112,7 @@ const CreatePosition = () => {
   return (
     <>
       <h2 className={cn(s.title)}>Select a collateral type to add to your FIAT positions</h2>
-      {renderFilters()}
+      <div>{renderFilters()}</div>
 
       <SafeSuspense
         fallback={

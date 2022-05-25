@@ -48,7 +48,7 @@ export const useProtocolFilters = () => {
     setFilterState({ ...filterState, protocolFilters: newProtocolFilters })
   }
 
-  // TODO: this works. add back clear button.
+  // maybe todo: this works. add back clear button if desired
   // const clearAllFilters = () => {
   //   const newProtocolFilters = filterState.protocolFilters.map((protocolFilter) =>
   //     Object.assign({ ...protocolFilter, isActive: false }),
@@ -122,6 +122,7 @@ export const useProtocolFilters = () => {
           />
         )}
       </div>
+
       <Popover
         arrowContent={false}
         content={
