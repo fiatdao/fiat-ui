@@ -91,6 +91,7 @@ function App({ Component, pageProps }: AppProps) {
                   <Header />
                   <Layout.Content>
                     <SafeSuspense fallback={<Spin />}>
+                      {/* @ts-ignore */}
                       <Component {...pageProps} />
                     </SafeSuspense>
                   </Layout.Content>
