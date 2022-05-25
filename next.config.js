@@ -59,8 +59,7 @@ const moduleExports = {
       '/': { page: '/' },
       '/create-position': { page: '/create-position' },
       '/auctions': { page: '/auctions' },
-      '/404': { page: '/404' },
-      '/p/deploy-nextjs': { page: '/post', query: { title: 'deploy-nextjs' } },
+      '/404': { page: '/404' }
     }
   },
 }
