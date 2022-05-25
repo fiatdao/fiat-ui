@@ -3,9 +3,8 @@ import React from 'react'
 import { InputProps as AntdInputProps } from 'antd/lib/input/Input'
 import cn from 'classnames'
 import { isAddress } from 'web3-utils'
-import Input from '@/src/components/antd/input'
-
 import Identicon from '@/src/components/custom/identicon'
+import Input from '@/src/components/antd/input'
 
 export type TokenInputProps = AntdInputProps
 

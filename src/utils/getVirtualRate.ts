@@ -1,6 +1,6 @@
 import { getHumanValue } from '../web3/utils'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { WAD_DECIMALS } from '@/src/constants/misc'

@@ -1,5 +1,5 @@
-import useSWR, { KeyedMutator, SWRConfiguration } from 'swr'
 import { Contract, ContractInterface } from '@ethersproject/contracts'
+import useSWR, { KeyedMutator, SWRConfiguration } from 'swr'
 import contractCall from '@/src/utils/contractCall'
 
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'

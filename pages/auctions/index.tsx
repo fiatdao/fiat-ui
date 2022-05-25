@@ -1,8 +1,8 @@
 import s from './s.module.scss'
-import BigNumber from 'bignumber.js'
-import Link from 'next/link'
-import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
+import { ColumnsType } from 'antd/lib/table/interface'
+import Link from 'next/link'
+import BigNumber from 'bignumber.js'
 import { useProtocolFilters } from '@/src/hooks/useProtocolFilters'
 import { FIAT_TICKER } from '@/src/constants/misc'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
@@ -44,8 +44,8 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'protocol',
-      render: (protocol: AuctionData['protocol'], { url }) => (
-        <Asset mainAsset={protocol.name ?? ''} title={protocol.humanReadableName ?? ''} url={url} />
+      render: (protocol: AuctionData['protocol']) => (
+        <Asset mainAsset={protocol.name ?? ''} title={protocol.humanReadableName ?? ''} />
       ),
       title: 'Protocol',
       width: 200,
@@ -53,7 +53,7 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'asset',
-      render: (value: string) => <CellValue value={value} />,
+      render: (value: string, { url }) => <CellValue url={url} value={value} />,
       title: 'Asset',
     },
     {

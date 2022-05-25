@@ -1,20 +1,18 @@
-import isDev from '../src/utils/isDev'
+import { Layout } from 'antd'
+import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import Script from 'next/script'
-
-import type { AppProps } from 'next/app'
 import { SWRConfig } from 'swr'
-import { Layout } from 'antd'
-import SafeSuspense from '@/src/components/custom/safe-suspense'
-import GeneralContextProvider from '@/src/providers/generalProvider'
-import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
-import KnownTokensProvider from '@/src/providers/knownTokensProvider'
-import ChangeNetworkModal from '@/src/components/custom/change-network-modal'
-import { Sidebar } from '@/src/components/custom/sidebar'
+import isDev from '@/src/utils/isDev'
 import Spin from '@/src/components/antd/spin'
-
-import '@/src/styles/index.scss'
+import ChangeNetworkModal from '@/src/components/custom/change-network-modal'
 import { Header } from '@/src/components/custom/header'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
+import { Sidebar } from '@/src/components/custom/sidebar'
+import GeneralContextProvider from '@/src/providers/generalProvider'
+import KnownTokensProvider from '@/src/providers/knownTokensProvider'
+import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
+import '@/src/styles/index.scss'
 
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
@@ -91,6 +89,7 @@ function App({ Component, pageProps }: AppProps) {
                   <Header />
                   <Layout.Content>
                     <SafeSuspense fallback={<Spin />}>
+                      {/* @ts-ignore */}
                       <Component {...pageProps} />
                     </SafeSuspense>
                   </Layout.Content>

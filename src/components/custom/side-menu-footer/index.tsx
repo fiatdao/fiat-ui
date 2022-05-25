@@ -1,7 +1,7 @@
 import s from './s.module.scss'
 import InternalArrow from '../../../resources/svg/interal-arrow.svg'
-import cn from 'classnames'
 import { HTMLAttributes } from 'react'
+import cn from 'classnames'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { AddTokenButton } from '@/src/components/custom/add-token-button'
 import { Chains } from '@/src/constants/chains'

@@ -1,6 +1,6 @@
 import s from './s.module.scss'
-import cn from 'classnames'
 import React, { useState } from 'react'
+import cn from 'classnames'
 import { Text } from '@/src/components/custom/typography'
 import HeaderInfoButton from '@/src/components/custom/header-info-button'
 import { ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/chains'
