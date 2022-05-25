@@ -395,7 +395,7 @@ export const useManageFormSummary = (
       value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(3),
     },
     {
-      title: 'FIAT to be minted',
+      title: 'Estimated FIAT to be minted',
       titleTooltip: FIAT_TO_MINT_TOOLTIP_TEXT,
       value: getHumanValue(
         deltaDebt.gt(0) ? deltaDebt.div(position.virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE)) : 0,

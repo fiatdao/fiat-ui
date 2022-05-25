@@ -196,11 +196,11 @@ const FormERC20: React.FC<{
   const summaryData = [
     {
       title: 'In your wallet',
-      value: `${tokenInfo?.humanValue} ${tokenSymbol}`,
+      value: `${tokenInfo?.humanValue?.toFixed(3)} ${tokenSymbol}`,
     },
     {
       title: 'Depositing into position',
-      value: `${stateMachine.context.erc20Amount.toFixed(4)} ${tokenSymbol}`,
+      value: `${stateMachine.context.erc20Amount.toFixed(3)} ${tokenSymbol}`,
     },
     {
       title: 'Remaining in wallet',
@@ -211,15 +211,15 @@ const FormERC20: React.FC<{
     {
       // debt
       title: 'Estimated FIAT debt',
-      value: `${stateMachine.context.fiatAmount.toFixed(4)}`,
+      value: `${stateMachine.context.fiatAmount.toFixed(3)}`,
     },
     {
       // normalDebt
-      title: 'FIAT to be minted',
+      title: 'Estimated FIAT to be minted',
       titleTooltip: FIAT_TO_MINT_TOOLTIP_TEXT,
       value: `${stateMachine.context.fiatAmount
         .div(collateral.vault.virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
-        .toFixed(4)}`,
+        .toFixed(3)}`,
     },
     {
       state: getHealthFactorState(hf),
