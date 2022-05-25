@@ -1,16 +1,19 @@
+import { scaleToDecimalsCount } from './auctions'
 import { getVirtualRate } from '../getVirtualRate'
 import { getFaceValue } from '../getFaceValue'
+import { differenceInDays } from 'date-fns'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import BigNumber from 'bignumber.js'
 import { stringToDateOrCurrent } from '@/src/utils/dateTime'
-import contractCall from '@/src/utils/contractCall'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
+import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
+import { COLLATERALS } from '@/src/queries/collaterals'
 import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
 
 import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
-import { contracts } from '@/src/constants/contracts'
-import { ERC20 } from '@/types/typechain'
 import {
   INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
@@ -20,9 +23,7 @@ import {
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
 import { Maybe } from '@/types/utils'
-import { differenceInDays } from 'date-fns'
-import { JsonRpcProvider } from '@ethersproject/providers'
-import BigNumber from 'bignumber.js'
+import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
 
 export type Position = {
   id: string
@@ -78,21 +79,25 @@ const _getCurrentValue = (
 
 const getDecimals = async (
   address: string | null | undefined,
-  provider: JsonRpcProvider,
+  appChainId: ChainsValues,
 ): Promise<number> => {
   if (!address) {
     return 18
   }
+  const decimals = await graphqlFetcher<Collaterals, CollateralsVariables>(
+    appChainId,
+    COLLATERALS,
+  ).then(async ({ collateralTypes }) => {
+    const decimals = collateralTypes
+      .map((c) => {
+        if (c.address === address) return scaleToDecimalsCount(c.scale)
+        if (c.underlierAddress === address) return scaleToDecimalsCount(c.underlierScale)
+      })
+      .filter((d) => Number.isInteger(d)) as number[]
+    return decimals.length ? decimals[0] : 18
+  })
 
-  const decimals = await contractCall<ERC20, 'decimals'>(
-    address,
-    contracts.ERC_20.abi,
-    provider,
-    'decimals',
-    null,
-  )
-
-  return decimals ?? 18
+  return decimals
 }
 
 export const getDateState = (maturityDate: Date) => {
@@ -174,8 +179,8 @@ const wranglePosition = async (
     await Promise.all([
       _getCurrentValue(position, appChainId, provider),
       getFaceValue(provider, position.collateralType?.tokenId ?? 0, position.vault?.address ?? ''),
-      getDecimals(position.collateralType?.address, provider), // collateral is an ERC20 token
-      getDecimals(position.collateralType?.underlierAddress, provider),
+      getDecimals(position.collateralType?.address, appChainId), // collateral is an ERC20 token
+      getDecimals(position.collateralType?.underlierAddress, appChainId),
       getVirtualRate(position.vault?.address ?? '', appChainId, provider),
     ])
 
