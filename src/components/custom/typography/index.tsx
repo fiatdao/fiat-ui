@@ -1,8 +1,8 @@
 import s from './s.module.scss'
-import React from 'react'
-import cn from 'classnames'
 import Icon from '@/src/components/custom/icon'
 import { Tooltip } from '@/src/components/custom/tooltip'
+import React from 'react'
+import cn from 'classnames'
 
 export type TextProps = {
   tag?:

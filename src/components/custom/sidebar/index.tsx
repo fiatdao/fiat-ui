@@ -1,13 +1,13 @@
 import s from './s.module.scss'
+import { Menu } from '@/src/components/custom/menu'
+import { Logo } from '@/src/components/custom/logo'
+import Chevron from '@/src/resources/svg/chevron.svg'
+import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
 import { useState } from 'react'
 import { Button } from 'antd'
 import cn from 'classnames'
 import { SiderProps } from 'antd/lib/layout'
 import { Layout } from 'antd'
-import { Menu } from '@/src/components/custom/menu'
-import { Logo } from '@/src/components/custom/logo'
-import Chevron from '@/src/resources/svg/chevron.svg'
-import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
 
 export const Sidebar: React.FC<SiderProps> = ({ className, ...restProps }) => {
   const [collapsed, setCollapsed] = useState(false)
