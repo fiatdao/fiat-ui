@@ -11,10 +11,9 @@ import Tooltip from '@/src/components/antd/tooltip'
 import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 import Info from '@/src/resources/svg/info.svg'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { debounce } from 'lodash'
 import cn from 'classnames'
 import BigNumber from 'bignumber.js'
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 
 export type TokenAmountProps = {
   className?: string
@@ -70,45 +69,37 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     isHealthFactorVariant ? GREEN_COLOR : RED_COLOR,
   )
 
-  const debouncedCoerceMaxyValueToMax = useMemo(
-    () =>
-      debounce((bigNumberSliderValue: BigNumber) => {
-        // Dragging slider to max can result in a `sliderValue` slightly lower than max
-        // due to precision differences between the `number` and `BigNumber` types
-        // So, if `sliderValue` is extremely close to max slider value, just max out the slider
-        if (bigNumberSliderValue.plus(MIN_EPSILON_OFFSET).gte(bnMaxValue)) {
-          onChange?.(BigNumber.from(bnMaxValue))
-        } else {
-          onChange?.(bigNumberSliderValue)
-        }
-      }, 20),
-    [bnMaxValue, onChange],
-  )
+  const coerceMaxyValueToMax = (bigNumberSliderValue: BigNumber) => {
+    // Dragging slider to max can result in a `sliderValue` slightly lower than max
+    // due to precision differences between the `number` and `BigNumber` types
+    // So, if `sliderValue` is extremely close to max slider value, just max out the slider
+    if (bigNumberSliderValue.plus(MIN_EPSILON_OFFSET).gte(bnMaxValue)) {
+      onChange?.(BigNumber.from(bnMaxValue))
+    } else {
+      onChange?.(bigNumberSliderValue)
+    }
+  }
 
-  const debouncedUpdateSliderTrackColor = useMemo(
-    () =>
-      debounce((sliderValue: number) => {
-        const slidePct = sliderValue / bnMaxValue.toNumber()
-        if (isHealthFactorVariant) {
-          if (slidePct < 0.5) {
-            setSliderTrackColor(GREEN_COLOR)
-          } else if (slidePct < 0.75) {
-            setSliderTrackColor(YELLOW_COLOR)
-          } else {
-            setSliderTrackColor(RED_COLOR)
-          }
-        } else if (isHealthFactorVariantReverse) {
-          if (slidePct < 0.5) {
-            setSliderTrackColor(RED_COLOR)
-          } else if (slidePct < 0.75) {
-            setSliderTrackColor(YELLOW_COLOR)
-          } else {
-            setSliderTrackColor(GREEN_COLOR)
-          }
-        }
-      }, 20),
-    [bnMaxValue, isHealthFactorVariant, isHealthFactorVariantReverse],
-  )
+  const updateSliderTrackColor = (sliderValue: number) => {
+    const slidePct = sliderValue / bnMaxValue.toNumber()
+    if (isHealthFactorVariant) {
+      if (slidePct < 0.5) {
+        setSliderTrackColor(GREEN_COLOR)
+      } else if (slidePct < 0.75) {
+        setSliderTrackColor(YELLOW_COLOR)
+      } else {
+        setSliderTrackColor(RED_COLOR)
+      }
+    } else if (isHealthFactorVariantReverse) {
+      if (slidePct < 0.5) {
+        setSliderTrackColor(RED_COLOR)
+      } else if (slidePct < 0.75) {
+        setSliderTrackColor(YELLOW_COLOR)
+      } else {
+        setSliderTrackColor(GREEN_COLOR)
+      }
+    }
+  }
 
   function onMaxHandle() {
     onChange?.(bnMaxValue)
@@ -198,8 +189,8 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
             onChange={(sliderValue) => {
               const bigNumberSliderValue = BigNumber.from(sliderValue)
               onChange?.(bigNumberSliderValue)
-              debouncedCoerceMaxyValueToMax(bigNumberSliderValue)
-              debouncedUpdateSliderTrackColor(sliderValue)
+              coerceMaxyValueToMax(bigNumberSliderValue)
+              updateSliderTrackColor(sliderValue)
             }}
             step={step}
             tooltipVisible={false}
