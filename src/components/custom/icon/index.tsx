@@ -1,7 +1,7 @@
 import s from './s.module.scss'
-import React, { CSSProperties } from 'react'
-import cn from 'classnames'
 
+import cn from 'classnames'
+import React, { CSSProperties } from 'react'
 import accountImgWithout from '@/src/resources/png/account_img_without.png'
 import accountImg from '@/src/resources/png/account_img.png'
 import addEnterSrc from '@/src/resources/png/add-enter.png'

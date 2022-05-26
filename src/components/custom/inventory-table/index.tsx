@@ -1,5 +1,5 @@
-import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
+import { ColumnsType } from 'antd/lib/table/interface'
 import { extractFieldsFromPositionId } from '@/src/utils/managePosition'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { getHealthFactorState, parseDate, remainingTime } from '@/src/utils/table'
@@ -18,8 +18,8 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'protocol',
-    render: (protocol: Position['protocol'], { url, vaultName }) => (
-      <Asset mainAsset={vaultName} title={protocol} url={url} />
+    render: (protocol: Position['protocol'], { vaultName }) => (
+      <Asset mainAsset={vaultName} title={protocol} />
     ),
     title: 'Protocol',
     width: 200,
@@ -27,7 +27,7 @@ const Columns: ColumnsType<Position> = [
   {
     align: 'left',
     dataIndex: 'asset',
-    render: (symbol: Position['asset']) => <CellValue bold value={symbol} />,
+    render: (symbol: Position['asset'], { url }) => <CellValue bold url={url} value={symbol} />,
     title: 'Asset',
     width: 200,
   },

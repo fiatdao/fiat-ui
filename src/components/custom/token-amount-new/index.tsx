@@ -1,8 +1,8 @@
 import s from './s.module.scss'
-import React from 'react'
-import BigNumber from 'bignumber.js'
-import cn from 'classnames'
 
+import cn from 'classnames'
+import BigNumber from 'bignumber.js'
+import React from 'react'
 import { DropdownList } from '@/src/components/custom/dropdown'
 import Icon, { TokenIconNames } from '@/src/components/custom/icon'
 import { Slider } from '@/src/components/custom/slider'

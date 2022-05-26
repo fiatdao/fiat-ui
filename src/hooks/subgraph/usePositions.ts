@@ -1,5 +1,5 @@
-import useSWR from 'swr'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import useSWR from 'swr'
 import { POSITIONS } from '@/src/queries/positions'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { Positions, PositionsVariables } from '@/types/subgraph/__generated__/Positions'

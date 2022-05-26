@@ -1,6 +1,6 @@
 import { useNotifications } from './useNotifications'
-import { useCallback, useMemo, useState } from 'react'
 import { Contract } from 'ethers'
+import { useCallback, useMemo, useState } from 'react'
 import { contracts } from '@/src/constants/contracts'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
 import useContractCall from '@/src/hooks/contracts/useContractCall'

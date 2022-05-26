@@ -7,8 +7,8 @@ import useSWR, { KeyedMutator } from 'swr'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import { BigNumberish, Contract } from 'ethers'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { ERC20 } from '@/types/typechain'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 type UseDecimalsAndTokenValue = {
   tokenInfo?: TokenInfo

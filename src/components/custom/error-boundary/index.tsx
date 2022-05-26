@@ -1,7 +1,6 @@
 import React from 'react'
 import AntdNotification from 'antd/lib/notification'
 import AntdResult from 'antd/lib/result'
-
 import { Text } from '@/src/components/custom/typography'
 
 type State = {

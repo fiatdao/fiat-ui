@@ -1,5 +1,4 @@
 import { Contract } from '@ethersproject/contracts'
-
 import { Await } from '@/types/utils'
 
 export type ContractReturnType<

@@ -1,8 +1,8 @@
 import { Button, notification as antdNotification } from 'antd'
 import { useRouter } from 'next/router'
 import { useCallback } from 'react'
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { TransactionError } from '@/src/utils/TransactionError'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 
 export const useNotifications = () => {
   const { getExplorerUrlForTxHash } = useWeb3Connection()

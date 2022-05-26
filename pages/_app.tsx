@@ -1,10 +1,9 @@
 import isDev from '../src/utils/isDev'
 import Head from 'next/head'
-import Script from 'next/script'
-
-import type { AppProps } from 'next/app'
-import { SWRConfig } from 'swr'
 import { Layout } from 'antd'
+import { SWRConfig } from 'swr'
+import type { AppProps } from 'next/app'
+import Script from 'next/script'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import GeneralContextProvider from '@/src/providers/generalProvider'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
@@ -12,7 +11,6 @@ import KnownTokensProvider from '@/src/providers/knownTokensProvider'
 import ChangeNetworkModal from '@/src/components/custom/change-network-modal'
 import { Sidebar } from '@/src/components/custom/sidebar'
 import Spin from '@/src/components/antd/spin'
-
 import '@/src/styles/index.scss'
 import { Header } from '@/src/components/custom/header'
 
@@ -91,6 +89,7 @@ function App({ Component, pageProps }: AppProps) {
                   <Header />
                   <Layout.Content>
                     <SafeSuspense fallback={<Spin />}>
+                      {/* @ts-ignore */}
                       <Component {...pageProps} />
                     </SafeSuspense>
                   </Layout.Content>

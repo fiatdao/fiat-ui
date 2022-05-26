@@ -1,9 +1,10 @@
 import s from './s.module.scss'
-import { useRouter } from 'next/router'
-import cn from 'classnames'
 import { useState } from 'react'
+import cn from 'classnames'
+import { useRouter } from 'next/router'
 import { getHealthFactorState } from '@/src/utils/table'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
+import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
 import { Tab, Tabs } from '@/src/components/custom'
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
@@ -109,4 +110,4 @@ const YourPositions = () => {
   )
 }
 
-export default withRequiredConnection(YourPositions)
+export default withRequiredConnection(withRequiredValidChain(YourPositions))

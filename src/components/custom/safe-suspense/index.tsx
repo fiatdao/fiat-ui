@@ -16,6 +16,7 @@ export default function SafeSuspense({
   fallback = <DefaultFallback />,
 }: Props): JSX.Element {
   return (
+    // @ts-ignore
     <ErrorBoundary fallbackRender={(props: any) => <GeneralError {...props} />}>
       <Suspense fallback={fallback}>{children}</Suspense>
     </ErrorBoundary>

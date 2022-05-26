@@ -1,15 +1,16 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import React, { useCallback, useEffect, useState } from 'react'
-import AntdForm from 'antd/lib/form'
-import BigNumber from 'bignumber.js'
-import Lottie from 'lottie-react'
 import Link from 'next/link'
+import Lottie from 'lottie-react'
+import BigNumber from 'bignumber.js'
+import AntdForm from 'antd/lib/form'
+import React, { useCallback, useEffect, useState } from 'react'
+import cn from 'classnames'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
+
 import {
   useManageFormSummary,
   useManagePositionForm,

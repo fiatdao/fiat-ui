@@ -13,6 +13,7 @@
     "prettier:fix": "prettier --write \"./**/*.{js,jsx,ts,tsx}\"",
     "metadata": "node scripts/metadata.js",
     "start": "next start",
+    "export": "next export",
     "typechain": "typechain --target=ethers-v5 ./src/abis/**/*.json --out-dir ./types/typechain/",
     "schema": "bash scripts/apollo-schema.sh"
   },
