@@ -14,12 +14,12 @@ import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useBuyCollateralForm } from '@/src/hooks/useBuyCollateralForm'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { Summary } from '@/src/components/custom/summary'
-import { useState } from 'react'
-import cn from 'classnames'
-import BigNumber from 'bignumber.js'
-import AntdForm from 'antd/lib/form'
-import Link from 'next/link'
 import Lottie from 'lottie-react'
+import Link from 'next/link'
+import AntdForm from 'antd/lib/form'
+import BigNumber from 'bignumber.js'
+import cn from 'classnames'
+import { useState } from 'react'
 
 const StepperTitle: React.FC<{
   currentStep: number

@@ -9,10 +9,10 @@ import Spin from '@/src/components/antd/spin'
 import '@/src/styles/index.scss'
 import { Header } from '@/src/components/custom/header'
 import Head from 'next/head'
-import { Layout } from 'antd'
-import { SWRConfig } from 'swr'
-import type { AppProps } from 'next/app'
 import Script from 'next/script'
+import type { AppProps } from 'next/app'
+import { SWRConfig } from 'swr'
+import { Layout } from 'antd'
 
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
