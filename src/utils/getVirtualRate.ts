@@ -1,11 +1,11 @@
 import { getHumanValue } from '../web3/utils'
-import BigNumber from 'bignumber.js'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import contractCall from '@/src/utils/contractCall'
 import { Publican } from '@/types/typechain'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import BigNumber from 'bignumber.js'
 
 export const getVirtualRate = async (
   appChainId: ChainsValues,

@@ -1,4 +1,3 @@
-import React from 'react'
 import Grid from '@/src/components/custom/grid'
 import HeaderInfoButton from '@/src/components/custom/header-info-button'
 import Modal from '@/src/components/antd/modal'
@@ -6,6 +5,7 @@ import { ChainsValues, chainsConfig } from '@/src/constants/chains'
 import { Text } from '@/src/components/custom/typography'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import isDev from '@/src/utils/isDev'
+import React from 'react'
 
 const ChangeNetworkModal: React.FC = () => {
   const { changeNetworkModalOpen, setChangeNetworkModalOpen, setNetwork } = useWeb3Connection()

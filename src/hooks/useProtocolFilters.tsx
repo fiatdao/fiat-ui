@@ -1,6 +1,4 @@
 import Popover from 'src/components/antd/popover'
-import { useCallback, useMemo, useState } from 'react'
-import cn from 'classnames'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import Filter from '@/src/resources/svg/filter.svg'
@@ -9,6 +7,8 @@ import ButtonOutline from '@/src/components/antd/button-outline'
 import { getProtocolsWithIcon } from '@/src/constants/bondTokens'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { PROTOCOLS, Protocol, protocolNamesByKeyword } from '@/types/protocols'
+import cn from 'classnames'
+import { useCallback, useMemo, useState } from 'react'
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: string }>
 

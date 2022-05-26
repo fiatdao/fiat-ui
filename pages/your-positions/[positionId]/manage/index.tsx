@@ -1,10 +1,4 @@
 import s from './s.module.scss'
-import Link from 'next/link'
-import Lottie from 'lottie-react'
-import BigNumber from 'bignumber.js'
-import AntdForm from 'antd/lib/form'
-import React, { useCallback, useEffect, useState } from 'react'
-import cn from 'classnames'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
@@ -30,6 +24,12 @@ import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+import cn from 'classnames'
+import React, { useCallback, useEffect, useState } from 'react'
+import AntdForm from 'antd/lib/form'
+import BigNumber from 'bignumber.js'
+import Lottie from 'lottie-react'
+import Link from 'next/link'
 
 const LAST_STEP = 4
 

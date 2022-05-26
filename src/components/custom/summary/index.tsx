@@ -1,8 +1,8 @@
 import s from './s.module.scss'
-import cn from 'classnames'
 import Tooltip from '@/src/components/antd/tooltip'
 import Grid from '@/src/components/custom/grid'
 import Info from '@/src/resources/svg/info.svg'
+import cn from 'classnames'
 
 export const SummaryItem: React.FC<{
   state?: 'ok' | 'warning' | 'danger' | undefined

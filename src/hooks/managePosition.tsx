@@ -5,8 +5,6 @@ import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
 import { parseDate } from '../utils/dateTime'
 import { getHealthFactorState } from '../utils/table'
-import BigNumber from 'bignumber.js'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 import { contracts } from '@/src/constants/contracts'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
@@ -30,6 +28,8 @@ import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import BigNumber from 'bignumber.js'
 
 export type TokenInfo = {
   decimals?: number

@@ -1,8 +1,8 @@
-import React from 'react'
 import ConnectButton from '@/src/components/custom/connect-button'
 import Grid from '@/src/components/custom/grid'
 
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import React from 'react'
 
 const withRequiredConnection = (Component: React.FC) =>
   function Comp(props: any) {

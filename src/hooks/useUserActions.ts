@@ -1,8 +1,4 @@
 import { calculateNormalDebt } from '../utils/data/positions'
-import BigNumber from 'bignumber.js'
-import { BigNumberish, Contract, ethers } from 'ethers'
-import { useCallback, useMemo } from 'react'
-import { TransactionResponse } from '@ethersproject/providers'
 import { contracts } from '@/src/constants/contracts'
 import { useNotifications } from '@/src/hooks/useNotifications'
 import useUserProxy from '@/src/hooks/useUserProxy'
@@ -10,6 +6,10 @@ import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { TransactionError } from '@/src/utils/TransactionError'
 import { estimateGasLimit } from '@/src/web3/utils'
 import { VaultEPTActions } from '@/types/typechain'
+import { TransactionResponse } from '@ethersproject/providers'
+import { useCallback, useMemo } from 'react'
+import { BigNumberish, Contract, ethers } from 'ethers'
+import BigNumber from 'bignumber.js'
 
 type BaseModify = {
   vault: string

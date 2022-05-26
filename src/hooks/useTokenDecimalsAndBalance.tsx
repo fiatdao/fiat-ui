@@ -3,12 +3,12 @@ import { contracts } from '../constants/contracts'
 import { getHumanValue } from '../web3/utils'
 import { ERC1155 } from '../../types/typechain'
 import { TokenData } from '../../types/token'
+import { ERC20 } from '@/types/typechain'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import useSWR, { KeyedMutator } from 'swr'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import { BigNumberish, Contract } from 'ethers'
-import { ERC20 } from '@/types/typechain'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 type UseDecimalsAndTokenValue = {
   tokenInfo?: TokenInfo
