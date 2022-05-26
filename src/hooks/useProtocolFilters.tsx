@@ -1,6 +1,4 @@
 import Popover from 'src/components/antd/popover'
-import cn from 'classnames'
-import { useMemo, useState } from 'react'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import ToggleSwitch from '@/src/components/custom/toggle-switch'
 import Filter from '@/src/resources/svg/filter.svg'
@@ -8,6 +6,8 @@ import s from '@/pages/create-position/s.module.scss'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import { ProtocolFilter, getInitialProtocolFilters } from '@/src/constants/bondTokens'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import cn from 'classnames'
+import { useMemo, useState } from 'react'
 
 interface FilterState {
   filterByInMyWallet: boolean

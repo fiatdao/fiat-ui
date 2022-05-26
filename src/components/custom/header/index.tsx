@@ -36,6 +36,10 @@ export const Header: FC = ({ ...restProps }) => {
   return (
     <>
       <Layout.Header className={cn(s.component)} {...restProps}>
+        <ButtonMobileMenu
+          drawerVisible={drawerVisible}
+          onClick={() => setDrawerVisible((prev) => !prev)}
+        />
         <h1 className={cn(s.title)}>{title}</h1>
         <Logo className={cn(s.logoWrapper)} />
         <div className={cn(s.endWrapper)}>
@@ -53,15 +57,12 @@ export const Header: FC = ({ ...restProps }) => {
           )}
           {isConnected && <SelectNetworkDropdown />}
           {isConnected && <ConnectedWallet />}
-          <ButtonMobileMenu
-            drawerVisible={drawerVisible}
-            onClick={() => setDrawerVisible((prev) => !prev)}
-          />
         </div>
       </Layout.Header>
       <Drawer
         className={cn(s.drawer)}
         closable={false}
+        placement="left"
         visible={drawerVisible}
         width={'100%'}
         {...restProps}

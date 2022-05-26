@@ -49,6 +49,22 @@ const moduleExports = {
   env: {
     commitHash: Buffer.from(require('child_process').execSync('git rev-parse --short HEAD')).toString().trim()
   },
+  // Required for Fleek.io deploy
+  trailingSlash: true,
+  exportPathMap: async function (
+    defaultPathMap,
+    { dev, dir, outDir, distDir, buildId }
+  ) {
+    // Dynamic routes are intentionally not added
+    return {
+      '/': { page: '/create-position' },
+      '/create-position': { page: '/create-position' },
+      '/getting-started': { page: '/getting-started' },
+      '/auctions': { page: '/auctions' },
+      '/your-positions': { page: '/your-positions' },
+      '/404': { page: '/404' }
+    }
+  },
 }
 
 const sentryWebpackPluginOptions = {

@@ -1,3 +1,5 @@
+@import 'src/styles/text';
+
 .component {
   &:global(.ant-btn) {
     align-items: center;
@@ -7,7 +9,8 @@
     color: var(--theme-text-color);
     display: flex;
     font-size: 14px;
-    font-weight: 500;
+    font-family: var(--font-family);
+    font-weight: 700;
     height: var(--button-height);
     justify-content: center;
     line-height: 1.2;
