@@ -5,8 +5,8 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, wranglePosition } from '@/src/utils/data/positions'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { POSITIONS } from '@/src/queries/positions'
-import useSWR, { KeyedMutator } from 'swr'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import useSWR, { KeyedMutator } from 'swr'
 
 // FIXME Use fragment or find a way to unify queries
 export const fetchPosition = (

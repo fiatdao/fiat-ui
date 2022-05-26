@@ -4,8 +4,8 @@ import { contracts } from '@/src/constants/contracts'
 import { VIRTUAL_RATE, WAD_DECIMALS } from '@/src/constants/misc'
 import contractCall from '@/src/utils/contractCall'
 import { Publican } from '@/types/typechain'
-import BigNumber from 'bignumber.js'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import BigNumber from 'bignumber.js'
 
 export const getVirtualRate = async (
   vaultAddress: string,

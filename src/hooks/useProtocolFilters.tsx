@@ -7,8 +7,8 @@ import ButtonOutline from '@/src/components/antd/button-outline'
 import { getProtocolsWithIcon } from '@/src/constants/bondTokens'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { PROTOCOLS, Protocol, protocolNamesByKeyword } from '@/types/protocols'
-import { useCallback, useMemo, useState } from 'react'
 import cn from 'classnames'
+import { useCallback, useMemo, useState } from 'react'
 
 type FilterData = Record<Protocol, { active: boolean; name: string; icon: string }>
 
@@ -63,6 +63,16 @@ export const useProtocolFilters = () => {
 
   const toggleInMyWallet = () => setInMyWallet((prev) => !prev)
 
+  const clearButton = () => {
+    return activeFilters.length !== 0 ? (
+      <button className={cn(s.clear)} onClick={clearAllFilters}>
+        Clear
+      </button>
+    ) : (
+      <></>
+    )
+  }
+
   const renderFilters = () => (
     <>
       <ButtonOutline
@@ -97,12 +107,13 @@ export const useProtocolFilters = () => {
     <>
       <div className={cn(s.filters)}>
         {renderFilters()}
+        {clearButton()}
         {withWalletFilter && (
           <ToggleSwitch
             checked={inMyWallet}
             className={cn(s.switch)}
             disabled={!isWalletConnected}
-            label="In my wallet"
+            label="Assets in my wallet"
             onChange={toggleInMyWallet}
           />
         )}

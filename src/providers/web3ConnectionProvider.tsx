@@ -1,4 +1,5 @@
-import { RPC_URL_GOERLI } from '@/src/constants/misc'
+import { RequiredNonNull } from '@/types/utils'
+import isServer from '@/src/utils/isServer'
 import {
   Chains,
   ChainsValues,
@@ -7,8 +8,7 @@ import {
   getNetworkConfig,
   isValidChain,
 } from '@/src/constants/chains'
-import isServer from '@/src/utils/isServer'
-import { RequiredNonNull } from '@/types/utils'
+import { RPC_URL_GOERLI } from '@/src/constants/misc'
 import {
   Dispatch,
   ReactElement,

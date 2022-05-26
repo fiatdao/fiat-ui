@@ -5,8 +5,8 @@ import { wranglePosition } from '@/src/utils/data/positions'
 import sortByMaturity from '@/src/utils/sortByMaturity'
 import { ChainsValues } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import useSWR from 'swr'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 // TODO Import readonly provider from singleton
 export const fetchPositions = ({

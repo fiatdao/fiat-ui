@@ -7,10 +7,10 @@ import { contracts } from '@/src/constants/contracts'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { VaultEPTActions } from '@/types/typechain'
 import { estimateGasLimit } from '@/src/web3/utils'
-import BigNumber from 'bignumber.js'
-import { useCallback, useMemo } from 'react'
-import { BigNumberish, Contract, ethers } from 'ethers'
 import { TransactionResponse } from '@ethersproject/providers'
+import { BigNumberish, Contract, ethers } from 'ethers'
+import { useCallback, useMemo } from 'react'
+import BigNumber from 'bignumber.js'
 
 type BaseModify = {
   vault: string

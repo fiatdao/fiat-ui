@@ -15,9 +15,9 @@ import { parseDate, remainingTime, tablePagination } from '@/src/utils/table'
 import { getHumanValue } from '@/src/web3/utils'
 import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
 import { usePositionsByUser } from '@/src/hooks/subgraph/usePositionsByUser'
+import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
 import cn from 'classnames'
-import { ColumnsType } from 'antd/lib/table/interface'
 
 const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
   const collaterals = useCollaterals(inMyWallet, filters)

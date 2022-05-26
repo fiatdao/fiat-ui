@@ -5,8 +5,8 @@ import { ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/ch
 import { Divider, Popover } from '@/src/components/antd'
 import Grid from '@/src/components/custom/grid'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import React, { useState } from 'react'
 import cn from 'classnames'
+import React, { useState } from 'react'
 
 const ConnectedWallet: React.FC = () => {
   const { setNetwork, walletChainId } = useWeb3Connection()

@@ -13,11 +13,11 @@ import { SideMenuFooter } from '@/src/components/custom/side-menu-footer'
 import { ButtonMobileMenu } from '@/src/components/custom/button-mobile-menu'
 import { HeaderInfoButton } from '@/src/components/custom/header-info-button'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { FC, useState } from 'react'
-import { Drawer } from 'antd'
-import cn from 'classnames'
-import { Layout } from 'antd'
 import { useRouter } from 'next/router'
+import { Layout } from 'antd'
+import cn from 'classnames'
+import { Drawer } from 'antd'
+import { FC, useState } from 'react'
 
 const FiatBalanceInfo = () => {
   const [fiatBalance] = useFIATBalance(true)
@@ -36,6 +36,10 @@ export const Header: FC = ({ ...restProps }) => {
   return (
     <>
       <Layout.Header className={cn(s.component)} {...restProps}>
+        <ButtonMobileMenu
+          drawerVisible={drawerVisible}
+          onClick={() => setDrawerVisible((prev) => !prev)}
+        />
         <h1 className={cn(s.title)}>{title}</h1>
         <Logo className={cn(s.logoWrapper)} />
         <div className={cn(s.endWrapper)}>
@@ -53,15 +57,12 @@ export const Header: FC = ({ ...restProps }) => {
           )}
           {isConnected && <SelectNetworkDropdown />}
           {isConnected && <ConnectedWallet />}
-          <ButtonMobileMenu
-            drawerVisible={drawerVisible}
-            onClick={() => setDrawerVisible((prev) => !prev)}
-          />
         </div>
       </Layout.Header>
       <Drawer
         className={cn(s.drawer)}
         closable={false}
+        placement="left"
         visible={drawerVisible}
         width={'100%'}
         {...restProps}

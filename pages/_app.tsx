@@ -1,5 +1,4 @@
 import isDev from '../src/utils/isDev'
-
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import GeneralContextProvider from '@/src/providers/generalProvider'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
@@ -7,7 +6,6 @@ import KnownTokensProvider from '@/src/providers/knownTokensProvider'
 import ChangeNetworkModal from '@/src/components/custom/change-network-modal'
 import { Sidebar } from '@/src/components/custom/sidebar'
 import Spin from '@/src/components/antd/spin'
-
 import '@/src/styles/index.scss'
 import { Header } from '@/src/components/custom/header'
 import Head from 'next/head'

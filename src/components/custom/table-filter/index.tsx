@@ -3,8 +3,8 @@ import Popover from '@/src/components/antd/popover'
 
 import Badge from '@/src/components/custom/badge'
 import Icon from '@/src/components/custom/icon'
-import AntdForm from 'antd/lib/form'
 import React, { useState } from 'react'
+import AntdForm from 'antd/lib/form'
 
 export type TableFilterType = {
   name: string

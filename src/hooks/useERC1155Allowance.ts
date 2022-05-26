@@ -3,9 +3,9 @@ import { TransactionError } from '@/src/utils/TransactionError'
 import { useNotifications } from '@/src/hooks/useNotifications'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { contracts } from '@/src/constants/contracts'
-import { isAddress } from 'ethers/lib/utils'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Contract } from 'ethers'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { isAddress } from 'ethers/lib/utils'
 
 export const useERC155Allowance = (tokenAddress: string, spender: string) => {
   const { address: currentUserAddress, isAppConnected, web3Provider } = useWeb3Connected()
