@@ -11,6 +11,7 @@ import Tooltip from '@/src/components/antd/tooltip'
 import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 import Info from '@/src/resources/svg/info.svg'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { getHealthFactorState } from '@/src/utils/table'
 import cn from 'classnames'
 import BigNumber from 'bignumber.js'
 import React, { useState } from 'react'
@@ -55,9 +56,9 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     value,
   } = props
 
-  const GREEN_COLOR = '#67d772'
-  const YELLOW_COLOR = '#f7c411'
-  const RED_COLOR = '#f45e67'
+  const GREEN_COLOR = 'var(--theme-ok-color)'
+  const YELLOW_COLOR = 'var(--theme-warning-color)'
+  const RED_COLOR = 'var(--theme-danger-color)'
   const step = 1 / 10 ** Math.min(displayDecimals, 6)
   const bnMaxValue = BigNumber.from(max) ?? MAX_UINT_256
   const bnValue = value !== undefined ? BigNumber.min(value, bnMaxValue) : undefined
@@ -80,23 +81,23 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     }
   }
 
-  const updateSliderTrackColor = (sliderValue: number) => {
-    const slidePct = sliderValue / bnMaxValue.toNumber()
-    if (isHealthFactorVariant) {
-      if (slidePct < 0.5) {
-        setSliderTrackColor(GREEN_COLOR)
-      } else if (slidePct < 0.75) {
-        setSliderTrackColor(YELLOW_COLOR)
-      } else {
-        setSliderTrackColor(RED_COLOR)
+  const updateSliderTrackColor = () => {
+    if (healthFactorValue !== undefined) {
+      const hfbn = BigNumber.from(healthFactorValue)
+      if (!hfbn) {
+        return
       }
-    } else if (isHealthFactorVariantReverse) {
-      if (slidePct < 0.5) {
-        setSliderTrackColor(RED_COLOR)
-      } else if (slidePct < 0.75) {
-        setSliderTrackColor(YELLOW_COLOR)
-      } else {
-        setSliderTrackColor(GREEN_COLOR)
+      const healthFactorState = getHealthFactorState(hfbn)
+      switch (healthFactorState) {
+        case 'ok':
+          setSliderTrackColor(GREEN_COLOR)
+          break
+        case 'warning':
+          setSliderTrackColor(YELLOW_COLOR)
+          break
+        case 'danger':
+          setSliderTrackColor(RED_COLOR)
+          break
       }
     }
   }
@@ -190,13 +191,13 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               const bigNumberSliderValue = BigNumber.from(sliderValue)
               onChange?.(bigNumberSliderValue)
               coerceMaxyValueToMax(bigNumberSliderValue)
-              updateSliderTrackColor(sliderValue)
+              updateSliderTrackColor()
             }}
             step={step}
             tooltipVisible={false}
             trackStyle={{
               backgroundColor: sliderTrackColor,
-              transition: 'background-color .1s',
+              transition: 'background-color 0.24s ease',
             }}
             value={bnValue?.toNumber()}
           />
