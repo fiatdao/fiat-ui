@@ -28,6 +28,12 @@ import { metadataByNetwork } from '@/metadata'
 //   [chainId: number]: PTokenMap
 // }
 
+export interface ProtocolFilter {
+  protocolName: string
+  isActive: boolean
+  iconLink: string
+}
+
 // TODO: Create interface that can support all token types
 const getVaults = memoize((appChainId: ChainsValues): Record<string, any> => {
   // const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
@@ -92,15 +98,26 @@ export const getVaultAddresses = memoize((appChainId: ChainsValues) => {
   return Object.keys(vaults)
 })
 
-/// return map of {vaultName: iconLink}
-export const getProtocolsWithIcon = memoize((appChainId: ChainsValues) => {
-  const vaults = getVaults(appChainId)
+export const getInitialProtocolFilters = memoize(
+  (appChainId: ChainsValues): Array<ProtocolFilter> => {
+    const vaults = getVaults(appChainId)
 
-  let vaultNameToIconMap = {}
-  Object.values(vaults).forEach((vaultMetadata) => {
-    const lcName = vaultMetadata.name.split('_')[0].toLowerCase()
-    vaultNameToIconMap = Object.assign({ [lcName]: vaultMetadata.icons.main }, vaultNameToIconMap)
-  })
+    const protocolNamesSeen = new Set()
+    const initialProtocolFilters: Array<any> = []
+    Object.values(vaults).forEach((vaultMetadata) => {
+      const protocolName = vaultMetadata.protocol
+      if (!protocolNamesSeen.has(protocolName)) {
+        // If we haven't seen this protocol yet, add it to the initialProtocolFilters
+        const protocolFilter = {
+          protocolName,
+          iconLink: vaultMetadata.icons.main,
+          isActive: true,
+        } as ProtocolFilter
+        initialProtocolFilters.push(protocolFilter)
+        protocolNamesSeen.add(protocolName)
+      }
+    })
 
-  return vaultNameToIconMap
-})
+    return initialProtocolFilters as Array<ProtocolFilter>
+  },
+)
