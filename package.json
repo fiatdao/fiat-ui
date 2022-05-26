@@ -7,7 +7,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "lint:fix": "eslint --fix \"./**/*.{js,jsx,ts,tsx}\"",
+    "lint:fix": "next lint --fix",
     "lessc": "lessc src/styles/antd.less src/styles/antd.css -js",
     "prepare": "husky install; yarn typechain; yarn schema; yarn metadata",
     "prettier:fix": "prettier --write \"./**/*.{js,jsx,ts,tsx}\"",

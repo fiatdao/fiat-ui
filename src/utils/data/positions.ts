@@ -1,16 +1,14 @@
 import { getFaceValue } from '../getFaceValue'
 import { getVirtualRate } from '../getVirtualRate'
-import { stringToDateOrCurrent } from '@/src/utils/dateTime'
-import contractCall from '@/src/utils/contractCall'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
+import contractCall from '@/src/utils/contractCall'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
 import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
 
-import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
-import { ERC20 } from '@/types/typechain'
 import {
   INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
@@ -19,10 +17,12 @@ import {
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
+import { TokenData } from '@/types/token'
+import { ERC20 } from '@/types/typechain'
 import { Maybe } from '@/types/utils'
 import { differenceInDays } from 'date-fns'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 export type Position = {
   id: string

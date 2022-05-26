@@ -18,26 +18,32 @@ type UseAuctions = {
   error: any
 }
 
-export const useAuctions = (protocols: string[]): UseAuctions => {
+export const useAuctions = (protocolsToFilterBy: string[]): UseAuctions => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
 
   const vaultAddresses = getVaultAddresses(appChainId)
 
   // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
-  const { data, error } = useSWR(['auctions', protocols.join(), appChainId, provider], async () => {
-    const [{ collateralAuctions }, { timestamp }] = await Promise.all([
-      fetchAuctions(
-        appChainId,
-        protocols.length
-          ? { vault_in: vaultAddresses, vaultName_not_contains_nocase: 'deprecated' }
-          : null,
-      ),
-      provider.getBlock('latest'),
-    ])
-    return Promise.all(
-      collateralAuctions.map((auction) => wrangleAuction(auction, provider, appChainId, timestamp)),
-    )
-  })
+  const { data, error } = useSWR(
+    ['auctions', protocolsToFilterBy.join(), appChainId, provider],
+    async () => {
+      const [{ collateralAuctions }, { timestamp }] = await Promise.all([
+        fetchAuctions(
+          appChainId,
+          protocolsToFilterBy.length
+            ? { vault_in: vaultAddresses, vaultName_not_contains_nocase: 'deprecated' }
+            : null,
+        ),
+        provider.getBlock('latest'),
+      ])
+
+      return Promise.all(
+        collateralAuctions.map((auction) =>
+          wrangleAuction(auction, provider, appChainId, timestamp),
+        ),
+      )
+    },
+  )
 
   return { auctions: data, error, loading: !data && !error }
 }

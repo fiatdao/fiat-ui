@@ -2,12 +2,6 @@ import { usePosition } from './subgraph/usePosition'
 import { useERC155Allowance } from './useERC1155Allowance'
 import { useERC20Allowance } from './useERC20Allowance'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
-import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
-import { parseDate } from '../utils/dateTime'
-import { getHealthFactorState } from '../utils/table'
-import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
-import { contracts } from '@/src/constants/contracts'
-import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
   EXECUTE_TEXT,
@@ -20,7 +14,13 @@ import {
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
   getBorrowAmountBelowDebtFloorText,
-} from '@/src/constants/misc'
+} from '../constants/misc'
+import { parseDate } from '../utils/dateTime'
+import { getHealthFactorState } from '../utils/table'
+import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
+import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
+import { contracts } from '@/src/constants/contracts'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -28,8 +28,8 @@ import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Position, calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import BigNumber from 'bignumber.js'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export type TokenInfo = {
   decimals?: number

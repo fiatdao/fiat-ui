@@ -9,7 +9,6 @@ export const useCollateral = (collateralId: string) => {
   const { data, error } = useSWR(['collaterals', collateralId], () =>
     provider
       ? fetchCollateralById({
-          protocols: undefined,
           collateralId: collateralId,
           provider,
           appChainId,

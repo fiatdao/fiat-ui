@@ -1,5 +1,4 @@
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
-
 import { InfoBlocksGrid } from '@/src/components/custom/info-blocks-grid'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import Head from 'next/head'

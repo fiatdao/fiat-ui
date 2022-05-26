@@ -1,9 +1,5 @@
 import s from './s.module.scss'
 import { useERC155Allowance } from '../../../../src/hooks/useERC1155Allowance'
-import SafeSuspense from '@/src/components/custom/safe-suspense'
-import { getHealthFactorState } from '@/src/utils/table'
-import { useFIATBalance } from '@/src/hooks/useFIATBalance'
-import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { Balance } from '@/src/components/custom/balance'
@@ -12,6 +8,7 @@ import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
 import {
@@ -23,9 +20,11 @@ import {
   ZERO_BIG_NUMBER,
   getBorrowAmountBelowDebtFloorText,
 } from '@/src/constants/misc'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -37,19 +36,20 @@ import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { calculateHealthFactor } from '@/src/utils/data/positions'
 import { parseDate } from '@/src/utils/dateTime'
+import { getHealthFactorState } from '@/src/utils/table'
 import {
   getEtherscanAddressUrl,
   getHumanValue,
   getNonHumanValue,
   perSecondToAPR,
 } from '@/src/web3/utils'
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import Lottie from 'lottie-react'
-import cn from 'classnames'
-import BigNumber from 'bignumber.js'
-import AntdForm from 'antd/lib/form'
 import { useMachine } from '@xstate/react'
+import AntdForm from 'antd/lib/form'
+import BigNumber from 'bignumber.js'
+import cn from 'classnames'
+import Lottie from 'lottie-react'
+import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 
 // @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7

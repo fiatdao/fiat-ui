@@ -17,8 +17,8 @@ import Link from 'next/link'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 
-const AuctionsTable = ({ columns, filters }: any) => {
-  const { auctions } = useAuctions(filters)
+const AuctionsTable = ({ columns, protocolsToFilterBy }: any) => {
+  const { auctions } = useAuctions(protocolsToFilterBy)
 
   return (
     <Table
@@ -38,7 +38,7 @@ const UNKNOWN = 'Unknown'
 
 const Auctions = () => {
   const { isWalletConnected } = useWeb3Connection()
-  const { activeFilters, displayFilters } = useProtocolFilters()
+  const { protocolsToFilterBy, renderFilters } = useProtocolFilters()
 
   const columns: ColumnsType<any> = [
     {
@@ -109,13 +109,13 @@ const Auctions = () => {
   return (
     <>
       <h2 className={cn(s.title)}>Select a collateral asset on auction to buy</h2>
-      {displayFilters(false)}
+      {renderFilters(false)}
       <SafeSuspense
         fallback={
           <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
         }
       >
-        <AuctionsTable columns={columns} filters={activeFilters} />
+        <AuctionsTable columns={columns} protocolsToFilterBy={protocolsToFilterBy} />
       </SafeSuspense>
     </>
   )

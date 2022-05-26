@@ -19,8 +19,8 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import Link from 'next/link'
 
-const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
-  const collaterals = useCollaterals(inMyWallet, filters)
+const PositionsTable = ({ columns, filterByInMyWallet, protocolsToFilterBy }: any) => {
+  const collaterals = useCollaterals(filterByInMyWallet, protocolsToFilterBy)
 
   return (
     <Table
@@ -37,7 +37,7 @@ const PositionsTable = ({ columns, filters, inMyWallet }: any) => {
 
 const CreatePosition = () => {
   const { isWalletConnected } = useWeb3Connection()
-  const { activeFilters, displayFilters, inMyWallet } = useProtocolFilters()
+  const { filterByInMyWallet, protocolsToFilterBy, renderFilters } = useProtocolFilters()
   const { positions } = usePositionsByUser()
 
   const columns: ColumnsType<Collateral> = [
@@ -112,14 +112,18 @@ const CreatePosition = () => {
   return (
     <>
       <h2 className={cn(s.title)}>Select a collateral type to add to your FIAT positions</h2>
-      {displayFilters()}
+      <div>{renderFilters()}</div>
 
       <SafeSuspense
         fallback={
           <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
         }
       >
-        <PositionsTable columns={columns} filters={activeFilters} inMyWallet={inMyWallet} />
+        <PositionsTable
+          columns={columns}
+          filterByInMyWallet={filterByInMyWallet}
+          protocolsToFilterBy={protocolsToFilterBy}
+        />
       </SafeSuspense>
     </>
   )
