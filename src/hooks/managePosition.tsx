@@ -16,6 +16,8 @@ import {
 import { parseDate } from '../utils/dateTime'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
 import { getHealthFactorState } from '../utils/table'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import BigNumber from 'bignumber.js'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
@@ -26,8 +28,6 @@ import { Position, calculateHealthFactor, isValidHealthFactor } from '@/src/util
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import BigNumber from 'bignumber.js'
 
 export type TokenInfo = {
   decimals?: number

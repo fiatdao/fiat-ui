@@ -1,3 +1,4 @@
+import useSWR from 'swr'
 import { ChainsValues } from '@/src/constants/chains'
 import { AUCTION_BY_ID } from '@/src/queries/auction'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
@@ -8,7 +9,6 @@ import {
   auctionByIdVariables,
   auctionById_collateralAuction,
 } from '@/types/subgraph/__generated__/auctionById'
-import useSWR from 'swr'
 
 const getAuctionById = async (appChainId: ChainsValues, auctionId: string): Promise<auctionById> =>
   graphqlFetcher<auctionById, auctionByIdVariables>(appChainId, AUCTION_BY_ID, { id: auctionId })

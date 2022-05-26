@@ -16,8 +16,8 @@ import Network from '@/src/resources/svg/network.svg'
 import Status from '@/src/resources/svg/node-status.svg'
 import Wallet from '@/src/resources/svg/wallet.svg'
 import { getEtherscanAddressUrl, shortenAddr } from '@/src/web3/utils'
-import React from 'react'
 import cn from 'classnames'
+import React from 'react'
 
 const ProxyAddressCard = () => {
   const { appChainId } = useWeb3Connection()

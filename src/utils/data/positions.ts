@@ -1,5 +1,8 @@
 import { getVirtualRate } from '../getVirtualRate'
 import { getFaceValue } from '../getFaceValue'
+import { differenceInDays } from 'date-fns'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import BigNumber from 'bignumber.js'
 import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import contractCall from '@/src/utils/contractCall'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
@@ -20,9 +23,6 @@ import {
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
 import { Maybe } from '@/types/utils'
-import { differenceInDays } from 'date-fns'
-import { JsonRpcProvider } from '@ethersproject/providers'
-import BigNumber from 'bignumber.js'
 
 export type Position = {
   id: string

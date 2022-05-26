@@ -11,12 +11,12 @@ import gettingStartedMachine, {
 import CheckIcon from '@/src/resources/svg/circle-check-icon.svg'
 import ChevronDown from '@/src/resources/svg/chevron-down.svg'
 import CongratsImg from '@/src/resources/svg/congrats.svg'
-import useSWR from 'swr'
-import { useMachine } from '@xstate/react'
-import React, { useCallback, useEffect, useState } from 'react'
-import { Button, Steps } from 'antd'
-import YouTube from 'react-youtube'
 import cn from 'classnames'
+import YouTube from 'react-youtube'
+import { Button, Steps } from 'antd'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useMachine } from '@xstate/react'
+import useSWR from 'swr'
 
 const { Step } = Steps
 

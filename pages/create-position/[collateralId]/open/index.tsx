@@ -36,15 +36,14 @@ import { ONE_BIG_NUMBER, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
-
 import { calculateHealthFactor } from '@/src/utils/data/positions'
+import { useMachine } from '@xstate/react'
 import Lottie from 'lottie-react'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import cn from 'classnames'
 import BigNumber from 'bignumber.js'
 import AntdForm from 'antd/lib/form'
-import { useMachine } from '@xstate/react'
 
 // @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7

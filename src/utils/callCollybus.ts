@@ -1,8 +1,8 @@
 import { ChainsValues } from '../constants/chains'
+import { Contract } from '@ethersproject/contracts'
 import { Collybus } from '@/types/typechain'
 import { Await } from '@/types/utils'
 import { contracts } from '@/src/constants/contracts'
-import { Contract } from '@ethersproject/contracts'
 
 export default async function callCollybus<
   MethodName extends keyof Collybus['functions'],

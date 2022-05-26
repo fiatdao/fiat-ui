@@ -1,7 +1,7 @@
+import { memoize } from 'lodash'
 import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { metadataByNetwork } from '@/metadata'
-import { memoize } from 'lodash'
 
 // TODO: Create interface that can support all token types
 // type PTokenMap = {

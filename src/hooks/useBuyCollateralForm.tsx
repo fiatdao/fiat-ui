@@ -1,3 +1,7 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import BigNumber from 'bignumber.js'
+import { TransactionResponse } from '@ethersproject/providers'
+import { Contract } from '@ethersproject/contracts'
 import { useUserActions } from '@/src/hooks/useUserActions'
 
 import useContractCall from '@/src/hooks/contracts/useContractCall'
@@ -14,10 +18,6 @@ import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { AuctionData } from '@/src/utils/data/auctions'
 import { Maybe } from '@/types/utils'
 import { estimateGasLimit } from '@/src/web3/utils'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import BigNumber from 'bignumber.js'
-import { TransactionResponse } from '@ethersproject/providers'
-import { Contract } from '@ethersproject/contracts'
 
 export const useBuyCollateralForm = (auctionData?: AuctionData) => {
   const notification = useNotifications()

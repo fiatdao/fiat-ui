@@ -1,6 +1,6 @@
 import s from './s.module.scss'
-import Input from '@/src/components/antd/input'
 import Identicon from '@/src/components/custom/identicon'
+import Input from '@/src/components/antd/input'
 import React from 'react'
 import { InputProps as AntdInputProps } from 'antd/lib/input/Input'
 import cn from 'classnames'

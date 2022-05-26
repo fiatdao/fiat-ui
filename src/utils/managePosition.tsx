@@ -1,11 +1,11 @@
 import isDev from './isDev'
+import { ReactNode } from 'react'
 import NotionalIcon from '@/src/resources/svg/notional.svg'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { Chains } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import ElementIcon from '@/src/resources/svg/element.svg'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { ReactNode } from 'react'
 
 export const iconByAddress = new Proxy<Record<string, ReactNode>>(
   {

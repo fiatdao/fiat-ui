@@ -1,14 +1,3 @@
-import { RPC_URL_GOERLI } from '@/src/constants/misc'
-import {
-  Chains,
-  ChainsValues,
-  INITIAL_APP_CHAIN_ID,
-  chainsConfig,
-  getNetworkConfig,
-  isValidChain,
-} from '@/src/constants/chains'
-import isServer from '@/src/utils/isServer'
-import { RequiredNonNull } from '@/types/utils'
 import {
   Dispatch,
   ReactElement,
@@ -24,6 +13,17 @@ import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import Onboard from 'bnc-onboard'
 import { API, Wallet } from 'bnc-onboard/dist/src/interfaces'
 import { Subscriptions } from 'bnc-onboard/dist/src/interfaces'
+import { RequiredNonNull } from '@/types/utils'
+import isServer from '@/src/utils/isServer'
+import {
+  Chains,
+  ChainsValues,
+  INITIAL_APP_CHAIN_ID,
+  chainsConfig,
+  getNetworkConfig,
+  isValidChain,
+} from '@/src/constants/chains'
+import { RPC_URL_GOERLI } from '@/src/constants/misc'
 
 const STORAGE_CONNECTED_WALLET = 'onboard_selectedWallet'
 // give onboard a window to update its internal state after certain actions

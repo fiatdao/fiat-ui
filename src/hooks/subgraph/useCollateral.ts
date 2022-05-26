@@ -1,7 +1,7 @@
 import { fetchCollateralById } from './useCollaterals'
+import useSWR from 'swr'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import isDev from '@/src/utils/isDev'
-import useSWR from 'swr'
 
 export const useCollateral = (collateralId: string) => {
   const { appChainId, web3Provider: provider } = useWeb3Connection()

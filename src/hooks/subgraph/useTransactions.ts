@@ -1,4 +1,5 @@
 import useUserProxy from '../useUserProxy'
+import useSWR from 'swr'
 import { ChainsValues } from '@/src/constants/chains'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { PositionTransactionAction_filter } from '@/types/subgraph/__generated__/globalTypes'
@@ -7,7 +8,6 @@ import { Transactions, TransactionsVariables } from '@/types/subgraph/__generate
 import { TRANSACTIONS } from '@/src/queries/transactions'
 import { ActionTransaction, Transaction, wrangleTransaction } from '@/src/utils/data/transactions'
 import { Maybe, SwrResponse } from '@/types/utils'
-import useSWR from 'swr'
 
 const fetchTransactions = async (
   appChainId: ChainsValues,

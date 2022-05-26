@@ -1,4 +1,8 @@
 import { usePositionsByUser } from './usePositionsByUser'
+import BigNumber from 'bignumber.js'
+import useSWR from 'swr'
+import { useEffect, useState } from 'react'
+import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { getVaultAddresses } from '@/src/constants/bondTokens'
 import { ChainsValues } from '@/src/constants/chains'
 import { useUserTokensInWallet } from '@/src/hooks/useUserTokensInWallet'
@@ -15,10 +19,6 @@ import {
 } from '@/types/subgraph/__generated__/Collaterals'
 import { CollateralType_orderBy, OrderDirection } from '@/types/subgraph/__generated__/globalTypes'
 import { Maybe } from '@/types/utils'
-import BigNumber from 'bignumber.js'
-import useSWR from 'swr'
-import { useEffect, useState } from 'react'
-import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 
 // TODO: reuse collateral fetching so fetching multiple by collateral address is the same code path as fetching one
 export const fetchCollateralById = ({
