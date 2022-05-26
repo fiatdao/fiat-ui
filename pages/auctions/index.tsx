@@ -1,8 +1,4 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import { ColumnsType } from 'antd/lib/table/interface'
-import Link from 'next/link'
-import BigNumber from 'bignumber.js'
 import { useProtocolFilters } from '@/src/hooks/useProtocolFilters'
 import { FIAT_TICKER } from '@/src/constants/misc'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
@@ -16,6 +12,10 @@ import { Asset } from '@/src/components/custom/asset'
 import { AuctionData } from '@/src/utils/data/auctions'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
+import BigNumber from 'bignumber.js'
+import Link from 'next/link'
+import { ColumnsType } from 'antd/lib/table/interface'
+import cn from 'classnames'
 
 const AuctionsTable = ({ columns, protocolsToFilterBy }: any) => {
   const { auctions } = useAuctions(protocolsToFilterBy)

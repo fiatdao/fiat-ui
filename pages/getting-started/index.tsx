@@ -1,5 +1,5 @@
-import { Suspense } from 'react'
 import GettingStartedWizard from '@/src/components/custom/getting-started-wizard'
+import { Suspense } from 'react'
 
 const GettingStarted = () => {
   return (

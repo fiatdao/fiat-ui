@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import s from './s.module.scss'
-import React from 'react'
-import cn from 'classnames'
 import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
 import Divider from '@/src/components/antd/divider'
 import Popover from '@/src/components/antd/popover'
@@ -18,6 +16,8 @@ import Network from '@/src/resources/svg/network.svg'
 import Status from '@/src/resources/svg/node-status.svg'
 import Wallet from '@/src/resources/svg/wallet.svg'
 import { getEtherscanAddressUrl, shortenAddr } from '@/src/web3/utils'
+import cn from 'classnames'
+import React from 'react'
 
 const ProxyAddressCard = () => {
   const { appChainId } = useWeb3Connection()

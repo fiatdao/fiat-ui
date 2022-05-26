@@ -1,7 +1,5 @@
 import s from './s.module.scss'
 
-import cn from 'classnames'
-import React, { CSSProperties } from 'react'
 import accountImgWithout from '@/src/resources/png/account_img_without.png'
 import accountImg from '@/src/resources/png/account_img.png'
 import addEnterSrc from '@/src/resources/png/add-enter.png'
@@ -52,6 +50,8 @@ import wsOHMSrc from '@/src/resources/png/wsOHM.png'
 import YFISrc from '@/src/resources/png/YFI.png'
 import notConnected from '@/src/resources/svg/not-connected.svg'
 import Sprite from '@/src/resources/svg/icons-sprite.svg'
+import React, { CSSProperties } from 'react'
+import cn from 'classnames'
 
 export type LogoIconNames = 'png/fiat-dao'
 
