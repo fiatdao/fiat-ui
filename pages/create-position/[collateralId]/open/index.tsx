@@ -13,6 +13,7 @@ import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
 import {
   DEPOSIT_COLLATERAL_TEXT,
+  EST_FIAT_TO_MINT_TEXT,
   FIAT_TO_MINT_TOOLTIP_TEXT,
   ONE_BIG_NUMBER,
   VIRTUAL_RATE_MAX_SLIPPAGE,
@@ -214,8 +215,7 @@ const FormERC20: React.FC<{
       value: `${stateMachine.context.fiatAmount.toFixed(3)}`,
     },
     {
-      // normalDebt
-      title: 'Estimated FIAT to be minted',
+      title: EST_FIAT_TO_MINT_TEXT,
       titleTooltip: FIAT_TO_MINT_TOOLTIP_TEXT,
       value: `${stateMachine.context.fiatAmount
         .div(collateral.vault.virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))

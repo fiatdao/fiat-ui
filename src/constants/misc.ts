@@ -38,6 +38,7 @@ export const DEPOSIT_COLLATERAL_TEXT = 'Deposit collateral'
 export const FIAT_TO_MINT_TOOLTIP_TEXT = `Due to the vault's constantly
   accruing interest rate the amount of FIAT you receive may be slightly
   different than what is displayed.`
+export const EST_FIAT_TO_MINT_TEXT = 'Estimated FIAT to be minted'
 
 export function getBorrowAmountBelowDebtFloorText(debtFloor: BigNumber | undefined): string {
   const belowMinimumAmountText = 'Below minimum borrow amount'

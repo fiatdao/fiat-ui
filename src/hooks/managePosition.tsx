@@ -4,6 +4,7 @@ import { useERC20Allowance } from './useERC20Allowance'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
+  EST_FIAT_TO_MINT_TEXT,
   EXECUTE_TEXT,
   FIAT_TO_MINT_TOOLTIP_TEXT,
   INFINITE_BIG_NUMBER,
@@ -395,7 +396,7 @@ export const useManageFormSummary = (
       value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(3),
     },
     {
-      title: 'Estimated FIAT to be minted',
+      title: EST_FIAT_TO_MINT_TEXT,
       titleTooltip: FIAT_TO_MINT_TOOLTIP_TEXT,
       value: getHumanValue(
         deltaDebt.gt(0) ? deltaDebt.div(position.virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE)) : 0,

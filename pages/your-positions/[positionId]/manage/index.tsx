@@ -55,7 +55,7 @@ type Step = {
   description: string
 }
 
-const FIAT_KEYS = ['burn', 'mint'] as const
+const FIAT_KEYS = ['mint', 'burn'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
 
 export const isFiatTab = (key: string): key is FiatTabKey => {
@@ -435,15 +435,17 @@ const PositionManage = () => {
                     </ButtonsWrapper>
                   )}
                   <div className={cn(s.summary)}>
-                    {summary.map((item, index) => (
-                      <SummaryItem
-                        key={index}
-                        state={item?.state}
-                        title={item.title}
-                        titleTooltip={item?.titleTooltip}
-                        value={item.value}
-                      />
-                    ))}
+                    {summary.map((item, index) => {
+                      return (
+                        <SummaryItem
+                          key={index}
+                          state={item?.state}
+                          title={item.title}
+                          titleTooltip={item?.titleTooltip}
+                          value={item.value}
+                        />
+                      )
+                    })}
                   </div>
                 </div>
               </fieldset>
