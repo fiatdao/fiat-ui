@@ -111,7 +111,7 @@ const FormERC20: React.FC<{
     readOnlyAppProvider,
   })
 
-  const { tokenInfo: collateralInfo } = useTokenDecimalsAndBalance({
+  const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
     tokenData: { 
       decimals: 8,
       symbol: collateral.underlierSymbol ?? '',
@@ -119,8 +119,6 @@ const FormERC20: React.FC<{
     },
     address: currentUserAddress,
     readOnlyAppProvider,
-    
-    vaultType: collateral.vault.type ?? '',
     tokenId: collateral.tokenId ?? '0',
   })
 
@@ -370,7 +368,7 @@ const FormERC20: React.FC<{
                     <>
                       <Balance
                         title={`Swap and Deposit`}
-                        value={`Balance: ${collateralInfo?.humanValue?.toFixed(2)}`}
+                        value={`Balance: ${underlyingInfo?.humanValue?.toFixed(2)}`}
                       />
                       {/* <InternalArrow onClick={setSwapSettingsOpen(true)}/>
                       <SwapSettingsModal 
@@ -380,10 +378,10 @@ const FormERC20: React.FC<{
                       <Form.Item name="underlierAmount" required>
                         <TokenAmount
                           disabled={loading}
-                          displayDecimals={collateralInfo?.decimals}
+                          displayDecimals={underlyingInfo?.decimals}
                           mainAsset={collateral.vault.name} //only being used to fetch icon from metadata
-                          max={collateralInfo?.humanValue}
-                          maximumFractionDigits={collateralInfo?.decimals}
+                          max={underlyingInfo?.humanValue}
+                          maximumFractionDigits={underlyingInfo?.decimals}
                           onChange={(val) =>
                             val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
                           }
