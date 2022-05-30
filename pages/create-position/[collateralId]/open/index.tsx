@@ -192,7 +192,6 @@ const FormERC20: React.FC<{
     deltaCollateral,
     deltaDebt,
   )
-  const healthFactorNumber = hf?.toFixed(3)
 
   const summaryData = [
     {
@@ -224,7 +223,7 @@ const FormERC20: React.FC<{
     {
       state: getHealthFactorState(hf),
       title: 'Updated health factor',
-      value: healthFactorNumber,
+      value: hf.toFixed(3),
     },
   ]
 
@@ -267,7 +266,7 @@ const FormERC20: React.FC<{
                             <TokenAmount
                               disabled={loading}
                               displayDecimals={4}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={hf}
                               max={maxBorrowAmountCalculated}
                               maximumFractionDigits={6}
                               onChange={(val) =>

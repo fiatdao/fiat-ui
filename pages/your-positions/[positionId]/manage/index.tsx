@@ -1,6 +1,6 @@
 import s from './s.module.scss'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
+import { Position } from '@/src/utils/data/positions'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -12,7 +12,6 @@ import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { contracts } from '@/src/constants/contracts'
-import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import {
   useManageFormSummary,
@@ -130,9 +129,6 @@ const PositionManage = () => {
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
-  const healthFactorToRender = isValidHealthFactor(healthFactor)
-    ? healthFactor?.toFixed(3)
-    : DEFAULT_HEALTH_FACTOR
 
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
   const tokenSymbol = position?.symbol ?? ''
@@ -288,7 +284,7 @@ const PositionManage = () => {
                             <TokenAmount
                               disabled={formDisabled}
                               displayDecimals={4}
-                              healthFactorValue={healthFactorToRender}
+                              healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
                               max={maxDepositAmount}
                               maximumFractionDigits={6}
@@ -308,7 +304,7 @@ const PositionManage = () => {
                             <TokenAmount
                               disabled={formDisabled}
                               displayDecimals={4}
-                              healthFactorValue={healthFactorToRender}
+                              healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
                               max={maxWithdrawAmount}
                               maximumFractionDigits={6}
@@ -352,7 +348,7 @@ const PositionManage = () => {
                             <TokenAmount
                               disabled={formDisabled}
                               displayDecimals={contracts.FIAT.decimals}
-                              healthFactorValue={healthFactorToRender}
+                              healthFactorValue={healthFactor}
                               max={maxBorrowAmount}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariant'}
@@ -371,7 +367,7 @@ const PositionManage = () => {
                             <TokenAmount
                               disabled={formDisabled}
                               displayDecimals={contracts.FIAT.decimals}
-                              healthFactorValue={healthFactorToRender}
+                              healthFactorValue={healthFactor}
                               max={maxRepay}
                               maximumFractionDigits={contracts.FIAT.decimals}
                               slider={'healthFactorVariantReverse'}

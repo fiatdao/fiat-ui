@@ -1,5 +1,5 @@
 import s from './s.module.scss'
-import { MAX_UINT_256, MIN_EPSILON_OFFSET } from '@/src/constants/misc'
+import { MAX_UINT_256, MIN_EPSILON_OFFSET, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import Slider from '@/src/components/antd/slider'
 import { formatBigValue } from '@/src/web3/utils'
 
@@ -12,6 +12,8 @@ import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 import Info from '@/src/resources/svg/info.svg'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { getHealthFactorState } from '@/src/utils/table'
+import { isValidHealthFactor } from '@/src/utils/data/positions'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import cn from 'classnames'
 import BigNumber from 'bignumber.js'
 import React, { useState } from 'react'
@@ -30,7 +32,7 @@ export type TokenAmountProps = {
   value?: number | BigNumber
   mainAsset?: string
   secondaryAsset?: string
-  healthFactorValue?: number | string
+  healthFactorValue?: BigNumber | undefined
 }
 
 const healthFactorHint =
@@ -45,7 +47,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     className,
     disabled = false,
     displayDecimals = 4,
-    healthFactorValue = 0,
+    healthFactorValue = ZERO_BIG_NUMBER,
     hidden,
     mainAsset,
     max,
@@ -82,32 +84,32 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   }
 
   const updateSliderTrackColor = () => {
-    if (healthFactorValue !== undefined) {
-      const hfbn = BigNumber.from(healthFactorValue)
-      if (!hfbn) {
-        return
-      }
-      const healthFactorState = getHealthFactorState(hfbn)
-      switch (healthFactorState) {
-        case 'ok':
-          setSliderTrackColor(GREEN_COLOR)
-          break
-        case 'warning':
-          setSliderTrackColor(YELLOW_COLOR)
-          break
-        case 'danger':
-          setSliderTrackColor(RED_COLOR)
-          break
-      }
+    const healthFactorState = getHealthFactorState(healthFactorValue)
+    switch (healthFactorState) {
+      case 'ok':
+        setSliderTrackColor(GREEN_COLOR)
+        break
+      case 'warning':
+        setSliderTrackColor(YELLOW_COLOR)
+        break
+      case 'danger':
+        setSliderTrackColor(RED_COLOR)
+        break
     }
   }
 
+  const healthFactorToRender = isValidHealthFactor(healthFactorValue)
+    ? healthFactorValue?.toFixed(3)
+    : DEFAULT_HEALTH_FACTOR
+
   function onMaxHandle() {
     onChange?.(bnMaxValue)
+    updateSliderTrackColor()
   }
 
   function handleInputChange(inputValue?: BigNumber) {
     onChange?.(inputValue ? BigNumber.min(inputValue, bnMaxValue) : undefined)
+    updateSliderTrackColor()
   }
 
   return (
@@ -152,7 +154,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               <div className={s.safer}>Safer</div>
               <div className={s.healthFactor}>
                 <span>
-                  Health Factor<span className={s.hf}>{healthFactorValue}</span>
+                  Health Factor<span className={s.hf}>{healthFactorToRender}</span>
                 </span>
                 <Tooltip title={healthFactorHint}>
                   <Info />
@@ -166,7 +168,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               <div className={s.safer}>Safer</div>
               <div className={s.healthFactor}>
                 <span>
-                  Health Factor <span className={s.hf}>{healthFactorValue}</span>
+                  Health Factor <span className={s.hf}>{healthFactorToRender}</span>
                 </span>
                 <Tooltip title={healthFactorHint}>
                   <Info />
