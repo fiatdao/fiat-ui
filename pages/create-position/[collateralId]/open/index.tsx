@@ -23,6 +23,7 @@ import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Summary, SummaryItem } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
+import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 // import InternalArrow from '../../../../src/resources/svg/interal-arrow.svg'
 // import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
 import {
@@ -184,20 +185,25 @@ const FormERC20: React.FC<{
       ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
       : ZERO_BIG_NUMBER
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+    
+    const deadline = Number((Date.now() / 1000).toFixed(0)) + 3600
+    const minOutput = getHumanValue(_underlierAmount, 12).toFixed(0,8)
+    const approve = getHumanValue(_underlierAmount, 12).toFixed(0,8)
+
     try {
       setLoading(true)
       await buyCollateralAndModifyDebtElement({
         vault: collateral.vault.address,
         deltaDebt: _fiatAmount,
-        underlierAmount: _underlierAmount,
+        underlierAmount: getNonHumanValue(_underlierAmount, 6),
         swapParams: {
-          balancerVault: collateral.vault.address,
+          balancerVault: collateral.eptData.balancerVault,
           poolId: collateral.eptData?.poolId ?? '',
           assetIn: collateral.underlierAddress ?? '',
           assetOut: collateral.address ?? '',
-          minOutput: 4, //currently hardcaded default... need to update this
-          deadline: 300, //currently hardcaded default... need to update this
-          approve: _underlierAmount.unscaleBy(WAD_DECIMALS).toNumber() * 1.2,  //approve 1.2x to give buffer 
+          minOutput: minOutput, //currently hardcaded default... need to update this
+          deadline: deadline, //currently hardcaded default... need to update this
+          approve:  approve,
         }
       })
       setLoading(false)
@@ -287,6 +293,17 @@ const FormERC20: React.FC<{
     return !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT
   }
 
+  const underlierAmountFromState = getNonHumanValue(stateMachine.context.underlierAmount, WAD_DECIMALS)
+  const [underlierToPToken] = useUnderlyingExchangeValue({ 
+    vault: collateral.vault.address ?? '',
+    balancerVault: collateral.eptData.balancerVault,
+    curvePoolId: collateral.eptData.poolId,
+    underlierAmount: 1000000 //single underlier token
+  })
+
+  const marketRate = 1 / getHumanValue(underlierToPToken, 6).toNumber()
+  const priceImpact = (1 - marketRate) / 0.01
+
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
   const deltaDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
   const { healthFactor: hf } = calculateHealthFactor(
@@ -301,15 +318,15 @@ const FormERC20: React.FC<{
   const underlyingData = [
     {
       title: 'Market rate',
-      value: `1 Principal Token = .9949 ${collateral ? collateral.underlierSymbol : '-'}`,
+      value: `1 Principal Token = ${marketRate.toFixed(4)} ${collateral ? collateral.underlierSymbol : '-'}`,
     },
     {
       title: 'Price impact',
-      value: '0.00%',
+      value: `${priceImpact.toFixed(2)}%`,
     },
     {
       title: 'Slippage tolerance',
-      value: '0.30%',
+      value: '0.10%',
     },
   ]
 

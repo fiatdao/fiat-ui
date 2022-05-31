@@ -47,9 +47,9 @@ type BuyCollateralAndModifyDebtElement = {
     poolId: string // Id bytes32 of the Element Convergent Curve Pool containing the collateral token
     assetIn: string// Underlier token address when adding collateral and `collateral` when removing
     assetOut: string // Collateral token address when adding collateral and `underlier` when removing
-    minOutput?: BigNumberish // uint256 Min. amount of tokens we would accept to receive from the swap, whether it is collateral or underlier
+    minOutput?: string // uint256 Min. amount of tokens we would accept to receive from the swap, whether it is collateral or underlier
     deadline: BigNumberish // uint256 Timestamp at which swap must be confirmed by [seconds]
-    approve: number // uint256 Amount of `assetIn` to approve for `balancerVault` for swapping `assetIn` for `assetOut`
+    approve: string // uint256 Amount of `assetIn` to approve for `balancerVault` for swapping `assetIn` for `assetOut`
   }
 }
 
