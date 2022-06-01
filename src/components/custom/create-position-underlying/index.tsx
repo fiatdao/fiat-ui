@@ -15,7 +15,7 @@ import TokenAmount                    from '@/src/components/custom/token-amount
 import { Form }                       from '@/src/components/antd'
 import { Summary, SummaryItem }       from '@/src/components/custom/summary'
 import { FormExtraAction }            from '@/src/components/custom/form-extra-action'
-import SwapSettingsModal              from '@/src/components/custom/swap-settings-modal'
+// import SwapSettingsModal              from '@/src/components/custom/swap-settings-modal'
 import { ButtonExtraFormAction }      from '@/src/components/custom/button-extra-form-action'
 import ButtonGradient                 from '@/src/components/antd/button-gradient'
 import { ButtonsWrapper }             from '@/src/components/custom/buttons-wrapper'
@@ -45,7 +45,7 @@ import { useWeb3Connection }          from '@/src/providers/web3ConnectionProvid
 import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
 
 
-import InternalArrow                  from '../../../../src/resources/svg/interal-arrow.svg'
+// import InternalArrow                  from '../../../../src/resources/svg/interal-arrow.svg'
 
 
 type Props = {
@@ -54,7 +54,7 @@ type Props = {
   healthFactorNumber: any
   maxBorrowAmountCalculated: any
   isDisabledCreatePosition: any
-  setFormLoading: any
+  setLoading: any
   setMachine: any
 }
 
@@ -66,7 +66,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   healthFactorNumber,
   maxBorrowAmountCalculated,
   isDisabledCreatePosition,
-  setFormLoading,
+  setLoading,
   setMachine
 }) => {
   const [form] = AntdForm.useForm<FormProps>()
@@ -106,7 +106,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   }, [hasAllowance, isProxyAvailable, send])
 
   const [mintFiat, setMintFiat] = useState(false)
-  const [swapSettingsOpen, setSwapSettingsOpen] = useState(false)
+  // const [swapSettingsOpen, setSwapSettingsOpen] = useState(false)
 
   const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
     tokenData: { 
@@ -119,7 +119,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     tokenId: collateral.tokenId ?? '0',
   })
 
-  const underlierAmountFromState = getNonHumanValue(stateMachine.context.underlierAmount, WAD_DECIMALS)
+  // const underlierAmountFromState = getNonHumanValue(stateMachine.context.underlierAmount, WAD_DECIMALS)
   const [underlierToPToken] = useUnderlyingExchangeValue({ 
     vault: collateral?.vault?.address ?? '',
     balancerVault: collateral?.eptData?.balancerVault,
@@ -160,7 +160,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
       : ZERO_BIG_NUMBER
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
     try {
-      setFormLoading(true)
+      setLoading(true)
       await buyCollateralAndModifyDebtNotional({
         vault: collateral.vault.address,
         token: collateral.address ?? '',
@@ -168,9 +168,9 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
         deltaDebt: _fiatAmount,
         underlierAmount: _underlierAmount
       })
-      setFormLoading(false)
+      setLoading(false)
     } catch (err) {
-      setFormLoading(false)
+      setLoading(false)
       throw err
     }
   }
@@ -192,7 +192,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     const approve = getHumanValue(_underlierAmount, 12).toFixed(0,8)
 
     try {
-      setFormLoading(true)
+      setLoading(true)
       await buyCollateralAndModifyDebtElement({
         vault: collateral.vault.address,
         deltaDebt: _fiatAmount,
@@ -207,9 +207,9 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
           approve:  approve,
         }
       })
-      setFormLoading(false)
+      setLoading(false)
     } catch (err) {
-      setFormLoading(false)
+      setLoading(false)
       throw err
     }
   }
