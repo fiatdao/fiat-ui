@@ -1,0 +1,372 @@
+import s                                from './s.module.scss'
+import cn                               from 'classnames'
+import { useEffect, useState } from 'react'
+import { useMachine }                   from '@xstate/react'
+import FiatIcon                         from '@/src/resources/svg/fiat-icon.svg'
+import AntdForm from 'antd/lib/form'
+
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+
+
+
+
+import { Balance }                    from '@/src/components/custom/balance'
+import TokenAmount                    from '@/src/components/custom/token-amount'
+import { Form }                       from '@/src/components/antd'
+import { Summary, SummaryItem }       from '@/src/components/custom/summary'
+import { FormExtraAction }            from '@/src/components/custom/form-extra-action'
+import SwapSettingsModal              from '@/src/components/custom/swap-settings-modal'
+import { ButtonExtraFormAction }      from '@/src/components/custom/button-extra-form-action'
+import ButtonGradient                 from '@/src/components/antd/button-gradient'
+import { ButtonsWrapper }             from '@/src/components/custom/buttons-wrapper'
+
+import BigNumber from 'bignumber.js'
+
+
+import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
+import { useERC20Allowance }          from '@/src/hooks/useERC20Allowance'
+import { useERC155Allowance }         from '@/src/hooks/useERC1155Allowance'
+import useUserProxy                   from '@/src/hooks/useUserProxy'
+import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
+import { useFIATBalance }             from '@/src/hooks/useFIATBalance'
+import { useUserActions }             from '@/src/hooks/useUserActions'
+
+
+
+import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
+import {
+  DEPOSIT_UNDERLYING_TEXT,
+  WAD_DECIMALS,
+}                                     from '@/src/constants/misc'
+import { parseDate }                  from '@/src/utils/dateTime'
+import { Collateral }                 from '@/src/utils/data/collaterals'
+
+import { useWeb3Connection }          from '@/src/providers/web3ConnectionProvider'
+import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
+
+
+import InternalArrow                  from '../../../../src/resources/svg/interal-arrow.svg'
+
+
+type Props = {
+  collateral: Collateral
+  loading: any
+  healthFactorNumber: any
+  maxBorrowAmountCalculated: any
+  isDisabledCreatePosition: any
+  setFormLoading: any
+  setMachine: any
+}
+
+type FormProps = { underlierAmount: BigNumber }
+
+export const CreatePositionUnderlying: React.FC<Props> = ({
+  collateral,
+  loading,
+  healthFactorNumber,
+  maxBorrowAmountCalculated,
+  isDisabledCreatePosition,
+  setFormLoading,
+  setMachine
+}) => {
+  const [form] = AntdForm.useForm<FormProps>()
+
+  const [FIATBalance] = useFIATBalance(true)
+  const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
+
+  const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
+
+  const { buyCollateralAndModifyDebtElement, buyCollateralAndModifyDebtNotional } = useUserActions(collateral.vault?.type)
+
+  const erc20 = useERC20Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
+  const erc1155 = useERC155Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
+  const activeToken = collateral?.vault?.type === 'NOTIONAL' ? erc1155 : erc20
+  const { 
+    approve, 
+    hasAllowance, 
+    loadingApprove 
+  } = activeToken
+
+  const [stateMachine, send] = useMachine(underlyingStepperMachine, {
+    context: {
+      isProxyAvailable,
+      hasAllowance,
+      tokenAddress: collateral.underlierAddress ?? '',
+      tokenSymbol: collateral.underlierSymbol ?? '',
+    },
+  })
+
+  useEffect(() => {
+    setMachine(stateMachine)
+  }, [stateMachine, setMachine])
+
+  useEffect(() => {
+    send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
+    send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
+  }, [hasAllowance, isProxyAvailable, send])
+
+  const [mintFiat, setMintFiat] = useState(false)
+  const [swapSettingsOpen, setSwapSettingsOpen] = useState(false)
+
+  const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
+    tokenData: { 
+      decimals: 8,
+      symbol: collateral.underlierSymbol ?? '',
+      address: collateral?.underlierAddress ?? '',
+    },
+    address: currentUserAddress,
+    readOnlyAppProvider,
+    tokenId: collateral.tokenId ?? '0',
+  })
+
+  const underlierAmountFromState = getNonHumanValue(stateMachine.context.underlierAmount, WAD_DECIMALS)
+  const [underlierToPToken] = useUnderlyingExchangeValue({ 
+    vault: collateral?.vault?.address ?? '',
+    balancerVault: collateral?.eptData?.balancerVault,
+    curvePoolId: collateral?.eptData?.poolId,
+    underlierAmount: 1000000 //single underlier token
+  })
+
+  const marketRate = 1 / getHumanValue(underlierToPToken, 6).toNumber()
+  const priceImpact = (1 - marketRate) / 0.01
+
+  const underlyingData = [
+    {
+      title: 'Market rate',
+      value: `1 Principal Token = ${marketRate.toFixed(4)} ${collateral ? collateral.underlierSymbol : '-'}`,
+    },
+    {
+      title: 'Price impact',
+      value: `${priceImpact.toFixed(2)}%`,
+    },
+    {
+      title: 'Slippage tolerance',
+      value: '0.10%',
+    },
+  ]
+
+
+
+  // create position flow
+  const createUnderlyingPositionNotional = async ({
+    fiatAmount,
+    underlierAmount,
+  }: {
+    underlierAmount: BigNumber
+    fiatAmount: BigNumber
+  }): Promise<void> => {
+    const _underlierAmount = underlierAmount
+      ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
+      : ZERO_BIG_NUMBER
+    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+    try {
+      setFormLoading(true)
+      await buyCollateralAndModifyDebtNotional({
+        vault: collateral.vault.address,
+        token: collateral.address ?? '',
+        tokenId: 0,
+        deltaDebt: _fiatAmount,
+        underlierAmount: _underlierAmount
+      })
+      setFormLoading(false)
+    } catch (err) {
+      setFormLoading(false)
+      throw err
+    }
+  }
+
+  const createUnderlyingPositionElement = async ({
+    fiatAmount,
+    underlierAmount,
+  }: {
+    underlierAmount: BigNumber
+    fiatAmount: BigNumber
+  }): Promise<void> => {
+    const _underlierAmount = underlierAmount
+      ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
+      : ZERO_BIG_NUMBER
+    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+    
+    const deadline = Number((Date.now() / 1000).toFixed(0)) + 3600
+    const minOutput = getHumanValue(_underlierAmount, 12).toFixed(0,8)
+    const approve = getHumanValue(_underlierAmount, 12).toFixed(0,8)
+
+    try {
+      setFormLoading(true)
+      await buyCollateralAndModifyDebtElement({
+        vault: collateral.vault.address,
+        deltaDebt: _fiatAmount,
+        underlierAmount: getNonHumanValue(_underlierAmount, 6),
+        swapParams: {
+          balancerVault: collateral.eptData.balancerVault,
+          poolId: collateral.eptData?.poolId ?? '',
+          assetIn: collateral.underlierAddress ?? '',
+          assetOut: collateral.address ?? '',
+          minOutput: minOutput, //currently hardcaded default... need to update this
+          deadline: deadline, //currently hardcaded default... need to update this
+          approve:  approve,
+        }
+      })
+      setFormLoading(false)
+    } catch (err) {
+      setFormLoading(false)
+      throw err
+    }
+  }
+
+  const createUnderlyingPosition = 
+  collateral.vault.name.substring(0,8) === 'vaultEPT' 
+  ? createUnderlyingPositionElement 
+  : createUnderlyingPositionNotional
+
+  const handleCreatePosition: any = () => {
+    // approveUnderlying()
+    send({
+      type: 'CONFIRM_UNDERLYING',
+      // @ts-ignore TODO types
+      createUnderlyingPosition,
+    })
+  }
+
+  return (
+    <Form form={form} initialValues={{ underlierAmount: 0 }}>
+      {[1, 4].includes(stateMachine.context.currentStepNumber) && (
+        <>
+          <div>
+            <Balance
+              title={`Swap and Deposit`}
+              value={`Balance: ${underlyingInfo?.humanValue?.toFixed(2)}`}
+            />
+            {/* <InternalArrow onClick={setSwapSettingsOpen(true)}/>
+            <SwapSettingsModal 
+              isOpen={swapSettingsOpen}
+              // toggleOpen={setSwapSettingsOpen}
+            /> */}
+            <Form.Item name="underlierAmount" required>
+              <TokenAmount
+                disabled={loading}
+                displayDecimals={underlyingInfo?.decimals}
+                mainAsset={collateral?.vault?.name} //only being used to fetch icon from metadata
+                max={underlyingInfo?.humanValue}
+                maximumFractionDigits={underlyingInfo?.decimals}
+                onChange={(val) =>
+                  val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
+                }
+              />
+            </Form.Item>
+            {/*all of this is hardcoded */}
+            <Summary data={underlyingData} />
+            <SummaryItem title={'Fixed APR'} value={'2%'} />
+            <SummaryItem title={'Interest earned'} value={'24.028 USDC'} />
+            <SummaryItem
+              title={`Redeemable at maturity | ${
+                collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
+              }`}
+              value={'10,024.028 USDC'}
+            />
+            {mintFiat && (
+              <FormExtraAction
+                bottom={
+                  <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
+                    <TokenAmount
+                      disabled={loading}
+                      displayDecimals={4}
+                      healthFactorValue={healthFactorNumber}
+                      max={maxBorrowAmountCalculated}
+                      maximumFractionDigits={6}
+                      onChange={(val) =>
+                        val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
+                      }
+                      slider="healthFactorVariant"
+                      tokenIcon={<FiatIcon />}
+                    />
+                  </Form.Item>
+                }
+                buttonText="Mint FIAT with this transaction"
+                disabled={loading}
+                onClick={() => setMintFiat(!mintFiat)}
+                top={
+                  <Balance
+                    title={`Mint FIAT`}
+                    value={`Balance: ${FIATBalance.toFixed(4)}`}
+                  />
+                }
+              />
+            )}
+          </div>
+        </>
+      )}
+      <ButtonsWrapper>
+        {stateMachine.context.currentStepNumber === 1 && (
+          <>
+            {!mintFiat && (
+              <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
+                Mint FIAT with this transaction
+              </ButtonExtraFormAction>
+            )}
+            {!isProxyAvailable && (
+              <ButtonGradient
+                height="lg"
+                onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
+              >
+                Setup Proxy
+              </ButtonGradient>
+            )}
+            {isProxyAvailable && !hasAllowance && (
+              <ButtonGradient
+                disabled={!stateMachine.context.underlierAmount.gt(0) || !isProxyAvailable}
+                height="lg"
+                onClick={() => send({ type: 'CLICK_ALLOW' })}
+              >
+                {stateMachine.context.underlierAmount.gt(0)
+                  ? 'Set Allowance'
+                  : `Insufficient Balance for ${collateral.underlierSymbol}`}
+              </ButtonGradient>
+            )}
+          </>
+        )}
+        {stateMachine.context.currentStepNumber === 2 && (
+          <>
+            <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
+              Create Proxy
+            </ButtonGradient>
+            <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
+              &#8592; Go back
+            </button>
+          </>
+        )}
+        {stateMachine.context.currentStepNumber === 3 && (
+          <>
+            <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
+              {`Set Allowance`}
+            </ButtonGradient>
+            <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
+              &#8592; Go back
+            </button>
+          </>
+        )}
+        {stateMachine.context.currentStepNumber === 4 && (
+          <>
+            {!mintFiat && (
+              <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
+                Mint FIAT with this transaction
+              </ButtonExtraFormAction>
+            )}
+            <ButtonGradient
+              disabled={isDisabledCreatePosition()}
+              height="lg"
+              onClick={handleCreatePosition}
+            >
+              {DEPOSIT_UNDERLYING_TEXT}
+            </ButtonGradient>
+          </>
+        )}
+      </ButtonsWrapper>
+      {stateMachine.context.currentStepNumber === 4 && (
+        <div className={cn(s.summary)}>
+          {/* <Summary data={summaryData} /> */}
+        </div>
+      )}
+    </Form>
+  )
+}
