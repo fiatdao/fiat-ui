@@ -188,6 +188,7 @@ export function formatToken(
   const { compact = false, decimals = 4, minDecimals, scale = 0, tokenName } = options ?? {}
 
   if (scale > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     val = val.unscaleBy(scale)!
   }
 

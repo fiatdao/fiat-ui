@@ -1,12 +1,12 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import React, { useState } from 'react'
 import { Text } from '@/src/components/custom/typography'
 import HeaderInfoButton from '@/src/components/custom/header-info-button'
 import { ChainsValues, chainsConfig, getNetworkConfig } from '@/src/constants/chains'
 import { Divider, Popover } from '@/src/components/antd'
 import Grid from '@/src/components/custom/grid'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import cn from 'classnames'
+import React, { useState } from 'react'
 
 const ConnectedWallet: React.FC = () => {
   const { setNetwork, walletChainId } = useWeb3Connection()

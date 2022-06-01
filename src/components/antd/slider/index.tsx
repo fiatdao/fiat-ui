@@ -3,27 +3,11 @@ import React from 'react'
 import AntdSlider, { SliderSingleProps } from 'antd/lib/slider'
 import cn from 'classnames'
 
-export interface SliderProps extends SliderSingleProps {
-  healthFactorVariant?: boolean
-  healthFactorVariantReverse?: boolean
-}
-
-const Slider: React.FC<SliderProps> = (props) => {
-  const { className, healthFactorVariant, healthFactorVariantReverse, ...restProps } = props
+const Slider: React.FC<SliderSingleProps> = (props) => {
+  const { className, ...restProps } = props
 
   return (
-    <AntdSlider
-      className={cn(
-        s.component,
-        {
-          [s.healthFactorVariant]: healthFactorVariant,
-          [s.healthFactorVariantReverse]: healthFactorVariantReverse,
-        },
-        className,
-      )}
-      tooltipPlacement="bottom"
-      {...restProps}
-    />
+    <AntdSlider className={cn(s.component, className)} tooltipPlacement="bottom" {...restProps} />
   )
 }
 

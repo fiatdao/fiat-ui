@@ -12,6 +12,7 @@ const DatePicker: React.FC<DatePickerProps> = (props) => {
   const { className, ...datePickerProps } = props
 
   return (
+    // @ts-ignore
     <DateFNSPicker
       className={cn(s.component, className)}
       dropdownClassName={s.dropdown}

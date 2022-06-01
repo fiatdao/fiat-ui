@@ -1,8 +1,7 @@
 import s from './s.module.scss'
+import { Text } from '@/src/components/custom/typography'
 import React from 'react'
 import cn from 'classnames'
-
-import { Text } from '@/src/components/custom/typography'
 
 export type StatusTagProps = {
   text: React.ReactNode

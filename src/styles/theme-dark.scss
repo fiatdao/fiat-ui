@@ -15,15 +15,16 @@
 
   --theme-text-color: #fff;
   --theme-light-text-color: #b5b5b5;
+  --theme-dark-text-color: #838693; // useful for subtitles
 
   --theme-ok-color: #1ae477;
   --theme-warning-color: #f7c411;
   --theme-danger-color: #f45e67;
 
-  --theme-link-color: #914fe5;
+  --theme-link-color: #ffffff;
 
   --theme-body-color: #202020;
-  --theme-card-color: rgba(23, 23, 23, 0.6);
+  --theme-card-color: rgba(23, 23, 23, 0.88);
   --theme-modal-bg: #202020;
   --theme-amount-color: #171717;
   --theme-overlay-color: #171717;
@@ -52,6 +53,6 @@
     rgba(37, 32, 33, 0.8) 0%,
     rgba(34, 32, 32, 0.8) 100%
   );
-  --theme-leaderboard-table-item: rgba(23, 23, 23, 0.6);
+  --theme-leaderboard-table-item: rgba(23, 23, 23, 0.88);
   --theme-leaderboard-counter-item: rgba(23, 23, 23, 0.7);
 }

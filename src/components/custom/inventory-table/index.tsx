@@ -1,5 +1,3 @@
-import { ColumnsType } from 'antd/lib/table/interface'
-import Link from 'next/link'
 import { extractFieldsFromPositionId } from '@/src/utils/managePosition'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { getHealthFactorState, parseDate, remainingTime } from '@/src/utils/table'
@@ -13,6 +11,8 @@ import { tablePagination } from '@/src/utils/table'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 import { getHumanValue } from '@/src/web3/utils'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { ColumnsType } from 'antd/lib/table/interface'
+import Link from 'next/link'
 
 const Columns: ColumnsType<Position> = [
   {

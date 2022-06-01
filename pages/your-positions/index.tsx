@@ -1,7 +1,4 @@
 import s from './s.module.scss'
-import { useRouter } from 'next/router'
-import cn from 'classnames'
-import { useState } from 'react'
 import { getHealthFactorState } from '@/src/utils/table'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
@@ -18,6 +15,9 @@ import { getHumanValue } from '@/src/web3/utils'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { isValidHealthFactor } from '@/src/utils/data/positions'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { useRouter } from 'next/router'
+import cn from 'classnames'
+import { useState } from 'react'
 
 enum TabState {
   Inventory = 'inventory',

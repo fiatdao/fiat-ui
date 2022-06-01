@@ -1,3 +1,5 @@
+@import 'src/styles/text';
+
 .background {
   align-items: center;
   background-image: linear-gradient(90deg, var(--theme-color-2) 0%, var(--theme-color-3) 100%);
@@ -15,7 +17,7 @@
     overflow: hidden;
     position: relative;
     width: 100%;
-    z-index: 5;
+    z-index: 0;
   }
 
   .button {
@@ -27,7 +29,8 @@
       color: var(--theme-text-color);
       display: flex;
       font-size: 14px;
-      font-weight: 500;
+      font-family: var(--font-family);
+      font-weight: 700;
       gap: 8px;
       height: 100%;
       justify-content: center;
@@ -39,7 +42,6 @@
       position: relative;
       text-transform: capitalize;
       width: 100%;
-      z-index: 5;
 
       &.textGradient > span {
         background-clip: text;
