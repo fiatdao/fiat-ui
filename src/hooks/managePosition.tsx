@@ -27,7 +27,12 @@ import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { Position, calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
+import {
+  Position,
+  calculateHealthFactor,
+  calculateMaxBorrow,
+  isValidHealthFactor,
+} from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -167,19 +172,8 @@ export const useManagePositionForm = (
   const calculateMaxBorrowAmount = useCallback(
     (totalCollateral: BigNumber, totalDebt: BigNumber) => {
       const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
-      const currentValue = position?.currentValue ? position?.currentValue : 1
-      const collateralWithMults = totalCollateral
-        .times(currentValue)
-        .div(collateralizationRatio)
-        .times(VIRTUAL_RATE_MAX_SLIPPAGE)
-      const borrowAmount = collateralWithMults.minus(totalDebt)
-
-      let result = ZERO_BIG_NUMBER
-      if (borrowAmount.isPositive()) {
-        result = borrowAmount
-      }
-
-      return getHumanValue(result, WAD_DECIMALS)
+      const collateralValue = position?.currentValue ? position?.currentValue : ONE_BIG_NUMBER
+      return calculateMaxBorrow(totalCollateral, collateralValue, collateralizationRatio, totalDebt)
     },
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )

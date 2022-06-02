@@ -35,7 +35,7 @@ import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
 import { Collateral } from '@/src/utils/data/collaterals'
-import { calculateHealthFactor } from '@/src/utils/data/positions'
+import { calculateHealthFactor, calculateMaxBorrow } from '@/src/utils/data/positions'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHealthFactorState } from '@/src/utils/table'
 import {
@@ -156,20 +156,14 @@ const FormERC20: React.FC<{
 
   const maxBorrowAmountCalculated = useMemo(() => {
     const totalCollateral = stateMachine.context.erc20Amount ?? ZERO_BIG_NUMBER
-    const collateralValue = getHumanValue(collateral.currentValue || ONE_BIG_NUMBER, WAD_DECIMALS)
-    const collateralizationRatio = getHumanValue(
-      collateral.vault.collateralizationRatio || ONE_BIG_NUMBER,
-      WAD_DECIMALS,
+    const collateralValue = collateral.currentValue || ONE_BIG_NUMBER
+    const collateralizationRatio = collateral.vault.collateralizationRatio || ONE_BIG_NUMBER
+    return calculateMaxBorrow(
+      totalCollateral,
+      collateralValue,
+      collateralizationRatio,
+      ZERO_BIG_NUMBER,
     )
-
-    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(collateral.vault.virtualRate)
-
-    const maxBorrowAmount = totalCollateral
-      .times(collateralValue)
-      .div(collateralizationRatio)
-      .div(virtualRateWithMargin)
-
-    return maxBorrowAmount
   }, [stateMachine.context.erc20Amount, collateral])
 
   const hasMinimumFIAT = useMemo(() => {

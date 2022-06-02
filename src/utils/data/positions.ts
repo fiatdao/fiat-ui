@@ -115,6 +115,28 @@ const calculateDebt = (normalDebt: BigNumber, virtualRate: BigNumber) => {
   return normalDebt.times(virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
 }
 
+// maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
+// Arguments should have WAD percision
+const calculateMaxBorrow = (
+  totalCollateral: BigNumber,
+  collateralValue: BigNumber,
+  collateralizationRatio: BigNumber,
+  totalDebt: BigNumber,
+): BigNumber => {
+  const collateralWithMults = totalCollateral
+    .times(collateralValue)
+    .div(collateralizationRatio)
+    .times(VIRTUAL_RATE_MAX_SLIPPAGE)
+  const borrowAmount = collateralWithMults.minus(totalDebt)
+
+  let result = ZERO_BIG_NUMBER
+  if (borrowAmount.isPositive()) {
+    result = borrowAmount
+  }
+
+  return getHumanValue(result, WAD_DECIMALS)
+}
+
 // @TODO: healthFactor = totalCollateral*collateralValue/totalFIAT/collateralizationRatio
 // totalFIAT = debt = normalDebt * (virtualRate*slippageMargin)
 const calculateHealthFactor = (
@@ -236,9 +258,11 @@ const wranglePosition = async (
     url: urls?.asset,
   }
 }
+
 export {
   wranglePosition,
   calculateHealthFactor,
+  calculateMaxBorrow,
   calculateNormalDebt,
   calculateDebt,
   isValidHealthFactor,

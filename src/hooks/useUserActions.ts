@@ -134,7 +134,7 @@ export const useUserActions = (type?: string): UseUserActions => {
       // @TODO: toFixed(0, ROUNDED) transforms BigNumber into String without decimals
       const deltaCollateral = params.deltaCollateral.toFixed(0, 8)
 
-      // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
+      // deltaNormalDebt = deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
       const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
         0,
         8,
