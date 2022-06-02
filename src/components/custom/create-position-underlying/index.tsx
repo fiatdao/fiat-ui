@@ -1,52 +1,41 @@
-import s                                from './s.module.scss'
-import cn                               from 'classnames'
-import { useEffect, useState } from 'react'
-import { useMachine }                   from '@xstate/react'
-import FiatIcon                         from '@/src/resources/svg/fiat-icon.svg'
-import AntdForm from 'antd/lib/form'
+import s                                   from './s.module.scss'
+import cn                                  from 'classnames'
+import { useEffect, useState }             from 'react'
+import { useMachine }                      from '@xstate/react'
+import AntdForm                            from 'antd/lib/form'
+import BigNumber                           from 'bignumber.js'
 
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { Balance }                         from '@/src/components/custom/balance'
+import TokenAmount                         from '@/src/components/custom/token-amount'
+import { Form }                            from '@/src/components/antd'
+import { Summary, SummaryItem }            from '@/src/components/custom/summary'
+import { FormExtraAction }                 from '@/src/components/custom/form-extra-action'
+import SwapSettingsModal                   from '@/src/components/custom/swap-settings-modal'
+import { ButtonExtraFormAction }           from '@/src/components/custom/button-extra-form-action'
+import ButtonGradient                      from '@/src/components/antd/button-gradient'
+import { ButtonsWrapper }                  from '@/src/components/custom/buttons-wrapper'
 
+import { useTokenDecimalsAndBalance }      from '@/src/hooks/useTokenDecimalsAndBalance'
+import { useERC20Allowance }               from '@/src/hooks/useERC20Allowance'
+import { useERC155Allowance }              from '@/src/hooks/useERC1155Allowance'
+import useUserProxy                        from '@/src/hooks/useUserProxy'
+import { useUnderlyingExchangeValue }      from '@/src/hooks/useUnderlyingExchangeValue'
+import { useFIATBalance }                  from '@/src/hooks/useFIATBalance'
+import { useUserActions }                  from '@/src/hooks/useUserActions'
 
-
-
-import { Balance }                    from '@/src/components/custom/balance'
-import TokenAmount                    from '@/src/components/custom/token-amount'
-import { Form }                       from '@/src/components/antd'
-import { Summary, SummaryItem }       from '@/src/components/custom/summary'
-import { FormExtraAction }            from '@/src/components/custom/form-extra-action'
-// import SwapSettingsModal              from '@/src/components/custom/swap-settings-modal'
-import { ButtonExtraFormAction }      from '@/src/components/custom/button-extra-form-action'
-import ButtonGradient                 from '@/src/components/antd/button-gradient'
-import { ButtonsWrapper }             from '@/src/components/custom/buttons-wrapper'
-
-import BigNumber from 'bignumber.js'
-
-
-import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useERC20Allowance }          from '@/src/hooks/useERC20Allowance'
-import { useERC155Allowance }         from '@/src/hooks/useERC1155Allowance'
-import useUserProxy                   from '@/src/hooks/useUserProxy'
-import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
-import { useFIATBalance }             from '@/src/hooks/useFIATBalance'
-import { useUserActions }             from '@/src/hooks/useUserActions'
-
-
-
-import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import {
   DEPOSIT_UNDERLYING_TEXT,
   WAD_DECIMALS,
-}                                     from '@/src/constants/misc'
-import { parseDate }                  from '@/src/utils/dateTime'
-import { Collateral }                 from '@/src/utils/data/collaterals'
-
-import { useWeb3Connection }          from '@/src/providers/web3ConnectionProvider'
-import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
-
-
-// import InternalArrow                  from '../../../../src/resources/svg/interal-arrow.svg'
-
+}                                          from '@/src/constants/misc'
+import { ZERO_BIG_NUMBER }                 from '@/src/constants/misc'
+import FiatIcon                            from '@/src/resources/svg/fiat-icon.svg'
+import InternalArrow                       from '@/src/resources/svg/interal-arrow.svg'
+import { parseDate }                       from '@/src/utils/dateTime'
+import { Collateral }                      from '@/src/utils/data/collaterals'
+import { useWeb3Connection }               from '@/src/providers/web3ConnectionProvider'
+import underlyingStepperMachine            from '@/src/state/open-position-underlying-form'
+import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
+import { getTokenBySymbol }                from '@/src/providers/knownTokensProvider'
 
 type Props = {
   collateral: Collateral
@@ -72,10 +61,9 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   const [form] = AntdForm.useForm<FormProps>()
 
   const [FIATBalance] = useFIATBalance(true)
+  const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
-
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
-
   const { buyCollateralAndModifyDebtElement, buyCollateralAndModifyDebtNotional } = useUserActions(collateral.vault?.type)
 
   const erc20 = useERC20Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
@@ -106,7 +94,13 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   }, [hasAllowance, isProxyAvailable, send])
 
   const [mintFiat, setMintFiat] = useState(false)
-  // const [swapSettingsOpen, setSwapSettingsOpen] = useState(false)
+  const [swapSettingsOpen, setSwapSettingsOpen] = useState(false)
+  const [slippageTolerance, setSlippageTolerance] = useState(0.1)
+  const [maxTransactionTime, setMaxTransactionTime] = useState(20)
+
+  const toggleSwapSettingsMenu = () => {
+    setSwapSettingsOpen(!swapSettingsOpen)
+  }
 
   const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
     tokenData: { 
@@ -118,16 +112,15 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     readOnlyAppProvider,
     tokenId: collateral.tokenId ?? '0',
   })
-
-  // const underlierAmountFromState = getNonHumanValue(stateMachine.context.underlierAmount, WAD_DECIMALS)
+  
   const [underlierToPToken] = useUnderlyingExchangeValue({ 
     vault: collateral?.vault?.address ?? '',
     balancerVault: collateral?.eptData?.balancerVault,
     curvePoolId: collateral?.eptData?.poolId,
-    underlierAmount: 1000000 //single underlier token
+    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals) //sinlge underlier value
   })
 
-  const marketRate = 1 / getHumanValue(underlierToPToken, 6).toNumber()
+  const marketRate = 1 / getHumanValue(underlierToPToken, underlierDecimals).toNumber()
   const priceImpact = (1 - marketRate) / 0.01
 
   const underlyingData = [
@@ -141,11 +134,9 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     },
     {
       title: 'Slippage tolerance',
-      value: '0.10%',
+      value: `${slippageTolerance.toFixed(2)}%`,
     },
   ]
-
-
 
   // create position flow
   const createUnderlyingPositionNotional = async ({
@@ -183,27 +174,29 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     fiatAmount: BigNumber
   }): Promise<void> => {
     const _underlierAmount = underlierAmount
-      ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
+      ? getNonHumanValue(underlierAmount, underlierDecimals)
       : ZERO_BIG_NUMBER
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
     
-    const deadline = Number((Date.now() / 1000).toFixed(0)) + 3600
-    const minOutput = getHumanValue(_underlierAmount, 12).toFixed(0,8)
-    const approve = getHumanValue(_underlierAmount, 12).toFixed(0,8)
+    const deadline = Number((Date.now() / 1000).toFixed(0)) + (maxTransactionTime * 60)
+    const pTokenAmount = underlierAmount.multipliedBy(getHumanValue(underlierToPToken, underlierDecimals))
+    const slippageDecimal = (1 - (slippageTolerance / 100))
+    const minOutput = getNonHumanValue(pTokenAmount.multipliedBy(slippageDecimal), underlierDecimals)
+    const approve = _underlierAmount.toFixed(0,8)
 
     try {
       setLoading(true)
       await buyCollateralAndModifyDebtElement({
         vault: collateral.vault.address,
         deltaDebt: _fiatAmount,
-        underlierAmount: getNonHumanValue(_underlierAmount, 6),
+        underlierAmount: getNonHumanValue(_underlierAmount, WAD_DECIMALS),
         swapParams: {
           balancerVault: collateral.eptData.balancerVault,
           poolId: collateral.eptData?.poolId ?? '',
           assetIn: collateral.underlierAddress ?? '',
           assetOut: collateral.address ?? '',
-          minOutput: minOutput, //currently hardcaded default... need to update this
-          deadline: deadline, //currently hardcaded default... need to update this
+          minOutput: minOutput.toFixed(0,8),
+          deadline: deadline,
           approve:  approve,
         }
       })
@@ -219,13 +212,9 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   ? createUnderlyingPositionElement 
   : createUnderlyingPositionNotional
 
-  const handleCreatePosition: any = () => {
-    // approveUnderlying()
-    send({
-      type: 'CONFIRM_UNDERLYING',
-      // @ts-ignore TODO types
-      createUnderlyingPosition,
-    })
+  const updateSwapSettings = (slippageTolerance: number, maxTransactionTime: number) => {
+    setSlippageTolerance(slippageTolerance)
+    setMaxTransactionTime(maxTransactionTime)
   }
 
   return (
@@ -237,11 +226,12 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
               title={`Swap and Deposit`}
               value={`Balance: ${underlyingInfo?.humanValue?.toFixed(2)}`}
             />
-            {/* <InternalArrow onClick={setSwapSettingsOpen(true)}/>
+            <InternalArrow onClick={toggleSwapSettingsMenu}/>
             <SwapSettingsModal 
               isOpen={swapSettingsOpen}
-              // toggleOpen={setSwapSettingsOpen}
-            /> */}
+              submit={updateSwapSettings}
+              toggleOpen={toggleSwapSettingsMenu}
+            />
             <Form.Item name="underlierAmount" required>
               <TokenAmount
                 disabled={loading}
@@ -355,7 +345,11 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
             <ButtonGradient
               disabled={isDisabledCreatePosition()}
               height="lg"
-              onClick={handleCreatePosition}
+              onClick={() => send({
+                type: 'CONFIRM',
+                // @ts-ignore TODO types
+                createUnderlyingPosition,
+              })}
             >
               {DEPOSIT_UNDERLYING_TEXT}
             </ButtonGradient>

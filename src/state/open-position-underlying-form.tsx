@@ -4,7 +4,7 @@ import { assign, createMachine } from 'xstate'
 export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string } } = {
   1: {
     title: 'Configure Your Position',
-    subtitle: 'Select collateral amount to deposit and how much FIAT to mint.',
+    subtitle: 'Select underlier amount to deposit and how much FIAT to mint.',
   },
   2: {
     title: 'Create a Proxy Contract',
@@ -12,11 +12,11 @@ export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string 
   },
   3: {
     title: 'Set Collateral Allowance',
-    subtitle: 'Give permission to the FIAT protocol to manage your collateral.',
+    subtitle: 'Give permission to the FIAT protocol to manage your underlier.',
   },
   4: {
     title: 'Configure Your Position',
-    subtitle: 'Select collateral amount to deposit and how much FIAT to mint.',
+    subtitle: 'Select underlier amount to deposit and how much FIAT to mint.',
   },
   5: {
     title: 'Confirm Your New Position',
@@ -48,7 +48,7 @@ type Events =
   | { type: 'CLICK_SETUP_PROXY' }
   | { type: 'CLICK_ALLOW' }
   | { type: 'CLICK_DEPLOY' }
-  | { type: 'CONFIRM_UNDERLYING' }
+  | { type: 'CONFIRM' }
   | { type: 'CONFIRMED' }
   | { type: 'FAILED' }
   | { type: 'POSITION_CREATED_SUCCESS' }
@@ -74,7 +74,7 @@ const STEP_ENTER_AMOUNTS = 'step-1-enterAmounts'
 const STEP_SETUP_PROXY = 'step-3-setupProxy'
 const STEP_APPROVE_ALLOWANCE = 'step-4-approveAllowance'
 const STEP_ADD_COLLATERAL = 'step-5-addCollateral'
-const STEP_CONFIRM_UNDERLYING_POSITION = 'confirming-underlying-position'
+const STEP_CONFIRM_POSITION = 'confirming-position'
 const STEP_FINAL_CONGRATS = 'step-final-congrats'
 const STEP_FINAL_ERROR = 'step-final-error'
 
@@ -125,12 +125,12 @@ const underlyingStepperMachine = createMachine<Context, Events>(
       [STEP_ADD_COLLATERAL]: {
         entry: [assign({ currentStepNumber: (_) => 4 })],
         on: {
-          CONFIRM_UNDERLYING: STEP_CONFIRM_UNDERLYING_POSITION,
+          CONFIRM: STEP_CONFIRM_POSITION,
         },
       },
-      [STEP_CONFIRM_UNDERLYING_POSITION]: {
+      [STEP_CONFIRM_POSITION]: {
         invoke: {
-          src: 'submitUnderlyingForm',
+          src: 'submitForm',
         },
         on: {
           POSITION_CREATED_SUCCESS: {
@@ -176,7 +176,7 @@ const underlyingStepperMachine = createMachine<Context, Events>(
       })),
     },
     services: {
-      submitUnderlyingForm:
+      submitForm:
         (
           { fiatAmount, underlierAmount },
           // TODO: types

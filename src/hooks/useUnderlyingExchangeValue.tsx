@@ -9,7 +9,7 @@ type UnderlierToPToken = {
   vault: string,
   balancerVault: string,
   curvePoolId: BytesLike,
-  underlierAmount: number,
+  underlierAmount: BigNumber,
 }
 
 export const useUnderlyingExchangeValue = (params: UnderlierToPToken): [BigNumber, KeyedMutator<any>] => {
@@ -23,7 +23,7 @@ export const useUnderlyingExchangeValue = (params: UnderlierToPToken): [BigNumbe
       params.vault,
       params.balancerVault,
       params.curvePoolId,
-      params.underlierAmount
+      params.underlierAmount.toFixed(0,8)
     ],
   ) ?? ['ZERO_BIG_NUMBER', null]
 

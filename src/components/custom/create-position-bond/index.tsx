@@ -2,46 +2,39 @@ import s                                from './s.module.scss'
 import cn                               from 'classnames'
 import { useEffect, useMemo, useState } from 'react'
 import { useMachine }                   from '@xstate/react'
+import AntdForm                         from 'antd/lib/form'
+import BigNumber                        from 'bignumber.js'
+
+import { getHealthFactorState }         from '@/src/utils/table'
+import { calculateHealthFactor }        from '@/src/utils/data/positions'
+import { Collateral }                   from '@/src/utils/data/collaterals'
+
+import { Balance }                      from '@/src/components/custom/balance'
+import TokenAmount                      from '@/src/components/custom/token-amount'
+import { Form }                         from '@/src/components/antd'
+import { Summary }                      from '@/src/components/custom/summary'
+import { FormExtraAction }              from '@/src/components/custom/form-extra-action'
+import { ButtonExtraFormAction }        from '@/src/components/custom/button-extra-form-action'
+import ButtonGradient                   from '@/src/components/antd/button-gradient'
+import { ButtonsWrapper }               from '@/src/components/custom/buttons-wrapper'
+
+import { useTokenDecimalsAndBalance }   from '@/src/hooks/useTokenDecimalsAndBalance'
+import { useERC20Allowance }            from '@/src/hooks/useERC20Allowance'
+import { useERC155Allowance }           from '@/src/hooks/useERC1155Allowance'
+import useUserProxy                     from '@/src/hooks/useUserProxy'
+import { useFIATBalance }               from '@/src/hooks/useFIATBalance'
+import { useUserActions }               from '@/src/hooks/useUserActions'
+
+import { getNonHumanValue }             from '@/src/web3/utils'
+import { ZERO_BIG_NUMBER }              from '@/src/constants/misc'
 import FiatIcon                         from '@/src/resources/svg/fiat-icon.svg'
-import AntdForm from 'antd/lib/form'
-
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
-
-import { getHealthFactorState } from '@/src/utils/table'
-
-import { calculateHealthFactor } from '@/src/utils/data/positions'
-
-
-import { Balance }                    from '@/src/components/custom/balance'
-import TokenAmount                    from '@/src/components/custom/token-amount'
-import { Form }                       from '@/src/components/antd'
-import { Summary }       from '@/src/components/custom/summary'
-import { FormExtraAction }            from '@/src/components/custom/form-extra-action'
-import { ButtonExtraFormAction }      from '@/src/components/custom/button-extra-form-action'
-import ButtonGradient                 from '@/src/components/antd/button-gradient'
-import { ButtonsWrapper }             from '@/src/components/custom/buttons-wrapper'
-
-import BigNumber from 'bignumber.js'
-
-import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useERC20Allowance }          from '@/src/hooks/useERC20Allowance'
-import { useERC155Allowance }         from '@/src/hooks/useERC1155Allowance'
-import useUserProxy                   from '@/src/hooks/useUserProxy'
-import { useFIATBalance }             from '@/src/hooks/useFIATBalance'
-import { useUserActions }             from '@/src/hooks/useUserActions'
-
-
-
-import { getNonHumanValue } from '@/src/web3/utils'
+import { useWeb3Connection }            from '@/src/providers/web3ConnectionProvider'
+import stepperMachine                   from '@/src/state/open-position-form'
 import {
   DEPOSIT_COLLATERAL_TEXT,
   WAD_DECIMALS,
   getBorrowAmountBelowDebtFloorText,
-}                                     from '@/src/constants/misc'
-import { Collateral }                 from '@/src/utils/data/collaterals'
-
-import { useWeb3Connection }          from '@/src/providers/web3ConnectionProvider'
-import stepperMachine from '@/src/state/open-position-form'
+}                                       from '@/src/constants/misc'
 
 type Props = {
   collateral: Collateral
@@ -68,9 +61,7 @@ export const CreatePositionBond: React.FC<Props> = ({
 
   const [FIATBalance] = useFIATBalance(true)
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
-
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
-
   const { depositCollateral } = useUserActions(collateral.vault?.type)
 
   const erc20 = useERC20Allowance(tokenAddress, userProxyAddress ?? '')

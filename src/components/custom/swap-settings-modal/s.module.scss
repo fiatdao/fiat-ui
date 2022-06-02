@@ -1,0 +1,19 @@
+.footerFlexContainer {
+    display: flex;
+    justify-content: end;
+    margin-right: 10px;
+}
+
+.buttons {
+    width: 120px;
+    margin: 5px;
+}
+
+.bodyFlexContainer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.title {
+    margin-bottom: 10px;
+}
