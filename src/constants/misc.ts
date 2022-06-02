@@ -35,10 +35,9 @@ export const SET_ALLOWANCE_PROXY_TEXT = 'Set allowance for Proxy'
 export const ENABLE_PROXY_FOR_FIAT_TEXT = 'Enable Proxy for FIAT'
 export const EXECUTE_TEXT = 'Execute'
 export const DEPOSIT_COLLATERAL_TEXT = 'Deposit collateral'
-export const FIAT_TO_MINT_TOOLTIP_TEXT = `Due to the vault's constantly
-  accruing interest rate the amount of FIAT you receive may be slightly
-  different than what is displayed.`
-export const EST_FIAT_TO_MINT_TEXT = 'Estimated FIAT to be minted'
+export const EST_FIAT_TOOLTIP_TEXT = `Due to the vault's constantly
+  accruing interest rate, the FIAT you receive when borrowing may be slightly
+  different than what is displayed (±1).`
 
 export function getBorrowAmountBelowDebtFloorText(debtFloor: BigNumber | undefined): string {
   const belowMinimumAmountText = 'Below minimum borrow amount'

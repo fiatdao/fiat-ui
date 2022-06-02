@@ -13,10 +13,8 @@ import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
 import {
   DEPOSIT_COLLATERAL_TEXT,
-  EST_FIAT_TO_MINT_TEXT,
-  FIAT_TO_MINT_TOOLTIP_TEXT,
+  EST_FIAT_TOOLTIP_TEXT,
   ONE_BIG_NUMBER,
-  VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
   getBorrowAmountBelowDebtFloorText,
@@ -205,16 +203,9 @@ const FormERC20: React.FC<{
         .toFixed(4)} ${tokenSymbol}`,
     },
     {
-      // debt
       title: 'Estimated FIAT debt',
+      titleTooltip: EST_FIAT_TOOLTIP_TEXT,
       value: `${stateMachine.context.fiatAmount.toFixed(3)}`,
-    },
-    {
-      title: EST_FIAT_TO_MINT_TEXT,
-      titleTooltip: FIAT_TO_MINT_TOOLTIP_TEXT,
-      value: `${stateMachine.context.fiatAmount
-        .div(collateral.vault.virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
-        .toFixed(3)}`,
     },
     {
       state: getHealthFactorState(hf),
