@@ -14,6 +14,7 @@ import TokenAmount from '@/src/components/custom/token-amount'
 import {
   DEPOSIT_COLLATERAL_TEXT,
   EST_FIAT_TOOLTIP_TEXT,
+  EST_HEALTH_FACTOR_TOOLTIP_TEXT,
   ONE_BIG_NUMBER,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
@@ -209,7 +210,8 @@ const FormERC20: React.FC<{
     },
     {
       state: getHealthFactorState(hf),
-      title: 'Updated health factor',
+      title: 'Estimated Health Factor',
+      titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
       value: hf.toFixed(3),
     },
   ]

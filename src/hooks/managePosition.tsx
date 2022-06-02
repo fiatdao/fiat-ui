@@ -5,6 +5,7 @@ import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
   EST_FIAT_TOOLTIP_TEXT,
+  EST_HEALTH_FACTOR_TOOLTIP_TEXT,
   EXECUTE_TEXT,
   INFINITE_BIG_NUMBER,
   MIN_EPSILON_OFFSET,
@@ -418,7 +419,8 @@ export const useManageFormSummary = (
         : DEFAULT_HEALTH_FACTOR,
     },
     {
-      title: 'New Health Factor',
+      title: 'Estimated new Health Factor',
+      titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
       state: getHealthFactorState(healthFactor),
       value: isValidHealthFactor(healthFactor) ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
