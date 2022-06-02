@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
 import { Contract, ContractTransaction } from '@ethersproject/contracts'
+import { useCallback } from 'react'
 import { useNotifications } from '@/src/hooks/useNotifications'
 import { AppContractInfo } from '@/src/constants/contracts'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'

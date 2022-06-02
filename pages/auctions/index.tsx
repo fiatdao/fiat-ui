@@ -1,8 +1,4 @@
 import s from './s.module.scss'
-import BigNumber from 'bignumber.js'
-import Link from 'next/link'
-import { ColumnsType } from 'antd/lib/table/interface'
-import cn from 'classnames'
 import { useProtocolFilters } from '@/src/hooks/useProtocolFilters'
 import { FIAT_TICKER } from '@/src/constants/misc'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
@@ -16,9 +12,13 @@ import { Asset } from '@/src/components/custom/asset'
 import { AuctionData } from '@/src/utils/data/auctions'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import withRequiredValidChain from '@/src/hooks/RequiredValidChain'
+import BigNumber from 'bignumber.js'
+import Link from 'next/link'
+import { ColumnsType } from 'antd/lib/table/interface'
+import cn from 'classnames'
 
-const AuctionsTable = ({ columns, filters }: any) => {
-  const { auctions } = useAuctions(filters)
+const AuctionsTable = ({ columns, protocolsToFilterBy }: any) => {
+  const { auctions } = useAuctions(protocolsToFilterBy)
 
   return (
     <Table
@@ -38,7 +38,7 @@ const UNKNOWN = 'Unknown'
 
 const Auctions = () => {
   const { isWalletConnected } = useWeb3Connection()
-  const { activeFilters, displayFilters } = useProtocolFilters()
+  const { protocolsToFilterBy, renderFilters } = useProtocolFilters()
 
   const columns: ColumnsType<any> = [
     {
@@ -109,13 +109,13 @@ const Auctions = () => {
   return (
     <>
       <h2 className={cn(s.title)}>Select a collateral asset on auction to buy</h2>
-      {displayFilters(false)}
+      {renderFilters(false)}
       <SafeSuspense
         fallback={
           <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
         }
       >
-        <AuctionsTable columns={columns} filters={activeFilters} />
+        <AuctionsTable columns={columns} protocolsToFilterBy={protocolsToFilterBy} />
       </SafeSuspense>
     </>
   )

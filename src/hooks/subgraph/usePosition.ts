@@ -1,5 +1,5 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
 import useSWR, { KeyedMutator } from 'swr'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import { Maybe } from '@/types/utils'
 import { Positions, PositionsVariables } from '@/types/subgraph/__generated__/Positions'
 import { ChainsValues } from '@/src/constants/chains'
