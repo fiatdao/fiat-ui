@@ -154,16 +154,18 @@ const FormERC20: React.FC<{
 
   const toggleMintFiat = () => setMintFiat(!mintFiat)
 
-  const maxBorrowAmountCalculated = useMemo(() => {
-    const totalCollateral = stateMachine.context.erc20Amount ?? ZERO_BIG_NUMBER
+  const maxBorrowAmountCalculated = useMemo((): BigNumber => {
+    const totalCollateralScaled =
+      stateMachine.context.erc20Amount.scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER
     const collateralValue = collateral.currentValue || ONE_BIG_NUMBER
     const collateralizationRatio = collateral.vault.collateralizationRatio || ONE_BIG_NUMBER
-    return calculateMaxBorrow(
-      totalCollateral,
+    const maxBorrowAmount = calculateMaxBorrow(
+      totalCollateralScaled,
       collateralValue,
       collateralizationRatio,
-      ZERO_BIG_NUMBER,
+      ZERO_BIG_NUMBER, // no existing debt, this is a new loan
     )
+    return maxBorrowAmount
   }, [stateMachine.context.erc20Amount, collateral])
 
   const hasMinimumFIAT = useMemo(() => {

@@ -115,8 +115,8 @@ const calculateDebt = (normalDebt: BigNumber, virtualRate: BigNumber) => {
   return normalDebt.times(virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
 }
 
-// maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
 // Arguments should have WAD percision
+// maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
 const calculateMaxBorrow = (
   totalCollateral: BigNumber,
   collateralValue: BigNumber,
