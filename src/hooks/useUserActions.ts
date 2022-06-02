@@ -10,7 +10,7 @@ import useUserProxy from '@/src/hooks/useUserProxy'
 import { contracts } from '@/src/constants/contracts'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { VaultEPTActions } from '@/types/typechain'
-import { estimateGasLimit } from '@/src/web3/utils'
+import { estimateGasLimit, getHumanValue } from '@/src/web3/utils'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 
 type BaseModify = {
@@ -34,7 +34,9 @@ type ModifyCollateralAndDebt = BaseModify & {
 type BuyCollateralAndModifyDebtNotional = BaseModify & {
   deltaDebt: BigNumber
   virtualRate?: BigNumber
+  fCashAmount: BigNumber
   underlierAmount: BigNumber
+  minImpliedRate: number
 }
 
 type BuyCollateralAndModifyDebtElement = {
@@ -234,7 +236,18 @@ export const useUserActions = (type?: string): UseUserActions => {
         8,
       )
 
-      const fCashAmount = params.underlierAmount // probably needs to be multiplied by virtual rate
+      // console.log('',88,  '\n',         
+      //   params.vault, '\n',// address vault
+      //   params.token, '\n',// address position
+      //   params.tokenId, '\n',// address collateralizer
+      //   userProxyAddress, '\n',// address creditor
+      //   address,'\n', // address collateralizer
+      //   address, '\n',
+      //   getHumanValue(params.fCashAmount, 41).toFixed(0,8),  '\n',// uint256 underlierAmount,
+      //   deltaNormalDebt, '\n',// int256 deltaNormalDebt,
+      //   params.minImpliedRate, '\n',
+      //   params.underlierAmount.toFixed(0,8), '\n',// calldata swapParams
+      // )
 
       const buyCollateralAndModifyDebtEncoded = activeContract.interface.encodeFunctionData(
         'buyCollateralAndModifyDebt',
@@ -246,10 +259,10 @@ export const useUserActions = (type?: string): UseUserActions => {
           userProxyAddress, // address position
           address, // address collateralizer
           address, // address creditor
-          fCashAmount, // uint256 fCashAmount                     
+          params.fCashAmount.toFixed(0,8), // uint256 fCashAmount                     
           deltaNormalDebt, // int256 deltaNormalDebt
-          // minImpliedRate, // uint32 minImpliedRate                //need to update
-          params.underlierAmount // uint256 maxUnderlierAmount
+          params.minImpliedRate, // uint32 minImpliedRate                 //need to update
+          params.underlierAmount.toFixed(0,8) // uint256 maxUnderlierAmount        // need to update to underlier scale
         ],
       )
 

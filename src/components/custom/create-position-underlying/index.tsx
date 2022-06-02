@@ -17,11 +17,11 @@ import { ButtonsWrapper }                  from '@/src/components/custom/buttons
 
 import { useTokenDecimalsAndBalance }      from '@/src/hooks/useTokenDecimalsAndBalance'
 import { useERC20Allowance }               from '@/src/hooks/useERC20Allowance'
-import { useERC155Allowance }              from '@/src/hooks/useERC1155Allowance'
 import useUserProxy                        from '@/src/hooks/useUserProxy'
 import { useUnderlyingExchangeValue }      from '@/src/hooks/useUnderlyingExchangeValue'
 import { useFIATBalance }                  from '@/src/hooks/useFIATBalance'
 import { useUserActions }                  from '@/src/hooks/useUserActions'
+import { useUnderlierToFCash }             from '@/src/hooks/underlierToFCash'
 
 import {
   DEPOSIT_UNDERLYING_TEXT,
@@ -42,7 +42,7 @@ type Props = {
   loading: any
   healthFactorNumber: any
   maxBorrowAmountCalculated: any
-  isDisabledCreatePosition: any
+  hasMinimumFIAT: any
   setLoading: any
   setMachine: any
 }
@@ -54,7 +54,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   loading,
   healthFactorNumber,
   maxBorrowAmountCalculated,
-  isDisabledCreatePosition,
+  hasMinimumFIAT,
   setLoading,
   setMachine
 }) => {
@@ -67,13 +67,11 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   const { buyCollateralAndModifyDebtElement, buyCollateralAndModifyDebtNotional } = useUserActions(collateral.vault?.type)
 
   const erc20 = useERC20Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
-  const erc1155 = useERC155Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
-  const activeToken = collateral?.vault?.type === 'NOTIONAL' ? erc1155 : erc20
   const { 
     approve, 
     hasAllowance, 
     loadingApprove 
-  } = activeToken
+  } = erc20
 
   const [stateMachine, send] = useMachine(underlyingStepperMachine, {
     context: {
@@ -102,6 +100,10 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     setSwapSettingsOpen(!swapSettingsOpen)
   }
 
+  const isDisabledCreatePosition = () => {
+    return !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT
+  }
+
   const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
     tokenData: { 
       decimals: 8,
@@ -118,6 +120,11 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     balancerVault: collateral?.eptData?.balancerVault,
     curvePoolId: collateral?.eptData?.poolId,
     underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals) //sinlge underlier value
+  })
+
+  const [underlierToFCash] = useUnderlierToFCash({ 
+    tokenId: collateral.tokenId ?? '',
+    amount: getNonHumanValue(new BigNumber(1), underlierDecimals) //sinlge underlier value
   })
 
   const marketRate = 1 / getHumanValue(underlierToPToken, underlierDecimals).toNumber()
@@ -150,13 +157,17 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
       ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
       : ZERO_BIG_NUMBER
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+    const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
+
     try {
       setLoading(true)
       await buyCollateralAndModifyDebtNotional({
         vault: collateral.vault.address,
         token: collateral.address ?? '',
-        tokenId: 0,
+        tokenId: Number(collateral.tokenId),
         deltaDebt: _fiatAmount,
+        fCashAmount: fCashAmount,
+        minImpliedRate: 1000000000,
         underlierAmount: _underlierAmount
       })
       setLoading(false)

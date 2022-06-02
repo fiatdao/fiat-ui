@@ -202,7 +202,7 @@ const FormERC20: React.FC<{
                 loading={loading}
                 healthFactorNumber={healthFactorNumber}
                 maxBorrowAmountCalculated={maxBorrowAmountCalculated}
-                isDisabledCreatePosition={isDisabledCreatePosition}
+                hasMinimumFIAT={hasMinimumFIAT}
                 setLoading={setFormLoading}
                 setMachine={switchActiveMachine}
               />
