@@ -126,31 +126,52 @@ export const useManagePositionForm = (
     setHasMonetaAllowance(!!monetaFiatAllowance && monetaFiatAllowance?.gt(ZERO_BIG_NUMBER))
   }, [monetaFiatAllowance])
 
-  // maxWithdraw = totalCollateral-collateralizationRatio*totalFIAT/collateralValue
+  // If user is repaying the max FIAT debt, maxWithdraw = totalCollateral. Otherwise,
+  // maxWithdraw = collateral * collateralPrice - debt * collateralizationRation * maxSlippage
   const calculateMaxWithdrawAmount = useCallback(
     (totalCollateral: BigNumber, totalDebt: BigNumber) => {
-      const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
-      const currentValue = position?.currentValue ? position?.currentValue : 1
+      // If repay amount is maxed out, max withdraw amount should be equal to collateral deposited so the user can close their position
+      const toMint = getNonHumanValue(positionFormFields?.mint, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const toBurn = getNonHumanValue(positionFormFields?.burn, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const deltaDebt = toMint.minus(toBurn)
+      const positionDebt = position?.totalDebt ?? ZERO_BIG_NUMBER
+      const newDebt = positionDebt.plus(deltaDebt) ?? ZERO_BIG_NUMBER
+      const isUserMaxRepaying = newDebt.lt(MIN_EPSILON_OFFSET)
+      if (isUserMaxRepaying) {
+        return getHumanValue(totalCollateral, WAD_DECIMALS)
+      }
 
-      const withdrawAmount = totalCollateral.minus(
-        collateralizationRatio.times(totalDebt).div(currentValue),
-      )
+      // Otherwise, max withdraw amount should have a bit of a buffer so user doesn't immediately get margin called
+      const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
+      const currentValue = position?.currentValue ? position?.currentValue : BigNumber.from(1)
+      const withdrawAmount = totalCollateral
+        .times(currentValue)
+        .minus(totalDebt.times(collateralizationRatio).times(VIRTUAL_RATE_MAX_SLIPPAGE))
       let result = ZERO_BIG_NUMBER
       if (withdrawAmount.isPositive()) {
         result = withdrawAmount
       }
-      return getHumanValue(result, WAD_DECIMALS)
+
+      return getHumanValue(result, WAD_DECIMALS * 2)
     },
-    [position?.vaultCollateralizationRatio, position?.currentValue],
+    [
+      position?.vaultCollateralizationRatio,
+      position?.currentValue,
+      position?.totalDebt,
+      positionFormFields?.mint,
+      positionFormFields?.burn,
+    ],
   )
-  // @TODO: not working max amount
-  // debt = normalDebt*virtualRate
-  // maxFIAT = totalCollateral*collateralValue/collateralizationRatio/(virtualRateSafetyMargin*virtualRate)-debt
+
+  // maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
   const calculateMaxBorrowAmount = useCallback(
     (totalCollateral: BigNumber, totalDebt: BigNumber) => {
       const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
       const currentValue = position?.currentValue ? position?.currentValue : 1
-      const collateralWithMults = totalCollateral.times(currentValue).div(collateralizationRatio)
+      const collateralWithMults = totalCollateral
+        .times(currentValue)
+        .div(collateralizationRatio)
+        .times(VIRTUAL_RATE_MAX_SLIPPAGE)
       const borrowAmount = collateralWithMults.minus(totalDebt)
 
       let result = ZERO_BIG_NUMBER
@@ -302,7 +323,7 @@ export const useManagePositionForm = (
         token: position?.collateral.address,
         tokenId: Number(position.tokenId),
         deltaCollateral,
-        deltaDebt,
+        deltaDebt: deltaDebt,
         wait: 3,
         virtualRate: position.virtualRate,
       })
