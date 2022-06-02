@@ -29,13 +29,13 @@ import {
 }                                          from '@/src/constants/misc'
 import { ZERO_BIG_NUMBER }                 from '@/src/constants/misc'
 import FiatIcon                            from '@/src/resources/svg/fiat-icon.svg'
-import InternalArrow                       from '@/src/resources/svg/interal-arrow.svg'
 import { parseDate }                       from '@/src/utils/dateTime'
 import { Collateral }                      from '@/src/utils/data/collaterals'
 import { useWeb3Connection }               from '@/src/providers/web3ConnectionProvider'
 import underlyingStepperMachine            from '@/src/state/open-position-underlying-form'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { getTokenBySymbol }                from '@/src/providers/knownTokensProvider'
+import { SettingFilled }                   from '@ant-design/icons';
 
 type Props = {
   collateral: Collateral
@@ -222,11 +222,11 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
       {[1, 4].includes(stateMachine.context.currentStepNumber) && (
         <>
           <div>
-            <Balance
-              title={`Swap and Deposit`}
-              value={`Balance: ${underlyingInfo?.humanValue?.toFixed(2)}`}
-            />
-            <InternalArrow onClick={toggleSwapSettingsMenu}/>
+            <div className={cn(s.flexContainer)}>
+              <h3 className={cn(s.label)}>Swap and Deposit</h3>
+              <p className={cn(s.balance)}>{`Balance: ${underlyingInfo?.humanValue?.toFixed(2)}`}</p>
+              <SettingFilled className={cn(s.settings)} onClick={toggleSwapSettingsMenu}/>
+            </div>
             <SwapSettingsModal 
               isOpen={swapSettingsOpen}
               submit={updateSwapSettings}

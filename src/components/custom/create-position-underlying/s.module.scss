@@ -100,3 +100,26 @@
 .summary {
   padding: 24px 0 0 0;
 }
+
+.flexContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.settings {
+  margin-left: 90px;
+}
+
+.label {
+  color: var(--theme-text-color);
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.balance {
+  color: var(--theme-light-text-color);
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
+}
