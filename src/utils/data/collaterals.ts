@@ -8,15 +8,15 @@ import {
 import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import contractCall from '@/src/utils/contractCall'
 
-import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { getHumanValue } from '@/src/web3/utils'
 import { Collybus } from '@/types/typechain/Collybus'
-import { hexToAscii } from 'web3-utils'
-import { BigNumber } from 'bignumber.js'
+import { getHumanValue } from '@/src/web3/utils'
+import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
+import { BigNumber } from 'bignumber.js'
+import { hexToAscii } from 'web3-utils'
 
 export type Collateral = {
   id: string

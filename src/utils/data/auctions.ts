@@ -19,8 +19,8 @@ export const scaleToDecimalsCount = (scale?: Maybe<string>): number | undefined 
     return
   }
 
-  const exponentialRegex = /1e[-+](\d)$/
-  const decimalPlaces = BigNumber.from(scale)?.toExponential().match(exponentialRegex)?.[1]
+  // Safe to make assumption that scale will be >= 1
+  const decimalPlaces = BigNumber.from(scale)?.toExponential().split('+')[1]
 
   if (typeof decimalPlaces === 'string') {
     return Number(decimalPlaces)

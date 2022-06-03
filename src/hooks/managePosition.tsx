@@ -19,9 +19,7 @@ import {
 import { parseDate } from '../utils/dateTime'
 import { getHealthFactorState } from '../utils/table'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
-import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 import { contracts } from '@/src/constants/contracts'
-import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -34,6 +32,8 @@ import {
   isValidHealthFactor,
 } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
+import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 

@@ -6,8 +6,10 @@ import s from '@/pages/create-position/s.module.scss'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import { ProtocolFilter, getInitialProtocolFilters } from '@/src/constants/bondTokens'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { PROTOCOLS, Protocol, protocolNamesByKeyword } from '@/types/protocols'
 import cn from 'classnames'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+
 
 interface FilterState {
   filterByInMyWallet: boolean

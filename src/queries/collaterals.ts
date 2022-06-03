@@ -12,8 +12,10 @@ export const COLLATERALS = gql`
       symbol
       underlierSymbol
       underlierAddress
+      underlierScale
       maturity
       address
+      scale
       faceValue
       eptData {
         id
