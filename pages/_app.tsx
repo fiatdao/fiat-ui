@@ -1,7 +1,7 @@
 import isDev from '../src/utils/isDev'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
-import GeneralContextProvider from '@/src/providers/generalProvider'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
+import GeneralContextProvider from '@/src/providers/generalProvider'
 import KnownTokensProvider from '@/src/providers/knownTokensProvider'
 import ChangeNetworkModal from '@/src/components/custom/change-network-modal'
 import { Sidebar } from '@/src/components/custom/sidebar'

@@ -1,49 +1,55 @@
 import s from './s.module.scss'
 import { useERC155Allowance } from '../../../../src/hooks/useERC1155Allowance'
-import SafeSuspense from '@/src/components/custom/safe-suspense'
-import { getHealthFactorState } from '@/src/utils/table'
-import { getEtherscanAddressUrl } from '@/src/web3/utils'
-import { useFIATBalance } from '@/src/hooks/useFIATBalance'
-import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
-import { ButtonBack } from '@/src/components/custom/button-back'
 import { Balance } from '@/src/components/custom/balance'
+import { ButtonBack } from '@/src/components/custom/button-back'
 import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
+import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
 import {
   DEPOSIT_COLLATERAL_TEXT,
-  VIRTUAL_RATE_MAX_SLIPPAGE,
+  EST_FIAT_TOOLTIP_TEXT,
+  EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+  ONE_BIG_NUMBER,
   WAD_DECIMALS,
+  ZERO_BIG_NUMBER,
   getBorrowAmountBelowDebtFloorText,
 } from '@/src/constants/misc'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
+import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import { useQueryParam } from '@/src/hooks/useQueryParam'
+import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
-import { useQueryParam } from '@/src/hooks/useQueryParam'
-import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { Collateral } from '@/src/utils/data/collaterals'
+import { calculateHealthFactor, calculateMaxBorrow } from '@/src/utils/data/positions'
 import { parseDate } from '@/src/utils/dateTime'
-import { ONE_BIG_NUMBER, ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
-import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
-import SuccessAnimation from '@/src/resources/animations/success-animation.json'
-import { calculateHealthFactor } from '@/src/utils/data/positions'
+import { getHealthFactorState } from '@/src/utils/table'
+import {
+  getEtherscanAddressUrl,
+  getHumanValue,
+  getNonHumanValue,
+  perSecondToAPR,
+} from '@/src/web3/utils'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
+import Lottie from 'lottie-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import Lottie from 'lottie-react'
 
 // @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7
@@ -122,6 +128,7 @@ const FormERC20: React.FC<{
 
       await depositCollateral({
         vault: collateral.vault.address,
+        virtualRate: collateral.vault.virtualRate,
         token: tokenAddress,
         tokenId: Number(collateral.tokenId) ?? 0,
         toDeposit: _erc20Amount,
@@ -146,26 +153,20 @@ const FormERC20: React.FC<{
 
   const toggleMintFiat = () => setMintFiat(!mintFiat)
 
-  // @TODO: not working max amount
-  // maxFIAT = totalCollateral*collateralValue/collateralizationRatio/(virtualRateSafetyMargin*virtualRate)-debt
-  const maxBorrowAmountCalculated = useMemo(() => {
-    const totalCollateral = stateMachine.context.erc20Amount ?? ZERO_BIG_NUMBER
-    const collateralValue = getHumanValue(collateral.currentValue || ONE_BIG_NUMBER, WAD_DECIMALS)
-    const collateralizationRatio = getHumanValue(
-      collateral.vault.collateralizationRatio || ONE_BIG_NUMBER,
-      WAD_DECIMALS,
+  const maxBorrowAmountCalculated = useMemo((): BigNumber => {
+    const totalCollateralScaled =
+      stateMachine.context.erc20Amount.scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const collateralValue = collateral.currentValue || ONE_BIG_NUMBER
+    const collateralizationRatio = collateral.vault.collateralizationRatio || ONE_BIG_NUMBER
+    const maxBorrowAmount = calculateMaxBorrow(
+      totalCollateralScaled,
+      collateralValue,
+      collateralizationRatio,
+      ZERO_BIG_NUMBER, // no existing debt, this is a new loan
     )
-
-    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(collateral.vault.virtualRate)
-    const maxBorrowAmount = totalCollateral
-      .times(collateralValue)
-      .div(collateralizationRatio)
-      .div(virtualRateWithMargin)
-
     return maxBorrowAmount
   }, [stateMachine.context.erc20Amount, collateral])
 
-  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
   const hasMinimumFIAT = useMemo(() => {
     const fiatAmount = stateMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
     const debtFloor = collateral.vault.debtFloor
@@ -186,16 +187,15 @@ const FormERC20: React.FC<{
     deltaCollateral,
     deltaDebt,
   )
-  const healthFactorNumber = hf?.toFixed(3)
 
   const summaryData = [
     {
       title: 'In your wallet',
-      value: `${tokenInfo?.humanValue} ${tokenSymbol}`,
+      value: `${tokenInfo?.humanValue?.toFixed(3)} ${tokenSymbol}`,
     },
     {
       title: 'Depositing into position',
-      value: `${stateMachine.context.erc20Amount.toFixed(4)} ${tokenSymbol}`,
+      value: `${stateMachine.context.erc20Amount.toFixed(3)} ${tokenSymbol}`,
     },
     {
       title: 'Remaining in wallet',
@@ -204,13 +204,15 @@ const FormERC20: React.FC<{
         .toFixed(4)} ${tokenSymbol}`,
     },
     {
-      title: 'FIAT to be minted',
-      value: `${stateMachine.context.fiatAmount.toFixed(4)}`,
+      title: 'Estimated FIAT debt',
+      titleTooltip: EST_FIAT_TOOLTIP_TEXT,
+      value: `${stateMachine.context.fiatAmount.toFixed(3)}`,
     },
     {
       state: getHealthFactorState(hf),
-      title: 'Updated health factor',
-      value: healthFactorNumber,
+      title: 'Estimated Health Factor',
+      titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+      value: hf.toFixed(3),
     },
   ]
 
@@ -253,7 +255,7 @@ const FormERC20: React.FC<{
                             <TokenAmount
                               disabled={loading}
                               displayDecimals={4}
-                              healthFactorValue={healthFactorNumber}
+                              healthFactorValue={hf}
                               max={maxBorrowAmountCalculated}
                               maximumFractionDigits={6}
                               onChange={(val) =>
@@ -264,12 +266,12 @@ const FormERC20: React.FC<{
                             />
                           </Form.Item>
                         }
-                        buttonText="Mint FIAT with this transaction"
+                        buttonText="Borrow FIAT with this transaction"
                         disabled={loading}
                         onClick={toggleMintFiat}
                         top={
                           <Balance
-                            title={`Mint FIAT`}
+                            title={`Borrow FIAT`}
                             value={`Balance: ${FIATBalance.toFixed(4)}`}
                           />
                         }
@@ -282,7 +284,7 @@ const FormERC20: React.FC<{
                     <>
                       {!mintFiat && (
                         <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
-                          Mint FIAT with this transaction
+                          Borrow FIAT with this transaction
                         </ButtonExtraFormAction>
                       )}
                       {!isProxyAvailable && (
@@ -336,7 +338,7 @@ const FormERC20: React.FC<{
                     <>
                       {!mintFiat && (
                         <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
-                          Mint FIAT with this transaction
+                          Borrow FIAT with this transaction
                         </ButtonExtraFormAction>
                       )}
                       <ButtonGradient
@@ -427,7 +429,7 @@ const OpenPosition = () => {
     },
     {
       title: 'Collateralization Threshold',
-      tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
+      tooltip: 'The minimum amount of over-collateralization required to borrow FIAT.',
       value: collateralizationRatio
         ? `${getHumanValue(collateralizationRatio.times(100), WAD_DECIMALS)}%`
         : '-',

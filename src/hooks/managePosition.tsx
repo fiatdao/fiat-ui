@@ -1,28 +1,36 @@
 import { usePosition } from './subgraph/usePosition'
-import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
-import { useERC20Allowance } from './useERC20Allowance'
 import { useERC155Allowance } from './useERC1155Allowance'
+import { useERC20Allowance } from './useERC20Allowance'
+import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
+  EST_FIAT_TOOLTIP_TEXT,
+  EST_HEALTH_FACTOR_TOOLTIP_TEXT,
   EXECUTE_TEXT,
   INFINITE_BIG_NUMBER,
   MIN_EPSILON_OFFSET,
   ONE_BIG_NUMBER,
   SET_ALLOWANCE_PROXY_TEXT,
+  VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
   getBorrowAmountBelowDebtFloorText,
 } from '../constants/misc'
 import { parseDate } from '../utils/dateTime'
-import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
 import { getHealthFactorState } from '../utils/table'
+import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { Position, calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
+import {
+  Position,
+  calculateHealthFactor,
+  calculateMaxBorrow,
+  isValidHealthFactor,
+} from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
 import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
@@ -123,39 +131,49 @@ export const useManagePositionForm = (
     setHasMonetaAllowance(!!monetaFiatAllowance && monetaFiatAllowance?.gt(ZERO_BIG_NUMBER))
   }, [monetaFiatAllowance])
 
-  // maxWithdraw = totalCollateral-collateralizationRatio*totalFIAT/collateralValue
+  // If user is repaying the max FIAT debt, maxWithdraw = totalCollateral. Otherwise,
+  // maxWithdraw = collateral * collateralPrice - debt * collateralizationRation * maxSlippage
   const calculateMaxWithdrawAmount = useCallback(
     (totalCollateral: BigNumber, totalDebt: BigNumber) => {
-      const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
-      const currentValue = position?.currentValue ? position?.currentValue : 1
+      // If repay amount is maxed out, max withdraw amount should be equal to collateral deposited so the user can close their position
+      const toMint = getNonHumanValue(positionFormFields?.mint, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const toBurn = getNonHumanValue(positionFormFields?.burn, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const deltaDebt = toMint.minus(toBurn)
+      const positionDebt = position?.totalDebt ?? ZERO_BIG_NUMBER
+      const newDebt = positionDebt.plus(deltaDebt) ?? ZERO_BIG_NUMBER
+      const isUserMaxRepaying = newDebt.lt(MIN_EPSILON_OFFSET)
+      if (isUserMaxRepaying) {
+        return getHumanValue(totalCollateral, WAD_DECIMALS)
+      }
 
-      const withdrawAmount = totalCollateral.minus(
-        collateralizationRatio.times(totalDebt).div(currentValue),
-      )
+      // Otherwise, max withdraw amount should have a bit of a buffer so user doesn't immediately get margin called
+      const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
+      const currentValue = position?.currentValue ? position?.currentValue : BigNumber.from(1)
+      const withdrawAmount = totalCollateral
+        .times(currentValue)
+        .minus(totalDebt.times(collateralizationRatio).times(VIRTUAL_RATE_MAX_SLIPPAGE))
       let result = ZERO_BIG_NUMBER
       if (withdrawAmount.isPositive()) {
         result = withdrawAmount
       }
-      return getHumanValue(result, WAD_DECIMALS)
+
+      return getHumanValue(result, WAD_DECIMALS * 2)
     },
-    [position?.vaultCollateralizationRatio, position?.currentValue],
+    [
+      position?.vaultCollateralizationRatio,
+      position?.currentValue,
+      position?.totalDebt,
+      positionFormFields?.mint,
+      positionFormFields?.burn,
+    ],
   )
-  // @TODO: not working max amount
-  // debt = normalDebt*virtualRate
-  // maxFIAT = totalCollateral*collateralValue/collateralizationRatio/(virtualRateSafetyMargin*virtualRate)-debt
+
+  // maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
   const calculateMaxBorrowAmount = useCallback(
     (totalCollateral: BigNumber, totalDebt: BigNumber) => {
       const collateralizationRatio = position?.vaultCollateralizationRatio || ONE_BIG_NUMBER
-      const currentValue = position?.currentValue ? position?.currentValue : 1
-      const collateralWithMults = totalCollateral.times(currentValue).div(collateralizationRatio)
-      const borrowAmount = collateralWithMults.minus(totalDebt)
-
-      let result = ZERO_BIG_NUMBER
-      if (borrowAmount.isPositive()) {
-        result = borrowAmount
-      }
-
-      return getHumanValue(result, WAD_DECIMALS)
+      const collateralValue = position?.currentValue ? position?.currentValue : ONE_BIG_NUMBER
+      return calculateMaxBorrow(totalCollateral, collateralValue, collateralizationRatio, totalDebt)
     },
     [position?.vaultCollateralizationRatio, position?.currentValue],
   )
@@ -299,7 +317,7 @@ export const useManagePositionForm = (
         token: position?.collateral.address,
         tokenId: Number(position.tokenId),
         deltaCollateral,
-        deltaDebt,
+        deltaDebt: deltaDebt,
         wait: 3,
         virtualRate: position.virtualRate,
       })
@@ -389,7 +407,8 @@ export const useManageFormSummary = (
       value: getHumanValue(position.totalDebt, WAD_DECIMALS).toFixed(3),
     },
     {
-      title: 'New FIAT debt',
+      title: 'Estimated new FIAT debt',
+      titleTooltip: EST_FIAT_TOOLTIP_TEXT,
       value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(3),
     },
     {
@@ -400,7 +419,8 @@ export const useManageFormSummary = (
         : DEFAULT_HEALTH_FACTOR,
     },
     {
-      title: 'New Health Factor',
+      title: 'Estimated new Health Factor',
+      titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
       state: getHealthFactorState(healthFactor),
       value: isValidHealthFactor(healthFactor) ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
@@ -442,7 +462,7 @@ export const useManagePositionsInfoBlock = (position: Position) => {
     },
     {
       title: 'Collateralization Threshold',
-      tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
+      tooltip: 'The minimum amount of over-collateralization required to borrow FIAT.',
       value: position?.vaultCollateralizationRatio
         ? `${getHumanValue(position?.vaultCollateralizationRatio.times(100), WAD_DECIMALS)}%`
         : '-',

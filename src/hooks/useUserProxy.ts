@@ -6,9 +6,9 @@ import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { userProxies, userProxiesVariables } from '@/types/subgraph/__generated__/userProxies'
 import { USER_PROXIES } from '@/src/queries/userProxies'
-import { Contract } from 'ethers'
-import { useCallback, useMemo, useState } from 'react'
 import useSWR from 'swr'
+import { useCallback, useMemo, useState } from 'react'
+import { Contract } from 'ethers'
 
 const fetchUserProxies = (appChainId: ChainsValues, address: string) =>
   graphqlFetcher<userProxies, userProxiesVariables>(appChainId, USER_PROXIES, {
