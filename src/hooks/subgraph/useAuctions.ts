@@ -1,4 +1,3 @@
-import useSWR from 'swr'
 import { getVaultAddresses } from '@/src/constants/bondTokens'
 import { ChainsValues } from '@/src/constants/chains'
 import { CollateralAuction_filter } from '@/types/subgraph/__generated__/globalTypes'
@@ -8,6 +7,7 @@ import { wrangleAuction } from '@/src/utils/data/auctions'
 import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { auctions, auctionsVariables } from '@/types/subgraph/__generated__/auctions'
 import { AuctionData } from '@/src/utils/data/auctions'
+import useSWR from 'swr'
 
 const fetchAuctions = async (appChainId: ChainsValues, where: CollateralAuction_filter | null) =>
   graphqlFetcher<auctions, auctionsVariables>(appChainId, AUCTIONS, { where })

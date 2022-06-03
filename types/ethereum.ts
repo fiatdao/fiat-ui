@@ -1,5 +1,5 @@
-import { Contract } from '@ethersproject/contracts'
 import { Await } from '@/types/utils'
+import { Contract } from '@ethersproject/contracts'
 
 export type ContractReturnType<
   ContractType extends Contract,

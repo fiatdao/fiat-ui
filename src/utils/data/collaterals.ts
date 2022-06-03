@@ -1,22 +1,22 @@
-import { getVirtualRate } from '../getVirtualRate'
 import { getFaceValue } from '../getFaceValue'
-import { hexToAscii } from 'web3-utils'
-import { BigNumber } from 'bignumber.js'
-import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
-import contractCall from '@/src/utils/contractCall'
-import { stringToDateOrCurrent } from '@/src/utils/dateTime'
+import { getVirtualRate } from '../getVirtualRate'
+import { Maybe } from '@/types/utils'
 import {
   Collaterals_collateralTypes as SubgraphCollateral,
   Collaterals_collybusSpots as SubgraphSpot,
 } from '@/types/subgraph/__generated__/Collaterals'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
+import contractCall from '@/src/utils/contractCall'
 
+import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { ChainsValues } from '@/src/constants/chains'
-import { Maybe } from '@/types/utils'
 import { contracts } from '@/src/constants/contracts'
 import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_ADDRESS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { Collybus } from '@/types/typechain/Collybus'
 import { getHumanValue } from '@/src/web3/utils'
-import { getCollateralMetadata } from '@/src/constants/bondTokens'
+import { Collybus } from '@/types/typechain/Collybus'
+import { hexToAscii } from 'web3-utils'
+import { BigNumber } from 'bignumber.js'
+import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 
 export type Collateral = {
   id: string
@@ -62,8 +62,13 @@ const wrangleCollateral = async (
     address: { [appChainId]: collybusAddress },
   } = contracts.COLLYBUS
 
-  let currentValue = null
+  const virtualRate = await getVirtualRate(
+    appChainId,
+    provider,
+    collateral.vault?.address ?? undefined,
+  )
 
+  let currentValue = null
   if (spotPrice && collateral.faceValue && collateral.maturity && discountRate) {
     const numerator = (BigNumber.from(collateral.faceValue) as BigNumber).multipliedBy(
       (BigNumber.from(spotPrice.spot) as BigNumber).unscaleBy(WAD_DECIMALS),
@@ -98,12 +103,12 @@ const wrangleCollateral = async (
       ],
     )
   }
+
   const faceValue = await getFaceValue(
     provider,
     collateral.tokenId ?? 0,
     collateral.vault?.address ?? '',
   )
-  const virtualRate = await getVirtualRate(collateral.vault?.address ?? '', appChainId, provider)
 
   const {
     asset = '',
@@ -135,7 +140,7 @@ const wrangleCollateral = async (
         ? // TODO: Improve this logic
           hexToAscii(collateral.vault?.vaultType).split(':')[0]
         : '',
-      virtualRate,
+      virtualRate: virtualRate as BigNumber,
     },
     eptData: {
       balancerVault: collateral.eptData?.balancerVault ?? '',

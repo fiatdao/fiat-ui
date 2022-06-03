@@ -6,10 +6,11 @@
 }
 
 .row {
-  align-items: flex-start;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+  height: 1rem;
 
   &:last-child {
     margin-bottom: 0;
