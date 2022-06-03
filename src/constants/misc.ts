@@ -35,12 +35,12 @@ export const SET_ALLOWANCE_PROXY_TEXT = 'Set allowance for Proxy'
 export const ENABLE_PROXY_FOR_FIAT_TEXT = 'Enable Proxy for FIAT'
 export const EXECUTE_TEXT = 'Execute'
 export const DEPOSIT_COLLATERAL_TEXT = 'Deposit collateral'
-export const EST_FIAT_TOOLTIP_TEXT = `Due to the vault's constantly
-  accruing interest rate, the FIAT you receive when borrowing may be slightly
-  different than what is displayed (±1).`
-export const EST_HEALTH_FACTOR_TOOLTIP_TEXT = `Due to the vault's constantly
-  accruing interest rate, your health factor may end up slightly lower due to
-  interest accrued while transactions are processing.`
+export const EST_FIAT_TOOLTIP_TEXT = `Due to the vault's global
+  interest accumulator, the FIAT you receive (send) when borrowing
+  (repaying) may be slightly different than what is displayed.`
+export const EST_HEALTH_FACTOR_TOOLTIP_TEXT = `Due to the vault's global
+interest accumulator, your new health factor may end up slightly different 
+  than what is displayed.`
 
 export function getBorrowAmountBelowDebtFloorText(debtFloor: BigNumber | undefined): string {
   const belowMinimumAmountText = 'Below minimum borrow amount'
