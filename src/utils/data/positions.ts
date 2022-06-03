@@ -12,6 +12,7 @@ import { contracts } from '@/src/constants/contracts'
 import {
   INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
+  MIN_EPSILON_OFFSET,
   ONE_BIG_NUMBER,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
@@ -150,7 +151,7 @@ const calculateHealthFactor = (
 } => {
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
-  if (!debt || debt?.isZero()) {
+  if (!debt || debt?.isZero() || debt.lt(MIN_EPSILON_OFFSET)) {
     healthFactor = INFINITE_BIG_NUMBER
     return {
       healthFactor,
