@@ -20,7 +20,8 @@ import React, { useState } from 'react'
 
 export type TokenAmountProps = {
   className?: string
-  disabled?: boolean
+  numericInputDisabled?: boolean
+  sliderDisabled?: boolean
   displayDecimals?: number
   hidden?: boolean
   max?: number | BigNumber
@@ -45,7 +46,8 @@ const healthFactorHint =
 const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   const {
     className,
-    disabled = false,
+    numericInputDisabled = false,
+    sliderDisabled = false,
     displayDecimals = 4,
     healthFactorValue = ZERO_BIG_NUMBER,
     hidden,
@@ -117,7 +119,11 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
       <NumericInput
         addonAfter={
           max !== undefined ? (
-            <ButtonOutlineGradient disabled={disabled} onClick={onMaxHandle} textGradient>
+            <ButtonOutlineGradient
+              disabled={numericInputDisabled}
+              onClick={onMaxHandle}
+              textGradient
+            >
               Max
             </ButtonOutlineGradient>
           ) : null
@@ -136,7 +142,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
           </div>
         }
         className={cn(s.component, className)}
-        disabled={disabled}
+        disabled={numericInputDisabled}
         hidden={hidden}
         maximumFractionDigits={maximumFractionDigits}
         onChange={handleInputChange}
@@ -183,10 +189,11 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               {
                 [s.healthFactorVariant]: isHealthFactorVariant,
                 [s.healthFactorVariantReverse]: isHealthFactorVariantReverse,
+                [s.sliderDisabled]: sliderDisabled,
               },
               className,
             )}
-            disabled={disabled}
+            disabled={sliderDisabled}
             max={bnMaxValue.toNumber()}
             min={0}
             onChange={(sliderValue) => {

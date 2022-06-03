@@ -301,13 +301,14 @@ const BuyCollateral = () => {
                     >
                       <Form.Item name="amountToBuy" required>
                         <TokenAmount
-                          disabled={loading}
                           displayDecimals={4}
                           mainAsset={data?.protocol.name ?? ''}
                           max={maxCredit}
                           maximumFractionDigits={6}
+                          numericInputDisabled={loading}
                           secondaryAsset={data?.underlier.symbol}
                           slider
+                          sliderDisabled={loading}
                         />
                       </Form.Item>
                       <ButtonGradient

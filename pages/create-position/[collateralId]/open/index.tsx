@@ -34,7 +34,11 @@ import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
 import { Collateral } from '@/src/utils/data/collaterals'
-import { calculateHealthFactor, calculateMaxBorrow } from '@/src/utils/data/positions'
+import {
+  calculateHealthFactor,
+  calculateMaxBorrow,
+  isValidHealthFactor,
+} from '@/src/utils/data/positions'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHealthFactorState } from '@/src/utils/table'
 import {
@@ -43,6 +47,7 @@ import {
   getNonHumanValue,
   perSecondToAPR,
 } from '@/src/web3/utils'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -212,7 +217,7 @@ const FormERC20: React.FC<{
       state: getHealthFactorState(hf),
       title: 'Estimated Health Factor',
       titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-      value: hf.toFixed(3),
+      value: isValidHealthFactor(hf) ? hf.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
   ]
 
@@ -237,7 +242,6 @@ const FormERC20: React.FC<{
                     />
                     <Form.Item name="tokenAmount" required>
                       <TokenAmount
-                        disabled={loading}
                         displayDecimals={tokenInfo?.decimals}
                         mainAsset={collateral.vault.name}
                         max={tokenInfo?.humanValue}
@@ -246,6 +250,7 @@ const FormERC20: React.FC<{
                           val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })
                         }
                         slider
+                        sliderDisabled={loading || tokenInfo?.humanValue?.eq(0)}
                       />
                     </Form.Item>
                     {mintFiat && (
@@ -253,15 +258,16 @@ const FormERC20: React.FC<{
                         bottom={
                           <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
                             <TokenAmount
-                              disabled={loading}
                               displayDecimals={4}
                               healthFactorValue={hf}
                               max={maxBorrowAmountCalculated}
                               maximumFractionDigits={6}
+                              numericInputDisabled={loading}
                               onChange={(val) =>
                                 val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
                               }
                               slider="healthFactorVariant"
+                              sliderDisabled={loading}
                               tokenIcon={<FiatIcon />}
                             />
                           </Form.Item>

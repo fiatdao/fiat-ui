@@ -282,14 +282,15 @@ const PositionManage = () => {
                           />
                           <Form.Item name="deposit" required>
                             <TokenAmount
-                              disabled={formDisabled}
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
                               max={maxDepositAmount}
                               maximumFractionDigits={6}
+                              numericInputDisabled={formDisabled}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
+                              sliderDisabled={formDisabled}
                             />
                           </Form.Item>
                         </>
@@ -302,14 +303,15 @@ const PositionManage = () => {
                           />
                           <Form.Item name="withdraw" required>
                             <TokenAmount
-                              disabled={formDisabled}
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
                               max={maxWithdrawAmount}
                               maximumFractionDigits={6}
+                              numericInputDisabled={formDisabled}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariant'}
+                              sliderDisabled={formDisabled}
                             />
                           </Form.Item>
                         </>
@@ -346,12 +348,13 @@ const PositionManage = () => {
                           />
                           <Form.Item name="mint" required>
                             <TokenAmount
-                              disabled={formDisabled}
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactor}
                               max={maxBorrowAmount}
                               maximumFractionDigits={contracts.FIAT.decimals}
+                              numericInputDisabled={formDisabled}
                               slider={'healthFactorVariant'}
+                              sliderDisabled={formDisabled}
                               tokenIcon={<FiatIcon />}
                             />
                           </Form.Item>
@@ -365,12 +368,13 @@ const PositionManage = () => {
                           />
                           <Form.Item name="burn" required>
                             <TokenAmount
-                              disabled={formDisabled}
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactor}
                               max={maxRepay}
                               maximumFractionDigits={contracts.FIAT.decimals}
+                              numericInputDisabled={formDisabled}
                               slider={'healthFactorVariantReverse'}
+                              sliderDisabled={formDisabled}
                               tokenIcon={<FiatIcon />}
                             />
                           </Form.Item>
