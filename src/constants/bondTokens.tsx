@@ -1,7 +1,7 @@
-import { memoize } from 'lodash'
 import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { metadataByNetwork } from '@/metadata'
+import { memoize } from 'lodash'
 
 // TODO: Create interface that can support all token types
 // type PTokenMap = {
@@ -110,7 +110,7 @@ export const getInitialProtocolFilters = memoize(
         // If we haven't seen this protocol yet, add it to the initialProtocolFilters
         const protocolFilter = {
           protocolName,
-          iconLink: vaultMetadata.icons.main,
+          iconLink: vaultMetadata.icons.protocol,
           isActive: true,
         } as ProtocolFilter
         initialProtocolFilters.push(protocolFilter)
