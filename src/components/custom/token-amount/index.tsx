@@ -16,7 +16,7 @@ import { isValidHealthFactor } from '@/src/utils/data/positions'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import cn from 'classnames'
 import BigNumber from 'bignumber.js'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 export type TokenAmountProps = {
   className?: string
@@ -65,7 +65,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   const RED_COLOR = 'var(--theme-danger-color)'
   const step = 1 / 10 ** Math.min(displayDecimals, 6)
   const bnMaxValue = BigNumber.from(max) ?? MAX_UINT_256
-  const bnValue = value !== undefined ? BigNumber.min(value, bnMaxValue) : undefined
+  const bnValue = value !== undefined ? BigNumber.from(value) : undefined
   const isHealthFactorVariant = slider === 'healthFactorVariant'
   const isHealthFactorVariantReverse = slider === 'healthFactorVariantReverse'
 
@@ -73,6 +73,24 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   const [sliderTrackColor, setSliderTrackColor] = useState(
     isHealthFactorVariant ? GREEN_COLOR : RED_COLOR,
   )
+
+  useEffect(() => {
+    const updateSliderTrackColor = () => {
+      const healthFactorState = getHealthFactorState(healthFactorValue)
+      switch (healthFactorState) {
+        case 'ok':
+          setSliderTrackColor(GREEN_COLOR)
+          break
+        case 'warning':
+          setSliderTrackColor(YELLOW_COLOR)
+          break
+        case 'danger':
+          setSliderTrackColor(RED_COLOR)
+          break
+      }
+    }
+    updateSliderTrackColor()
+  }, [healthFactorValue])
 
   const coerceMaxyValueToMax = (bigNumberSliderValue: BigNumber) => {
     // Dragging slider to max can result in a `sliderValue` slightly lower than max
@@ -85,33 +103,16 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     }
   }
 
-  const updateSliderTrackColor = () => {
-    const healthFactorState = getHealthFactorState(healthFactorValue)
-    switch (healthFactorState) {
-      case 'ok':
-        setSliderTrackColor(GREEN_COLOR)
-        break
-      case 'warning':
-        setSliderTrackColor(YELLOW_COLOR)
-        break
-      case 'danger':
-        setSliderTrackColor(RED_COLOR)
-        break
-    }
-  }
-
   const healthFactorToRender = isValidHealthFactor(healthFactorValue)
     ? healthFactorValue?.toFixed(3)
     : DEFAULT_HEALTH_FACTOR
 
   function onMaxHandle() {
     onChange?.(bnMaxValue)
-    updateSliderTrackColor()
   }
 
-  function handleInputChange(inputValue?: BigNumber) {
-    onChange?.(inputValue ? BigNumber.min(inputValue, bnMaxValue) : undefined)
-    updateSliderTrackColor()
+  function handleNumericInputChange(inputValue?: BigNumber) {
+    onChange?.(inputValue)
   }
 
   return (
@@ -119,11 +120,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
       <NumericInput
         addonAfter={
           max !== undefined ? (
-            <ButtonOutlineGradient
-              disabled={numericInputDisabled}
-              onClick={onMaxHandle}
-              textGradient
-            >
+            <ButtonOutlineGradient disabled={sliderDisabled} onClick={onMaxHandle} textGradient>
               Max
             </ButtonOutlineGradient>
           ) : null
@@ -145,7 +142,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
         disabled={numericInputDisabled}
         hidden={hidden}
         maximumFractionDigits={maximumFractionDigits}
-        onChange={handleInputChange}
+        onChange={handleNumericInputChange}
         placeholder={
           max !== undefined
             ? `0 (Max ${formatBigValue(bnMaxValue.toNumber(), displayDecimals)})`
@@ -200,7 +197,6 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               const bigNumberSliderValue = BigNumber.from(sliderValue)
               onChange?.(bigNumberSliderValue)
               coerceMaxyValueToMax(bigNumberSliderValue)
-              updateSliderTrackColor()
             }}
             step={step}
             tooltipVisible={false}

@@ -286,7 +286,7 @@ const PositionManage = () => {
                               healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
                               max={maxDepositAmount}
-                              maximumFractionDigits={6}
+                              maximumFractionDigits={4}
                               numericInputDisabled={formDisabled}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
@@ -307,7 +307,7 @@ const PositionManage = () => {
                               healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
                               max={maxWithdrawAmount}
-                              maximumFractionDigits={6}
+                              maximumFractionDigits={4}
                               numericInputDisabled={formDisabled}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariant'}
