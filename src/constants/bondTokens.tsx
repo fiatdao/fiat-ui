@@ -78,24 +78,20 @@ export const getCollateralMetadata = (
 
 /// Returns primary and secondary icon links for asset with name protocolName
 /// Return Object should look like {main: <main_link>, secondary: <secondary_link}
-export const getPTokenIconFromMetadata = memoize(
-  (appChainId: ChainsValues, protocolName?: string) => {
-    if (!metadataByNetwork || !protocolName) {
-      return
-    }
+/// TODO: memoize. See https://github.com/fiatdao/fiat-ui/issues/520
+export const getPTokenIconFromMetadata = (appChainId: ChainsValues, protocolName?: string) => {
+  if (!metadataByNetwork || !protocolName) {
+    return
+  }
 
-    const vaults = getVaults(appChainId)
-    const vaultMetadatas = Object.values(vaults)
-    const vaultMetadataForProtocol = vaultMetadatas.find((metadata) => {
-      return metadata.name === protocolName
-    })
+  const vaults = getVaults(appChainId)
+  const vaultMetadatas = Object.values(vaults)
+  const vaultMetadataForProtocol = vaultMetadatas.find((metadata) => {
+    return metadata.name === protocolName
+  })
 
-    return vaultMetadataForProtocol?.icons
-  },
-  (appChainId, protocolName) => {
-    appChainId + (protocolName ?? 'undefinedProtocol')
-  },
-)
+  return vaultMetadataForProtocol?.icons
+}
 
 export const getVaultAddresses = memoize((appChainId: ChainsValues) => {
   const vaults = getVaults(appChainId)
