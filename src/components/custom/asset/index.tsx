@@ -11,14 +11,14 @@ export const Asset: React.FC<{
   title: string
 }> = ({ className, mainAsset, title, ...restProps }) => {
   const { appChainId } = useWeb3Connection()
-
+  const icons = getPTokenIconFromMetadata(appChainId, mainAsset)
   return (
     <div className={cn(s.component, className)} {...restProps}>
       <AssetIcons
         className={cn(s.icon)}
         dimensions="30px"
-        mainAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.protocol}
-        secondaryAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.asset}
+        mainAsset={icons?.protocol}
+        secondaryAsset={icons?.asset}
       />
       <div className={cn(s.title)}>{title}</div>
     </div>
