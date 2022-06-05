@@ -39,7 +39,7 @@ export type TokenAmountProps = {
 const healthFactorHint =
   'The health factor is a score representing the risk for a given position to be liquidated. ' +
   'A position can be liquidated if the health factor is less than 1.0. ' +
-  'The health factor is derived from the positions ratio between the deposited collateral and the outstanding ' +
+  "The health factor is derived from the position's ratio between the deposited collateral and the outstanding " +
   'debt denominated in FIAT using the following formula: ' +
   'collateral * collateralValue / debt / collateralizationRatio.'
 
