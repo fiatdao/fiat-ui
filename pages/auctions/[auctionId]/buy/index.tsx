@@ -1,6 +1,11 @@
 import s from './s.module.scss'
 import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
-import { FIAT_TICKER, WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import {
+  FIAT_TICKER,
+  INSUFFICIENT_BALANCE_TEXT,
+  WAD_DECIMALS,
+  ZERO_BIG_NUMBER,
+} from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -19,7 +24,7 @@ import Link from 'next/link'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -65,11 +70,20 @@ const BuyCollateral = () => {
   } = useBuyCollateralForm(data)
 
   const [isDebtSufficient, setIsDebtSufficient] = useState(false)
+  const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
   const minimumToBuy = data?.vault?.auctionDebtFloor
     ?.plus(1)
     .unscaleBy(WAD_DECIMALS)
     .dividedBy(data.currentAuctionPrice as BigNumber)
+
+  const amountToBuy = useMemo(() => {
+    return form.getFieldValue('amountToBuy')
+  }, [form])
+
+  const fiatToPay = useMemo(() => {
+    return amountToBuy.multipliedBy(data?.currentAuctionPrice as BigNumber)
+  }, [amountToBuy, data?.currentAuctionPrice])
 
   const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
     if (data?.debt) {
@@ -181,9 +195,19 @@ const BuyCollateral = () => {
     },
   ]
 
-  useDynamicTitle(data?.protocol && `Buy ${data.protocol.humanReadableName}`)
+  const isFiatBalanceSufficient = FIATBalance.lt(fiatToPay)
 
-  const [FIATBalance, refetchFIATBalance] = useFIATBalance()
+  const getButtonTextForStep = (stepNumber: number): string => {
+    if (!isDebtSufficient) {
+      return 'No partial purchase possible'
+    }
+    if (!isFiatBalanceSufficient) {
+      return INSUFFICIENT_BALANCE_TEXT
+    }
+    return steps[stepNumber].buttonText
+  }
+
+  useDynamicTitle(data?.protocol && `Buy ${data.protocol.humanReadableName}`)
 
   const onSubmit = async () => {
     if (!data?.currentAuctionPrice) {
@@ -312,11 +336,11 @@ const BuyCollateral = () => {
                         />
                       </Form.Item>
                       <ButtonGradient
-                        disabled={loading || !isDebtSufficient}
+                        disabled={loading || !isDebtSufficient || !isFiatBalanceSufficient}
                         height="lg"
                         onClick={steps[step].next}
                       >
-                        {isDebtSufficient ? steps[step].buttonText : 'No partial purchase possible'}
+                        {getButtonTextForStep(step)}
                       </ButtonGradient>
                     </Form>
                   </>
@@ -325,11 +349,12 @@ const BuyCollateral = () => {
                     {step === 3 && <Summary data={summaryData} />}
                     <div className={s.buttonsWrapper}>
                       <ButtonGradient
+                        disabled={loading || !isFiatBalanceSufficient}
                         height="lg"
                         loading={loading}
                         onClick={steps[step].callback.bind(steps[step])}
                       >
-                        {steps[step].buttonText}
+                        {getButtonTextForStep(step)}
                       </ButtonGradient>
                       <button
                         className={s.backButton}
