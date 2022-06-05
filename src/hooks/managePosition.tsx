@@ -2,12 +2,14 @@ import { usePosition } from './subgraph/usePosition'
 import { useERC155Allowance } from './useERC1155Allowance'
 import { useERC20Allowance } from './useERC20Allowance'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
+import { useFIATBalance } from './useFIATBalance'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
   EST_FIAT_TOOLTIP_TEXT,
   EST_HEALTH_FACTOR_TOOLTIP_TEXT,
   EXECUTE_TEXT,
   INFINITE_BIG_NUMBER,
+  INSUFFICIENT_BALANCE_TEXT,
   MIN_EPSILON_OFFSET,
   ONE_BIG_NUMBER,
   SET_ALLOWANCE_PROXY_TEXT,
@@ -62,8 +64,8 @@ export const useManagePositionForm = (
   const [availableWithdrawAmount, setAvailableWithdrawAmount] = useState<BigNumber | undefined>(
     ZERO_BIG_NUMBER,
   )
-  const [maxBorrowAmount, setMaxBorrowAmount] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [maxRepayAmount, setMaxRepayAmount] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
+  const [maxBorrowAmount, setMaxBorrowAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [maxRepayAmount, setMaxRepayAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
 
   const [healthFactor, setHealthFactor] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
   const [buttonText, setButtonText] = useState<string>('Execute')
@@ -83,6 +85,8 @@ export const useManagePositionForm = (
     vaultType: position?.vaultType ?? '',
     tokenId: position?.tokenId ?? '0',
   })
+
+  const [FIATBalance] = useFIATBalance(true) // true param requests as human value
 
   const erc20 = useERC20Allowance(tokenAddress ?? '', userProxyAddress ?? '')
   const erc1155 = useERC155Allowance(tokenAddress ?? '', userProxyAddress ?? '')
@@ -234,42 +238,81 @@ export const useManagePositionForm = (
     return debt.gte(debtFloor) || isNearZero
   }, [getPositionValues, position?.debtFloor])
 
+  const isRepayingMoreThanMaxRepay = useMemo(() => {
+    const repayAmount = positionFormFields?.burn ?? ZERO_BIG_NUMBER
+    return repayAmount.gt(maxRepayAmount.plus(MIN_EPSILON_OFFSET))
+  }, [positionFormFields?.burn, maxRepayAmount])
+
+  const isRepayingMoreThanBalance = useMemo(() => {
+    const repayAmount = positionFormFields?.burn ?? ZERO_BIG_NUMBER
+    return repayAmount.gt(FIATBalance.plus(MIN_EPSILON_OFFSET))
+  }, [positionFormFields?.burn, FIATBalance])
+
+  const isBorrowingMoreThanMaxBorrow = useMemo(() => {
+    const borrowAmount = positionFormFields?.mint ?? ZERO_BIG_NUMBER
+    return borrowAmount.gt(maxBorrowAmount.plus(MIN_EPSILON_OFFSET))
+  }, [positionFormFields?.mint, maxBorrowAmount])
+
   const isDisabledCreatePosition = useMemo(() => {
-    return isLoading || !hasMinimumFIAT
-  }, [isLoading, hasMinimumFIAT])
+    return (
+      isLoading ||
+      !hasMinimumFIAT ||
+      isRepayingMoreThanMaxRepay ||
+      isRepayingMoreThanBalance ||
+      isBorrowingMoreThanMaxBorrow
+    )
+  }, [
+    isLoading,
+    hasMinimumFIAT,
+    isRepayingMoreThanMaxRepay,
+    isRepayingMoreThanBalance,
+    isBorrowingMoreThanMaxBorrow,
+  ])
 
   const updateAmounts = useCallback(() => {
     const { collateral, debt, deltaDebt, positionCollateral, positionDebt } = getPositionValues()
 
     const collateralBalance = tokenInfo?.humanValue
     const withdrawAmount = calculateMaxWithdrawAmount(positionCollateral, debt)
-    const borrowAmount = calculateMaxBorrowAmount(collateral, positionDebt)
-    const repayAmount = calculateMaxRepayAmount(positionDebt)
+    const maxBorrow = calculateMaxBorrowAmount(collateral, positionDebt)
+    const maxRepay = calculateMaxRepayAmount(positionDebt)
 
     const newHealthFactor = calculateHealthFactorFromPosition(collateral, debt)
 
     setMaxDepositAmount(collateralBalance)
     setMaxWithdrawAmount(withdrawAmount)
-    setMaxBorrowAmount(borrowAmount)
-    setMaxRepayAmount(repayAmount)
+    setMaxBorrowAmount(maxBorrow)
+    setMaxRepayAmount(maxRepay)
     setHealthFactor(newHealthFactor)
     setAvailableDepositAmount(collateralBalance)
     setAvailableWithdrawAmount(collateralBalance)
 
+    // TODO: button text for collateral changes that don't make sense
     if (deltaDebt.isNegative()) {
-      const text = !hasFiatAllowance
-        ? SET_ALLOWANCE_PROXY_TEXT
-        : !hasMonetaAllowance
-        ? ENABLE_PROXY_FOR_FIAT_TEXT
-        : !hasMinimumFIAT
-        ? getBorrowAmountBelowDebtFloorText(position?.debtFloor)
-        : EXECUTE_TEXT
-      setButtonText(text)
+      // User is repaying debt here
       setIsRepayingFIAT(true)
+
+      let text = EXECUTE_TEXT
+      if (!hasFiatAllowance) {
+        text = SET_ALLOWANCE_PROXY_TEXT
+      } else if (!hasMonetaAllowance) {
+        text = ENABLE_PROXY_FOR_FIAT_TEXT
+      } else if (!hasMinimumFIAT) {
+        text = getBorrowAmountBelowDebtFloorText(position?.debtFloor)
+      } else if (isRepayingMoreThanMaxRepay) {
+        text = `Cannot repay more than ${maxRepay.toFormat(3).toString()}`
+      } else if (isRepayingMoreThanBalance) {
+        text = INSUFFICIENT_BALANCE_TEXT
+      }
+      setButtonText(text)
     } else {
-      setButtonText(
-        !hasMinimumFIAT ? getBorrowAmountBelowDebtFloorText(position?.debtFloor) : EXECUTE_TEXT,
-      )
+      let text = EXECUTE_TEXT
+      if (!hasFiatAllowance) {
+        text = SET_ALLOWANCE_PROXY_TEXT
+      } else if (isBorrowingMoreThanMaxBorrow) {
+        text = `Cannot borrow more than ${maxBorrow.toFormat(3).toString()}`
+      }
+      setButtonText(text)
       setIsRepayingFIAT(false)
     }
   }, [
@@ -283,6 +326,9 @@ export const useManagePositionForm = (
     hasFiatAllowance,
     hasMonetaAllowance,
     position?.debtFloor,
+    isRepayingMoreThanMaxRepay,
+    isRepayingMoreThanBalance,
+    isBorrowingMoreThanMaxBorrow,
   ])
 
   const handleFormChange = () => {
