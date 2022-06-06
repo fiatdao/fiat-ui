@@ -1,4 +1,4 @@
-import React, { useEffect, useState }  from 'react'
+import React                           from 'react'
 import s                               from './s.module.scss'
 import cn                              from 'classnames'
 import Grid                            from '@/src/components/custom/grid'
@@ -11,17 +11,12 @@ import { InputNumber }                 from 'antd';
 interface Props {
   isOpen: boolean
   toggleOpen: () => void;
+  slippageTolerance: any
+  maxTransactionTime: any
   submit: (slippageTolerance: number, maxTransactionTime: number) => void
 }
 
-const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, submit}: Props) => {
-
-  const [slippageTolerance, setSlippageTolerance] = useState(0.1)
-  const [maxTransactionTime, setMaxTransactionTime] = useState(20)
-
-  useEffect(() => {
-    submit(slippageTolerance, maxTransactionTime)
-  }, [slippageTolerance, maxTransactionTime, submit])
+const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, submit, slippageTolerance, maxTransactionTime}: Props) => {
 
   const submitAndClose = () => {
     submit(slippageTolerance, maxTransactionTime)
@@ -40,7 +35,7 @@ const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, submit}: Props)
             <ButtonOutlineGradient 
               onClick={toggleOpen} 
               textGradient
-            >Cancel</ButtonOutlineGradient>
+            >Close</ButtonOutlineGradient>
           </div>
           <div className={cn(s.buttons)} >
             <ButtonGradient
@@ -67,7 +62,7 @@ const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, submit}: Props)
                 defaultValue={slippageTolerance} 
                 step={0.1} 
                 addonAfter={'%'}
-                onChange={setSlippageTolerance}
+                onChange={(e) => submit(e, maxTransactionTime)}
               />
           </div>
           <div className={cn(s.bodyFlexContainer)}>
@@ -80,7 +75,7 @@ const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, submit}: Props)
                 max={120} 
                 defaultValue={maxTransactionTime} 
                 addonAfter={'min'}
-                onChange={setMaxTransactionTime}
+                onChange={(e) => submit(slippageTolerance, e)}
               />
           </div>
         </Grid>

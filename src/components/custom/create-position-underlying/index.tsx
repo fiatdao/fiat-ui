@@ -131,17 +131,17 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     1 / getHumanValue(underlierToFCash, 77).toNumber() :   // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
     1 / getHumanValue(underlierToPToken, underlierDecimals).toNumber()
 
-  const priceImpact = (1 - marketRate) / 0.01
+  // const priceImpact = (1 - marketRate) / 0.01
 
   const underlyingData = [
     {
       title: 'Market rate',
       value: `1 Principal Token = ${marketRate.toFixed(4)} ${collateral ? collateral.underlierSymbol : '-'}`,
     },
-    {
-      title: 'Price impact',
-      value: `${priceImpact.toFixed(2)}%`,
-    },
+    // {
+    //   title: 'Price impact',
+    //   value: `${priceImpact.toFixed(2)}%`,
+    // },
     {
       title: 'Slippage tolerance',
       value: `${slippageTolerance.toFixed(2)}%`,
@@ -149,9 +149,9 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   ]
   
   const underlierAmount = stateMachine.context.underlierAmount.toNumber()
-  const apr = 2
-  const fixedAPR = `${apr}%`
-  const interestEarned = `${underlierAmount * (apr / 100)}`
+  const apr = (1 - marketRate) * 100
+  const fixedAPR = `${apr.toFixed(2)}%`
+  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)}`
   const redeemable = `${Number(underlierAmount) + Number(interestEarned)} ${collateral ? collateral.underlierSymbol : '-'}`
   // create position flow
   const createUnderlyingPositionNotional = async ({
@@ -250,6 +250,8 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
               isOpen={swapSettingsOpen}
               submit={updateSwapSettings}
               toggleOpen={toggleSwapSettingsMenu}
+              slippageTolerance={slippageTolerance}
+              maxTransactionTime={maxTransactionTime}
             />
             <Form.Item name="underlierAmount" required>
               <TokenAmount
