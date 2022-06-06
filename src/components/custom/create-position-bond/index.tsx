@@ -38,12 +38,12 @@ import {
 
 type Props = {
   collateral: Collateral
-  loading: any
-  maxBorrowAmountCalculated: any
-  isDisabledCreatePosition: any
-  setLoading: any
-  setMachine: any
-  tokenAddress: any
+  loading: boolean
+  maxBorrowAmountCalculated: BigNumber
+  isDisabledCreatePosition: () => boolean
+  setLoading: (newLoadingState: boolean) => void
+  setMachine: (machine: any) => void
+  tokenAddress: string
 }
 
 type FormProps = { underlierAmount: BigNumber }

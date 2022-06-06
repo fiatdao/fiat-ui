@@ -39,12 +39,12 @@ import { SettingFilled }                   from '@ant-design/icons';
 
 type Props = {
   collateral: Collateral
-  loading: any
-  healthFactorNumber: any
-  maxBorrowAmountCalculated: any
-  hasMinimumFIAT: any
-  setLoading: any
-  setMachine: any
+  loading: boolean
+  healthFactorNumber: string
+  maxBorrowAmountCalculated: BigNumber
+  hasMinimumFIAT: boolean
+  setLoading: (newLoadingState: boolean) => void
+  setMachine: (machine: any) => void
 }
 
 type FormProps = { underlierAmount: BigNumber }
