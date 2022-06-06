@@ -1,5 +1,7 @@
 import s from './s.module.scss'
-import { useERC155Allowance } from '../../../../src/hooks/useERC1155Allowance'
+import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
+import { isValidHealthFactor } from '@/src/utils/data/positions'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { Balance } from '@/src/components/custom/balance'
@@ -212,7 +214,7 @@ const FormERC20: React.FC<{
       state: getHealthFactorState(hf),
       title: 'Estimated Health Factor',
       titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-      value: hf.toFixed(3),
+      value: isValidHealthFactor(hf) ? hf?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
   ]
 
