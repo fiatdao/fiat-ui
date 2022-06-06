@@ -56,14 +56,10 @@ export const useManagePositionForm = (
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [finished, setFinished] = useState<boolean>(false)
 
-  const [maxDepositAmount, setMaxDepositAmount] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [availableDepositAmount, setAvailableDepositAmount] = useState<BigNumber | undefined>(
-    ZERO_BIG_NUMBER,
-  )
-  const [maxWithdrawAmount, setMaxWithdrawAmount] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
-  const [availableWithdrawAmount, setAvailableWithdrawAmount] = useState<BigNumber | undefined>(
-    ZERO_BIG_NUMBER,
-  )
+  const [maxDepositAmount, setMaxDepositAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [availableDepositAmount, setAvailableDepositAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [maxWithdrawAmount, setMaxWithdrawAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [availableWithdrawAmount, setAvailableWithdrawAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
   const [maxBorrowAmount, setMaxBorrowAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
   const [maxRepayAmount, setMaxRepayAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
 
@@ -225,12 +221,12 @@ export const useManagePositionForm = (
     return { positionCollateral, positionDebt, collateral, debt, deltaCollateral, deltaDebt }
   }, [position?.totalCollateral, position?.totalDebt, getDeltasFromForm])
 
-  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
-  // there two cases where we don't disable the button
-  // - resulting FIAT is greater than debtFloor, as required in the contracts
-  // - resulting FIAT is zero or near than zero (currently there are some precision issues so
-  //   we are using the range, [ZERO, MIN_EPSILON_OFFSET]. eg: when all FIAT is burned
   const hasMinimumFIAT = useMemo(() => {
+    // Minimum fiat to have in a position is the debtFloor
+    // there are two cases where we disable the button:
+    // - resulting FIAT is less than a vault's debtFloor, as required in the contracts
+    // - resulting FIAT is zero or (due to BigNumber precision issues) extremely close
+    //   to zero. We determine this by checking if new debt is in the range [ZERO, MIN_EPSILON_OFFSET).
     const { debt } = getPositionValues()
     const debtFloor = position?.debtFloor ?? ZERO_BIG_NUMBER
     const isNearZero = debt.lt(MIN_EPSILON_OFFSET) // or zero
@@ -238,20 +234,30 @@ export const useManagePositionForm = (
     return debt.gte(debtFloor) || isNearZero
   }, [getPositionValues, position?.debtFloor])
 
-  const isRepayingMoreThanMaxRepay = useMemo(() => {
-    const repayAmount = positionFormFields?.burn ?? ZERO_BIG_NUMBER
-    return repayAmount.gt(maxRepayAmount.plus(MIN_EPSILON_OFFSET))
-  }, [positionFormFields?.burn, maxRepayAmount])
-
   const isRepayingMoreThanBalance = useMemo(() => {
     const repayAmount = positionFormFields?.burn ?? ZERO_BIG_NUMBER
     return repayAmount.gt(FIATBalance.plus(MIN_EPSILON_OFFSET))
   }, [positionFormFields?.burn, FIATBalance])
 
+  const isRepayingMoreThanMaxRepay = useMemo(() => {
+    const repayAmount = positionFormFields?.burn ?? ZERO_BIG_NUMBER
+    return repayAmount.gt(maxRepayAmount.plus(MIN_EPSILON_OFFSET))
+  }, [positionFormFields?.burn, maxRepayAmount])
+
   const isBorrowingMoreThanMaxBorrow = useMemo(() => {
     const borrowAmount = positionFormFields?.mint ?? ZERO_BIG_NUMBER
     return borrowAmount.gt(maxBorrowAmount.plus(MIN_EPSILON_OFFSET))
   }, [positionFormFields?.mint, maxBorrowAmount])
+
+  const isDepositingMoreThanMaxDeposit = useMemo(() => {
+    const depositAmount = positionFormFields?.deposit ?? ZERO_BIG_NUMBER
+    return depositAmount.gt(maxDepositAmount.plus(MIN_EPSILON_OFFSET))
+  }, [positionFormFields?.deposit, maxDepositAmount])
+
+  const isWithdrawingMoreThanMaxWithdraw = useMemo(() => {
+    const withdrawAmount = positionFormFields?.withdraw ?? ZERO_BIG_NUMBER
+    return withdrawAmount.gt(maxWithdrawAmount.plus(MIN_EPSILON_OFFSET))
+  }, [positionFormFields?.withdraw, maxWithdrawAmount])
 
   const isDisabledCreatePosition = useMemo(() => {
     return (
@@ -259,7 +265,9 @@ export const useManagePositionForm = (
       !hasMinimumFIAT ||
       isRepayingMoreThanMaxRepay ||
       isRepayingMoreThanBalance ||
-      isBorrowingMoreThanMaxBorrow
+      isBorrowingMoreThanMaxBorrow ||
+      isDepositingMoreThanMaxDeposit ||
+      isWithdrawingMoreThanMaxWithdraw
     )
   }, [
     isLoading,
@@ -267,29 +275,30 @@ export const useManagePositionForm = (
     isRepayingMoreThanMaxRepay,
     isRepayingMoreThanBalance,
     isBorrowingMoreThanMaxBorrow,
+    isDepositingMoreThanMaxDeposit,
+    isWithdrawingMoreThanMaxWithdraw,
   ])
 
   const updateAmounts = useCallback(() => {
-    const { collateral, debt, deltaDebt, positionCollateral, positionDebt } = getPositionValues()
+    const { collateral, debt, deltaCollateral, deltaDebt, positionCollateral, positionDebt } =
+      getPositionValues()
 
-    const collateralBalance = tokenInfo?.humanValue
-    const withdrawAmount = calculateMaxWithdrawAmount(positionCollateral, debt)
+    const collateralBalance = tokenInfo?.humanValue ?? ZERO_BIG_NUMBER
+    const maxWithdraw = calculateMaxWithdrawAmount(positionCollateral, debt)
     const maxBorrow = calculateMaxBorrowAmount(collateral, positionDebt)
     const maxRepay = calculateMaxRepayAmount(positionDebt)
 
     const newHealthFactor = calculateHealthFactorFromPosition(collateral, debt)
 
     setMaxDepositAmount(collateralBalance)
-    setMaxWithdrawAmount(withdrawAmount)
+    setMaxWithdrawAmount(maxWithdraw)
     setMaxBorrowAmount(maxBorrow)
     setMaxRepayAmount(maxRepay)
     setHealthFactor(newHealthFactor)
     setAvailableDepositAmount(collateralBalance)
     setAvailableWithdrawAmount(collateralBalance)
 
-    // TODO: button text for collateral changes that don't make sense
     if (deltaDebt.isNegative()) {
-      // User is repaying debt here
       setIsRepayingFIAT(true)
 
       let text = EXECUTE_TEXT
@@ -306,6 +315,8 @@ export const useManagePositionForm = (
       }
       setButtonText(text)
     } else {
+      setIsRepayingFIAT(false)
+
       let text = EXECUTE_TEXT
       if (!hasFiatAllowance) {
         text = SET_ALLOWANCE_PROXY_TEXT
@@ -313,7 +324,17 @@ export const useManagePositionForm = (
         text = `Cannot borrow more than ${maxBorrow.toFormat(3).toString()}`
       }
       setButtonText(text)
-      setIsRepayingFIAT(false)
+    }
+
+    if (deltaCollateral.isNegative()) {
+      // is withdrawing collateral
+      if (isWithdrawingMoreThanMaxWithdraw) {
+        setButtonText(`Cannot withdraw more than ${maxWithdraw.toFormat(3).toString()}`)
+      }
+    } else {
+      if (isDepositingMoreThanMaxDeposit) {
+        setButtonText(INSUFFICIENT_BALANCE_TEXT)
+      }
     }
   }, [
     getPositionValues,
@@ -329,6 +350,8 @@ export const useManagePositionForm = (
     isRepayingMoreThanMaxRepay,
     isRepayingMoreThanBalance,
     isBorrowingMoreThanMaxBorrow,
+    isDepositingMoreThanMaxDeposit,
+    isWithdrawingMoreThanMaxWithdraw,
   ])
 
   const handleFormChange = () => {
