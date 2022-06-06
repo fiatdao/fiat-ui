@@ -192,9 +192,11 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     underlierAmount: BigNumber
     fiatAmount: BigNumber
   }): Promise<void> => {
+    // Underlier amount formatted with proper decimals
     const _underlierAmount = underlierAmount
       ? getNonHumanValue(underlierAmount, underlierDecimals)
       : ZERO_BIG_NUMBER
+    // Fiat amount formatted with proper decimals
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
     
     const deadline = Number((Date.now() / 1000).toFixed(0)) + (maxTransactionTime * 60)
@@ -248,7 +250,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
             </div>
             <SwapSettingsModal 
               isOpen={swapSettingsOpen}
-              submit={updateSwapSettings}
+              updateSwapSettings={updateSwapSettings}
               toggleOpen={toggleSwapSettingsMenu}
               slippageTolerance={slippageTolerance}
               maxTransactionTime={maxTransactionTime}

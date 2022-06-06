@@ -13,13 +13,13 @@ interface Props {
   toggleOpen: () => void;
   slippageTolerance: any
   maxTransactionTime: any
-  submit: (slippageTolerance: number, maxTransactionTime: number) => void
+  updateSwapSettings: (slippageTolerance: number, maxTransactionTime: number) => void
 }
 
-const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, submit, slippageTolerance, maxTransactionTime}: Props) => {
+const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, updateSwapSettings, slippageTolerance, maxTransactionTime}: Props) => {
 
   const submitAndClose = () => {
-    submit(slippageTolerance, maxTransactionTime)
+    updateSwapSettings(slippageTolerance, maxTransactionTime)
     toggleOpen()
   }
 
@@ -62,7 +62,7 @@ const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, submit, slippag
                 defaultValue={slippageTolerance} 
                 step={0.1} 
                 addonAfter={'%'}
-                onChange={(e) => submit(e, maxTransactionTime)}
+                onChange={(e) => updateSwapSettings(e, maxTransactionTime)}
               />
           </div>
           <div className={cn(s.bodyFlexContainer)}>
@@ -75,7 +75,7 @@ const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, submit, slippag
                 max={120} 
                 defaultValue={maxTransactionTime} 
                 addonAfter={'min'}
-                onChange={(e) => submit(slippageTolerance, e)}
+                onChange={(e) => updateSwapSettings(slippageTolerance, e)}
               />
           </div>
         </Grid>
