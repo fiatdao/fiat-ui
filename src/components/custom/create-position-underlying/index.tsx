@@ -64,7 +64,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
-  const { buyCollateralAndModifyDebtElement, buyCollateralAndModifyDebtNotional } = useUserActions(collateral.vault?.type)
+  const { buyCollateralAndModifyDebtERC20, buyCollateralAndModifyDebtERC1155 } = useUserActions(collateral.vault?.type)
 
   const erc20 = useERC20Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
   const { 
@@ -154,7 +154,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)}`
   const redeemable = `${Number(underlierAmount) + Number(interestEarned)} ${collateral ? collateral.underlierSymbol : '-'}`
   // create position flow
-  const createUnderlyingPositionNotional = async ({
+  const createUnderlyingPositionERC1155 = async ({
     fiatAmount,
     underlierAmount,
   }: {
@@ -169,7 +169,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
 
     try {
       setLoading(true)
-      await buyCollateralAndModifyDebtNotional({
+      await buyCollateralAndModifyDebtERC1155({
         vault: collateral.vault.address,
         token: collateral.address ?? '',
         tokenId: Number(collateral.tokenId),
@@ -185,7 +185,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     }
   }
 
-  const createUnderlyingPositionElement = async ({
+  const createUnderlyingPositionERC20 = async ({
     fiatAmount,
     underlierAmount,
   }: {
@@ -207,7 +207,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
 
     try {
       setLoading(true)
-      await buyCollateralAndModifyDebtElement({
+      await buyCollateralAndModifyDebtERC20({
         vault: collateral.vault.address,
         deltaDebt: _fiatAmount,
         underlierAmount: getNonHumanValue(_underlierAmount, WAD_DECIMALS),
@@ -230,8 +230,8 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
 
   const createUnderlyingPosition = 
   collateral.vault.name.substring(0,8) === 'vaultEPT' 
-  ? createUnderlyingPositionElement 
-  : createUnderlyingPositionNotional
+  ? createUnderlyingPositionERC20
+  : createUnderlyingPositionERC1155
 
   const updateSwapSettings = (slippageTolerance: number, maxTransactionTime: number) => {
     setSlippageTolerance(slippageTolerance)

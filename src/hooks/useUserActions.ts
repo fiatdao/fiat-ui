@@ -31,7 +31,7 @@ type ModifyCollateralAndDebt = BaseModify & {
   virtualRate?: BigNumber
 }
 
-type BuyCollateralAndModifyDebtNotional = BaseModify & {
+type BuyCollateralAndModifyDebtERC1155 = BaseModify & {
   deltaDebt: BigNumber
   virtualRate?: BigNumber
   fCashAmount: BigNumber
@@ -39,7 +39,7 @@ type BuyCollateralAndModifyDebtNotional = BaseModify & {
   minImpliedRate: number
 }
 
-type BuyCollateralAndModifyDebtElement = {
+type BuyCollateralAndModifyDebtERC20 = {
   vault: string
   deltaDebt: BigNumber
   virtualRate?: BigNumber
@@ -61,11 +61,11 @@ export type UseUserActions = {
   modifyCollateralAndDebt: (
     params: ModifyCollateralAndDebt,
   ) => ReturnType<TransactionResponse['wait']>
-  buyCollateralAndModifyDebtElement: (
-    params: BuyCollateralAndModifyDebtElement,
+  buyCollateralAndModifyDebtERC20: (
+    params: BuyCollateralAndModifyDebtERC20,
   ) => ReturnType<TransactionResponse['wait']>
-  buyCollateralAndModifyDebtNotional: (
-    params: BuyCollateralAndModifyDebtNotional,
+  buyCollateralAndModifyDebtERC1155: (
+    params: BuyCollateralAndModifyDebtERC1155,
   ) => ReturnType<TransactionResponse['wait']>
 }
 
@@ -220,8 +220,8 @@ export const useUserActions = (type?: string): UseUserActions => {
   )
 
   // VaultFCActions buyCollateralAndModifyDebt
-  const buyCollateralAndModifyDebtNotional = useCallback(
-    async (params: BuyCollateralAndModifyDebtNotional) => {
+  const buyCollateralAndModifyDebtERC1155 = useCallback(
+    async (params: BuyCollateralAndModifyDebtERC1155) => {
       if (!address || !userProxy || !userProxyAddress) {
         throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
       }
@@ -309,8 +309,8 @@ export const useUserActions = (type?: string): UseUserActions => {
   )
 
   // VaultEPTActions buyCollateralAndModifyDebt
-  const buyCollateralAndModifyDebtElement = useCallback(
-    async (params: BuyCollateralAndModifyDebtElement) => {
+  const buyCollateralAndModifyDebtERC20 = useCallback(
+    async (params: BuyCollateralAndModifyDebtERC20) => {
       if (!address || !userProxy || !userProxyAddress) {
         throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
       }
@@ -405,8 +405,8 @@ export const useUserActions = (type?: string): UseUserActions => {
     approveFIAT,
     depositCollateral,
     modifyCollateralAndDebt,
-    buyCollateralAndModifyDebtElement,
-    buyCollateralAndModifyDebtNotional,
+    buyCollateralAndModifyDebtERC20,
+    buyCollateralAndModifyDebtERC1155,
 
   }
 }
