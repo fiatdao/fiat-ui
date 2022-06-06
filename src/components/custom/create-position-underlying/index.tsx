@@ -119,15 +119,18 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     vault: collateral?.vault?.address ?? '',
     balancerVault: collateral?.eptData?.balancerVault,
     curvePoolId: collateral?.eptData?.poolId,
-    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals) //sinlge underlier value
+    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals) //single underlier value
   })
 
   const [underlierToFCash] = useUnderlierToFCash({ 
     tokenId: collateral.tokenId ?? '',
-    amount: getNonHumanValue(new BigNumber(1), underlierDecimals) //sinlge underlier value
+    amount: getNonHumanValue(new BigNumber(1), underlierDecimals) //single underlier value
   })
 
-  const marketRate = 1 / getHumanValue(underlierToPToken, underlierDecimals).toNumber()
+  const marketRate = collateral.vault.type === 'NOTIONAL' ?
+    1 / getHumanValue(underlierToFCash, 77).toNumber() :   // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
+    1 / getHumanValue(underlierToPToken, underlierDecimals).toNumber()
+
   const priceImpact = (1 - marketRate) / 0.01
 
   const underlyingData = [
@@ -144,7 +147,12 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
       value: `${slippageTolerance.toFixed(2)}%`,
     },
   ]
-
+  
+  const underlierAmount = stateMachine.context.underlierAmount.toNumber()
+  const apr = 2
+  const fixedAPR = `${apr}%`
+  const interestEarned = `${underlierAmount * (apr / 100)}`
+  const redeemable = `${Number(underlierAmount) + Number(interestEarned)} ${collateral ? collateral.underlierSymbol : '-'}`
   // create position flow
   const createUnderlyingPositionNotional = async ({
     fiatAmount,
@@ -167,7 +175,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
         tokenId: Number(collateral.tokenId),
         deltaDebt: _fiatAmount,
         fCashAmount: fCashAmount,
-        minImpliedRate: 1000000000,
+        minImpliedRate: 1000000,
         underlierAmount: _underlierAmount
       })
       setLoading(false)
@@ -255,16 +263,17 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
                 }
               />
             </Form.Item>
-            {/*all of this is hardcoded */}
-            <Summary data={underlyingData} />
-            <SummaryItem title={'Fixed APR'} value={'2%'} />
-            <SummaryItem title={'Interest earned'} value={'24.028 USDC'} />
-            <SummaryItem
-              title={`Redeemable at maturity | ${
-                collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
-              }`}
-              value={'10,024.028 USDC'}
-            />
+            <div className={cn(s.summary)}>
+              <Summary data={underlyingData} />
+              <SummaryItem title={'Fixed APR'} value={fixedAPR} />
+              <SummaryItem title={'Interest earned'} value={interestEarned} />
+              <SummaryItem
+                title={`Redeemable at maturity | ${
+                  collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
+                }`}
+                value={redeemable}
+              />
+            </div>
             {mintFiat && (
               <FormExtraAction
                 bottom={

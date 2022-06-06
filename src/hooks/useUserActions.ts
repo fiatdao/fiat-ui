@@ -9,7 +9,7 @@ import { TransactionError } from '@/src/utils/TransactionError'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { contracts } from '@/src/constants/contracts'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
-import { VaultEPTActions } from '@/types/typechain'
+import { VaultEPTActions, VaultFCActions } from '@/types/typechain'
 import { estimateGasLimit, getHumanValue } from '@/src/web3/utils'
 import { WAD_DECIMALS } from '@/src/constants/misc'
 
@@ -96,7 +96,7 @@ export const useUserActions = (type?: string): UseUserActions => {
       contracts.USER_ACTIONS_FC.address[appChainId],
       contracts.USER_ACTIONS_FC.abi,
       web3Provider?.getSigner(),
-    ) as VaultEPTActions
+    ) as VaultFCActions
   }, [web3Provider, appChainId])
 
   const activeContract = type && type === 'NOTIONAL' ? userActionFC : userActionEPT
@@ -243,6 +243,7 @@ export const useUserActions = (type?: string): UseUserActions => {
       //   userProxyAddress, '\n',// address creditor
       //   address,'\n', // address collateralizer
       //   address, '\n',
+      //   // params.fCashAmount.toFixed(0,8), '\n',
       //   getHumanValue(params.fCashAmount, 41).toFixed(0,8),  '\n',// uint256 underlierAmount,
       //   deltaNormalDebt, '\n',// int256 deltaNormalDebt,
       //   params.minImpliedRate, '\n',
@@ -259,7 +260,7 @@ export const useUserActions = (type?: string): UseUserActions => {
           userProxyAddress, // address position
           address, // address collateralizer
           address, // address creditor
-          params.fCashAmount.toFixed(0,8), // uint256 fCashAmount                     
+          getHumanValue(params.fCashAmount, 41).toFixed(0,8), // uint256 fCashAmount                     
           deltaNormalDebt, // int256 deltaNormalDebt
           params.minImpliedRate, // uint32 minImpliedRate                 //need to update
           params.underlierAmount.toFixed(0,8) // uint256 maxUnderlierAmount        // need to update to underlier scale
