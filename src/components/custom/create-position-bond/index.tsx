@@ -13,21 +13,19 @@ import { Balance }                      from '@/src/components/custom/balance'
 import TokenAmount                      from '@/src/components/custom/token-amount'
 import { Form }                         from '@/src/components/antd'
 import { Summary }                      from '@/src/components/custom/summary'
-import { FormExtraAction }              from '@/src/components/custom/form-extra-action'
 import { ButtonExtraFormAction }        from '@/src/components/custom/button-extra-form-action'
 import ButtonGradient                   from '@/src/components/antd/button-gradient'
 import { ButtonsWrapper }               from '@/src/components/custom/buttons-wrapper'
+import { MintFiat }                     from '@/src/components/custom/mint-fiat'
 
 import { useTokenDecimalsAndBalance }   from '@/src/hooks/useTokenDecimalsAndBalance'
 import { useERC20Allowance }            from '@/src/hooks/useERC20Allowance'
 import { useERC155Allowance }           from '@/src/hooks/useERC1155Allowance'
 import useUserProxy                     from '@/src/hooks/useUserProxy'
-import { useFIATBalance }               from '@/src/hooks/useFIATBalance'
 import { useUserActions }               from '@/src/hooks/useUserActions'
 
 import { getNonHumanValue }             from '@/src/web3/utils'
 import { ZERO_BIG_NUMBER }              from '@/src/constants/misc'
-import FiatIcon                         from '@/src/resources/svg/fiat-icon.svg'
 import { useWeb3Connection }            from '@/src/providers/web3ConnectionProvider'
 import stepperMachine                   from '@/src/state/open-position-form'
 import {
@@ -39,7 +37,6 @@ import {
 type Props = {
   collateral: Collateral
   loading: boolean
-  maxBorrowAmountCalculated: BigNumber
   isDisabledCreatePosition: () => boolean
   setLoading: (newLoadingState: boolean) => void
   setMachine: (machine: any) => void
@@ -51,7 +48,6 @@ type FormProps = { underlierAmount: BigNumber }
 export const CreatePositionBond: React.FC<Props> = ({
   collateral,
   loading,
-  maxBorrowAmountCalculated,
   isDisabledCreatePosition,
   setLoading,
   setMachine,
@@ -59,7 +55,6 @@ export const CreatePositionBond: React.FC<Props> = ({
 }) => {
   const [form] = AntdForm.useForm<FormProps>()
 
-  const [FIATBalance] = useFIATBalance(true)
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const { depositCollateral } = useUserActions(collateral.vault?.type)
@@ -197,33 +192,13 @@ export const CreatePositionBond: React.FC<Props> = ({
               slider
             />
           </Form.Item>
-          {mintFiat && (
-            <FormExtraAction
-              bottom={
-                <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-                  <TokenAmount
-                    disabled={loading}
-                    displayDecimals={4}
-                    healthFactorValue={healthFactorNumber}
-                    max={maxBorrowAmountCalculated}
-                    maximumFractionDigits={6}
-                    onChange={(val) =>
-                      val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
-                    }
-                    slider="healthFactorVariant"
-                    tokenIcon={<FiatIcon />}
-                  />
-                </Form.Item>
-              }
-              buttonText="Mint FIAT with this transaction"
-              disabled={loading}
-              onClick={() => setMintFiat(!mintFiat)}
-              top={
-                <Balance
-                  title={`Mint FIAT`}
-                  value={`Balance: ${FIATBalance.toFixed(4)}`}
-                />
-              }
+          {mintFiat && ( 
+            <MintFiat
+              loading={loading}
+              healthFactorNumber={healthFactorNumber}
+              activeMachine={stateMachine}
+              collateral={collateral}
+              send={send}
             />
           )}
         </>
@@ -231,11 +206,6 @@ export const CreatePositionBond: React.FC<Props> = ({
       <ButtonsWrapper>
         {stateMachine.context.currentStepNumber === 1 && (
           <>
-            {!mintFiat && (
-              <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
-                Mint FIAT with this transaction
-              </ButtonExtraFormAction>
-            )}
             {!isProxyAvailable && (
               <ButtonGradient
                 height="lg"

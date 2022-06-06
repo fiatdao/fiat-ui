@@ -5,21 +5,19 @@ import { useMachine }                      from '@xstate/react'
 import AntdForm                            from 'antd/lib/form'
 import BigNumber                           from 'bignumber.js'
 
-import { Balance }                         from '@/src/components/custom/balance'
 import TokenAmount                         from '@/src/components/custom/token-amount'
 import { Form }                            from '@/src/components/antd'
 import { Summary, SummaryItem }            from '@/src/components/custom/summary'
-import { FormExtraAction }                 from '@/src/components/custom/form-extra-action'
 import SwapSettingsModal                   from '@/src/components/custom/swap-settings-modal'
 import { ButtonExtraFormAction }           from '@/src/components/custom/button-extra-form-action'
 import ButtonGradient                      from '@/src/components/antd/button-gradient'
 import { ButtonsWrapper }                  from '@/src/components/custom/buttons-wrapper'
+import { MintFiat }                        from '@/src/components/custom/mint-fiat'
 
 import { useTokenDecimalsAndBalance }      from '@/src/hooks/useTokenDecimalsAndBalance'
 import { useERC20Allowance }               from '@/src/hooks/useERC20Allowance'
 import useUserProxy                        from '@/src/hooks/useUserProxy'
 import { useUnderlyingExchangeValue }      from '@/src/hooks/useUnderlyingExchangeValue'
-import { useFIATBalance }                  from '@/src/hooks/useFIATBalance'
 import { useUserActions }                  from '@/src/hooks/useUserActions'
 import { useUnderlierToFCash }             from '@/src/hooks/underlierToFCash'
 
@@ -27,8 +25,7 @@ import {
   DEPOSIT_UNDERLYING_TEXT,
   WAD_DECIMALS,
 }                                          from '@/src/constants/misc'
-import { ZERO_BIG_NUMBER }                 from '@/src/constants/misc'
-import FiatIcon                            from '@/src/resources/svg/fiat-icon.svg'
+import { ONE_BIG_NUMBER, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { parseDate }                       from '@/src/utils/dateTime'
 import { Collateral }                      from '@/src/utils/data/collaterals'
 import { useWeb3Connection }               from '@/src/providers/web3ConnectionProvider'
@@ -41,7 +38,6 @@ type Props = {
   collateral: Collateral
   loading: boolean
   healthFactorNumber: string
-  maxBorrowAmountCalculated: BigNumber
   hasMinimumFIAT: boolean
   setLoading: (newLoadingState: boolean) => void
   setMachine: (machine: any) => void
@@ -53,14 +49,12 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   collateral,
   loading,
   healthFactorNumber,
-  maxBorrowAmountCalculated,
   hasMinimumFIAT,
   setLoading,
   setMachine
 }) => {
   const [form] = AntdForm.useForm<FormProps>()
 
-  const [FIATBalance] = useFIATBalance(true)
   const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
@@ -128,8 +122,8 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   })
 
   const marketRate = collateral.vault.type === 'NOTIONAL' ?
-    1 / getHumanValue(underlierToFCash, 77).toNumber() :   // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
-    1 / getHumanValue(underlierToPToken, underlierDecimals).toNumber()
+    ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) :   // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
+    ONE_BIG_NUMBER.div(getHumanValue(underlierToPToken, underlierDecimals))
 
   // const priceImpact = (1 - marketRate) / 0.01
 
@@ -149,7 +143,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   ]
   
   const underlierAmount = stateMachine.context.underlierAmount.toNumber()
-  const apr = (1 - marketRate) * 100
+  const apr = (1 - marketRate.toNumber()) * 100
   const fixedAPR = `${apr.toFixed(2)}%`
   const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)}`
   const redeemable = `${Number(underlierAmount) + Number(interestEarned)} ${collateral ? collateral.underlierSymbol : '-'}`
@@ -279,33 +273,14 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
               />
             </div>
             {mintFiat && (
-              <FormExtraAction
-                bottom={
-                  <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-                    <TokenAmount
-                      disabled={loading}
-                      displayDecimals={4}
-                      healthFactorValue={healthFactorNumber}
-                      max={maxBorrowAmountCalculated}
-                      maximumFractionDigits={6}
-                      onChange={(val) =>
-                        val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
-                      }
-                      slider="healthFactorVariant"
-                      tokenIcon={<FiatIcon />}
-                    />
-                  </Form.Item>
-                }
-                buttonText="Mint FIAT with this transaction"
-                disabled={loading}
-                onClick={() => setMintFiat(!mintFiat)}
-                top={
-                  <Balance
-                    title={`Mint FIAT`}
-                    value={`Balance: ${FIATBalance.toFixed(4)}`}
-                  />
-                }
-              />
+              <MintFiat
+              loading={loading}
+              healthFactorNumber={healthFactorNumber}
+              activeMachine={stateMachine}
+              collateral={collateral}
+              send={send}
+              marketRate={marketRate}
+            />
             )}
           </div>
         </>
@@ -313,11 +288,6 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
       <ButtonsWrapper>
         {stateMachine.context.currentStepNumber === 1 && (
           <>
-            {!mintFiat && (
-              <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
-                Mint FIAT with this transaction
-              </ButtonExtraFormAction>
-            )}
             {!isProxyAvailable && (
               <ButtonGradient
                 height="lg"
