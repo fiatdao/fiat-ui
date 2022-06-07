@@ -128,7 +128,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               tokenIcon
             ) : (
               <AssetIcons
-                dimensions={'32px'}
+                dimensions={'40px'}
                 mainAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.asset}
               />
             )}
