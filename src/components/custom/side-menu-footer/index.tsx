@@ -51,6 +51,17 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
             Buy and sell on Curve <InternalArrow />
           </a>
         </li>
+        <li className={cn(s.item)}>
+          <a
+            className={cn(s.link)}
+            href="https://docs.fiatdao.com"
+            rel="noreferrer"
+            target={'_blank'}
+            title="View the docs"
+          >
+            View the docs <InternalArrow />
+          </a>
+        </li>
       </ul>
       <h5 className={cn(s.title)}>ADD TO WALLET</h5>
       <div className={cn(s.buttons)}>

@@ -1,5 +1,4 @@
 import s from './s.module.scss'
-import { useERC155Allowance } from '../../../../src/hooks/useERC1155Allowance'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { Balance } from '@/src/components/custom/balance'
@@ -11,6 +10,7 @@ import { PositionFormsLayout } from '@/src/components/custom/position-forms-layo
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import {
   DEPOSIT_COLLATERAL_TEXT,
   EST_FIAT_TOOLTIP_TEXT,
@@ -24,6 +24,7 @@ import {
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
+import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
@@ -48,7 +49,6 @@ import {
   getNonHumanValue,
   perSecondToAPR,
 } from '@/src/web3/utils'
-import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'

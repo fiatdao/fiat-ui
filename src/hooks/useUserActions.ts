@@ -73,6 +73,15 @@ export const useUserActions = (type?: string): UseUserActions => {
     ) as VaultEPTActions
   }, [web3Provider, appChainId])
 
+  // Yield User Action: ERC 20
+  const userActionFY = useMemo(() => {
+    return new Contract(
+      contracts.USER_ACTIONS_FY.address[appChainId],
+      contracts.USER_ACTIONS_FY.abi,
+      web3Provider?.getSigner(),
+    ) as VaultEPTActions
+  }, [web3Provider, appChainId])
+
   // Notional User Action: ERC1155
   const userActionFC = useMemo(() => {
     return new Contract(
@@ -82,7 +91,8 @@ export const useUserActions = (type?: string): UseUserActions => {
     ) as VaultEPTActions
   }, [web3Provider, appChainId])
 
-  const activeContract = type && type === 'NOTIONAL' ? userActionFC : userActionEPT
+  const activeContract =
+    type && type === 'NOTIONAL' ? userActionFC : type === 'YIELD' ? userActionFY : userActionEPT
 
   const approveFIAT = useCallback(
     async (to: string) => {
