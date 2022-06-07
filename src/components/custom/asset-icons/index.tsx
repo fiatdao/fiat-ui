@@ -5,8 +5,7 @@ export const AssetIcons: React.FC<{
   className?: string
   dimensions?: string
   mainAsset?: string
-  secondaryAsset?: string
-}> = ({ className, dimensions, mainAsset, secondaryAsset, ...restProps }) => {
+}> = ({ className, dimensions, mainAsset, ...restProps }) => {
   return (
     <div
       className={cn(s.component, className)}
@@ -20,11 +19,6 @@ export const AssetIcons: React.FC<{
           style={dimensions ? { width: dimensions, height: dimensions } : undefined}
         />
       </div>
-      {secondaryAsset && (
-        <div className={cn(s.secondaryAsset)}>
-          <img alt={secondaryAsset} src={secondaryAsset} />
-        </div>
-      )}
     </div>
   )
 }
