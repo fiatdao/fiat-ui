@@ -6,10 +6,8 @@ import s from '@/pages/create-position/s.module.scss'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import { ProtocolFilter, getInitialProtocolFilters } from '@/src/constants/bondTokens'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { PROTOCOLS, Protocol, protocolNamesByKeyword } from '@/types/protocols'
 import cn from 'classnames'
-import { useCallback, useMemo, useState } from 'react'
-
+import { useMemo, useState } from 'react'
 
 interface FilterState {
   filterByInMyWallet: boolean
@@ -49,12 +47,20 @@ export const useProtocolFilters = () => {
     setFilterState({ ...filterState, protocolFilters: newProtocolFilters })
   }
 
-  const activateFilterForProtocolName = (protocolName: string) => {
+  const toggleFilterForProtocolName = (protocolName: string) => {
     const newProtocolFilters = filterState.protocolFilters.map((protocolFilter) => {
-      if (protocolFilter.protocolName === protocolName) {
-        protocolFilter.isActive = true
+      if (areAllProtocolFiltersActive) {
+        // If all filters are activated, filter buttons work like radio buttons
+        if (protocolFilter.protocolName === protocolName) {
+          protocolFilter.isActive = true
+        } else {
+          protocolFilter.isActive = false
+        }
       } else {
-        protocolFilter.isActive = false
+        // Otherwise, filter buttons should work like checkboxes
+        if (protocolFilter.protocolName === protocolName) {
+          protocolFilter.isActive = !protocolFilter.isActive
+        }
       }
       return protocolFilter
     })
@@ -89,7 +95,7 @@ export const useProtocolFilters = () => {
             isActive={protocolFilter.isActive}
             key={protocolFilter.protocolName}
             onClick={() => {
-              activateFilterForProtocolName(protocolFilter.protocolName)
+              toggleFilterForProtocolName(protocolFilter.protocolName)
             }}
             rounded
           >
