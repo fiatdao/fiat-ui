@@ -1,38 +1,38 @@
-import s                                from './s.module.scss'
-import cn                               from 'classnames'
-import { useEffect, useMemo, useState } from 'react'
-import { useMachine }                   from '@xstate/react'
-import AntdForm                         from 'antd/lib/form'
-import BigNumber                        from 'bignumber.js'
+import s from './s.module.scss'
 
-import { getHealthFactorState }         from '@/src/utils/table'
-import { calculateHealthFactor }        from '@/src/utils/data/positions'
-import { Collateral }                   from '@/src/utils/data/collaterals'
+import { getHealthFactorState } from '@/src/utils/table'
+import { calculateHealthFactor } from '@/src/utils/data/positions'
+import { Collateral } from '@/src/utils/data/collaterals'
 
-import { Balance }                      from '@/src/components/custom/balance'
-import TokenAmount                      from '@/src/components/custom/token-amount'
-import { Form }                         from '@/src/components/antd'
-import { Summary }                      from '@/src/components/custom/summary'
-import { ButtonExtraFormAction }        from '@/src/components/custom/button-extra-form-action'
-import ButtonGradient                   from '@/src/components/antd/button-gradient'
-import { ButtonsWrapper }               from '@/src/components/custom/buttons-wrapper'
-import { MintFiat }                     from '@/src/components/custom/mint-fiat'
+import { Balance } from '@/src/components/custom/balance'
+import TokenAmount from '@/src/components/custom/token-amount'
+import { Form } from '@/src/components/antd'
+import { Summary } from '@/src/components/custom/summary'
+import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
+import ButtonGradient from '@/src/components/antd/button-gradient'
+import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
+import { MintFiat } from '@/src/components/custom/mint-fiat'
 
-import { useTokenDecimalsAndBalance }   from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useERC20Allowance }            from '@/src/hooks/useERC20Allowance'
-import { useERC155Allowance }           from '@/src/hooks/useERC1155Allowance'
-import useUserProxy                     from '@/src/hooks/useUserProxy'
-import { useUserActions }               from '@/src/hooks/useUserActions'
+import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
+import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
+import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
+import useUserProxy from '@/src/hooks/useUserProxy'
+import { useUserActions } from '@/src/hooks/useUserActions'
 
-import { getNonHumanValue }             from '@/src/web3/utils'
-import { ZERO_BIG_NUMBER }              from '@/src/constants/misc'
-import { useWeb3Connection }            from '@/src/providers/web3ConnectionProvider'
-import stepperMachine                   from '@/src/state/open-position-form'
+import { getNonHumanValue } from '@/src/web3/utils'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import stepperMachine from '@/src/state/open-position-form'
 import {
   DEPOSIT_COLLATERAL_TEXT,
   WAD_DECIMALS,
   getBorrowAmountBelowDebtFloorText,
-}                                       from '@/src/constants/misc'
+} from '@/src/constants/misc'
+import BigNumber from 'bignumber.js'
+import AntdForm from 'antd/lib/form'
+import { useMachine } from '@xstate/react'
+import { useEffect, useMemo, useState } from 'react'
+import cn from 'classnames'
 
 type Props = {
   collateral: Collateral
@@ -47,11 +47,11 @@ type FormProps = { underlierAmount: BigNumber }
 
 export const CreatePositionBond: React.FC<Props> = ({
   collateral,
-  loading,
   isDisabledCreatePosition,
+  loading,
   setLoading,
   setMachine,
-  tokenAddress
+  tokenAddress,
 }) => {
   const [form] = AntdForm.useForm<FormProps>()
 
@@ -62,11 +62,7 @@ export const CreatePositionBond: React.FC<Props> = ({
   const erc20 = useERC20Allowance(tokenAddress, userProxyAddress ?? '')
   const erc1155 = useERC155Allowance(tokenAddress, userProxyAddress ?? '')
   const activeToken = collateral?.vault?.type === 'NOTIONAL' ? erc1155 : erc20
-  const { 
-    approve, 
-    hasAllowance, 
-    loadingApprove 
-  } = activeToken
+  const { approve, hasAllowance, loadingApprove } = activeToken
 
   const [stateMachine, send] = useMachine(stepperMachine, {
     context: {
@@ -108,7 +104,7 @@ export const CreatePositionBond: React.FC<Props> = ({
 
     return nonHumanFiatAmount.gte(debtFloor) || nonHumanFiatAmount.isZero()
   }, [stateMachine.context.fiatAmount, collateral.vault.debtFloor])
-  
+
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
   const deltaDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
   const { healthFactor: hf } = calculateHealthFactor(
@@ -130,9 +126,9 @@ export const CreatePositionBond: React.FC<Props> = ({
     },
     {
       title: 'Remaining in wallet',
-      value: `${tokenInfo?.humanValue
-        ?.minus(stateMachine.context.erc20Amount)
-        .toFixed(4)} ${collateral?.symbol}`,
+      value: `${tokenInfo?.humanValue?.minus(stateMachine.context.erc20Amount).toFixed(4)} ${
+        collateral?.symbol
+      }`,
     },
     {
       title: 'FIAT to be minted',
@@ -186,18 +182,16 @@ export const CreatePositionBond: React.FC<Props> = ({
               mainAsset={collateral.vault.name}
               max={tokenInfo?.humanValue}
               maximumFractionDigits={tokenInfo?.decimals}
-              onChange={(val) =>
-                val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })
-              }
+              onChange={(val) => val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })}
               slider
             />
           </Form.Item>
-          {mintFiat && ( 
+          {mintFiat && (
             <MintFiat
-              loading={loading}
-              healthFactorNumber={healthFactorNumber}
               activeMachine={stateMachine}
               collateral={collateral}
+              healthFactorNumber={healthFactorNumber}
+              loading={loading}
               send={send}
             />
           )}
@@ -207,10 +201,7 @@ export const CreatePositionBond: React.FC<Props> = ({
         {stateMachine.context.currentStepNumber === 1 && (
           <>
             {!isProxyAvailable && (
-              <ButtonGradient
-                height="lg"
-                onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
-              >
+              <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}>
                 Setup Proxy
               </ButtonGradient>
             )}
@@ -257,11 +248,13 @@ export const CreatePositionBond: React.FC<Props> = ({
             <ButtonGradient
               disabled={isDisabledCreatePosition()}
               height="lg"
-              onClick={() => send({
-                type: 'CONFIRM',
-                // @ts-ignore TODO types
-                createPosition,
-              })}
+              onClick={() =>
+                send({
+                  type: 'CONFIRM',
+                  // @ts-ignore TODO types
+                  createPosition,
+                })
+              }
             >
               {hasMinimumFIAT
                 ? DEPOSIT_COLLATERAL_TEXT

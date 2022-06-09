@@ -1,38 +1,35 @@
-import s                                   from './s.module.scss'
-import cn                                  from 'classnames'
-import { useEffect, useState }             from 'react'
-import { useMachine }                      from '@xstate/react'
-import AntdForm                            from 'antd/lib/form'
-import BigNumber                           from 'bignumber.js'
+import s from './s.module.scss'
 
-import TokenAmount                         from '@/src/components/custom/token-amount'
-import { Form }                            from '@/src/components/antd'
-import { Summary, SummaryItem }            from '@/src/components/custom/summary'
-import SwapSettingsModal                   from '@/src/components/custom/swap-settings-modal'
-import { ButtonExtraFormAction }           from '@/src/components/custom/button-extra-form-action'
-import ButtonGradient                      from '@/src/components/antd/button-gradient'
-import { ButtonsWrapper }                  from '@/src/components/custom/buttons-wrapper'
-import { MintFiat }                        from '@/src/components/custom/mint-fiat'
+import TokenAmount from '@/src/components/custom/token-amount'
+import { Form } from '@/src/components/antd'
+import { Summary, SummaryItem } from '@/src/components/custom/summary'
+import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
+import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
+import ButtonGradient from '@/src/components/antd/button-gradient'
+import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
+import { MintFiat } from '@/src/components/custom/mint-fiat'
 
-import { useTokenDecimalsAndBalance }      from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useERC20Allowance }               from '@/src/hooks/useERC20Allowance'
-import useUserProxy                        from '@/src/hooks/useUserProxy'
-import { useUnderlyingExchangeValue }      from '@/src/hooks/useUnderlyingExchangeValue'
-import { useUserActions }                  from '@/src/hooks/useUserActions'
-import { useUnderlierToFCash }             from '@/src/hooks/underlierToFCash'
+import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
+import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
+import useUserProxy from '@/src/hooks/useUserProxy'
+import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
+import { useUserActions } from '@/src/hooks/useUserActions'
+import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 
-import {
-  DEPOSIT_UNDERLYING_TEXT,
-  WAD_DECIMALS,
-}                                          from '@/src/constants/misc'
+import { DEPOSIT_UNDERLYING_TEXT, WAD_DECIMALS } from '@/src/constants/misc'
 import { ONE_BIG_NUMBER, ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { parseDate }                       from '@/src/utils/dateTime'
-import { Collateral }                      from '@/src/utils/data/collaterals'
-import { useWeb3Connection }               from '@/src/providers/web3ConnectionProvider'
-import underlyingStepperMachine            from '@/src/state/open-position-underlying-form'
+import { parseDate } from '@/src/utils/dateTime'
+import { Collateral } from '@/src/utils/data/collaterals'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
-import { getTokenBySymbol }                from '@/src/providers/knownTokensProvider'
-import { SettingFilled }                   from '@ant-design/icons';
+import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
+import BigNumber from 'bignumber.js'
+import AntdForm from 'antd/lib/form'
+import { useMachine } from '@xstate/react'
+import { useEffect, useState } from 'react'
+import cn from 'classnames'
+import { SettingFilled } from '@ant-design/icons'
 
 type Props = {
   collateral: Collateral
@@ -47,25 +44,24 @@ type FormProps = { underlierAmount: BigNumber }
 
 export const CreatePositionUnderlying: React.FC<Props> = ({
   collateral,
-  loading,
-  healthFactorNumber,
   hasMinimumFIAT,
+  healthFactorNumber,
+  loading,
   setLoading,
-  setMachine
+  setMachine,
 }) => {
   const [form] = AntdForm.useForm<FormProps>()
 
   const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
-  const { buyCollateralAndModifyDebtERC20, buyCollateralAndModifyDebtERC1155 } = useUserActions(collateral.vault?.type)
+  /* const { buyCollateralAndModifyDebtERC20, buyCollateralAndModifyDebtERC1155 } = useUserActions( */
+  /*   collateral.vault?.type, */
+  /* ) */
+  const { buyCollateralAndModifyDebtERC20 } = useUserActions(collateral.vault?.type)
 
   const erc20 = useERC20Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
-  const { 
-    approve, 
-    hasAllowance, 
-    loadingApprove 
-  } = erc20
+  const { approve, hasAllowance, loadingApprove } = erc20
 
   const [stateMachine, send] = useMachine(underlyingStepperMachine, {
     context: {
@@ -99,7 +95,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
   }
 
   const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
-    tokenData: { 
+    tokenData: {
       decimals: 8,
       symbol: collateral.underlierSymbol ?? '',
       address: collateral?.underlierAddress ?? '',
@@ -108,29 +104,32 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     readOnlyAppProvider,
     tokenId: collateral.tokenId ?? '0',
   })
-  
-  const [underlierToPToken] = useUnderlyingExchangeValue({ 
+
+  const [underlierToPToken] = useUnderlyingExchangeValue({
     vault: collateral?.vault?.address ?? '',
     balancerVault: collateral?.eptData?.balancerVault,
     curvePoolId: collateral?.eptData?.poolId,
-    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals) //single underlier value
+    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
   })
 
-  const [underlierToFCash] = useUnderlierToFCash({ 
+  const [underlierToFCash] = useUnderlierToFCash({
     tokenId: collateral.tokenId ?? '',
-    amount: getNonHumanValue(new BigNumber(1), underlierDecimals) //single underlier value
+    amount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
   })
 
-  const marketRate = collateral.vault.type === 'NOTIONAL' ?
-    ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) :   // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
-    ONE_BIG_NUMBER.div(getHumanValue(underlierToPToken, underlierDecimals))
+  const marketRate =
+    collateral.vault.type === 'NOTIONAL'
+      ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
+      : ONE_BIG_NUMBER.div(getHumanValue(underlierToPToken, underlierDecimals))
 
   // const priceImpact = (1 - marketRate) / 0.01
 
   const underlyingData = [
     {
       title: 'Market rate',
-      value: `1 Principal Token = ${marketRate.toFixed(4)} ${collateral ? collateral.underlierSymbol : '-'}`,
+      value: `1 Principal Token = ${marketRate.toFixed(4)} ${
+        collateral ? collateral.underlierSymbol : '-'
+      }`,
     },
     // {
     //   title: 'Price impact',
@@ -141,13 +140,16 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
       value: `${slippageTolerance.toFixed(2)}%`,
     },
   ]
-  
+
   const underlierAmount = stateMachine.context.underlierAmount.toNumber()
   const apr = (1 - marketRate.toNumber()) * 100
   const fixedAPR = `${apr.toFixed(2)}%`
   const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)}`
-  const redeemable = `${Number(underlierAmount) + Number(interestEarned)} ${collateral ? collateral.underlierSymbol : '-'}`
+  const redeemable = `${Number(underlierAmount) + Number(interestEarned)} ${
+    collateral ? collateral.underlierSymbol : '-'
+  }`
   // create position flow
+  // TODO:
   const createUnderlyingPositionERC1155 = async ({
     fiatAmount,
     underlierAmount,
@@ -155,28 +157,30 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     underlierAmount: BigNumber
     fiatAmount: BigNumber
   }): Promise<void> => {
-    const _underlierAmount = underlierAmount
-      ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
-      : ZERO_BIG_NUMBER
-    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
-    const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
+    console.log('createUnderlyingPositionERC1155', fiatAmount, underlierAmount)
+    return Promise.resolve()
+    /* const _underlierAmount = underlierAmount */
+    /*   ? getNonHumanValue(underlierAmount, WAD_DECIMALS) */
+    /*   : ZERO_BIG_NUMBER */
+    /* const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER */
+    /* const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount) */
 
-    try {
-      setLoading(true)
-      await buyCollateralAndModifyDebtERC1155({
-        vault: collateral.vault.address,
-        token: collateral.address ?? '',
-        tokenId: Number(collateral.tokenId),
-        deltaDebt: _fiatAmount,
-        fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals
-        minImpliedRate: 1000000,
-        underlierAmount: _underlierAmount //definitely correct
-      })
-      setLoading(false)
-    } catch (err) {
-      setLoading(false)
-      throw err
-    }
+    /* try { */
+    /*   setLoading(true) */
+    /*   await buyCollateralAndModifyDebtERC1155({ */
+    /*     vault: collateral.vault.address, */
+    /*     token: collateral.address ?? '', */
+    /*     tokenId: Number(collateral.tokenId), */
+    /*     deltaDebt: _fiatAmount, */
+    /*     fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals */
+    /*     minImpliedRate: 1000000, */
+    /*     underlierAmount: _underlierAmount, //definitely correct */
+    /*   }) */
+    /*   setLoading(false) */
+    /* } catch (err) { */
+    /*   setLoading(false) */
+    /*   throw err */
+    /* } */
   }
 
   const createUnderlyingPositionERC20 = async ({
@@ -192,12 +196,17 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
       : ZERO_BIG_NUMBER
     // Fiat amount formatted with proper decimals
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
-    
-    const deadline = Number((Date.now() / 1000).toFixed(0)) + (maxTransactionTime * 60)
-    const pTokenAmount = underlierAmount.multipliedBy(getHumanValue(underlierToPToken, underlierDecimals))
-    const slippageDecimal = (1 - (slippageTolerance / 100))
-    const minOutput = getNonHumanValue(pTokenAmount.multipliedBy(slippageDecimal), underlierDecimals)
-    const approve = _underlierAmount.toFixed(0,8)
+
+    const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
+    const pTokenAmount = underlierAmount.multipliedBy(
+      getHumanValue(underlierToPToken, underlierDecimals),
+    )
+    const slippageDecimal = 1 - slippageTolerance / 100
+    const minOutput = getNonHumanValue(
+      pTokenAmount.multipliedBy(slippageDecimal),
+      underlierDecimals,
+    )
+    const approve = _underlierAmount.toFixed(0, 8)
 
     try {
       setLoading(true)
@@ -210,10 +219,10 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
           poolId: collateral.eptData?.poolId ?? '',
           assetIn: collateral.underlierAddress ?? '',
           assetOut: collateral.address ?? '',
-          minOutput: minOutput.toFixed(0,8),
+          minOutput: minOutput.toFixed(0, 8),
           deadline: deadline,
-          approve:  approve,
-        }
+          approve: approve,
+        },
       })
       setLoading(false)
     } catch (err) {
@@ -222,10 +231,10 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     }
   }
 
-  const createUnderlyingPosition = 
-  collateral.vault.name.substring(0,8) === 'vaultEPT' 
-  ? createUnderlyingPositionERC20
-  : createUnderlyingPositionERC1155
+  const createUnderlyingPosition =
+    collateral.vault.name.substring(0, 8) === 'vaultEPT'
+      ? createUnderlyingPositionERC20
+      : createUnderlyingPositionERC1155
 
   const updateSwapSettings = (slippageTolerance: number, maxTransactionTime: number) => {
     setSlippageTolerance(slippageTolerance)
@@ -239,15 +248,17 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
           <div>
             <div className={cn(s.flexContainer)}>
               <h3 className={cn(s.label)}>Swap and Deposit</h3>
-              <p className={cn(s.balance)}>{`Balance: ${underlyingInfo?.humanValue?.toFixed(2)}`}</p>
-              <SettingFilled className={cn(s.settings)} onClick={toggleSwapSettingsMenu}/>
+              <p className={cn(s.balance)}>{`Balance: ${underlyingInfo?.humanValue?.toFixed(
+                2,
+              )}`}</p>
+              <SettingFilled className={cn(s.settings)} onClick={toggleSwapSettingsMenu} />
             </div>
-            <SwapSettingsModal 
+            <SwapSettingsModal
               isOpen={swapSettingsOpen}
-              updateSwapSettings={updateSwapSettings}
-              toggleOpen={toggleSwapSettingsMenu}
-              slippageTolerance={slippageTolerance}
               maxTransactionTime={maxTransactionTime}
+              slippageTolerance={slippageTolerance}
+              toggleOpen={toggleSwapSettingsMenu}
+              updateSwapSettings={updateSwapSettings}
             />
             <Form.Item name="underlierAmount" required>
               <TokenAmount
@@ -274,13 +285,13 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
             </div>
             {mintFiat && (
               <MintFiat
-              loading={loading}
-              healthFactorNumber={healthFactorNumber}
-              activeMachine={stateMachine}
-              collateral={collateral}
-              send={send}
-              marketRate={marketRate}
-            />
+                activeMachine={stateMachine}
+                collateral={collateral}
+                healthFactorNumber={healthFactorNumber}
+                loading={loading}
+                marketRate={marketRate}
+                send={send}
+              />
             )}
           </div>
         </>
@@ -289,10 +300,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
         {stateMachine.context.currentStepNumber === 1 && (
           <>
             {!isProxyAvailable && (
-              <ButtonGradient
-                height="lg"
-                onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
-              >
+              <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}>
                 Setup Proxy
               </ButtonGradient>
             )}
@@ -339,11 +347,13 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
             <ButtonGradient
               disabled={isDisabledCreatePosition()}
               height="lg"
-              onClick={() => send({
-                type: 'CONFIRM',
-                // @ts-ignore TODO types
-                createUnderlyingPosition,
-              })}
+              onClick={() =>
+                send({
+                  type: 'CONFIRM',
+                  // @ts-ignore TODO types
+                  createUnderlyingPosition,
+                })
+              }
             >
               {DEPOSIT_UNDERLYING_TEXT}
             </ButtonGradient>
@@ -351,9 +361,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
         )}
       </ButtonsWrapper>
       {stateMachine.context.currentStepNumber === 4 && (
-        <div className={cn(s.summary)}>
-          {/* <Summary data={summaryData} /> */}
-        </div>
+        <div className={cn(s.summary)}>{/* <Summary data={summaryData} /> */}</div>
       )}
     </Form>
   )

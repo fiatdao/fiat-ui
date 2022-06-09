@@ -1,23 +1,28 @@
-import React                           from 'react'
-import s                               from './s.module.scss'
-import cn                              from 'classnames'
-import Grid                            from '@/src/components/custom/grid'
-import Modal                           from '@/src/components/antd/modal'
-import { Text }                        from '@/src/components/custom/typography'
-import ButtonGradient                  from '@/src/components/antd/button-gradient'
-import ButtonOutlineGradient           from '@/src/components/antd/button-outline-gradient'
-import { InputNumber }                 from 'antd';
+import s from './s.module.scss'
+import Grid from '@/src/components/custom/grid'
+import Modal from '@/src/components/antd/modal'
+import { Text } from '@/src/components/custom/typography'
+import ButtonGradient from '@/src/components/antd/button-gradient'
+import ButtonOutlineGradient from '@/src/components/antd/button-outline-gradient'
+import cn from 'classnames'
+import React from 'react'
+import { InputNumber } from 'antd'
 
 interface Props {
   isOpen: boolean
-  toggleOpen: () => void;
+  toggleOpen: () => void
   slippageTolerance: any
   maxTransactionTime: any
   updateSwapSettings: (slippageTolerance: number, maxTransactionTime: number) => void
 }
 
-const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, updateSwapSettings, slippageTolerance, maxTransactionTime}: Props) => {
-
+const SwapSettingsModal: React.FC<Props> = ({
+  isOpen,
+  maxTransactionTime,
+  slippageTolerance,
+  toggleOpen,
+  updateSwapSettings,
+}: Props) => {
   const submitAndClose = () => {
     updateSwapSettings(slippageTolerance, maxTransactionTime)
     toggleOpen()
@@ -25,26 +30,24 @@ const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, updateSwapSetti
 
   return (
     <Modal
+      footer={
+        <div className={cn(s.footerFlexContainer)}>
+          <div className={cn(s.buttons)}>
+            <ButtonOutlineGradient onClick={toggleOpen} textGradient>
+              Close
+            </ButtonOutlineGradient>
+          </div>
+          <div className={cn(s.buttons)}>
+            <ButtonGradient onClick={submitAndClose} type="primary">
+              Submit
+            </ButtonGradient>
+          </div>
+        </div>
+      }
       maskStyle={{ backdropFilter: 'blur(5px)' }}
       onCancel={toggleOpen}
       visible={isOpen}
       width={400}
-      footer={
-        <div className={cn(s.footerFlexContainer)}>
-          <div className={cn(s.buttons)}>
-            <ButtonOutlineGradient 
-              onClick={toggleOpen} 
-              textGradient
-            >Close</ButtonOutlineGradient>
-          </div>
-          <div className={cn(s.buttons)} >
-            <ButtonGradient
-              type="primary" 
-              onClick={submitAndClose}
-            >Submit</ButtonGradient>
-          </div>
-        </div>
-      }
     >
       <Grid align="start" flow="row" gap={24}>
         <Grid flow="row" gap={16} width="100%">
@@ -55,28 +58,28 @@ const SwapSettingsModal: React.FC<Props> = ({isOpen, toggleOpen, updateSwapSetti
             <Text color="secondary" type="p1">
               Slippage tolerance
             </Text>
-            <InputNumber 
-              style={{width: '100px'}}
-                min={0} 
-                max={100} 
-                defaultValue={slippageTolerance} 
-                step={0.1} 
-                addonAfter={'%'}
-                onChange={(e) => updateSwapSettings(e, maxTransactionTime)}
-              />
+            <InputNumber
+              addonAfter={'%'}
+              defaultValue={slippageTolerance}
+              max={100}
+              min={0}
+              onChange={(e) => updateSwapSettings(e, maxTransactionTime)}
+              step={0.1}
+              style={{ width: '100px' }}
+            />
           </div>
           <div className={cn(s.bodyFlexContainer)}>
             <Text color="secondary" type="p1">
               Max transaction time
             </Text>
-            <InputNumber 
-                style={{width: '100px'}}
-                min={0}
-                max={120} 
-                defaultValue={maxTransactionTime} 
-                addonAfter={'min'}
-                onChange={(e) => updateSwapSettings(slippageTolerance, e)}
-              />
+            <InputNumber
+              addonAfter={'min'}
+              defaultValue={maxTransactionTime}
+              max={120}
+              min={0}
+              onChange={(e) => updateSwapSettings(slippageTolerance, e)}
+              style={{ width: '100px' }}
+            />
           </div>
         </Grid>
       </Grid>
