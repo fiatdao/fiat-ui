@@ -1,11 +1,11 @@
-import { DocumentNode } from 'graphql'
-import { GraphQLClient } from 'graphql-request'
 import {
   ChainsValues,
   INITIAL_APP_CHAIN_ID,
   chainsConfig,
   isValidChain,
 } from '@/src/constants/chains'
+import { DocumentNode } from 'graphql'
+import { GraphQLClient } from 'graphql-request'
 
 const fetcher = new GraphQLClient(chainsConfig[INITIAL_APP_CHAIN_ID]?.subgraphApi)
 

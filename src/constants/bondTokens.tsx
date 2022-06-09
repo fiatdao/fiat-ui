@@ -1,32 +1,26 @@
-import { memoize } from 'lodash'
 import { ChainsValues } from '@/src/constants/chains'
 import { Maybe } from '@/types/utils'
 import { metadataByNetwork } from '@/metadata'
+import { memoize } from 'lodash'
 
-// TODO: Create interface that can support all token types
-// type PTokenMap = {
-//   [vaultAddress: string]: {
-//     [tokenId: string]: {
-//       protocol: string
-//       asset: string
-//       symbol: string
-//       decimals: number
-//       name: string
-//       icons: {
-//         main: string
-//         secondary: string
-//       }
-//       urls?: {
-//         asset?: string
-//         project?: string
-//       }
-//     }
-//   }
-// }
-
-// type MetadataByNetwork = {
-//   [chainId: number]: PTokenMap
-// }
+type NetworkMetadata = {
+  [vaultAddress: string]: {
+    protocol: string
+    asset: string
+    symbol: string
+    decimals: number
+    name: string
+    tokenIds: Array<string>
+    icons: {
+      protocol: string
+      asset: string
+    }
+    urls: {
+      project: string
+      asset: string
+    }
+  }
+}
 
 export interface ProtocolFilter {
   protocolName: string
@@ -34,11 +28,8 @@ export interface ProtocolFilter {
   iconLink: string
 }
 
-// TODO: Create interface that can support all token types
 const getVaults = memoize((appChainId: ChainsValues): Record<string, any> => {
-  // const vaultsMetadata = (metadataByNetwork as MetadataByNetwork)[appChainId]
-
-  const vaultsMetadata = metadataByNetwork[appChainId]
+  const vaultsMetadata = metadataByNetwork[appChainId] as NetworkMetadata
 
   if (vaultsMetadata === undefined) {
     return {}
@@ -71,15 +62,14 @@ export const getCollateralMetadata = (
     return
   }
 
-  // seems to be previous structure of vault metadata. keeping here just in case
-  // return vaults[vaultAddress.toLowerCase()]?.[tokenId]
   return vaults[vaultAddress.toLowerCase()]
 }
 
 /// Returns primary and secondary icon links for asset with name protocolName
-/// Return Object should look like {main: <main_link>, secondary: <secondary_link}
-/// TODO: memoize. See https://github.com/fiatdao/fiat-ui/issues/520
-export const getPTokenIconFromMetadata = (appChainId: ChainsValues, protocolName?: string) => {
+export const getPTokenIconFromMetadata = (
+  appChainId: ChainsValues,
+  protocolName?: string,
+): { protocol: string; asset: string } | undefined => {
   if (!metadataByNetwork || !protocolName) {
     return
   }
@@ -110,7 +100,7 @@ export const getInitialProtocolFilters = memoize(
         // If we haven't seen this protocol yet, add it to the initialProtocolFilters
         const protocolFilter = {
           protocolName,
-          iconLink: vaultMetadata.icons.main,
+          iconLink: vaultMetadata.icons.protocol,
           isActive: true,
         } as ProtocolFilter
         initialProtocolFilters.push(protocolFilter)

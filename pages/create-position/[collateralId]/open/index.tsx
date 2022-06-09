@@ -1,40 +1,48 @@
 import s from './s.module.scss'
-
 import ButtonGradient from '@/src/components/antd/button-gradient'
-import { ButtonBack } from '@/src/components/custom/button-back'
-import { CreatePositionUnderlying } from '@/src/components/custom/create-position-underlying'
-import { CreatePositionBond } from '@/src/components/custom/create-position-bond'
-import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
-import { Summary } from '@/src/components/custom/summary'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
+import { ButtonBack } from '@/src/components/custom/button-back'
+import { CreatePositionBond } from '@/src/components/custom/create-position-bond'
+import { CreatePositionUnderlying } from '@/src/components/custom/create-position-underlying'
+import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
-
-import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
-import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
-import useUserProxy from '@/src/hooks/useUserProxy'
+import { Summary } from '@/src/components/custom/summary'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import {
+  EST_FIAT_TOOLTIP_TEXT,
+  EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+  WAD_DECIMALS,
+  ZERO_BIG_NUMBER,
+} from '@/src/constants/misc'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
-import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
-import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
+import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
-
-import { getEtherscanAddressUrl } from '@/src/web3/utils'
+import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
+import { useQueryParam } from '@/src/hooks/useQueryParam'
+import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
+import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
+import { isValidHealthFactor } from '@/src/utils/data/positions'
+
 import { TITLES_BY_STEP as TITLES_BY_STEP_UNDERLYING } from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
-import { parseDate } from '@/src/utils/dateTime'
 import { calculateHealthFactor } from '@/src/utils/data/positions'
+import { parseDate } from '@/src/utils/dateTime'
 import { getHealthFactorState } from '@/src/utils/table'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
-import SuccessAnimation from '@/src/resources/animations/success-animation.json'
-import { WAD_DECIMALS } from '@/src/constants/misc'
-import Lottie from 'lottie-react'
-import { useMemo, useState } from 'react'
-import Link from 'next/link'
-import cn from 'classnames'
+import {
+  getEtherscanAddressUrl,
+  getHumanValue,
+  getNonHumanValue,
+  perSecondToAPR,
+} from '@/src/web3/utils'
 import { useMachine } from '@xstate/react'
+import cn from 'classnames'
+import Lottie from 'lottie-react'
+import Link from 'next/link'
+import { useMemo, useState } from 'react'
 
 // @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7
@@ -101,7 +109,21 @@ const FormERC20: React.FC<{
 
   const [tab, setTab] = useState('bond')
 
-  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
+  // TODO: make sure this is used in correct context (maybe need in respective create position tabs)
+  /* const maxBorrowAmountCalculated = useMemo((): BigNumber => { */
+  /*   const totalCollateralScaled = */
+  /*     stateMachine.context.erc20Amount.scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER */
+  /*   const collateralValue = collateral.currentValue || ONE_BIG_NUMBER */
+  /*   const collateralizationRatio = collateral.vault.collateralizationRatio || ONE_BIG_NUMBER */
+  /*   const maxBorrowAmount = calculateMaxBorrow( */
+  /*     totalCollateralScaled, */
+  /*     collateralValue, */
+  /*     collateralizationRatio, */
+  /*     ZERO_BIG_NUMBER, // no existing debt, this is a new loan */
+  /*   ) */
+  /*   return maxBorrowAmount */
+  /* }, [stateMachine.context.erc20Amount, collateral]) */
+
   const hasMinimumFIAT = useMemo(() => {
     const fiatAmount = stateMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
     const debtFloor = collateral.vault.debtFloor
@@ -122,16 +144,17 @@ const FormERC20: React.FC<{
     deltaCollateral,
     deltaDebt,
   )
+
   const healthFactorNumber = hf?.toFixed(3)
 
   const summaryData = [
     {
       title: 'In your wallet',
-      value: `${tokenInfo?.humanValue} ${tokenSymbol}`,
+      value: `${tokenInfo?.humanValue?.toFixed(3)} ${tokenSymbol}`,
     },
     {
       title: 'Depositing into position',
-      value: `${stateMachine.context.erc20Amount.toFixed(4)} ${tokenSymbol}`,
+      value: `${stateMachine.context.erc20Amount.toFixed(3)} ${tokenSymbol}`,
     },
     {
       title: 'Remaining in wallet',
@@ -140,13 +163,15 @@ const FormERC20: React.FC<{
         .toFixed(4)} ${tokenSymbol}`,
     },
     {
-      title: 'FIAT to be minted',
-      value: `${stateMachine.context.fiatAmount.toFixed(4)}`,
+      title: 'Estimated FIAT debt',
+      titleTooltip: EST_FIAT_TOOLTIP_TEXT,
+      value: `${stateMachine.context.fiatAmount.toFixed(3)}`,
     },
     {
       state: getHealthFactorState(hf),
-      title: 'Updated health factor',
-      value: healthFactorNumber,
+      title: 'Estimated Health Factor',
+      titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+      value: isValidHealthFactor(hf) ? hf?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
   ]
 
@@ -259,7 +284,7 @@ const OpenPosition = () => {
     },
     {
       title: 'Collateralization Threshold',
-      tooltip: 'The minimum amount of over-collateralization required to mint FIAT.',
+      tooltip: 'The minimum amount of over-collateralization required to borrow FIAT.',
       value: collateralizationRatio
         ? `${getHumanValue(collateralizationRatio.times(100), WAD_DECIMALS)}%`
         : '-',

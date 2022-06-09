@@ -21,8 +21,6 @@ export const RPC_URL_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_RPC_URL_MAINNET
 export const WAD_DECIMALS = 18
 
 export const WAIT_BLOCKS = 8
-// @TODO use virtualRate method from publican contract
-export const VIRTUAL_RATE = new BigNumber(1.01)
 // @TODO virtualRateSafetyMargin is a constant in the UI (a margin of 1.000002 reflects the increase in virtualRate for an interest rate of 2% p.a. over 1 hr)
 export const VIRTUAL_RATE_MAX_SLIPPAGE = new BigNumber(1.000002)
 
@@ -37,7 +35,13 @@ export const SET_ALLOWANCE_PROXY_TEXT = 'Set allowance for Proxy'
 export const ENABLE_PROXY_FOR_FIAT_TEXT = 'Enable Proxy for FIAT'
 export const EXECUTE_TEXT = 'Execute'
 export const DEPOSIT_COLLATERAL_TEXT = 'Deposit collateral'
-export const DEPOSIT_UNDERLYING_TEXT = 'Deposit Underlying'
+export const DEPOSIT_UNDERLYING_TEXT = 'Deposit underlying'
+export const EST_FIAT_TOOLTIP_TEXT = `Due to the vault's global
+  interest accumulator, the FIAT you receive (send) when borrowing
+  (repaying) may be slightly different than what is displayed.`
+export const EST_HEALTH_FACTOR_TOOLTIP_TEXT = `Due to the vault's global
+interest accumulator, your new health factor may end up slightly different 
+  than what is displayed.`
 
 export function getBorrowAmountBelowDebtFloorText(debtFloor: BigNumber | undefined): string {
   const belowMinimumAmountText = 'Below minimum borrow amount'

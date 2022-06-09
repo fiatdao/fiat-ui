@@ -1,10 +1,10 @@
-import { Contract, ContractInterface } from '@ethersproject/contracts'
-import useSWR, { KeyedMutator, SWRConfiguration } from 'swr'
 import contractCall from '@/src/utils/contractCall'
 
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { Await } from '@/types/utils'
 import isDev from '@/src/utils/isDev'
+import useSWR, { KeyedMutator, SWRConfiguration } from 'swr'
+import { Contract, ContractInterface } from '@ethersproject/contracts'
 
 export default function useContractCall<
   MyContract extends Contract,

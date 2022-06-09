@@ -21,15 +21,3 @@
     width: 100%;
   }
 }
-
-.secondaryAsset {
-  --dimensions: 12px;
-
-  border-radius: 50%;
-  bottom: calc(0% + 5px);
-  height: var(--dimensions);
-  position: absolute;
-  right: 0;
-  width: var(--dimensions);
-  z-index: 5;
-}

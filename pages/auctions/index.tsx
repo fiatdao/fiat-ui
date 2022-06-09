@@ -16,6 +16,7 @@ import BigNumber from 'bignumber.js'
 import Link from 'next/link'
 import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
+import { Empty } from 'antd'
 
 const AuctionsTable = ({ columns, protocolsToFilterBy }: any) => {
   const { auctions } = useAuctions(protocolsToFilterBy)
@@ -25,6 +26,11 @@ const AuctionsTable = ({ columns, protocolsToFilterBy }: any) => {
       columns={columns}
       dataSource={auctions}
       loading={false}
+      locale={{
+        emptyText: (
+          <Empty description={'No active auctions'} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        ),
+      }}
       pagination={tablePagination(auctions?.length ?? 0)}
       rowKey="id"
       scroll={{

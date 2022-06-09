@@ -1,17 +1,16 @@
 import { calculateNormalDebt } from '../utils/data/positions'
-import { getVirtualRate } from '../utils/getVirtualRate'
-import { useNotifications } from '@/src/hooks/useNotifications'
-import { TransactionError } from '@/src/utils/TransactionError'
-import useUserProxy from '@/src/hooks/useUserProxy'
 import { contracts } from '@/src/constants/contracts'
+import { useNotifications } from '@/src/hooks/useNotifications'
+import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
+import { TransactionError } from '@/src/utils/TransactionError'
 import { VaultEPTActions, VaultFCActions } from '@/types/typechain'
 import { estimateGasLimit } from '@/src/web3/utils'
+import { BytesLike } from '@ethersproject/bytes'
 import { TransactionResponse } from '@ethersproject/providers'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
-import { BytesLike } from '@ethersproject/bytes'
 
 type BaseModify = {
   vault: string
@@ -23,12 +22,13 @@ type BaseModify = {
 type DepositCollateral = BaseModify & {
   toDeposit: BigNumber
   toMint: BigNumber
+  virtualRate: BigNumber
 }
 
 type ModifyCollateralAndDebt = BaseModify & {
   deltaCollateral: BigNumber
   deltaDebt: BigNumber
-  virtualRate?: BigNumber
+  virtualRate: BigNumber
 }
 
 // type BuyCollateralAndModifyDebtERC1155 = BaseModify & {
@@ -45,7 +45,7 @@ type ModifyCollateralAndDebt = BaseModify & {
 // uint256 underlierAmount
 
 // deltaDebt: BigNumber
-// virtualRate?: BigNumber
+// virtualRate: BigNumber
 // fCashAmount: BigNumber
 // underlierAmount: BigNumber
 // minImpliedRate: number
@@ -54,7 +54,7 @@ type ModifyCollateralAndDebt = BaseModify & {
 type BuyCollateralAndModifyDebtERC20 = {
   vault: string
   deltaDebt: BigNumber
-  virtualRate?: BigNumber
+  virtualRate: BigNumber
   underlierAmount: BigNumber
   swapParams: {
     balancerVault: string // Address of the Balancer Vault
@@ -86,18 +86,20 @@ export const useUserActions = (type?: string): UseUserActions => {
   const { userProxy, userProxyAddress } = useUserProxy()
   const notification = useNotifications()
 
-  const _getVirtualRate = useCallback(
-    (vaultAddress: string) => {
-      return getVirtualRate(vaultAddress, appChainId, web3Provider)
-    },
-    [appChainId, web3Provider],
-  )
-
   // Element User Action: ERC20
   const userActionEPT = useMemo(() => {
     return new Contract(
       contracts.USER_ACTIONS_EPT.address[appChainId],
       contracts.USER_ACTIONS_EPT.abi,
+      web3Provider?.getSigner(),
+    ) as VaultEPTActions
+  }, [web3Provider, appChainId])
+
+  // Yield User Action: ERC 20
+  const userActionFY = useMemo(() => {
+    return new Contract(
+      contracts.USER_ACTIONS_FY.address[appChainId],
+      contracts.USER_ACTIONS_FY.abi,
       web3Provider?.getSigner(),
     ) as VaultEPTActions
   }, [web3Provider, appChainId])
@@ -114,6 +116,8 @@ export const useUserActions = (type?: string): UseUserActions => {
   const activeContract =
     type && type === 'NOTIONAL'
       ? (userActionFC as VaultFCActions)
+      : type === 'YIELD'
+      ? (userActionFY as VaultEPTActions) // TODO: use FY type
       : (userActionEPT as VaultEPTActions)
 
   const approveFIAT = useCallback(
@@ -160,15 +164,13 @@ export const useUserActions = (type?: string): UseUserActions => {
     async (params: ModifyCollateralAndDebt) => {
       // @TODO: it is not possible to use this hook when user is not connected nor have created a Proxy
       if (!address || !userProxy || !userProxyAddress) {
-        throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
+        throw new Error(`Missing information: ${{ address, userProxy, userProxyAddress }}`)
       }
 
       // @TODO: toFixed(0, ROUNDED) transforms BigNumber into String without decimals
       const deltaCollateral = params.deltaCollateral.toFixed(0, 8)
-      if (!params.virtualRate) {
-        params.virtualRate = await _getVirtualRate(params.vault)
-      }
-      // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
+
+      // deltaNormalDebt = deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
       const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
         0,
         8,
@@ -230,7 +232,6 @@ export const useUserActions = (type?: string): UseUserActions => {
       activeContract.interface,
       activeContract.address,
       notification,
-      _getVirtualRate,
     ],
   )
 
@@ -240,10 +241,6 @@ export const useUserActions = (type?: string): UseUserActions => {
   //   async (params: BuyCollateralAndModifyDebtERC1155) => {
   //     if (!address || !userProxy || !userProxyAddress) {
   //       throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
-  //     }
-
-  //     if (!params.virtualRate) {
-  //       params.virtualRate = await _getVirtualRate(params.vault)
   //     }
 
   //     // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
@@ -333,7 +330,6 @@ export const useUserActions = (type?: string): UseUserActions => {
   //     userActionFC.interface,
   //     activeContract.address,
   //     notification,
-  //     _getVirtualRate,
   //   ],
   // )
 
@@ -342,10 +338,6 @@ export const useUserActions = (type?: string): UseUserActions => {
     async (params: BuyCollateralAndModifyDebtERC20) => {
       if (!address || !userProxy || !userProxyAddress) {
         throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
-      }
-
-      if (!params.virtualRate) {
-        params.virtualRate = await _getVirtualRate(params.vault)
       }
 
       const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
@@ -413,7 +405,6 @@ export const useUserActions = (type?: string): UseUserActions => {
       userActionEPT.interface,
       activeContract.address,
       notification,
-      _getVirtualRate,
     ],
   )
 

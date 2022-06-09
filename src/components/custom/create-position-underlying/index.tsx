@@ -1,35 +1,36 @@
 import s from './s.module.scss'
-
-import TokenAmount from '@/src/components/custom/token-amount'
 import { Form } from '@/src/components/antd'
-import { Summary, SummaryItem } from '@/src/components/custom/summary'
-import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
-import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
 import ButtonGradient from '@/src/components/antd/button-gradient'
+import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { MintFiat } from '@/src/components/custom/mint-fiat'
-
-import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
+import { Summary, SummaryItem } from '@/src/components/custom/summary'
+import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
+import TokenAmount from '@/src/components/custom/token-amount'
+import {
+  DEPOSIT_UNDERLYING_TEXT,
+  ONE_BIG_NUMBER,
+  WAD_DECIMALS,
+  ZERO_BIG_NUMBER,
+} from '@/src/constants/misc'
+import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
-import useUserProxy from '@/src/hooks/useUserProxy'
+import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import { useUserActions } from '@/src/hooks/useUserActions'
-import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
-
-import { DEPOSIT_UNDERLYING_TEXT, WAD_DECIMALS } from '@/src/constants/misc'
-import { ONE_BIG_NUMBER, ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { parseDate } from '@/src/utils/dateTime'
-import { Collateral } from '@/src/utils/data/collaterals'
+import useUserProxy from '@/src/hooks/useUserProxy'
+import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
+import { Collateral } from '@/src/utils/data/collaterals'
+import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
-import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
-import BigNumber from 'bignumber.js'
-import AntdForm from 'antd/lib/form'
-import { useMachine } from '@xstate/react'
-import { useEffect, useState } from 'react'
-import cn from 'classnames'
 import { SettingFilled } from '@ant-design/icons'
+import { useMachine } from '@xstate/react'
+import AntdForm from 'antd/lib/form'
+import BigNumber from 'bignumber.js'
+import cn from 'classnames'
+import { useEffect, useState } from 'react'
 
 type Props = {
   collateral: Collateral
@@ -213,6 +214,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
       await buyCollateralAndModifyDebtERC20({
         vault: collateral.vault.address,
         deltaDebt: _fiatAmount,
+        virtualRate: collateral.vault.virtualRate,
         underlierAmount: _underlierAmount,
         swapParams: {
           balancerVault: collateral.eptData.balancerVault,
