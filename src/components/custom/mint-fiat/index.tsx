@@ -26,15 +26,18 @@ export const MintFiat: React.FC<Props> = ({
   collateral,
   healthFactorNumber,
   loading,
-  /* marketRate, */
+  marketRate,
   send,
 }) => {
   const [FIATBalance] = useFIATBalance(true)
   const [mintFiat, setMintFiat] = useState(false)
 
   const maxBorrowAmountCalculated = useMemo((): BigNumber => {
-    const totalCollateralScaled =
-      activeMachine.context.erc20Amount.scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const totalCollateral = marketRate
+      ? marketRate.times(activeMachine.context.underlierAmount)
+      : activeMachine.context.erc20Amount ?? ZERO_BIG_NUMBER
+
+    const totalCollateralScaled = totalCollateral.scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER
     const collateralValue = collateral.currentValue || ONE_BIG_NUMBER
     const collateralizationRatio = collateral.vault.collateralizationRatio || ONE_BIG_NUMBER
     const maxBorrowAmount = calculateMaxBorrow(
@@ -44,7 +47,12 @@ export const MintFiat: React.FC<Props> = ({
       ZERO_BIG_NUMBER, // no existing debt, this is a new loan
     )
     return maxBorrowAmount
-  }, [activeMachine.context.erc20Amount, collateral])
+  }, [
+    activeMachine.context.erc20Amount,
+    activeMachine.context.underlierAmount,
+    collateral,
+    marketRate,
+  ])
 
   return (
     <div className={cn(s.mintFiat)}>
