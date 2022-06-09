@@ -168,9 +168,9 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
         token: collateral.address ?? '',
         tokenId: Number(collateral.tokenId),
         deltaDebt: _fiatAmount,
-        fCashAmount: fCashAmount,
+        fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals
         minImpliedRate: 1000000,
-        underlierAmount: _underlierAmount
+        underlierAmount: _underlierAmount //definitely correct
       })
       setLoading(false)
     } catch (err) {
@@ -204,7 +204,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
       await buyCollateralAndModifyDebtERC20({
         vault: collateral.vault.address,
         deltaDebt: _fiatAmount,
-        underlierAmount: getNonHumanValue(_underlierAmount, WAD_DECIMALS),
+        underlierAmount: _underlierAmount,
         swapParams: {
           balancerVault: collateral.eptData.balancerVault,
           poolId: collateral.eptData?.poolId ?? '',

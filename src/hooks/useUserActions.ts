@@ -1,17 +1,18 @@
-import { calculateNormalDebt } from '../utils/data/positions'
-import { getVirtualRate } from '../utils/getVirtualRate'
-import BigNumber from 'bignumber.js'
-import { useCallback, useMemo } from 'react'
-import { BigNumberish, Contract, ethers } from 'ethers'
-import { TransactionResponse } from '@ethersproject/providers'
-import { useNotifications } from '@/src/hooks/useNotifications'
-import { TransactionError } from '@/src/utils/TransactionError'
-import useUserProxy from '@/src/hooks/useUserProxy'
-import { contracts } from '@/src/constants/contracts'
-import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
+import { calculateNormalDebt }             from '../utils/data/positions'
+import { getVirtualRate }                  from '../utils/getVirtualRate'
+import BigNumber                           from 'bignumber.js'
+import { useCallback, useMemo }            from 'react'
+import { BigNumberish, Contract, ethers }  from 'ethers'
+import { TransactionResponse }             from '@ethersproject/providers'
+import { useNotifications }                from '@/src/hooks/useNotifications'
+import { TransactionError }                from '@/src/utils/TransactionError'
+import useUserProxy                        from '@/src/hooks/useUserProxy'
+import { contracts }                       from '@/src/constants/contracts'
+import { useWeb3Connected }                from '@/src/providers/web3ConnectionProvider'
 import { VaultEPTActions, VaultFCActions } from '@/types/typechain'
-import { estimateGasLimit, getHumanValue } from '@/src/web3/utils'
-import { WAD_DECIMALS } from '@/src/constants/misc'
+import { estimateGasLimit }                from '@/src/web3/utils'
+import { BytesLike }                       from "@ethersproject/bytes";
+
 
 type BaseModify = {
   vault: string
@@ -46,12 +47,12 @@ type BuyCollateralAndModifyDebtERC20 = {
   underlierAmount: BigNumber
   swapParams: {
     balancerVault: string // Address of the Balancer Vault
-    poolId: string // Id bytes32 of the Element Convergent Curve Pool containing the collateral token
+    poolId: BytesLike // Id bytes32 of the Element Convergent Curve Pool containing the collateral token
     assetIn: string// Underlier token address when adding collateral and `collateral` when removing
     assetOut: string // Collateral token address when adding collateral and `underlier` when removing
-    minOutput?: string // uint256 Min. amount of tokens we would accept to receive from the swap, whether it is collateral or underlier
+    minOutput: BigNumberish // uint256 Min. amount of tokens we would accept to receive from the swap, whether it is collateral or underlier
     deadline: BigNumberish // uint256 Timestamp at which swap must be confirmed by [seconds]
-    approve: string // uint256 Amount of `assetIn` to approve for `balancerVault` for swapping `assetIn` for `assetOut`
+    approve: BigNumberish // uint256 Amount of `assetIn` to approve for `balancerVault` for swapping `assetIn` for `assetOut`
   }
 }
 
@@ -236,36 +237,37 @@ export const useUserActions = (type?: string): UseUserActions => {
         8,
       )
 
-      // console.log('',88,  '\n',         
-      //   params.vault, '\n',// address vault
-      //   params.token, '\n',// address position
-      //   params.tokenId, '\n',// address collateralizer
-      //   userProxyAddress, '\n',// address creditor
-      //   address,'\n', // address collateralizer
-      //   address, '\n',
-      //   // params.fCashAmount.toFixed(0,8), '\n',
-      //   getHumanValue(params.fCashAmount, 41).toFixed(0,8),  '\n',// uint256 underlierAmount,
-      //   deltaNormalDebt, '\n',// int256 deltaNormalDebt,
-      //   params.minImpliedRate, '\n',
-      //   params.underlierAmount.toFixed(0,8), '\n',// calldata swapParams
-      // )
+      console.log('',88,  '\n',         
+        params.vault, '\n',                                       // address vault
+        params.token, '\n',                                       // address token
+        params.tokenId, '\n',                                     // uint256 tokenId
+        userProxyAddress, '\n',                                   // address position
+        address,'\n',                                             // address collateralizer
+        address, '\n',                                            // address creditor
+        params.fCashAmount.toFixed(0,8), '\n',                    // uint256 fCashAmount
+        deltaNormalDebt, '\n',                                    // int256 deltaNormalDebt
+        params.minImpliedRate, '\n',                              // uint32 minImpliedRate
+        params.underlierAmount.toFixed(0,8), '\n',                // uint256 maxUnderlierAmount
+      )
 
       const buyCollateralAndModifyDebtEncoded = activeContract.interface.encodeFunctionData(
         'buyCollateralAndModifyDebt',
         [
 
-          params.vault, // address vault
-          params.token, // address token
-          params.tokenId, // uint256 tokenId
-          userProxyAddress, // address position
-          address, // address collateralizer
-          address, // address creditor
-          getHumanValue(params.fCashAmount, 41).toFixed(0,8), // uint256 fCashAmount                     
-          deltaNormalDebt, // int256 deltaNormalDebt
-          params.minImpliedRate, // uint32 minImpliedRate                 //need to update
-          params.underlierAmount.toFixed(0,8) // uint256 maxUnderlierAmount        // need to update to underlier scale
+          params.vault,                       // address vault
+          params.token,                       // address token
+          params.tokenId,                     // uint256 tokenId
+          userProxyAddress,                   // address position
+          address,                            // address collateralizer
+          address,                            // address creditor
+          params.fCashAmount.toFixed(0,8),    // uint256 fCashAmount          // I think this is correct, although maybe I need a buffer on the exchange rate (slippage tollerance)          
+          deltaNormalDebt,                    // int256 deltaNormalDebt       // I though this was correct, but im getting a transactions reverted when this is non-zero
+          params.minImpliedRate,              // uint32 minImpliedRate        // Need to update (waiting for Nilus)
+          params.underlierAmount.toFixed(0,8) // uint256 maxUnderlierAmount   // definitely correct
         ],
       )
+
+      console.log(22, activeContract.address)
 
       // please sign
       notification.requestSign()
@@ -319,33 +321,31 @@ export const useUserActions = (type?: string): UseUserActions => {
         params.virtualRate = await _getVirtualRate(params.vault)
       }
 
-      // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
       const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
         0,
         8,
       )
 
       // console.log('',88,  '\n',         
-      //   params.vault, '\n',// address vault
-      //   userProxyAddress, '\n',// address position
-      //   address, '\n',// address collateralizer
-      //   address, '\n',// address creditor
-      //   params.underlierAmount.unscaleBy(WAD_DECIMALS).toNumber(), '\n',// uint256 underlierAmount,
-      //   deltaNormalDebt, '\n',// int256 deltaNormalDebt,
-      //   params.swapParams, '\n',// calldata swapParams
+      //   params.vault, '\n',                        // address vault
+      //   userProxyAddress, '\n',                    // address position
+      //   address, '\n',                             // address collateralizer
+      //   address, '\n',                             // address creditor
+      //   params.underlierAmount.toFixed(0,8), '\n', // uint256 underlierAmount,
+      //   deltaNormalDebt, '\n',                     // int256 deltaNormalDebt,
+      //   params.swapParams, '\n',                   // calldata swapParams
       // )
 
       const buyCollateralAndModifyDebtEncoded = activeContract.interface.encodeFunctionData(
         'buyCollateralAndModifyDebt',
         [
-
-          params.vault, // address vault
-          userProxyAddress, // address position
-          address, // address collateralizer
-          address, // address creditor
-          params.underlierAmount.unscaleBy(WAD_DECIMALS).toNumber(), // uint256 underlierAmount,
-          deltaNormalDebt, // int256 deltaNormalDebt,
-          params.swapParams, // calldata swapParams
+          params.vault,                        // address vault
+          userProxyAddress,                    // address position
+          address,                             // address collateralizer
+          address,                             // address creditor
+          params.underlierAmount.toFixed(0,8), // uint256 underlierAmount,
+          deltaNormalDebt,                     // int256 deltaNormalDebt,
+          params.swapParams,                   // calldata swapParams
         ],
       )
 
