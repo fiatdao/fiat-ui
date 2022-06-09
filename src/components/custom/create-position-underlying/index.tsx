@@ -250,10 +250,12 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
           <div>
             <div className={cn(s.flexContainer)}>
               <h3 className={cn(s.label)}>Swap and Deposit</h3>
-              <p className={cn(s.balance)}>{`Balance: ${underlyingInfo?.humanValue?.toFixed(
-                2,
-              )}`}</p>
-              <SettingFilled className={cn(s.settings)} onClick={toggleSwapSettingsMenu} />
+              <div className={cn(s.rightGutter)}>
+                <p className={cn(s.balance)}>{`Balance: ${underlyingInfo?.humanValue?.toFixed(
+                  2,
+                )}`}</p>
+                <SettingFilled className={cn(s.settings)} onClick={toggleSwapSettingsMenu} />
+              </div>
             </div>
             <SwapSettingsModal
               isOpen={swapSettingsOpen}
@@ -272,6 +274,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
                 onChange={(val) =>
                   val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
                 }
+                slider
               />
             </Form.Item>
             <div className={cn(s.summary)}>

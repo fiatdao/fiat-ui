@@ -107,7 +107,7 @@
 }
 
 .settings {
-  margin-left: 90px;
+  margin-left: 12px;
 }
 
 .label {
@@ -115,6 +115,11 @@
   font-size: 12px;
   font-weight: 500;
   margin: 0;
+}
+
+.rightGutter {
+  display: flex;
+  flex-direction: row;
 }
 
 .balance {
