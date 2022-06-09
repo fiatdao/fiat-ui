@@ -145,8 +145,6 @@ const FormERC20: React.FC<{
     deltaDebt,
   )
 
-  const healthFactorNumber = hf?.toFixed(3)
-
   const summaryData = [
     {
       title: 'In your wallet',
@@ -206,7 +204,7 @@ const FormERC20: React.FC<{
               <CreatePositionUnderlying
                 collateral={collateral}
                 hasMinimumFIAT={hasMinimumFIAT}
-                healthFactorNumber={healthFactorNumber}
+                healthFactorNumber={hf}
                 loading={loading}
                 setLoading={setFormLoading}
                 setMachine={switchActiveMachine}

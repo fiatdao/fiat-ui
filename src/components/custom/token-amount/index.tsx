@@ -99,7 +99,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   }
 
   const healthFactorToRender = isValidHealthFactor(healthFactorValue)
-    ? healthFactorValue?.toFixed(3)
+    ? healthFactorValue.toFixed(3)
     : DEFAULT_HEALTH_FACTOR
 
   function onMaxHandle() {

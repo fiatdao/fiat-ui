@@ -35,7 +35,7 @@ import { useEffect, useState } from 'react'
 type Props = {
   collateral: Collateral
   loading: boolean
-  healthFactorNumber: string
+  healthFactorNumber: BigNumber
   hasMinimumFIAT: boolean
   setLoading: (newLoadingState: boolean) => void
   setMachine: (machine: any) => void

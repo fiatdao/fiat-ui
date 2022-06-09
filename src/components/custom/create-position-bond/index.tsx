@@ -176,6 +176,7 @@ export const CreatePositionBond: React.FC<Props> = ({
             <TokenAmount
               disabled={loading}
               displayDecimals={tokenInfo?.decimals}
+              healthFactorValue={hf}
               mainAsset={collateral.vault.name}
               max={tokenInfo?.humanValue}
               maximumFractionDigits={tokenInfo?.decimals}
@@ -187,7 +188,7 @@ export const CreatePositionBond: React.FC<Props> = ({
             <MintFiat
               activeMachine={stateMachine}
               collateral={collateral}
-              healthFactorNumber={healthFactorNumber}
+              healthFactorNumber={hf}
               loading={loading}
               send={send}
             />
