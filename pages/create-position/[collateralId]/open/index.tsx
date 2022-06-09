@@ -11,6 +11,7 @@ import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import {
   EST_FIAT_TOOLTIP_TEXT,
   EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+  ONE_BIG_NUMBER,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
@@ -38,6 +39,9 @@ import {
   getNonHumanValue,
   perSecondToAPR,
 } from '@/src/web3/utils'
+import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
+import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
+import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
@@ -74,15 +78,26 @@ const FormERC20: React.FC<{
   const { isProxyAvailable, userProxyAddress } = useUserProxy()
   const [loading, setLoading] = useState(false)
 
-  const setFormLoading = (newLoadingState: boolean): void => {
-    setLoading(newLoadingState)
-  }
-
   const erc20 = useERC20Allowance(tokenAddress, userProxyAddress ?? '')
   const erc1155 = useERC155Allowance(tokenAddress, userProxyAddress ?? '')
 
-  const activeToken = collateral.vault.type === 'NOTIONAL' ? erc1155 : erc20
-  const { hasAllowance } = activeToken
+  const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
+
+  const [underlierToPToken] = useUnderlyingExchangeValue({
+    vault: collateral?.vault?.address ?? '',
+    balancerVault: collateral?.eptData?.balancerVault,
+    curvePoolId: collateral?.eptData?.poolId,
+    underlierAmount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
+  })
+
+  const [underlierToFCash] = useUnderlierToFCash({
+    tokenId: collateral.tokenId ?? '',
+    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
+  })
+
+  const setFormLoading = (newLoadingState: boolean): void => {
+    setLoading(newLoadingState)
+  }
 
   const { tokenInfo } = useTokenDecimalsAndBalance({
     tokenData: {
@@ -96,6 +111,8 @@ const FormERC20: React.FC<{
     readOnlyAppProvider,
   })
 
+  const activeToken = collateral.vault.type === 'NOTIONAL' ? erc1155 : erc20
+  const { hasAllowance } = activeToken
   const [stateMachine] = useMachine(stepperMachine, {
     context: {
       isProxyAvailable,
@@ -120,14 +137,31 @@ const FormERC20: React.FC<{
     return !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT
   }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT])
 
-  const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
+  const marketRate =
+    collateral.vault.type === 'NOTIONAL'
+      ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
+      : ONE_BIG_NUMBER.div(getHumanValue(underlierToPToken, underlierDecimals))
+
+  // const priceImpact = (1 - marketRate) / 0.01
+
+  // TODO: figure out why deltaCollateral is 0. This is keeping health factor from displaying properly. This is probably a scaling issue
+  const deltaCollateral = getNonHumanValue(
+    tab === 'bond'
+      ? activeMachine.context.erc20Amount
+      : marketRate.times(activeMachine.context.underlierAmount),
+    WAD_DECIMALS,
+  )
   const deltaDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
+
   const { healthFactor: hf } = calculateHealthFactor(
     collateral.currentValue,
     collateral.vault.collateralizationRatio,
     deltaCollateral,
     deltaDebt,
   )
+  console.log('delta collat:', deltaCollateral.toString())
+  console.log('collateral: ', collateral)
+  console.log('[collateralId] healthFactor: ', hf.toString())
 
   const summaryData = [
     {
@@ -190,6 +224,7 @@ const FormERC20: React.FC<{
                 hasMinimumFIAT={hasMinimumFIAT}
                 healthFactorNumber={hf}
                 loading={loading}
+                marketRate={marketRate}
                 setLoading={setFormLoading}
                 setMachine={switchActiveMachine}
               />

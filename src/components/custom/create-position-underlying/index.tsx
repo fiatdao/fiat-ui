@@ -7,16 +7,9 @@ import { MintFiat } from '@/src/components/custom/mint-fiat'
 import { Summary, SummaryItem } from '@/src/components/custom/summary'
 import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
 import TokenAmount from '@/src/components/custom/token-amount'
-import {
-  DEPOSIT_UNDERLYING_TEXT,
-  ONE_BIG_NUMBER,
-  WAD_DECIMALS,
-  ZERO_BIG_NUMBER,
-} from '@/src/constants/misc'
-import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
+import { DEPOSIT_UNDERLYING_TEXT, WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
@@ -25,6 +18,7 @@ import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
+import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
@@ -32,22 +26,24 @@ import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useEffect, useState } from 'react'
 
-type Props = {
+type CreatePositionUnderlyingProps = {
   collateral: Collateral
   loading: boolean
   healthFactorNumber: BigNumber
   hasMinimumFIAT: boolean
+  marketRate: BigNumber
   setLoading: (newLoadingState: boolean) => void
   setMachine: (machine: any) => void
 }
 
 type FormProps = { underlierAmount: BigNumber }
 
-export const CreatePositionUnderlying: React.FC<Props> = ({
+export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> = ({
   collateral,
   hasMinimumFIAT,
   healthFactorNumber,
   loading,
+  marketRate,
   setLoading,
   setMachine,
 }) => {
@@ -113,18 +109,6 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
   })
 
-  const [underlierToFCash] = useUnderlierToFCash({
-    tokenId: collateral.tokenId ?? '',
-    amount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
-  })
-
-  const marketRate =
-    collateral.vault.type === 'NOTIONAL'
-      ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
-      : ONE_BIG_NUMBER.div(getHumanValue(underlierToPToken, underlierDecimals))
-
-  // const priceImpact = (1 - marketRate) / 0.01
-
   const underlyingData = [
     {
       title: 'Market rate',
@@ -158,7 +142,7 @@ export const CreatePositionUnderlying: React.FC<Props> = ({
     underlierAmount: BigNumber
     fiatAmount: BigNumber
   }): Promise<void> => {
-    console.log('createUnderlyingPositionERC1155', fiatAmount, underlierAmount)
+    console.log('todo: make 1155 action work', fiatAmount, underlierAmount)
     return Promise.resolve()
     /* const _underlierAmount = underlierAmount */
     /*   ? getNonHumanValue(underlierAmount, WAD_DECIMALS) */
