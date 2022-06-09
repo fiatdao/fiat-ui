@@ -30,10 +30,10 @@ import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useEffect, useMemo, useState } from 'react'
 
-type Props = {
+type CreatePositionBondProps = {
   collateral: Collateral
   loading: boolean
-  isDisabledCreatePosition: () => boolean
+  isDisabledCreatePosition: boolean
   setLoading: (newLoadingState: boolean) => void
   setMachine: (machine: any) => void
   tokenAddress: string
@@ -41,7 +41,7 @@ type Props = {
 
 type FormProps = { underlierAmount: BigNumber }
 
-export const CreatePositionBond: React.FC<Props> = ({
+export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
   collateral,
   isDisabledCreatePosition,
   loading,
@@ -244,7 +244,7 @@ export const CreatePositionBond: React.FC<Props> = ({
               </ButtonExtraFormAction>
             )}
             <ButtonGradient
-              disabled={isDisabledCreatePosition()}
+              disabled={isDisabledCreatePosition}
               height="lg"
               onClick={() =>
                 send({

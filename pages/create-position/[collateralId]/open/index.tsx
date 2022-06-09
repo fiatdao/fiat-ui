@@ -109,32 +109,16 @@ const FormERC20: React.FC<{
 
   const [tab, setTab] = useState('bond')
 
-  // TODO: make sure this is used in correct context (maybe need in respective create position tabs)
-  /* const maxBorrowAmountCalculated = useMemo((): BigNumber => { */
-  /*   const totalCollateralScaled = */
-  /*     stateMachine.context.erc20Amount.scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER */
-  /*   const collateralValue = collateral.currentValue || ONE_BIG_NUMBER */
-  /*   const collateralizationRatio = collateral.vault.collateralizationRatio || ONE_BIG_NUMBER */
-  /*   const maxBorrowAmount = calculateMaxBorrow( */
-  /*     totalCollateralScaled, */
-  /*     collateralValue, */
-  /*     collateralizationRatio, */
-  /*     ZERO_BIG_NUMBER, // no existing debt, this is a new loan */
-  /*   ) */
-  /*   return maxBorrowAmount */
-  /* }, [stateMachine.context.erc20Amount, collateral]) */
-
   const hasMinimumFIAT = useMemo(() => {
-    const fiatAmount = stateMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
+    const fiatAmount = activeMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
     const debtFloor = collateral.vault.debtFloor
     const nonHumanFiatAmount = getNonHumanValue(fiatAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-
     return nonHumanFiatAmount.gte(debtFloor) || nonHumanFiatAmount.isZero()
-  }, [stateMachine.context.fiatAmount, collateral.vault.debtFloor])
+  }, [activeMachine.context.fiatAmount, collateral.vault.debtFloor])
 
-  const isDisabledCreatePosition = () => {
+  const isDisabledCreatePosition = useMemo(() => {
     return !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT
-  }
+  }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT])
 
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
   const deltaDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)

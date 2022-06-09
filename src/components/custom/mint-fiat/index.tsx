@@ -1,19 +1,16 @@
 import s from './s.module.scss'
-
-import { FormExtraAction } from '@/src/components/custom/form-extra-action'
 import { Form } from '@/src/components/antd'
-import TokenAmount from '@/src/components/custom/token-amount'
 import { Balance } from '@/src/components/custom/balance'
 import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
-
-import { ONE_BIG_NUMBER, ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { getHumanValue } from '@/src/web3/utils'
-import { VIRTUAL_RATE_MAX_SLIPPAGE, WAD_DECIMALS } from '@/src/constants/misc'
-import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { FormExtraAction } from '@/src/components/custom/form-extra-action'
+import TokenAmount from '@/src/components/custom/token-amount'
+import { ONE_BIG_NUMBER, WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { calculateMaxBorrow } from '@/src/utils/data/positions'
+import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useMemo, useState } from 'react'
-import BigNumber from 'bignumber.js'
 
 type Props = {
   loading: boolean
@@ -29,32 +26,25 @@ export const MintFiat: React.FC<Props> = ({
   collateral,
   healthFactorNumber,
   loading,
-  marketRate,
+  /* marketRate, */
   send,
 }) => {
   const [FIATBalance] = useFIATBalance(true)
   const [mintFiat, setMintFiat] = useState(false)
 
-  // @TODO: not working max amount
-  // maxFIAT = totalCollateral*collateralValue/collateralizationRatio/(virtualRateSafetyMargin*virtualRate)-debt
-  const maxBorrowAmountCalculated = useMemo(() => {
-    const totalCollateral = marketRate
-      ? marketRate.times(activeMachine.context.underlierAmount)
-      : activeMachine.context.erc20Amount ?? ZERO_BIG_NUMBER
-    const collateralValue = getHumanValue(collateral.currentValue || ONE_BIG_NUMBER, WAD_DECIMALS)
-    const collateralizationRatio = getHumanValue(
-      collateral.vault.collateralizationRatio || ONE_BIG_NUMBER,
-      WAD_DECIMALS,
+  const maxBorrowAmountCalculated = useMemo((): BigNumber => {
+    const totalCollateralScaled =
+      activeMachine.context.erc20Amount.scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const collateralValue = collateral.currentValue || ONE_BIG_NUMBER
+    const collateralizationRatio = collateral.vault.collateralizationRatio || ONE_BIG_NUMBER
+    const maxBorrowAmount = calculateMaxBorrow(
+      totalCollateralScaled,
+      collateralValue,
+      collateralizationRatio,
+      ZERO_BIG_NUMBER, // no existing debt, this is a new loan
     )
-
-    const virtualRateWithMargin = VIRTUAL_RATE_MAX_SLIPPAGE.times(collateral.vault.virtualRate)
-    const maxBorrowAmount = totalCollateral
-      .times(collateralValue)
-      .div(collateralizationRatio)
-      .div(virtualRateWithMargin)
-
     return maxBorrowAmount
-  }, [activeMachine, collateral, marketRate])
+  }, [activeMachine.context.erc20Amount, collateral])
 
   return (
     <div className={cn(s.mintFiat)}>
