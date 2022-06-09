@@ -1,7 +1,4 @@
 import s from './s.module.scss'
-import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
-import { isValidHealthFactor } from '@/src/utils/data/positions'
-import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { Balance } from '@/src/components/custom/balance'
@@ -13,10 +10,12 @@ import { PositionFormsLayout } from '@/src/components/custom/position-forms-layo
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import {
   DEPOSIT_COLLATERAL_TEXT,
   EST_FIAT_TOOLTIP_TEXT,
   EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+  INSUFFICIENT_BALANCE_TEXT,
   ONE_BIG_NUMBER,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
@@ -25,6 +24,7 @@ import {
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
+import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
@@ -36,7 +36,11 @@ import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
 import { Collateral } from '@/src/utils/data/collaterals'
-import { calculateHealthFactor, calculateMaxBorrow } from '@/src/utils/data/positions'
+import {
+  calculateHealthFactor,
+  calculateMaxBorrow,
+  isValidHealthFactor,
+} from '@/src/utils/data/positions'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHealthFactorState } from '@/src/utils/table'
 import {
@@ -177,8 +181,14 @@ const FormERC20: React.FC<{
     return nonHumanFiatAmount.gte(debtFloor) || nonHumanFiatAmount.isZero()
   }, [stateMachine.context.fiatAmount, collateral.vault.debtFloor])
 
+  const hasSufficientCollateral = useMemo(() => {
+    return tokenInfo?.humanValue?.gt(stateMachine.context.erc20Amount)
+  }, [tokenInfo?.humanValue, stateMachine.context.erc20Amount])
+
   const isDisabledCreatePosition = () => {
-    return !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT
+    return (
+      !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT || !hasSufficientCollateral
+    )
   }
 
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
@@ -189,6 +199,16 @@ const FormERC20: React.FC<{
     deltaCollateral,
     deltaDebt,
   )
+
+  const getConfirmButtonText = () => {
+    if (!hasMinimumFIAT) {
+      return getBorrowAmountBelowDebtFloorText(collateral.vault.debtFloor)
+    }
+    if (!hasSufficientCollateral) {
+      return INSUFFICIENT_BALANCE_TEXT
+    }
+    return DEPOSIT_COLLATERAL_TEXT
+  }
 
   const summaryData = [
     {
@@ -214,7 +234,7 @@ const FormERC20: React.FC<{
       state: getHealthFactorState(hf),
       title: 'Estimated Health Factor',
       titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-      value: isValidHealthFactor(hf) ? hf?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
+      value: isValidHealthFactor(hf) ? hf.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
   ]
 
@@ -239,7 +259,6 @@ const FormERC20: React.FC<{
                     />
                     <Form.Item name="tokenAmount" required>
                       <TokenAmount
-                        disabled={loading}
                         displayDecimals={tokenInfo?.decimals}
                         mainAsset={collateral.vault.name}
                         max={tokenInfo?.humanValue}
@@ -248,6 +267,7 @@ const FormERC20: React.FC<{
                           val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })
                         }
                         slider
+                        sliderDisabled={loading || tokenInfo?.humanValue?.eq(0)}
                       />
                     </Form.Item>
                     {mintFiat && (
@@ -255,15 +275,16 @@ const FormERC20: React.FC<{
                         bottom={
                           <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
                             <TokenAmount
-                              disabled={loading}
                               displayDecimals={4}
                               healthFactorValue={hf}
                               max={maxBorrowAmountCalculated}
-                              maximumFractionDigits={6}
+                              maximumFractionDigits={4}
+                              numericInputDisabled={loading}
                               onChange={(val) =>
                                 val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
                               }
                               slider="healthFactorVariant"
+                              sliderDisabled={loading}
                               tokenIcon={<FiatIcon />}
                             />
                           </Form.Item>
@@ -354,9 +375,7 @@ const FormERC20: React.FC<{
                           })
                         }
                       >
-                        {hasMinimumFIAT
-                          ? DEPOSIT_COLLATERAL_TEXT
-                          : getBorrowAmountBelowDebtFloorText(collateral.vault.debtFloor)}
+                        {getConfirmButtonText()}
                       </ButtonGradient>
                     </>
                   )}
