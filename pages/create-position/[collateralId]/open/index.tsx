@@ -118,6 +118,17 @@ const FormERC20: React.FC<{
     readOnlyAppProvider,
   })
 
+  const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
+    tokenData: {
+      decimals: 8,
+      symbol: collateral.underlierSymbol ?? '',
+      address: collateral?.underlierAddress ?? '',
+    },
+    address: currentUserAddress,
+    readOnlyAppProvider,
+    tokenId: collateral.tokenId ?? '0',
+  })
+
   const activeToken = collateral.vault.type === 'NOTIONAL' ? erc1155 : erc20
   const { hasAllowance } = activeToken
   const [stateMachine] = useMachine(stepperMachine, {
@@ -142,11 +153,12 @@ const FormERC20: React.FC<{
 
   const hasSufficientCollateral = useMemo(() => {
     return tab === CreatePositionTab.bond
-      ? tokenInfo?.humanValue?.gt(activeMachine.context.erc20Amount)
-      : tokenInfo?.humanValue?.gt(activeMachine.context.underlierAmount)
+      ? tokenInfo?.humanValue?.gte(activeMachine.context.erc20Amount)
+      : underlyingInfo?.humanValue?.gte(activeMachine.context.underlierAmount)
   }, [
     tab,
     tokenInfo?.humanValue,
+    underlyingInfo?.humanValue,
     activeMachine.context.erc20Amount,
     activeMachine.context.underlierAmount,
   ])

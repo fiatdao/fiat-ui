@@ -128,7 +128,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   const apr = (1 - marketRate.toNumber()) * 100
   const fixedAPR = `${apr.toFixed(2)}%`
   const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)}`
-  const redeemable = `${Number(underlierAmount) + Number(interestEarned)} ${
+  const redeemable = `${(Number(underlierAmount) + Number(interestEarned)).toFixed(2)} ${
     collateral ? collateral.underlierSymbol : '-'
   }`
   // create position flow
