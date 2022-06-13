@@ -182,7 +182,7 @@ const FormERC20: React.FC<{
   }, [stateMachine.context.fiatAmount, collateral.vault.debtFloor])
 
   const hasSufficientCollateral = useMemo(() => {
-    return tokenInfo?.humanValue?.gt(stateMachine.context.erc20Amount)
+    return tokenInfo?.humanValue?.gte(stateMachine.context.erc20Amount)
   }, [tokenInfo?.humanValue, stateMachine.context.erc20Amount])
 
   const isDisabledCreatePosition = () => {
