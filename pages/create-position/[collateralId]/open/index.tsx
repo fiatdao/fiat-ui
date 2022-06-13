@@ -173,12 +173,6 @@ const FormERC20: React.FC<{
     return tab === CreatePositionTab.bond ? DEPOSIT_COLLATERAL_TEXT : DEPOSIT_UNDERLYING_TEXT
   }, [tab, hasMinimumFIAT, hasSufficientCollateral, collateral.vault.debtFloor])
 
-  const isDisabledCreatePosition = useMemo(() => {
-    return (
-      !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT || !hasSufficientCollateral
-    )
-  }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT, hasSufficientCollateral])
-
   const marketRate =
     collateral.vault.type === 'NOTIONAL'
       ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
@@ -270,8 +264,8 @@ const FormERC20: React.FC<{
               <CreatePositionUnderlying
                 collateral={collateral}
                 confirmButtonText={confirmButtonText}
+                hasMinimumFIAT={hasMinimumFIAT}
                 healthFactorNumber={hf}
-                isDisabledCreatePosition={isDisabledCreatePosition}
                 loading={loading}
                 marketRate={marketRate}
                 setLoading={setFormLoading}
@@ -281,7 +275,7 @@ const FormERC20: React.FC<{
               <CreatePositionBond
                 collateral={collateral}
                 confirmButtonText={confirmButtonText}
-                isDisabledCreatePosition={isDisabledCreatePosition}
+                hasMinimumFIAT={hasMinimumFIAT}
                 loading={loading}
                 setLoading={setFormLoading}
                 setMachine={switchActiveMachine}

@@ -24,14 +24,14 @@ import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 type CreatePositionUnderlyingProps = {
   collateral: Collateral
   confirmButtonText: string
   loading: boolean
+  hasMinimumFIAT: boolean
   healthFactorNumber: BigNumber
-  isDisabledCreatePosition: boolean
   marketRate: BigNumber
   setLoading: (newLoadingState: boolean) => void
   setMachine: (machine: any) => void
@@ -42,8 +42,8 @@ type FormProps = { underlierAmount: BigNumber }
 export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> = ({
   collateral,
   confirmButtonText,
+  hasMinimumFIAT,
   healthFactorNumber,
-  isDisabledCreatePosition,
   loading,
   marketRate,
   setLoading,
@@ -99,6 +99,16 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     readOnlyAppProvider,
     tokenId: collateral.tokenId ?? '0',
   })
+
+  const hasSufficientCollateral = useMemo(() => {
+    return underlyingInfo?.humanValue?.gte(stateMachine.context.underlierAmount)
+  }, [underlyingInfo?.humanValue, stateMachine.context.underlierAmount])
+
+  const isDisabledCreatePosition = useMemo(() => {
+    return (
+      !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT || !hasSufficientCollateral
+    )
+  }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT, hasSufficientCollateral])
 
   const [underlierToPToken] = useUnderlyingExchangeValue({
     vault: collateral?.vault?.address ?? '',

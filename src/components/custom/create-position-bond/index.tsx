@@ -23,13 +23,13 @@ import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 type CreatePositionBondProps = {
   collateral: Collateral
   confirmButtonText: string
   loading: boolean
-  isDisabledCreatePosition: boolean
+  hasMinimumFIAT: boolean
   setLoading: (newLoadingState: boolean) => void
   setMachine: (machine: any) => void
   tokenAddress: string
@@ -40,7 +40,7 @@ type FormProps = { underlierAmount: BigNumber }
 export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
   collateral,
   confirmButtonText,
-  isDisabledCreatePosition,
+  hasMinimumFIAT,
   loading,
   setLoading,
   setMachine,
@@ -88,6 +88,16 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
     address: currentUserAddress,
     readOnlyAppProvider,
   })
+
+  const hasSufficientCollateral = useMemo(() => {
+    return tokenInfo?.humanValue?.gte(stateMachine.context.erc20Amount)
+  }, [tokenInfo?.humanValue, stateMachine.context.erc20Amount])
+
+  const isDisabledCreatePosition = useMemo(() => {
+    return (
+      !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT || !hasSufficientCollateral
+    )
+  }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT, hasSufficientCollateral])
 
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
   const deltaDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
