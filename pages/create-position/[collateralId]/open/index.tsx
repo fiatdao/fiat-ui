@@ -50,6 +50,11 @@ import Lottie from 'lottie-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
+enum CreatePositionTab {
+  bond = 'bond',
+  underlying = 'tab',
+}
+
 // @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7
 
@@ -126,7 +131,7 @@ const FormERC20: React.FC<{
 
   const [activeMachine, setActiveMachine] = useState(stateMachine)
 
-  const [tab, setTab] = useState('bond')
+  const [tab, setTab] = useState(CreatePositionTab.bond)
 
   const hasMinimumFIAT = useMemo(() => {
     const fiatAmount = activeMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
@@ -136,7 +141,7 @@ const FormERC20: React.FC<{
   }, [activeMachine.context.fiatAmount, collateral.vault.debtFloor])
 
   const hasSufficientCollateral = useMemo(() => {
-    return tab === 'bond'
+    return tab === CreatePositionTab.bond
       ? tokenInfo?.humanValue?.gt(activeMachine.context.erc20Amount)
       : tokenInfo?.humanValue?.gt(activeMachine.context.underlierAmount)
   }, [
@@ -153,7 +158,7 @@ const FormERC20: React.FC<{
     if (!hasSufficientCollateral) {
       return INSUFFICIENT_BALANCE_TEXT
     }
-    return tab === 'bond' ? DEPOSIT_COLLATERAL_TEXT : DEPOSIT_UNDERLYING_TEXT
+    return tab === CreatePositionTab.bond ? DEPOSIT_COLLATERAL_TEXT : DEPOSIT_UNDERLYING_TEXT
   }, [tab, hasMinimumFIAT, hasSufficientCollateral, collateral.vault.debtFloor])
 
   const isDisabledCreatePosition = useMemo(() => {
@@ -171,7 +176,7 @@ const FormERC20: React.FC<{
 
   // TODO: figure out why deltaCollateral is 0. This is keeping health factor from displaying properly. This is probably a scaling issue
   const deltaCollateral = getNonHumanValue(
-    tab === 'bond'
+    tab === CreatePositionTab.bond
       ? activeMachine.context.erc20Amount
       : marketRate.times(activeMachine.context.underlierAmount),
     WAD_DECIMALS,
@@ -220,7 +225,7 @@ const FormERC20: React.FC<{
     setActiveMachine(machine)
   }
 
-  const activeTitles = tab === 'bond' ? TITLES_BY_STEP : TITLES_BY_STEP_UNDERLYING
+  const activeTitles = tab === CreatePositionTab.bond ? TITLES_BY_STEP : TITLES_BY_STEP_UNDERLYING
 
   return (
     <>
@@ -235,15 +240,21 @@ const FormERC20: React.FC<{
           <div className={cn(s.form)}>
             {[1, 4].includes(activeMachine.context.currentStepNumber) && (
               <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
-                <RadioTab checked={tab === 'bond'} onClick={() => setTab('bond')}>
+                <RadioTab
+                  checked={tab === CreatePositionTab.bond}
+                  onClick={() => setTab(CreatePositionTab.bond)}
+                >
                   Bond
                 </RadioTab>
-                <RadioTab checked={tab === 'underlying'} onClick={() => setTab('underlying')}>
+                <RadioTab
+                  checked={tab === CreatePositionTab.underlying}
+                  onClick={() => setTab(CreatePositionTab.underlying)}
+                >
                   Underlying
                 </RadioTab>
               </RadioTabsWrapper>
             )}
-            {tab === 'underlying' ? (
+            {tab === CreatePositionTab.underlying ? (
               <CreatePositionUnderlying
                 collateral={collateral}
                 confirmButtonText={confirmButtonText}
