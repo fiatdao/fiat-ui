@@ -7,12 +7,7 @@ import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { MintFiat } from '@/src/components/custom/mint-fiat'
 import { Summary } from '@/src/components/custom/summary'
 import TokenAmount from '@/src/components/custom/token-amount'
-import {
-  DEPOSIT_COLLATERAL_TEXT,
-  WAD_DECIMALS,
-  ZERO_BIG_NUMBER,
-  getBorrowAmountBelowDebtFloorText,
-} from '@/src/constants/misc'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
@@ -28,10 +23,11 @@ import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type CreatePositionBondProps = {
   collateral: Collateral
+  confirmButtonText: string
   loading: boolean
   isDisabledCreatePosition: boolean
   setLoading: (newLoadingState: boolean) => void
@@ -43,6 +39,7 @@ type FormProps = { underlierAmount: BigNumber }
 
 export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
   collateral,
+  confirmButtonText,
   isDisabledCreatePosition,
   loading,
   setLoading,
@@ -91,15 +88,6 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
     address: currentUserAddress,
     readOnlyAppProvider,
   })
-
-  // @TODO: ui should show that the minimum fiat to have in a position is the debtFloor
-  const hasMinimumFIAT = useMemo(() => {
-    const fiatAmount = stateMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
-    const debtFloor = collateral.vault.debtFloor
-    const nonHumanFiatAmount = getNonHumanValue(fiatAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-
-    return nonHumanFiatAmount.gte(debtFloor) || nonHumanFiatAmount.isZero()
-  }, [stateMachine.context.fiatAmount, collateral.vault.debtFloor])
 
   const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
   const deltaDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
@@ -254,9 +242,7 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
                 })
               }
             >
-              {hasMinimumFIAT
-                ? DEPOSIT_COLLATERAL_TEXT
-                : getBorrowAmountBelowDebtFloorText(collateral.vault.debtFloor)}
+              {confirmButtonText}
             </ButtonGradient>
           </>
         )}

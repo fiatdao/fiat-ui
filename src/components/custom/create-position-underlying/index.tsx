@@ -7,9 +7,10 @@ import { MintFiat } from '@/src/components/custom/mint-fiat'
 import { Summary, SummaryItem } from '@/src/components/custom/summary'
 import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
 import TokenAmount from '@/src/components/custom/token-amount'
-import { DEPOSIT_UNDERLYING_TEXT, WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
+import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
@@ -18,7 +19,6 @@ import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
-import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
@@ -28,6 +28,7 @@ import { useEffect, useState } from 'react'
 
 type CreatePositionUnderlyingProps = {
   collateral: Collateral
+  confirmButtonText: string
   loading: boolean
   healthFactorNumber: BigNumber
   isDisabledCreatePosition: boolean
@@ -40,6 +41,7 @@ type FormProps = { underlierAmount: BigNumber }
 
 export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> = ({
   collateral,
+  confirmButtonText,
   healthFactorNumber,
   isDisabledCreatePosition,
   loading,
@@ -340,7 +342,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
                 })
               }
             >
-              {DEPOSIT_UNDERLYING_TEXT}
+              {confirmButtonText}
             </ButtonGradient>
           </>
         )}
