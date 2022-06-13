@@ -110,7 +110,7 @@ const FormERC20: React.FC<{
 
   const [FIATBalance] = useFIATBalance(true)
 
-  const { depositCollateral } = useUserActions(collateral.vault?.type)
+  const { depositCollateral } = useUserActions(collateral.vault.type)
   const [stateMachine, send] = useMachine(stepperMachine, {
     context: {
       isProxyAvailable,
