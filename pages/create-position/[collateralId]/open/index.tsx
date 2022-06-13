@@ -132,8 +132,15 @@ const FormERC20: React.FC<{
   }, [activeMachine.context.fiatAmount, collateral.vault.debtFloor])
 
   const hasSufficientCollateral = useMemo(() => {
-    return tokenInfo?.humanValue?.gt(stateMachine.context.erc20Amount)
-  }, [tokenInfo?.humanValue, stateMachine.context.erc20Amount])
+    return tab === 'bond'
+      ? tokenInfo?.humanValue?.gt(activeMachine.context.erc20Amount)
+      : tokenInfo?.humanValue?.gt(activeMachine.context.underlierAmount)
+  }, [
+    tab,
+    tokenInfo?.humanValue,
+    activeMachine.context.erc20Amount,
+    activeMachine.context.underlierAmount,
+  ])
 
   const isDisabledCreatePosition = useMemo(() => {
     return (
@@ -155,7 +162,7 @@ const FormERC20: React.FC<{
       : marketRate.times(activeMachine.context.underlierAmount),
     WAD_DECIMALS,
   )
-  const deltaDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
+  const deltaDebt = getNonHumanValue(activeMachine.context.fiatAmount, WAD_DECIMALS)
 
   const { healthFactor: hf } = calculateHealthFactor(
     collateral.currentValue,
@@ -174,18 +181,18 @@ const FormERC20: React.FC<{
     },
     {
       title: 'Depositing into position',
-      value: `${stateMachine.context.erc20Amount.toFixed(3)} ${tokenSymbol}`,
+      value: `${activeMachine.context.erc20Amount.toFixed(3)} ${tokenSymbol}`,
     },
     {
       title: 'Remaining in wallet',
       value: `${tokenInfo?.humanValue
-        ?.minus(stateMachine.context.erc20Amount)
+        ?.minus(activeMachine.context.erc20Amount)
         .toFixed(4)} ${tokenSymbol}`,
     },
     {
       title: 'Estimated FIAT debt',
       titleTooltip: EST_FIAT_TOOLTIP_TEXT,
-      value: `${stateMachine.context.fiatAmount.toFixed(3)}`,
+      value: `${activeMachine.context.fiatAmount.toFixed(3)}`,
     },
     {
       state: getHealthFactorState(hf),
@@ -225,8 +232,8 @@ const FormERC20: React.FC<{
             {tab === 'underlying' ? (
               <CreatePositionUnderlying
                 collateral={collateral}
-                hasMinimumFIAT={hasMinimumFIAT}
                 healthFactorNumber={hf}
+                isDisabledCreatePosition={isDisabledCreatePosition}
                 loading={loading}
                 marketRate={marketRate}
                 setLoading={setFormLoading}

@@ -30,7 +30,7 @@ type CreatePositionUnderlyingProps = {
   collateral: Collateral
   loading: boolean
   healthFactorNumber: BigNumber
-  hasMinimumFIAT: boolean
+  isDisabledCreatePosition: boolean
   marketRate: BigNumber
   setLoading: (newLoadingState: boolean) => void
   setMachine: (machine: any) => void
@@ -40,8 +40,8 @@ type FormProps = { underlierAmount: BigNumber }
 
 export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> = ({
   collateral,
-  hasMinimumFIAT,
   healthFactorNumber,
+  isDisabledCreatePosition,
   loading,
   marketRate,
   setLoading,
@@ -85,10 +85,6 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
 
   const toggleSwapSettingsMenu = () => {
     setSwapSettingsOpen(!swapSettingsOpen)
-  }
-
-  const isDisabledCreatePosition = () => {
-    return !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT
   }
 
   const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
@@ -334,7 +330,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
               </ButtonExtraFormAction>
             )}
             <ButtonGradient
-              disabled={isDisabledCreatePosition()}
+              disabled={isDisabledCreatePosition}
               height="lg"
               onClick={() =>
                 send({
