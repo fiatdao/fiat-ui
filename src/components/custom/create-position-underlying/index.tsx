@@ -250,7 +250,6 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
             />
             <Form.Item name="underlierAmount" required>
               <TokenAmount
-                disabled={loading}
                 displayDecimals={underlyingInfo?.decimals}
                 mainAsset={collateral?.vault?.name} //only being used to fetch icon from metadata
                 max={underlyingInfo?.humanValue}
@@ -259,6 +258,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
                   val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
                 }
                 slider
+                sliderDisabled={loading}
               />
             </Form.Item>
             <div className={cn(s.summary)}>

@@ -61,13 +61,13 @@ export const MintFiat: React.FC<Props> = ({
           bottom={
             <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
               <TokenAmount
-                disabled={loading}
                 displayDecimals={4}
                 healthFactorValue={healthFactorNumber}
                 max={maxBorrowAmountCalculated}
                 maximumFractionDigits={6}
                 onChange={(val) => val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })}
                 slider="healthFactorVariant"
+                sliderDisabled={loading}
                 tokenIcon={<FiatIcon />}
               />
             </Form.Item>

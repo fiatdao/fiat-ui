@@ -1,9 +1,9 @@
 import s from './s.module.scss'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
-import { ButtonBack } from '@/src/components/custom/button-back'
 import { CreatePositionBond } from '@/src/components/custom/create-position-bond'
 import { CreatePositionUnderlying } from '@/src/components/custom/create-position-underlying'
+import { ButtonBack } from '@/src/components/custom/button-back'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { Summary } from '@/src/components/custom/summary'
@@ -26,11 +26,8 @@ import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
-import { isValidHealthFactor } from '@/src/utils/data/positions'
-
-import { TITLES_BY_STEP as TITLES_BY_STEP_UNDERLYING } from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
-import { calculateHealthFactor } from '@/src/utils/data/positions'
+import { calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHealthFactorState } from '@/src/utils/table'
 import {
@@ -42,6 +39,7 @@ import {
 import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
+import { TITLES_BY_STEP_UNDERLYING } from '@/src/state/open-position-underlying-form'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
@@ -133,9 +131,15 @@ const FormERC20: React.FC<{
     return nonHumanFiatAmount.gte(debtFloor) || nonHumanFiatAmount.isZero()
   }, [activeMachine.context.fiatAmount, collateral.vault.debtFloor])
 
+  const hasSufficientCollateral = useMemo(() => {
+    return tokenInfo?.humanValue?.gt(stateMachine.context.erc20Amount)
+  }, [tokenInfo?.humanValue, stateMachine.context.erc20Amount])
+
   const isDisabledCreatePosition = useMemo(() => {
-    return !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT
-  }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT])
+    return (
+      !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT || !hasSufficientCollateral
+    )
+  }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT, hasSufficientCollateral])
 
   const marketRate =
     collateral.vault.type === 'NOTIONAL'
@@ -187,7 +191,7 @@ const FormERC20: React.FC<{
       state: getHealthFactorState(hf),
       title: 'Estimated Health Factor',
       titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-      value: isValidHealthFactor(hf) ? hf?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
+      value: isValidHealthFactor(hf) ? hf.toFixed(3) : DEFAULT_HEALTH_FACTOR,
     },
   ]
 

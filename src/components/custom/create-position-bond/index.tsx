@@ -174,7 +174,6 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
           />
           <Form.Item name="tokenAmount" required>
             <TokenAmount
-              disabled={loading}
               displayDecimals={tokenInfo?.decimals}
               healthFactorValue={hf}
               mainAsset={collateral.vault.name}
@@ -182,6 +181,7 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
               maximumFractionDigits={tokenInfo?.decimals}
               onChange={(val) => val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })}
               slider
+              sliderDisabled={loading || tokenInfo?.humanValue?.eq(0)}
             />
           </Form.Item>
           {mintFiat && (

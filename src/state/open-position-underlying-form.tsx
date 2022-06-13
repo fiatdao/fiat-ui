@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { assign, createMachine } from 'xstate'
 
-export const TITLES_BY_STEP: { [key: number]: { title: string; subtitle: string } } = {
+export const TITLES_BY_STEP_UNDERLYING: { [key: number]: { title: string; subtitle: string } } = {
   1: {
     title: 'Configure Your Position',
     subtitle: 'Select underlier amount to deposit and how much FIAT to mint.',

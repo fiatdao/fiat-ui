@@ -6,11 +6,11 @@ import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { TransactionError } from '@/src/utils/TransactionError'
 import { VaultEPTActions, VaultFCActions } from '@/types/typechain'
 import { estimateGasLimit } from '@/src/web3/utils'
-import { BytesLike } from '@ethersproject/bytes'
 import { TransactionResponse } from '@ethersproject/providers'
 import { BigNumberish, Contract, ethers } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
+import { BytesLike } from '@ethersproject/bytes'
 
 type BaseModify = {
   vault: string
