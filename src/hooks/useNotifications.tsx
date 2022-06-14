@@ -32,7 +32,7 @@ export const useNotifications = () => {
               rel="noreferrer"
               target="_blank"
             >
-              View on explorer
+              View on Etherscan
             </a>
           ),
         })
@@ -71,7 +71,7 @@ export const useNotifications = () => {
             rel="noreferrer"
             target="_blank"
           >
-            View on explorer
+            View on Etherscan
           </a>
         ),
       })
@@ -95,7 +95,7 @@ export const useNotifications = () => {
                 rel="noreferrer"
                 target="_blank"
               >
-                View on explorer
+                View on Etherscan
               </a>
             </>
           ),
@@ -136,7 +136,7 @@ export const useNotifications = () => {
             rel="noreferrer"
             target="_blank"
           >
-            View on explorer
+            View on Etherscan
           </a>
         ),
       })
