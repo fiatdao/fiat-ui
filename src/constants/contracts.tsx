@@ -129,9 +129,7 @@ export const contracts = constantContracts({
   },
   USER_ACTIONS_FY: {
     address: {
-      // [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultFYActions.address,
-      // TODO: Update once mainnet contracts are deployed
-      [Chains.mainnet]: contractsByNetwork[Chains.goerli].vaultFYActions.address,
+      [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultFYActions.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFYActions.address,
     },
     abi: vaultFyActions,
