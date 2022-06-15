@@ -44,6 +44,7 @@ import {
   getNonHumanValue,
   perSecondToAPR,
 } from '@/src/web3/utils'
+import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
@@ -244,22 +245,23 @@ const FormERC20: React.FC<{
             totalSteps={activeMachine.context.totalStepNumber}
           />
           <div className={cn(s.form)}>
-            {[1, 4].includes(activeMachine.context.currentStepNumber) && (
-              <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
-                <RadioTab
-                  checked={tab === CreatePositionTab.bond}
-                  onClick={() => setTab(CreatePositionTab.bond)}
-                >
-                  Bond
-                </RadioTab>
-                <RadioTab
-                  checked={tab === CreatePositionTab.underlying}
-                  onClick={() => setTab(CreatePositionTab.underlying)}
-                >
-                  Underlying
-                </RadioTab>
-              </RadioTabsWrapper>
-            )}
+            {[1, 4].includes(activeMachine.context.currentStepNumber) &&
+              SHOW_UNDERLYING_FLOW && ( // Feature Flag
+                <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
+                  <RadioTab
+                    checked={tab === CreatePositionTab.bond}
+                    onClick={() => setTab(CreatePositionTab.bond)}
+                  >
+                    Bond
+                  </RadioTab>
+                  <RadioTab
+                    checked={tab === CreatePositionTab.underlying}
+                    onClick={() => setTab(CreatePositionTab.underlying)}
+                  >
+                    Underlying
+                  </RadioTab>
+                </RadioTabsWrapper>
+              )}
             {tab === CreatePositionTab.underlying ? (
               <CreatePositionUnderlying
                 collateral={collateral}
