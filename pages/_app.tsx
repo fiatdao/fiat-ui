@@ -13,6 +13,7 @@ import Script from 'next/script'
 import type { AppProps } from 'next/app'
 import { SWRConfig } from 'swr'
 import { Layout } from 'antd'
+import CookieBanner from 'react-cookie-banner'
 
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
@@ -94,6 +95,18 @@ function App({ Component, pageProps }: AppProps) {
                     </SafeSuspense>
                   </Layout.Content>
                 </Layout>
+                <CookieBanner
+                  buttonMessage={'Accept All'}
+                  message={`We use cookies to analyze our traffic. By clicking "Accept All" you consent to our use of cookies.`}
+                  styles={{
+                    banner: {
+                      backgroundImage:
+                        'linear-gradient(90deg, var(--theme-color-2) 0%, var(--theme-color-3) 100%)',
+                      position: 'absolute',
+                      bottom: 0,
+                    },
+                  }}
+                />
               </Layout>
             </KnownTokensProvider>
             <ChangeNetworkModal />
