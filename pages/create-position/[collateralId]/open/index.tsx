@@ -132,8 +132,7 @@ const FormERC20: React.FC<{
 
   const activeToken = collateral.vault.type === 'NOTIONAL' ? erc1155 : erc20
   const { hasAllowance } = activeToken
-  const { depositCollateral } = useUserActions(collateral.vault.type)
-  const [stateMachine, send] = useMachine(stepperMachine, {
+  const [stateMachine] = useMachine(stepperMachine, {
     context: {
       isProxyAvailable,
       hasAllowance,
