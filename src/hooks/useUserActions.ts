@@ -31,25 +31,25 @@ type ModifyCollateralAndDebt = BaseModify & {
   virtualRate: BigNumber
 }
 
-// type BuyCollateralAndModifyDebtERC1155 = BaseModify & {
-// TODO: regen types so it matches args on VaultFCActions Contract for buyCollateralAndModifyDebt
-// address vault
-// address token
-// uint256 tokenId
-// address position
-// address collateralizer
-// address creditor
-// uint256 fCashAmount
-// int256 deltaNormalDebt
-// uint256 minImpliedRate
-// uint256 underlierAmount
+type BuyCollateralAndModifyDebtERC1155 = BaseModify & {
+  // TODO: regen types so it matches args on VaultFCActions Contract for buyCollateralAndModifyDebt
+  // address vault
+  // address token
+  // uint256 tokenId
+  // address position
+  // address collateralizer
+  // address creditor
+  // uint256 fCashAmount
+  // int256 deltaNormalDebt
+  // uint256 minImpliedRate
+  // uint256 underlierAmount
 
-// deltaDebt: BigNumber
-// virtualRate: BigNumber
-// fCashAmount: BigNumber
-// underlierAmount: BigNumber
-// minImpliedRate: number
-// }
+  deltaDebt: BigNumber
+  virtualRate: BigNumber
+  fCashAmount: BigNumber
+  underlierAmount: BigNumber
+  minImpliedRate: number
+}
 
 type BuyCollateralAndModifyDebtERC20 = {
   vault: string
@@ -76,9 +76,9 @@ export type UseUserActions = {
   buyCollateralAndModifyDebtERC20: (
     params: BuyCollateralAndModifyDebtERC20,
   ) => ReturnType<TransactionResponse['wait']>
-  // buyCollateralAndModifyDebtERC1155: (
-  //   params: BuyCollateralAndModifyDebtERC1155,
-  // ) => ReturnType<TransactionResponse['wait']>
+  buyCollateralAndModifyDebtERC1155: (
+    params: BuyCollateralAndModifyDebtERC1155,
+  ) => ReturnType<TransactionResponse['wait']>
 }
 
 export const useUserActions = (type?: string): UseUserActions => {
@@ -235,103 +235,102 @@ export const useUserActions = (type?: string): UseUserActions => {
     ],
   )
 
-  // TODO
   // VaultFCActions buyCollateralAndModifyDebt
-  // const buyCollateralAndModifyDebtERC1155 = useCallback(
-  //   async (params: BuyCollateralAndModifyDebtERC1155) => {
-  //     if (!address || !userProxy || !userProxyAddress) {
-  //       throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
-  //     }
+  const buyCollateralAndModifyDebtERC1155 = useCallback(
+    async (params: BuyCollateralAndModifyDebtERC1155) => {
+      if (!address || !userProxy || !userProxyAddress) {
+        throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
+      }
 
-  //     // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
-  //     const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
-  //       0,
-  //       8,
-  //     )
+      // deltaNormalDebt= deltaDebt / (virtualRate * virtualRateWithSafetyMargin)
+      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
+        0,
+        8,
+      )
 
-  //     console.log(
-  //       '',
-  //       88,
-  //       '\n',
-  //       params.vault,
-  //       '\n', // address vault
-  //       params.token,
-  //       '\n', // address token
-  //       params.tokenId,
-  //       '\n', // uint256 tokenId
-  //       userProxyAddress,
-  //       '\n', // address position
-  //       address,
-  //       '\n', // address collateralizer
-  //       address,
-  //       '\n', // address creditor
-  //       params.fCashAmount.toFixed(0, 8),
-  //       '\n', // uint256 fCashAmount
-  //       deltaNormalDebt,
-  //       '\n', // int256 deltaNormalDebt
-  //       params.minImpliedRate,
-  //       '\n', // uint32 minImpliedRate
-  //       params.underlierAmount.toFixed(0, 8),
-  //       '\n', // uint256 maxUnderlierAmount
-  //     )
+      // console.log(
+      //   '',
+      //   88,
+      //   '\n',
+      //   params.vault,
+      //   '\n', // address vault
+      //   params.token,
+      //   '\n', // address token
+      //   params.tokenId,
+      //   '\n', // uint256 tokenId
+      //   userProxyAddress,
+      //   '\n', // address position
+      //   address,
+      //   '\n', // address collateralizer
+      //   address,
+      //   '\n', // address creditor
+      //   params.fCashAmount.toFixed(0, 8),
+      //   '\n', // uint256 fCashAmount
+      //   deltaNormalDebt,
+      //   '\n', // int256 deltaNormalDebt
+      //   params.minImpliedRate,
+      //   '\n', // uint32 minImpliedRate
+      //   params.underlierAmount.toFixed(0, 8),
+      //   '\n', // uint256 maxUnderlierAmount
+      // )
 
-  //     const buyCollateralAndModifyDebtEncoded = userActionFC.interface.encodeFunctionData(
-  //       'buyCollateralAndModifyDebt',
-  //       [
-  //         params.vault, // address vault
-  //         params.token, // address token
-  //         params.tokenId, // uint256 tokenId
-  //         userProxyAddress, // address position
-  //         address, // address collateralizer
-  //         address, // address creditor
-  //         params.fCashAmount.toFixed(0, 8), // uint256 fCashAmount          // I think this is correct, although maybe I need a buffer on the exchange rate (slippage tollerance)
-  //         deltaNormalDebt, // int256 deltaNormalDebt       // I though this was correct, but im getting a transactions reverted when this is non-zero
-  //         params.minImpliedRate, // uint32 minImpliedRate        // Need to update (waiting for Nilus)
-  //         params.underlierAmount.toFixed(0, 8), // uint256 maxUnderlierAmount   // definitely correct
-  //       ],
-  //     )
+      const buyCollateralAndModifyDebtEncoded = userActionFC.interface.encodeFunctionData(
+        'buyCollateralAndModifyDebt',
+        [
+          params.vault, // address vault
+          params.token, // address token
+          params.tokenId, // uint256 tokenId
+          userProxyAddress, // address position
+          address, // address collateralizer
+          address, // address creditor
+          params.fCashAmount.toFixed(0, 8), // uint256 fCashAmount          // I think this is correct, although maybe I need a buffer on the exchange rate (slippage tollerance)
+          deltaNormalDebt, // int256 deltaNormalDebt       // I though this was correct, but im getting a transactions reverted when this is non-zero
+          params.minImpliedRate, // uint32 minImpliedRate        // Need to update (waiting for Nilus)
+          params.underlierAmount.toFixed(0, 8), // uint256 maxUnderlierAmount   // definitely correct
+        ],
+      )
 
-  //     console.log(22, activeContract.address)
+      console.log(22, activeContract.address)
 
-  //     // please sign
-  //     notification.requestSign()
+      // please sign
+      notification.requestSign()
 
-  //     const tx: TransactionResponse | TransactionError = await userProxy
-  //       .execute(activeContract.address, buyCollateralAndModifyDebtEncoded, {
-  //         gasLimit: await estimateGasLimit(userProxy, 'execute', [
-  //           activeContract.address,
-  //           buyCollateralAndModifyDebtEncoded,
-  //         ]),
-  //       })
-  //       .catch(notification.handleTxError)
+      const tx: TransactionResponse | TransactionError = await userProxy
+        .execute(activeContract.address, buyCollateralAndModifyDebtEncoded, {
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            activeContract.address,
+            buyCollateralAndModifyDebtEncoded,
+          ]),
+        })
+        .catch(notification.handleTxError)
 
-  //     if (tx instanceof TransactionError) {
-  //       throw tx
-  //     }
+      if (tx instanceof TransactionError) {
+        throw tx
+      }
 
-  //     // awaiting exec
-  //     notification.awaitingTx(tx.hash)
+      // awaiting exec
+      notification.awaitingTx(tx.hash)
 
-  //     const receipt = await tx.wait().catch(notification.handleTxError)
+      const receipt = await tx.wait().catch(notification.handleTxError)
 
-  //     if (receipt instanceof TransactionError) {
-  //       throw receipt
-  //     }
+      if (receipt instanceof TransactionError) {
+        throw receipt
+      }
 
-  //     // tx successful
-  //     notification.successfulTx(tx.hash)
+      // tx successful
+      notification.successfulTx(tx.hash)
 
-  //     return receipt
-  //   },
-  //   [
-  //     address,
-  //     userProxy,
-  //     userProxyAddress,
-  //     userActionFC.interface,
-  //     activeContract.address,
-  //     notification,
-  //   ],
-  // )
+      return receipt
+    },
+    [
+      address,
+      userProxy,
+      userProxyAddress,
+      userActionFC.interface,
+      activeContract.address,
+      notification,
+    ],
+  )
 
   // VaultEPTActions buyCollateralAndModifyDebt
   const buyCollateralAndModifyDebtERC20 = useCallback(
@@ -424,6 +423,6 @@ export const useUserActions = (type?: string): UseUserActions => {
     depositCollateral,
     modifyCollateralAndDebt,
     buyCollateralAndModifyDebtERC20,
-    // buyCollateralAndModifyDebtERC1155,
+    buyCollateralAndModifyDebtERC1155,
   }
 }

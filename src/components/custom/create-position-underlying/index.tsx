@@ -19,6 +19,8 @@ import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
+import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
+import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
@@ -54,10 +56,9 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
-  /* const { buyCollateralAndModifyDebtERC20, buyCollateralAndModifyDebtERC1155 } = useUserActions( */
-  /*   collateral.vault?.type, */
-  /* ) */
-  const { buyCollateralAndModifyDebtERC20 } = useUserActions(collateral.vault?.type)
+  const { buyCollateralAndModifyDebtERC20, buyCollateralAndModifyDebtERC1155 } = useUserActions(
+    collateral.vault?.type,
+  )
 
   const erc20 = useERC20Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
   const { approve, hasAllowance, loadingApprove } = erc20
@@ -117,6 +118,11 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
   })
 
+  const [underlierToFCash] = useUnderlierToFCash({
+    tokenId: collateral.tokenId ?? '',
+    amount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+  })
+
   const underlyingData = [
     {
       title: 'Market rate',
@@ -141,8 +147,9 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   const redeemable = `${(Number(underlierAmount) + Number(interestEarned)).toFixed(2)} ${
     collateral ? collateral.underlierSymbol : '-'
   }`
-  // create position flow
-  // TODO:
+  const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
+  const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
+
   const createUnderlyingPositionERC1155 = async ({
     fiatAmount,
     underlierAmount,
@@ -150,30 +157,28 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     underlierAmount: BigNumber
     fiatAmount: BigNumber
   }): Promise<void> => {
-    console.log('todo: make 1155 action work', fiatAmount, underlierAmount)
-    return Promise.resolve()
-    /* const _underlierAmount = underlierAmount */
-    /*   ? getNonHumanValue(underlierAmount, WAD_DECIMALS) */
-    /*   : ZERO_BIG_NUMBER */
-    /* const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER */
-    /* const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount) */
+    const _underlierAmount = underlierAmount
+      ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
+      : ZERO_BIG_NUMBER
+    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
 
-    /* try { */
-    /*   setLoading(true) */
-    /*   await buyCollateralAndModifyDebtERC1155({ */
-    /*     vault: collateral.vault.address, */
-    /*     token: collateral.address ?? '', */
-    /*     tokenId: Number(collateral.tokenId), */
-    /*     deltaDebt: _fiatAmount, */
-    /*     fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals */
-    /*     minImpliedRate: 1000000, */
-    /*     underlierAmount: _underlierAmount, //definitely correct */
-    /*   }) */
-    /*   setLoading(false) */
-    /* } catch (err) { */
-    /*   setLoading(false) */
-    /*   throw err */
-    /* } */
+    try {
+      setLoading(true)
+      await buyCollateralAndModifyDebtERC1155({
+        vault: collateral.vault.address,
+        token: collateral.address ?? '',
+        tokenId: Number(collateral.tokenId),
+        deltaDebt: _fiatAmount,
+        virtualRate: collateral.vault.virtualRate,
+        fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals
+        minImpliedRate: minImpliedRate,
+        underlierAmount: _underlierAmount, //definitely correct */
+      })
+      setLoading(false)
+    } catch (err) {
+      setLoading(false)
+      throw err
+    }
   }
 
   const createUnderlyingPositionERC20 = async ({
