@@ -1,0 +1,134 @@
+@import 'src/styles/text-gradient';
+@import '/src/styles/vars';
+
+.formWrapper {
+  background-color: var(--theme-card-color);
+  border: 1px solid var(--theme-border-color);
+  border-radius: 8px;
+}
+
+.stepperWrapper {
+  border-bottom: 1px solid var(--theme-border-color);
+  padding: 16px var(--theme-common-card-padding) var(--theme-common-card-padding);
+}
+
+.stepperTitleWrapper {
+  align-items: flex-end;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 10px;
+}
+
+.stepperTitle {
+  color: var(--theme-text-color);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.steps {
+  align-items: center;
+  border-radius: 30px;
+  border: 1px solid var(--theme-border-color);
+  color: var(--theme-light-text-color);
+  display: flex;
+  font-size: 11px;
+  font-weight: 600;
+  height: 32px;
+  justify-content: center;
+  line-height: 1.2;
+  padding: 0 24px;
+}
+
+.currentStep {
+  color: var(--theme-text-color);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stepperDescription {
+  color: var(--theme-color-9);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.form {
+  padding: var(--theme-common-card-padding) var(--theme-common-card-padding) 28px;
+}
+
+.radioTabsWrapper {
+  margin-bottom: 20px;
+}
+
+.backButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  height: 24px;
+  padding: 0;
+
+  @include text-gradient();
+}
+
+.lastStepTitle {
+  color: var(--theme-text-color);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 6px;
+  text-align: center;
+}
+
+.lastStepText {
+  color: var(--theme-color-9);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.lastStepAnimation {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.summary {
+  padding: 24px 0 0 0;
+}
+
+.flexContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.settings {
+  margin-left: 12px;
+}
+
+.label {
+  color: var(--theme-text-color);
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.rightGutter {
+  display: flex;
+  flex-direction: row;
+}
+
+.balance {
+  color: var(--theme-light-text-color);
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.summary {
+  margin-bottom: 20px;
+}
