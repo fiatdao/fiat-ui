@@ -13,6 +13,7 @@ import {
   publican,
   vault20,
   vaultEptActions,
+  vaultFyActions,
 } from '@/src/abis'
 import { Chains, ChainsValues } from '@/src/constants/chains'
 
@@ -125,6 +126,13 @@ export const contracts = constantContracts({
       [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
     },
     abi: vaultFcActions,
+  },
+  USER_ACTIONS_FY: {
+    address: {
+      [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultFYActions.address,
+      [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFYActions.address,
+    },
+    abi: vaultFyActions,
   },
   MONETA: {
     address: {

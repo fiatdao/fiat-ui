@@ -3,12 +3,12 @@ import { contracts } from '../constants/contracts'
 import { getHumanValue } from '../web3/utils'
 import { ERC1155 } from '../../types/typechain'
 import { TokenData } from '../../types/token'
+import { ERC20 } from '@/types/typechain'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import useSWR, { KeyedMutator } from 'swr'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
 import { BigNumberish, Contract } from 'ethers'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
-import { ERC20 } from '@/types/typechain'
 
 type UseDecimalsAndTokenValue = {
   tokenInfo?: TokenInfo
@@ -23,7 +23,7 @@ export const useTokenDecimalsAndBalance = ({
   vaultType,
 }: {
   tokenId: string
-  vaultType: string
+  vaultType?: string
   tokenData: TokenData
   address: string | null
   readOnlyAppProvider: JsonRpcProvider
@@ -38,7 +38,7 @@ export const useTokenDecimalsAndBalance = ({
         }
       }
 
-      const is1155 = vaultType === 'NOTIONAL'
+      const is1155 = vaultType && vaultType === 'NOTIONAL'
       const collateralContract = new Contract(
         tokenData.address as string,
         is1155 ? contracts.ERC_1155.abi : contracts.ERC_20.abi,

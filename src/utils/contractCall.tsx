@@ -1,7 +1,7 @@
+import isDev from '@/src/utils/isDev'
 import { Contract, ContractInterface } from '@ethersproject/contracts'
 import { JsonRpcProvider, JsonRpcSigner } from '@ethersproject/providers'
 import BigNumber from 'bignumber.js'
-import isDev from '@/src/utils/isDev'
 
 export default async function contractCall<
   MyContract extends Contract,

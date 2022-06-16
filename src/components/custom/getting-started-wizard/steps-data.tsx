@@ -21,7 +21,7 @@ export const stepsData: Steps = {
     description: null,
   },
   4: {
-    title: 'Mint FIAT',
+    title: 'Borrow FIAT',
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In volutpat dis volutpat sollicitudin dui. Mauris consectetur sed est nibh tincidunt neque. Tempus eu diam ultrices consequat.',
   },

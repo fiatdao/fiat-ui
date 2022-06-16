@@ -1,34 +1,34 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import React, { useCallback, useEffect, useState } from 'react'
-import AntdForm from 'antd/lib/form'
-import BigNumber from 'bignumber.js'
-import Lottie from 'lottie-react'
-import Link from 'next/link'
-import withRequiredConnection from '@/src/hooks/RequiredConnection'
-import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { Position } from '@/src/utils/data/positions'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
+import { Form } from '@/src/components/antd'
+import ButtonGradient from '@/src/components/antd/button-gradient'
+import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
+import { Balance } from '@/src/components/custom/balance'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
+
+import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
+import { SummaryItem } from '@/src/components/custom/summary'
+import { contracts } from '@/src/constants/contracts'
+import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import {
   useManageFormSummary,
   useManagePositionForm,
   useManagePositionInfo,
   useManagePositionsInfoBlock,
 } from '@/src/hooks/managePosition'
-import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
-import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
-import ButtonGradient from '@/src/components/antd/button-gradient'
-import { SummaryItem } from '@/src/components/custom/summary'
-import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
-import { Balance } from '@/src/components/custom/balance'
-import { Form } from '@/src/components/antd'
-import { contracts } from '@/src/constants/contracts'
-import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
+import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+import cn from 'classnames'
+import React, { useCallback, useEffect, useState } from 'react'
+import AntdForm from 'antd/lib/form'
+import BigNumber from 'bignumber.js'
+import Lottie from 'lottie-react'
+import Link from 'next/link'
 
 const LAST_STEP = 4
 
@@ -54,7 +54,7 @@ type Step = {
   description: string
 }
 
-const FIAT_KEYS = ['burn', 'mint'] as const
+const FIAT_KEYS = ['mint', 'burn'] as const
 type FiatTabKey = typeof FIAT_KEYS[number]
 
 export const isFiatTab = (key: string): key is FiatTabKey => {
@@ -129,9 +129,6 @@ const PositionManage = () => {
   } = useManagePositionForm(position as Position, formValues, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
-  const healthFactorToRender = isValidHealthFactor(healthFactor)
-    ? healthFactor?.toFixed(3)
-    : DEFAULT_HEALTH_FACTOR
 
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
   const tokenSymbol = position?.symbol ?? ''
@@ -285,14 +282,15 @@ const PositionManage = () => {
                           />
                           <Form.Item name="deposit" required>
                             <TokenAmount
-                              disabled={formDisabled}
                               displayDecimals={4}
-                              healthFactorValue={healthFactorToRender}
+                              healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
                               max={maxDepositAmount}
-                              maximumFractionDigits={6}
+                              maximumFractionDigits={4}
+                              numericInputDisabled={formDisabled}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
+                              sliderDisabled={formDisabled}
                             />
                           </Form.Item>
                         </>
@@ -305,14 +303,15 @@ const PositionManage = () => {
                           />
                           <Form.Item name="withdraw" required>
                             <TokenAmount
-                              disabled={formDisabled}
                               displayDecimals={4}
-                              healthFactorValue={healthFactorToRender}
+                              healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
                               max={maxWithdrawAmount}
-                              maximumFractionDigits={6}
+                              maximumFractionDigits={4}
+                              numericInputDisabled={formDisabled}
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariant'}
+                              sliderDisabled={formDisabled}
                             />
                           </Form.Item>
                         </>
@@ -349,12 +348,13 @@ const PositionManage = () => {
                           />
                           <Form.Item name="mint" required>
                             <TokenAmount
-                              disabled={formDisabled}
                               displayDecimals={contracts.FIAT.decimals}
-                              healthFactorValue={healthFactorToRender}
+                              healthFactorValue={healthFactor}
                               max={maxBorrowAmount}
                               maximumFractionDigits={contracts.FIAT.decimals}
+                              numericInputDisabled={formDisabled}
                               slider={'healthFactorVariant'}
+                              sliderDisabled={formDisabled}
                               tokenIcon={<FiatIcon />}
                             />
                           </Form.Item>
@@ -368,12 +368,13 @@ const PositionManage = () => {
                           />
                           <Form.Item name="burn" required>
                             <TokenAmount
-                              disabled={formDisabled}
                               displayDecimals={contracts.FIAT.decimals}
-                              healthFactorValue={healthFactorToRender}
+                              healthFactorValue={healthFactor}
                               max={maxRepay}
                               maximumFractionDigits={contracts.FIAT.decimals}
+                              numericInputDisabled={formDisabled}
                               slider={'healthFactorVariantReverse'}
+                              sliderDisabled={formDisabled}
                               tokenIcon={<FiatIcon />}
                             />
                           </Form.Item>
@@ -434,14 +435,17 @@ const PositionManage = () => {
                     </ButtonsWrapper>
                   )}
                   <div className={cn(s.summary)}>
-                    {summary.map((item, index) => (
-                      <SummaryItem
-                        key={index}
-                        state={item?.state}
-                        title={item.title}
-                        value={item.value}
-                      />
-                    ))}
+                    {summary.map((item, index) => {
+                      return (
+                        <SummaryItem
+                          key={index}
+                          state={item?.state}
+                          title={item.title}
+                          titleTooltip={item?.titleTooltip}
+                          value={item.value}
+                        />
+                      )
+                    })}
                   </div>
                 </div>
               </fieldset>

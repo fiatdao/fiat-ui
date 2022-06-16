@@ -29,6 +29,7 @@ export type ChainConfig = {
   svg: React.FC
   subgraphApi: string
   contractsDeployed: boolean
+  isDev: boolean
 }
 
 // Default chain id from env var
@@ -47,6 +48,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     svg: EthLogo,
     subgraphApi: SUBGRAPH_MAINNET,
     contractsDeployed: true,
+    isDev: false,
   },
   [Chains.goerli]: {
     id: Chains.goerli,
@@ -60,6 +62,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     svg: EthLogo,
     subgraphApi: SUBGRAPH_GOERLI,
     contractsDeployed: true,
+    isDev: true,
   },
 }
 

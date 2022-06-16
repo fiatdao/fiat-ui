@@ -1,30 +1,31 @@
 import { getHumanValue } from '../web3/utils'
-import { JsonRpcProvider } from '@ethersproject/providers'
-import BigNumber from 'bignumber.js'
 import { ChainsValues } from '@/src/constants/chains'
 import { contracts } from '@/src/constants/contracts'
-import { VIRTUAL_RATE, WAD_DECIMALS } from '@/src/constants/misc'
+import { WAD_DECIMALS } from '@/src/constants/misc'
 import contractCall from '@/src/utils/contractCall'
 import { Publican } from '@/types/typechain'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import BigNumber from 'bignumber.js'
 
 export const getVirtualRate = async (
-  vaultAddress: string,
   appChainId: ChainsValues,
   provider: JsonRpcProvider,
+  vaultAddress?: string,
 ): Promise<BigNumber> => {
-  try {
-    const virtualRate = await contractCall<Publican, 'virtualRate'>(
-      contracts.PUBLICAN.address[appChainId],
-      contracts.PUBLICAN.abi,
-      provider,
-      'virtualRate',
-      [vaultAddress],
-    )
-    if (virtualRate) {
-      return getHumanValue(virtualRate.toString(), WAD_DECIMALS)
-    }
-    return VIRTUAL_RATE
-  } catch (err) {
-    return VIRTUAL_RATE
+  if (!vaultAddress) {
+    throw new Error(`Can't fetch virtual rate without vaultAddress: ${{ vaultAddress }}`)
+  }
+
+  const virtualRate = await contractCall<Publican, 'virtualRate'>(
+    contracts.PUBLICAN.address[appChainId],
+    contracts.PUBLICAN.abi,
+    provider,
+    'virtualRate',
+    [vaultAddress],
+  )
+  if (virtualRate) {
+    return getHumanValue(virtualRate.toString(), WAD_DECIMALS)
+  } else {
+    throw new Error(`Null virtualRate for vault address: ${vaultAddress}`)
   }
 }

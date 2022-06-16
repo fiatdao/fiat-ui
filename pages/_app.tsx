@@ -1,20 +1,19 @@
 import isDev from '../src/utils/isDev'
-import Head from 'next/head'
-import Script from 'next/script'
-
-import type { AppProps } from 'next/app'
-import { SWRConfig } from 'swr'
-import { Layout } from 'antd'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
-import GeneralContextProvider from '@/src/providers/generalProvider'
 import Web3ConnectionProvider from '@/src/providers/web3ConnectionProvider'
+import GeneralContextProvider from '@/src/providers/generalProvider'
 import KnownTokensProvider from '@/src/providers/knownTokensProvider'
 import ChangeNetworkModal from '@/src/components/custom/change-network-modal'
 import { Sidebar } from '@/src/components/custom/sidebar'
 import Spin from '@/src/components/antd/spin'
-
 import '@/src/styles/index.scss'
 import { Header } from '@/src/components/custom/header'
+import Head from 'next/head'
+import Script from 'next/script'
+import type { AppProps } from 'next/app'
+import { SWRConfig } from 'swr'
+import { Layout } from 'antd'
+import CookieBanner from 'react-cookie-banner'
 
 function App({ Component, pageProps }: AppProps) {
   const { hostname, port, protocol } =
@@ -91,10 +90,23 @@ function App({ Component, pageProps }: AppProps) {
                   <Header />
                   <Layout.Content>
                     <SafeSuspense fallback={<Spin />}>
+                      {/* @ts-ignore */}
                       <Component {...pageProps} />
                     </SafeSuspense>
                   </Layout.Content>
                 </Layout>
+                <CookieBanner
+                  buttonMessage={'Accept All'}
+                  message={`We use cookies to analyze our traffic. By clicking "Accept All" you consent to our use of cookies.`}
+                  styles={{
+                    banner: {
+                      backgroundImage:
+                        'linear-gradient(90deg, var(--theme-color-2) 0%, var(--theme-color-3) 100%)',
+                      position: 'absolute',
+                      bottom: 0,
+                    },
+                  }}
+                />
               </Layout>
             </KnownTokensProvider>
             <ChangeNetworkModal />

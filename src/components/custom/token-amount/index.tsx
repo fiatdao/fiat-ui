@@ -1,8 +1,5 @@
 import s from './s.module.scss'
-import React from 'react'
-import BigNumber from 'bignumber.js'
-import cn from 'classnames'
-import { MAX_UINT_256, MIN_EPSILON_OFFSET } from '@/src/constants/misc'
+import { MAX_UINT_256, MIN_EPSILON_OFFSET, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import Slider from '@/src/components/antd/slider'
 import { formatBigValue } from '@/src/web3/utils'
 
@@ -14,10 +11,17 @@ import Tooltip from '@/src/components/antd/tooltip'
 import { getPTokenIconFromMetadata } from '@/src/constants/bondTokens'
 import Info from '@/src/resources/svg/info.svg'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { getHealthFactorState } from '@/src/utils/table'
+import { isValidHealthFactor } from '@/src/utils/data/positions'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import cn from 'classnames'
+import BigNumber from 'bignumber.js'
+import React, { useEffect, useState } from 'react'
 
 export type TokenAmountProps = {
   className?: string
-  disabled?: boolean
+  numericInputDisabled?: boolean
+  sliderDisabled?: boolean
   displayDecimals?: number
   hidden?: boolean
   max?: number | BigNumber
@@ -29,22 +33,23 @@ export type TokenAmountProps = {
   value?: number | BigNumber
   mainAsset?: string
   secondaryAsset?: string
-  healthFactorValue?: number | string
+  healthFactorValue?: BigNumber | undefined
 }
 
 const healthFactorHint =
   'The health factor is a score representing the risk for a given position to be liquidated. ' +
   'A position can be liquidated if the health factor is less than 1.0. ' +
-  'The health factor is derived from the positions ratio between the deposited collateral and the outstanding ' +
+  "The health factor is derived from the position's ratio between the deposited collateral and the outstanding " +
   'debt denominated in FIAT using the following formula: ' +
   'collateral * collateralValue / debt / collateralizationRatio.'
 
 const TokenAmount: React.FC<TokenAmountProps> = (props) => {
   const {
     className,
-    disabled = false,
+    numericInputDisabled = false,
+    sliderDisabled = false,
     displayDecimals = 4,
-    healthFactorValue = 0,
+    healthFactorValue = ZERO_BIG_NUMBER,
     hidden,
     mainAsset,
     max,
@@ -55,30 +60,59 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     value,
   } = props
 
+  const GREEN_COLOR = 'var(--theme-ok-color)'
+  const YELLOW_COLOR = 'var(--theme-warning-color)'
+  const RED_COLOR = 'var(--theme-danger-color)'
   const step = 1 / 10 ** Math.min(displayDecimals, 6)
   const bnMaxValue = BigNumber.from(max) ?? MAX_UINT_256
-  const bnValue = value !== undefined ? BigNumber.min(value, bnMaxValue) : undefined
+  const bnValue = value !== undefined ? BigNumber.from(value) : undefined
+  const isHealthFactorVariant = slider === 'healthFactorVariant'
+  const isHealthFactorVariantReverse = slider === 'healthFactorVariantReverse'
 
   const { appChainId } = useWeb3Connection()
+  const [sliderTrackColor, setSliderTrackColor] = useState(
+    isHealthFactorVariant ? GREEN_COLOR : RED_COLOR,
+  )
+
+  useEffect(() => {
+    const updateSliderTrackColor = () => {
+      const healthFactorState = getHealthFactorState(healthFactorValue)
+      switch (healthFactorState) {
+        case 'ok':
+          setSliderTrackColor(GREEN_COLOR)
+          break
+        case 'warning':
+          setSliderTrackColor(YELLOW_COLOR)
+          break
+        case 'danger':
+          setSliderTrackColor(RED_COLOR)
+          break
+      }
+    }
+    updateSliderTrackColor()
+  }, [healthFactorValue])
+
+  const coerceMaxyValueToMax = (bigNumberSliderValue: BigNumber) => {
+    // Dragging slider to max can result in a `sliderValue` slightly lower than max
+    // due to precision differences between the `number` and `BigNumber` types
+    // So, if `sliderValue` is extremely close to max slider value, just max out the slider
+    if (bigNumberSliderValue.plus(MIN_EPSILON_OFFSET).gte(bnMaxValue)) {
+      onChange?.(BigNumber.from(bnMaxValue))
+    } else {
+      onChange?.(bigNumberSliderValue)
+    }
+  }
+
+  const healthFactorToRender = isValidHealthFactor(healthFactorValue)
+    ? healthFactorValue?.toFixed(3)
+    : DEFAULT_HEALTH_FACTOR
 
   function onMaxHandle() {
     onChange?.(bnMaxValue)
   }
 
-  function handleInputChange(inputValue?: BigNumber) {
-    onChange?.(inputValue ? BigNumber.min(inputValue, bnMaxValue) : undefined)
-  }
-
-  function onSliderChange(sliderValue: number) {
-    const bigNumberSliderValue = BigNumber.from(sliderValue)
-    if (bigNumberSliderValue.plus(MIN_EPSILON_OFFSET).gte(bnMaxValue)) {
-      // Dragging slider to max can result in a `sliderValue` slightly lower than max
-      // due to precision differences between the `number` and `BigNumber` types
-      // So, if `sliderValue` is extremely close to max slider value, just max out the slider
-      onChange?.(BigNumber.from(bnMaxValue))
-    } else {
-      onChange?.(bigNumberSliderValue)
-    }
+  function handleNumericInputChange(inputValue?: BigNumber) {
+    onChange?.(inputValue)
   }
 
   return (
@@ -86,7 +120,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
       <NumericInput
         addonAfter={
           max !== undefined ? (
-            <ButtonOutlineGradient disabled={disabled} onClick={onMaxHandle} textGradient>
+            <ButtonOutlineGradient disabled={sliderDisabled} onClick={onMaxHandle} textGradient>
               Max
             </ButtonOutlineGradient>
           ) : null
@@ -97,18 +131,17 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               tokenIcon
             ) : (
               <AssetIcons
-                dimensions={'32px'}
-                mainAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.main}
-                secondaryAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.secondary}
+                dimensions={'36px'}
+                mainAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.asset}
               />
             )}
           </div>
         }
         className={cn(s.component, className)}
-        disabled={disabled}
+        disabled={numericInputDisabled}
         hidden={hidden}
         maximumFractionDigits={maximumFractionDigits}
-        onChange={handleInputChange}
+        onChange={handleNumericInputChange}
         placeholder={
           max !== undefined
             ? `0 (Max ${formatBigValue(bnMaxValue.toNumber(), displayDecimals)})`
@@ -123,7 +156,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               <div className={s.safer}>Safer</div>
               <div className={s.healthFactor}>
                 <span>
-                  Health Factor <span className={s.hf}>{healthFactorValue}</span>
+                  Health Factor <span className={s.hf}>{healthFactorToRender}</span>
                 </span>
                 <Tooltip title={healthFactorHint}>
                   <Info />
@@ -137,7 +170,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
               <div className={s.safer}>Safer</div>
               <div className={s.healthFactor}>
                 <span>
-                  Health Factor <span className={s.hf}>{healthFactorValue}</span>
+                  Health Factor <span className={s.hf}>{healthFactorToRender}</span>
                 </span>
                 <Tooltip title={healthFactorHint}>
                   <Info />
@@ -147,14 +180,29 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
             </div>
           )}
           <Slider
-            disabled={disabled}
-            healthFactorVariant={slider === 'healthFactorVariant'}
-            healthFactorVariantReverse={slider === 'healthFactorVariantReverse'}
+            className={cn(
+              s.component,
+              {
+                [s.healthFactorVariant]: isHealthFactorVariant,
+                [s.healthFactorVariantReverse]: isHealthFactorVariantReverse,
+                [s.sliderDisabled]: sliderDisabled,
+              },
+              className,
+            )}
+            disabled={sliderDisabled}
             max={bnMaxValue.toNumber()}
             min={0}
-            onChange={onSliderChange}
+            onChange={(sliderValue) => {
+              const bigNumberSliderValue = BigNumber.from(sliderValue)
+              onChange?.(bigNumberSliderValue)
+              coerceMaxyValueToMax(bigNumberSliderValue)
+            }}
             step={step}
             tooltipVisible={false}
+            trackStyle={{
+              backgroundColor: sliderTrackColor,
+              transition: 'background-color 0.24s ease',
+            }}
             value={bnValue?.toNumber()}
           />
         </>

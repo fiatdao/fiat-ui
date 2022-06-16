@@ -1,28 +1,30 @@
-import { getVirtualRate } from '../getVirtualRate'
+import { scaleToDecimalsCount } from './auctions'
 import { getFaceValue } from '../getFaceValue'
-import BigNumber from 'bignumber.js'
-import { JsonRpcProvider } from '@ethersproject/providers'
-import { differenceInDays } from 'date-fns'
-import { stringToDateOrCurrent } from '@/src/utils/dateTime'
-import contractCall from '@/src/utils/contractCall'
+import { getVirtualRate } from '../getVirtualRate'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
+import { stringToDateOrCurrent } from '@/src/utils/dateTime'
 import { getCurrentValue } from '@/src/utils/getCurrentValue'
+import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
+import { COLLATERALS } from '@/src/queries/collaterals'
 import { getHumanValue } from '@/src/web3/utils'
 import { Positions_positions as SubgraphPosition } from '@/types/subgraph/__generated__/Positions'
 
-import { TokenData } from '@/types/token'
 import { ChainsValues } from '@/src/constants/chains'
-import { contracts } from '@/src/constants/contracts'
-import { ERC20 } from '@/types/typechain'
 import {
   INFINITE_BIG_NUMBER,
   INFINITE_HEALTH_FACTOR_NUMBER,
+  MIN_EPSILON_OFFSET,
   ONE_BIG_NUMBER,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
+import { TokenData } from '@/types/token'
 import { Maybe } from '@/types/utils'
+import { Collaterals, CollateralsVariables } from '@/types/subgraph/__generated__/Collaterals'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import BigNumber from 'bignumber.js'
+import { differenceInDays } from 'date-fns'
 
 export type Position = {
   id: string
@@ -78,21 +80,25 @@ const _getCurrentValue = (
 
 const getDecimals = async (
   address: string | null | undefined,
-  provider: JsonRpcProvider,
+  appChainId: ChainsValues,
 ): Promise<number> => {
   if (!address) {
     return 18
   }
+  const decimals = await graphqlFetcher<Collaterals, CollateralsVariables>(
+    appChainId,
+    COLLATERALS,
+  ).then(async ({ collateralTypes }) => {
+    const decimals = collateralTypes
+      .map((c) => {
+        if (c.address === address) return scaleToDecimalsCount(c.scale)
+        if (c.underlierAddress === address) return scaleToDecimalsCount(c.underlierScale)
+      })
+      .filter((d) => Number.isInteger(d)) as number[]
+    return decimals.length ? decimals[0] : 18
+  })
 
-  const decimals = await contractCall<ERC20, 'decimals'>(
-    address,
-    contracts.ERC_20.abi,
-    provider,
-    'decimals',
-    null,
-  )
-
-  return decimals ?? 18
+  return decimals
 }
 
 export const getDateState = (maturityDate: Date) => {
@@ -115,6 +121,28 @@ const calculateDebt = (normalDebt: BigNumber, virtualRate: BigNumber) => {
   return normalDebt.times(virtualRate.times(VIRTUAL_RATE_MAX_SLIPPAGE))
 }
 
+// Arguments should have WAD percision
+// maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
+const calculateMaxBorrow = (
+  totalCollateral: BigNumber,
+  collateralValue: BigNumber,
+  collateralizationRatio: BigNumber,
+  totalDebt: BigNumber,
+): BigNumber => {
+  const collateralWithMults = totalCollateral
+    .times(collateralValue)
+    .div(collateralizationRatio)
+    .times(VIRTUAL_RATE_MAX_SLIPPAGE)
+  const borrowAmount = collateralWithMults.minus(totalDebt)
+
+  let result = ZERO_BIG_NUMBER
+  if (borrowAmount.isPositive()) {
+    result = borrowAmount
+  }
+
+  return getHumanValue(result, WAD_DECIMALS)
+}
+
 // @TODO: healthFactor = totalCollateral*collateralValue/totalFIAT/collateralizationRatio
 // totalFIAT = debt = normalDebt * (virtualRate*slippageMargin)
 const calculateHealthFactor = (
@@ -128,7 +156,7 @@ const calculateHealthFactor = (
 } => {
   let isAtRisk = false
   let healthFactor = ZERO_BIG_NUMBER
-  if (!debt || debt?.isZero()) {
+  if (!debt || debt?.isZero() || debt.lt(MIN_EPSILON_OFFSET)) {
     healthFactor = INFINITE_BIG_NUMBER
     return {
       healthFactor,
@@ -174,9 +202,9 @@ const wranglePosition = async (
     await Promise.all([
       _getCurrentValue(position, appChainId, provider),
       getFaceValue(provider, position.collateralType?.tokenId ?? 0, position.vault?.address ?? ''),
-      getDecimals(position.collateralType?.address, provider), // collateral is an ERC20 token
-      getDecimals(position.collateralType?.underlierAddress, provider),
-      getVirtualRate(position.vault?.address ?? '', appChainId, provider),
+      getDecimals(position.collateralType?.address, appChainId), // collateral is an ERC20 token
+      getDecimals(position.collateralType?.underlierAddress, appChainId),
+      getVirtualRate(appChainId, provider, position.vault?.address ?? undefined),
     ])
 
   // @TODO: totalDebt = normalDebt * RATES
@@ -236,9 +264,11 @@ const wranglePosition = async (
     url: urls?.asset,
   }
 }
+
 export {
   wranglePosition,
   calculateHealthFactor,
+  calculateMaxBorrow,
   calculateNormalDebt,
   calculateDebt,
   isValidHealthFactor,

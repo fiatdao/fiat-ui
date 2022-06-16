@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { useCallback, useState } from 'react'
 
 interface Params {
   address: string

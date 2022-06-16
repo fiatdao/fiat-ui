@@ -1,3 +1,4 @@
+import { isValidHealthFactor } from './data/positions'
 import BigNumber from 'bignumber.js'
 import { addDays, addHours, addMinutes, formatWithOptions, subDays, subHours } from 'date-fns/fp'
 import { enUS } from 'date-fns/locale'
@@ -6,8 +7,8 @@ import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 
 // @TODO: verify this colouring
-export const getHealthFactorState = (hf: BigNumber): 'danger' | 'ok' | 'warning' => {
-  return hf.gte(1.5) ? 'ok' : hf.gt(1.0) ? 'warning' : 'danger'
+export const getHealthFactorState = (hf: BigNumber): 'ok' | 'warning' | 'danger' => {
+  return isValidHealthFactor(hf) ? (hf.gte(1.5) ? 'ok' : hf.gt(1.05) ? 'warning' : 'danger') : 'ok'
 }
 
 // curried version

@@ -1,22 +1,22 @@
 import s from './s.module.scss'
 import Grid from '../grid'
-import cn from 'classnames'
-import YouTube from 'react-youtube'
-import { Button, Steps } from 'antd'
-import React, { useCallback, useEffect, useState } from 'react'
-import { useMachine } from '@xstate/react'
-import useSWR from 'swr'
 import { FDTTokenImage, FIATTokenImage } from '@/src/components/custom/side-menu-footer'
 import { contracts } from '@/src/constants/contracts'
 import { Chains } from '@/src/constants/chains'
 import { AddTokenButton } from '@/src/components/custom/add-token-button'
-import { Step, stepsData } from '@/src/components/custom/getting-started-wizard/steps-data'
+import { stepsData } from '@/src/components/custom/getting-started-wizard/steps-data'
 import gettingStartedMachine, {
   Context,
 } from '@/src/components/custom/getting-started-wizard/state'
 import CheckIcon from '@/src/resources/svg/circle-check-icon.svg'
 import ChevronDown from '@/src/resources/svg/chevron-down.svg'
 import CongratsImg from '@/src/resources/svg/congrats.svg'
+import cn from 'classnames'
+import YouTube from 'react-youtube'
+import { Button, Steps } from 'antd'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useMachine } from '@xstate/react'
+import useSWR from 'swr'
 
 const { Step } = Steps
 
@@ -64,6 +64,7 @@ const StepsContent: React.FC<StepsContentProps> = ({ context, send, step }: Step
         <>
           <p>{stepsData[1].description}</p>
           <div className={s.videoContainer}>
+            {/* @ts-ignore */}
             <YouTube title="Video2" videoId="ScMzIvxBSi4" />
           </div>
           <Button href={'/'} onClick={() => send('NEXT')} target={'_blank'}>
@@ -118,6 +119,7 @@ const StepsContent: React.FC<StepsContentProps> = ({ context, send, step }: Step
             3.1 Discount Rate
           </p>
           <div className={s.videoContainer}>
+            {/* @ts-ignore */}
             <YouTube
               onEnd={() => send({ type: 'COMPLETE_DISCOUNT_RATE_VIDEO' })}
               title="3.1 Discount Rate"
@@ -129,6 +131,7 @@ const StepsContent: React.FC<StepsContentProps> = ({ context, send, step }: Step
             3.2 Health Score
           </p>
           <div className={s.videoContainer}>
+            {/* @ts-ignore */}
             <YouTube
               onEnd={() => send({ type: 'COMPLETE_HEALTH_SCORE_VIDEO' })}
               title="3.2 Health Score"
@@ -140,6 +143,7 @@ const StepsContent: React.FC<StepsContentProps> = ({ context, send, step }: Step
             3.3 Asset Maturity
           </p>
           <div className={s.videoContainer}>
+            {/* @ts-ignore */}
             <YouTube
               onEnd={() => send({ type: 'COMPLETE_ASSET_MATURITY_VIDEO' })}
               title="3.3 Asset Maturity"
@@ -158,17 +162,19 @@ const StepsContent: React.FC<StepsContentProps> = ({ context, send, step }: Step
             <div>
               <p>Video 1</p>
               <div className={s.videoContainer}>
+                {/* @ts-ignore */}
                 <YouTube title="Video1" videoId="ScMzIvxBSi4" />
               </div>
             </div>
             <div>
               <p>Video 2</p>
               <div className={s.videoContainer}>
+                {/* @ts-ignore */}
                 <YouTube title="Video2" videoId="ScMzIvxBSi4" />
               </div>
             </div>
           </Grid>
-          <Button onClick={() => send({ type: 'NEXT' })}>Mint FIAT</Button>
+          <Button onClick={() => send({ type: 'NEXT' })}>Borrow FIAT</Button>
         </>
       )
     }

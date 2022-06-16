@@ -1,14 +1,14 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import s from './s.module.scss'
-import { useRouter } from 'next/router'
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import cn from 'classnames'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import { usePositionsBadge } from '@/src/hooks/usePositionsBadge'
 import { RouteItem, routes } from '@/src/constants/navigation'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import cn from 'classnames'
 
 interface Props {
   className?: string

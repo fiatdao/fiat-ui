@@ -1,8 +1,8 @@
 import s from './s.module.scss'
-import cn from 'classnames'
-import React, { useEffect, useRef } from 'react'
 import ButtonOutline from '@/src/components/antd/button-outline'
 import useAddTokenToWallet from '@/src/hooks/useAddTokenToWallet'
+import cn from 'classnames'
+import React, { useEffect, useRef } from 'react'
 
 enum Positions {
   'after',
