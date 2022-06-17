@@ -20,7 +20,7 @@ import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
-import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
+// import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
@@ -143,12 +143,15 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   const underlierAmount = stateMachine.context.underlierAmount.toNumber()
   const apr = (1 - marketRate.toNumber()) * 100
   const fixedAPR = `${apr.toFixed(2)}%`
-  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)}`
-  const redeemable = `${(Number(underlierAmount) + Number(interestEarned)).toFixed(2)} ${
+  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)} ${
+    collateral ? collateral.underlierSymbol : '-'
+  }`
+  const redeemableValue = Number(underlierAmount) + Number(interestEarned)
+  const redeemable = `${(isNaN(redeemableValue) ? 0 : redeemableValue).toFixed(2)} ${
     collateral ? collateral.underlierSymbol : '-'
   }`
   const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
-  const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
+  // const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
 
   const createUnderlyingPositionERC1155 = async ({
     fiatAmount,
@@ -171,7 +174,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
         deltaDebt: _fiatAmount,
         virtualRate: collateral.vault.virtualRate,
         fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals
-        minImpliedRate: minImpliedRate,
+        minImpliedRate: 100000, //minImpliedRate,
         underlierAmount: _underlierAmount, //definitely correct */
       })
       setLoading(false)
