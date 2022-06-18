@@ -3666,10 +3666,10 @@ bnb-javascript-sdk-nobroadcast@^2.16.14:
     uuid "^3.3.2"
     websocket-stream "^5.5.0"
 
-bnc-onboard@^1.34.1:
-  version "1.38.2"
-  resolved "https://registry.yarnpkg.com/bnc-onboard/-/bnc-onboard-1.38.2.tgz#23aa7f10546e15d595b4420e5959732c9a485c71"
-  integrity sha512-ObRQaHV1HXXOVuUJMHVYhmsz8T804hl+cl47t12ZRVG3HtF8Pf/22jGjrG2mWkgdx4h3RVLvxOqW5V1nwHTdaw==
+bnc-onboard@^1.38.3:
+  version "1.38.3"
+  resolved "https://registry.yarnpkg.com/bnc-onboard/-/bnc-onboard-1.38.3.tgz#f36b2cb060fbd756bdb3ded42710efa2adccb603"
+  integrity sha512-BIw61QIdyWwHyX0Jes32xP3CSzGc1/n2V2tw9k6zYj2C04alZEYFo3FzZxEIYZ2Jti1XaOLRt2PRpYOaaDJkPw==
   dependencies:
     "@cvbb/eth-keyring" "^1.1.0"
     "@ensdomains/ensjs" "^2.0.1"
@@ -5437,7 +5437,6 @@ ethereum-public-key-to-address@0.0.1:
 
 ethereumjs-abi@^0.6.8, "ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
   version "0.6.8"
-  uid ee3994657fa7a427238e6ba92a84d0b529bbcde0
   resolved "git+https://github.com/ethereumjs/ethereumjs-abi.git#ee3994657fa7a427238e6ba92a84d0b529bbcde0"
   dependencies:
     bn.js "^4.11.8"
