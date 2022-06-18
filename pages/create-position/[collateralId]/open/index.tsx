@@ -1,18 +1,16 @@
 import s from './s.module.scss'
-import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
-import { Balance } from '@/src/components/custom/balance'
+import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { ButtonBack } from '@/src/components/custom/button-back'
-import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
-import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
-import { FormExtraAction } from '@/src/components/custom/form-extra-action'
+import { CreatePositionBond } from '@/src/components/custom/create-position-bond'
+import { CreatePositionUnderlying } from '@/src/components/custom/create-position-underlying'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { Summary } from '@/src/components/custom/summary'
-import TokenAmount from '@/src/components/custom/token-amount'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import {
   DEPOSIT_COLLATERAL_TEXT,
+  DEPOSIT_UNDERLYING_TEXT,
   EST_FIAT_TOOLTIP_TEXT,
   EST_HEALTH_FACTOR_TOOLTIP_TEXT,
   INSUFFICIENT_BALANCE_TEXT,
@@ -23,24 +21,21 @@ import {
 } from '@/src/constants/misc'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
+import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
-import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useUserActions } from '@/src/hooks/useUserActions'
+import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import useUserProxy from '@/src/hooks/useUserProxy'
+import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
-import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
+import { TITLES_BY_STEP_UNDERLYING } from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
-import {
-  calculateHealthFactor,
-  calculateMaxBorrow,
-  isValidHealthFactor,
-} from '@/src/utils/data/positions'
+import { calculateHealthFactor, isValidHealthFactor } from '@/src/utils/data/positions'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHealthFactorState } from '@/src/utils/table'
 import {
@@ -49,13 +44,17 @@ import {
   getNonHumanValue,
   perSecondToAPR,
 } from '@/src/web3/utils'
+import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
 import { useMachine } from '@xstate/react'
-import AntdForm from 'antd/lib/form'
-import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+
+enum CreatePositionTab {
+  bond = 'bond',
+  underlying = 'tab',
+}
 
 // @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7
@@ -77,24 +76,36 @@ const StepperTitle: React.FC<{
   </div>
 )
 
-type FormProps = { tokenAmount: BigNumber; fiatAmount: BigNumber }
-
 const FormERC20: React.FC<{
   tokenSymbol: string
   tokenAsset: string
   tokenAddress: string
   collateral: Collateral
 }> = ({ collateral, tokenAddress, tokenSymbol }) => {
-  const [form] = AntdForm.useForm<FormProps>()
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
-  const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
+  const { isProxyAvailable, userProxyAddress } = useUserProxy()
   const [loading, setLoading] = useState(false)
 
   const erc20 = useERC20Allowance(tokenAddress, userProxyAddress ?? '')
   const erc1155 = useERC155Allowance(tokenAddress, userProxyAddress ?? '')
 
-  const activeToken = collateral.vault.type === 'NOTIONAL' ? erc1155 : erc20
-  const { approve, hasAllowance, loadingApprove } = activeToken
+  const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
+
+  const [underlierToPToken] = useUnderlyingExchangeValue({
+    vault: collateral?.vault?.address ?? '',
+    balancerVault: collateral?.eptData?.balancerVault,
+    curvePoolId: collateral?.eptData?.poolId,
+    underlierAmount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
+  })
+
+  const [underlierToFCash] = useUnderlierToFCash({
+    tokenId: collateral.tokenId ?? '',
+    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
+  })
+
+  const setFormLoading = (newLoadingState: boolean): void => {
+    setLoading(newLoadingState)
+  }
 
   const { tokenInfo } = useTokenDecimalsAndBalance({
     tokenData: {
@@ -108,10 +119,20 @@ const FormERC20: React.FC<{
     readOnlyAppProvider,
   })
 
-  const [FIATBalance] = useFIATBalance(true)
+  const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
+    tokenData: {
+      decimals: 8,
+      symbol: collateral.underlierSymbol ?? '',
+      address: collateral?.underlierAddress ?? '',
+    },
+    address: currentUserAddress,
+    readOnlyAppProvider,
+    tokenId: collateral.tokenId ?? '0',
+  })
 
-  const { depositCollateral } = useUserActions(collateral.vault.type)
-  const [stateMachine, send] = useMachine(stepperMachine, {
+  const activeToken = collateral.vault.type === 'NOTIONAL' ? erc1155 : erc20
+  const { hasAllowance } = activeToken
+  const [stateMachine] = useMachine(stepperMachine, {
     context: {
       isProxyAvailable,
       hasAllowance,
@@ -120,95 +141,64 @@ const FormERC20: React.FC<{
     },
   })
 
-  const createPosition = async ({
-    erc20Amount,
-    fiatAmount,
-  }: {
-    erc20Amount: BigNumber
-    fiatAmount: BigNumber
-  }): Promise<void> => {
-    const _erc20Amount = erc20Amount ? getNonHumanValue(erc20Amount, WAD_DECIMALS) : ZERO_BIG_NUMBER
-    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
-    try {
-      setLoading(true)
+  const [activeMachine, setActiveMachine] = useState(stateMachine)
 
-      await depositCollateral({
-        vault: collateral.vault.address,
-        virtualRate: collateral.vault.virtualRate,
-        token: tokenAddress,
-        tokenId: Number(collateral.tokenId) ?? 0,
-        toDeposit: _erc20Amount,
-        toMint: _fiatAmount,
-      })
-      setLoading(false)
-    } catch (err) {
-      setLoading(false)
-      throw err
-    }
-  }
-
-  // hasAllowance comes in false on init.
-  // This useEffect change hasAllowance value on Machine
-  useEffect(() => {
-    send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
-    send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
-  }, [hasAllowance, isProxyAvailable, send])
-
-  const [tab] = useState('bond')
-  const [mintFiat, setMintFiat] = useState(false)
-
-  const toggleMintFiat = () => setMintFiat(!mintFiat)
-
-  const maxBorrowAmountCalculated = useMemo((): BigNumber => {
-    const totalCollateralScaled =
-      stateMachine.context.erc20Amount.scaleBy(WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-    const collateralValue = collateral.currentValue || ONE_BIG_NUMBER
-    const collateralizationRatio = collateral.vault.collateralizationRatio || ONE_BIG_NUMBER
-    const maxBorrowAmount = calculateMaxBorrow(
-      totalCollateralScaled,
-      collateralValue,
-      collateralizationRatio,
-      ZERO_BIG_NUMBER, // no existing debt, this is a new loan
-    )
-    return maxBorrowAmount
-  }, [stateMachine.context.erc20Amount, collateral])
+  const [tab, setTab] = useState(CreatePositionTab.bond)
 
   const hasMinimumFIAT = useMemo(() => {
-    const fiatAmount = stateMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
+    const fiatAmount = activeMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
     const debtFloor = collateral.vault.debtFloor
     const nonHumanFiatAmount = getNonHumanValue(fiatAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-
     return nonHumanFiatAmount.gte(debtFloor) || nonHumanFiatAmount.isZero()
-  }, [stateMachine.context.fiatAmount, collateral.vault.debtFloor])
+  }, [activeMachine.context.fiatAmount, collateral.vault.debtFloor])
 
   const hasSufficientCollateral = useMemo(() => {
-    return tokenInfo?.humanValue?.gte(stateMachine.context.erc20Amount)
-  }, [tokenInfo?.humanValue, stateMachine.context.erc20Amount])
+    return tab === CreatePositionTab.bond
+      ? tokenInfo?.humanValue?.gte(activeMachine.context.erc20Amount)
+      : underlyingInfo?.humanValue?.gte(activeMachine.context.underlierAmount)
+  }, [
+    tab,
+    tokenInfo?.humanValue,
+    underlyingInfo?.humanValue,
+    activeMachine.context.erc20Amount,
+    activeMachine.context.underlierAmount,
+  ])
 
-  const isDisabledCreatePosition = () => {
-    return (
-      !hasAllowance || !isProxyAvailable || loading || !hasMinimumFIAT || !hasSufficientCollateral
-    )
-  }
-
-  const deltaCollateral = getNonHumanValue(stateMachine.context.erc20Amount, WAD_DECIMALS)
-  const deltaDebt = getNonHumanValue(stateMachine.context.fiatAmount, WAD_DECIMALS)
-  const { healthFactor: hf } = calculateHealthFactor(
-    collateral.currentValue,
-    collateral.vault.collateralizationRatio,
-    deltaCollateral,
-    deltaDebt,
-  )
-
-  const getConfirmButtonText = () => {
+  const confirmButtonText = useMemo(() => {
     if (!hasMinimumFIAT) {
       return getBorrowAmountBelowDebtFloorText(collateral.vault.debtFloor)
     }
     if (!hasSufficientCollateral) {
       return INSUFFICIENT_BALANCE_TEXT
     }
-    return DEPOSIT_COLLATERAL_TEXT
-  }
+    return tab === CreatePositionTab.bond ? DEPOSIT_COLLATERAL_TEXT : DEPOSIT_UNDERLYING_TEXT
+  }, [tab, hasMinimumFIAT, hasSufficientCollateral, collateral.vault.debtFloor])
+
+  const marketRate =
+    collateral.vault.type === 'NOTIONAL'
+      ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
+      : ONE_BIG_NUMBER.div(getHumanValue(underlierToPToken, underlierDecimals))
+
+  // const priceImpact = (1 - marketRate) / 0.01
+
+  // TODO: figure out why deltaCollateral is 0. This is keeping health factor from displaying properly. This is probably a scaling issue
+  const deltaCollateral = getNonHumanValue(
+    tab === CreatePositionTab.bond
+      ? activeMachine.context.erc20Amount
+      : marketRate.times(activeMachine.context.underlierAmount),
+    WAD_DECIMALS,
+  )
+  const deltaDebt = getNonHumanValue(activeMachine.context.fiatAmount, WAD_DECIMALS)
+
+  const { healthFactor: hf } = calculateHealthFactor(
+    collateral.currentValue,
+    collateral.vault.collateralizationRatio,
+    deltaCollateral,
+    deltaDebt,
+  )
+  console.log('delta collat:', deltaCollateral.toString())
+  console.log('collateral: ', collateral)
+  console.log('[collateralId] healthFactor: ', hf.toString())
 
   const summaryData = [
     {
@@ -217,18 +207,18 @@ const FormERC20: React.FC<{
     },
     {
       title: 'Depositing into position',
-      value: `${stateMachine.context.erc20Amount.toFixed(3)} ${tokenSymbol}`,
+      value: `${activeMachine.context.erc20Amount.toFixed(3)} ${tokenSymbol}`,
     },
     {
       title: 'Remaining in wallet',
       value: `${tokenInfo?.humanValue
-        ?.minus(stateMachine.context.erc20Amount)
+        ?.minus(activeMachine.context.erc20Amount)
         .toFixed(4)} ${tokenSymbol}`,
     },
     {
       title: 'Estimated FIAT debt',
       titleTooltip: EST_FIAT_TOOLTIP_TEXT,
-      value: `${stateMachine.context.fiatAmount.toFixed(3)}`,
+      value: `${activeMachine.context.fiatAmount.toFixed(3)}`,
     },
     {
       state: getHealthFactorState(hf),
@@ -238,154 +228,61 @@ const FormERC20: React.FC<{
     },
   ]
 
+  const switchActiveMachine = (machine: any) => {
+    setActiveMachine(machine)
+  }
+
+  const activeTitles = tab === CreatePositionTab.bond ? TITLES_BY_STEP : TITLES_BY_STEP_UNDERLYING
+
   return (
     <>
-      {stateMachine.context.currentStepNumber !== LAST_STEP ? (
+      {activeMachine.context.currentStepNumber !== LAST_STEP ? (
         <>
           <StepperTitle
-            currentStep={stateMachine.context.currentStepNumber}
-            description={TITLES_BY_STEP[stateMachine.context.currentStepNumber].subtitle}
-            title={TITLES_BY_STEP[stateMachine.context.currentStepNumber].title}
-            totalSteps={stateMachine.context.totalStepNumber}
+            currentStep={activeMachine.context.currentStepNumber}
+            description={activeTitles[activeMachine.context.currentStepNumber].subtitle}
+            title={activeTitles[activeMachine.context.currentStepNumber].title}
+            totalSteps={activeMachine.context.totalStepNumber}
           />
           <div className={cn(s.form)}>
-            {tab === 'bond' && (
-              <Form form={form} initialValues={{ tokenAmount: 0, fiatAmount: 0 }}>
-                {[1, 4].includes(stateMachine.context.currentStepNumber) && (
-                  <>
-                    <Balance
-                      title={`Deposit ${stateMachine.context.tokenSymbol}`}
-                      value={`Balance: ${tokenInfo?.humanValue?.toFixed()}`}
-                    />
-                    <Form.Item name="tokenAmount" required>
-                      <TokenAmount
-                        displayDecimals={tokenInfo?.decimals}
-                        mainAsset={collateral.vault.name}
-                        max={tokenInfo?.humanValue}
-                        maximumFractionDigits={tokenInfo?.decimals}
-                        onChange={(val) =>
-                          val && send({ type: 'SET_ERC20_AMOUNT', erc20Amount: val })
-                        }
-                        slider
-                        sliderDisabled={loading || tokenInfo?.humanValue?.eq(0)}
-                      />
-                    </Form.Item>
-                    {mintFiat && (
-                      <FormExtraAction
-                        bottom={
-                          <Form.Item name="fiatAmount" required style={{ marginBottom: 0 }}>
-                            <TokenAmount
-                              displayDecimals={4}
-                              healthFactorValue={hf}
-                              max={maxBorrowAmountCalculated}
-                              maximumFractionDigits={4}
-                              numericInputDisabled={loading}
-                              onChange={(val) =>
-                                val && send({ type: 'SET_FIAT_AMOUNT', fiatAmount: val })
-                              }
-                              slider="healthFactorVariant"
-                              sliderDisabled={loading}
-                              tokenIcon={<FiatIcon />}
-                            />
-                          </Form.Item>
-                        }
-                        buttonText="Borrow FIAT with this transaction"
-                        disabled={loading}
-                        onClick={toggleMintFiat}
-                        top={
-                          <Balance
-                            title={`Borrow FIAT`}
-                            value={`Balance: ${FIATBalance.toFixed(4)}`}
-                          />
-                        }
-                      />
-                    )}
-                  </>
-                )}
-                <ButtonsWrapper>
-                  {stateMachine.context.currentStepNumber === 1 && (
-                    <>
-                      {!mintFiat && (
-                        <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
-                          Borrow FIAT with this transaction
-                        </ButtonExtraFormAction>
-                      )}
-                      {!isProxyAvailable && (
-                        <ButtonGradient
-                          height="lg"
-                          onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}
-                        >
-                          Setup Proxy
-                        </ButtonGradient>
-                      )}
-                      {isProxyAvailable && !hasAllowance && (
-                        <ButtonGradient
-                          disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
-                          height="lg"
-                          onClick={() => send({ type: 'CLICK_ALLOW' })}
-                        >
-                          {stateMachine.context.erc20Amount.gt(0)
-                            ? 'Set Allowance'
-                            : `Insufficient Balance for ${tokenSymbol}`}
-                        </ButtonGradient>
-                      )}
-                    </>
-                  )}
-                  {stateMachine.context.currentStepNumber === 2 && (
-                    <>
-                      <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
-                        Create Proxy
-                      </ButtonGradient>
-                      <button
-                        className={cn(s.backButton)}
-                        onClick={() => send({ type: 'GO_BACK' })}
-                      >
-                        &#8592; Go back
-                      </button>
-                    </>
-                  )}
-                  {stateMachine.context.currentStepNumber === 3 && (
-                    <>
-                      <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
-                        {`Set Allowance`}
-                      </ButtonGradient>
-                      <button
-                        className={cn(s.backButton)}
-                        onClick={() => send({ type: 'GO_BACK' })}
-                      >
-                        &#8592; Go back
-                      </button>
-                    </>
-                  )}
-                  {stateMachine.context.currentStepNumber === 4 && (
-                    <>
-                      {!mintFiat && (
-                        <ButtonExtraFormAction onClick={() => toggleMintFiat()}>
-                          Borrow FIAT with this transaction
-                        </ButtonExtraFormAction>
-                      )}
-                      <ButtonGradient
-                        disabled={isDisabledCreatePosition()}
-                        height="lg"
-                        onClick={() =>
-                          send({
-                            type: 'CONFIRM',
-                            // @ts-ignore TODO types
-                            createPosition,
-                          })
-                        }
-                      >
-                        {getConfirmButtonText()}
-                      </ButtonGradient>
-                    </>
-                  )}
-                </ButtonsWrapper>
-                {stateMachine.context.currentStepNumber === 4 && (
-                  <div className={cn(s.summary)}>
-                    <Summary data={summaryData} />
-                  </div>
-                )}
-              </Form>
+            {[1, 4].includes(activeMachine.context.currentStepNumber) &&
+              SHOW_UNDERLYING_FLOW && ( // Feature Flag
+                <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
+                  <RadioTab
+                    checked={tab === CreatePositionTab.bond}
+                    onClick={() => setTab(CreatePositionTab.bond)}
+                  >
+                    Bond
+                  </RadioTab>
+                  <RadioTab
+                    checked={tab === CreatePositionTab.underlying}
+                    onClick={() => setTab(CreatePositionTab.underlying)}
+                  >
+                    Underlying
+                  </RadioTab>
+                </RadioTabsWrapper>
+              )}
+            {tab === CreatePositionTab.underlying ? (
+              <CreatePositionUnderlying
+                collateral={collateral}
+                confirmButtonText={confirmButtonText}
+                hasMinimumFIAT={hasMinimumFIAT}
+                healthFactorNumber={hf}
+                loading={loading}
+                marketRate={marketRate}
+                setLoading={setFormLoading}
+                setMachine={switchActiveMachine}
+              />
+            ) : (
+              <CreatePositionBond
+                collateral={collateral}
+                confirmButtonText={confirmButtonText}
+                hasMinimumFIAT={hasMinimumFIAT}
+                loading={loading}
+                setLoading={setFormLoading}
+                setMachine={switchActiveMachine}
+                tokenAddress={tokenAddress}
+              />
             )}
           </div>
         </>

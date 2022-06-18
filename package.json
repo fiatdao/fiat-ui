@@ -6,6 +6,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "fixVulnerableDependencies": "npm i --package-lock-only; npm audit fix; rm yarn.lock; yarn import; rm package-lock.json",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "lessc": "lessc src/styles/antd.less src/styles/antd.css -js",
