@@ -5,7 +5,7 @@ import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 
-export const DATE_FORMAT = 'MM/dd/yyyy'
+const DATE_FORMAT = 'PP'
 
 const parseDate = formatWithOptions({ locale: enUS }, DATE_FORMAT)
 

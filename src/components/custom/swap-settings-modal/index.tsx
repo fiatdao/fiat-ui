@@ -64,6 +64,7 @@ const SwapSettingsModal: React.FC<Props> = ({
               max={100}
               min={0}
               onChange={(e) => updateSwapSettings(e, maxTransactionTime)}
+              precision={2}
               step={0.1}
               style={{ width: '100px' }}
             />
