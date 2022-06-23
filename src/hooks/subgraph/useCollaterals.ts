@@ -40,7 +40,6 @@ export const fetchCollateralById = ({
     orderBy: CollateralType_orderBy.maturity,
     orderDirection: OrderDirection.desc,
   }).then(async ({ collateralTypes, collybusDiscountRates, collybusSpots }) => {
-    // TODO: get discountRate arg in here
     return Promise.all(
       collateralTypes
         .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
@@ -91,8 +90,6 @@ export const fetchCollaterals = ({
                 ?.discountRate,
             ) ?? null
 
-          // should filter on collateral.vault.type (Element) or collateral.protocol (Element Finance) name ackshually
-          // vaultName_in: ["vaultEPT_eP:eyUSDC:10-AUG-22-GMT"],
           return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
         }),
     )
@@ -123,7 +120,7 @@ export const useCollaterals = (filterByInMyWallet: boolean, protocolsToFilterBy:
   })
 
   useEffect(() => {
-    // apply filters
+    // Apply filters
     const walletFilteredData = filterByInMyWallet
       ? data?.filter(
           (collateral) =>

@@ -110,7 +110,8 @@ const wrangleAuction = async (
     collateralAuction.startPrice &&
     collateralAuction.vault
   ) {
-    // floorPrice = auction.debt / auction.collateralToSell
+    // TODO: use this for determining auction is over or not when we display past auctions
+    // const isAuctionActive = BigNumber.from(collateralAuction.debt)?.eq(0)
     const floorPrice = BigNumber.from(collateralAuction.debt)?.dividedBy(
       collateralAuction.collateralToSell,
     ) as BigNumber
