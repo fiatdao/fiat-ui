@@ -195,7 +195,7 @@ const BuyCollateral = () => {
     },
   ]
 
-  const isFiatBalanceSufficient = FIATBalance.lt(fiatToPay)
+  const isFiatBalanceSufficient = FIATBalance.gte(fiatToPay)
 
   const getButtonTextForStep = (stepNumber: number): string => {
     if (!isDebtSufficient) {
