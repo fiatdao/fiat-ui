@@ -2,6 +2,7 @@ import s from './s.module.scss'
 import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
 import {
   FIAT_TICKER,
+  INFINITE_BIG_NUMBER,
   INSUFFICIENT_BALANCE_TEXT,
   ONE_BIG_NUMBER,
   WAD_DECIMALS,
@@ -65,9 +66,9 @@ const BuyCollateral = () => {
     hasAllowance,
     hasMonetaAllowance,
     loading,
+    maxCredit,
     maxPrice,
-    /* maxCredit, */
-    oldMaxCredit,
+    /* oldMaxCredit, */
     /* oldMaxPrice, */
   } = useBuyCollateralForm(auctionData)
   const [FIATBalance, refetchFIATBalance] = useFIATBalance(true)
@@ -100,17 +101,21 @@ const BuyCollateral = () => {
         leftoverDebt: auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay).toFixed(),
       })
 
-      // my error state calculation
-      // 1. check if auction.debt - fiatToPay is less than or equal to auctionDebtFloor.
-      const purchaseWouldPushDebtBelowFloor = auctionData.debt
-        .unscaleBy(WAD_DECIMALS)
-        .minus(fiatToPay)
-        .lte(auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
+      // 1. Check if debt after purchase (leftoverDebt) would be <= auctionDebtFloor.
+      const leftoverDebt = auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay)
+      const purchaseWouldPushDebtBelowFloor = leftoverDebt.lte(
+        auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber,
+      )
 
-      // 2. if purchase would push debt below floor, ensure user is paying down all debt in the vault
+      // 2. If purchase would push debt below floor, ensure user is buying all collateral
       if (purchaseWouldPushDebtBelowFloor) {
-        setIsDebtSufficient(fiatToPay.gte(auctionData?.debt))
+        // In the case where user must buy all collateral, if auctionedCollateral is undefined,
+        // default it to +infinity to prevent runtime errors or buying such that leftoverDebt < debtFloor
+        setIsDebtSufficient(
+          amountToBuy.gte(auctionData?.auctionedCollateral ?? INFINITE_BIG_NUMBER),
+        )
       } else {
+        // Valid fractional purchase
         setIsDebtSufficient(true)
       }
 
@@ -333,7 +338,7 @@ const BuyCollateral = () => {
                         <TokenAmount
                           displayDecimals={4}
                           mainAsset={auctionData?.protocol.name ?? ''}
-                          max={oldMaxCredit}
+                          max={maxCredit}
                           maximumFractionDigits={6}
                           numericInputDisabled={loading}
                           secondaryAsset={auctionData?.underlier.symbol}

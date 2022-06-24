@@ -80,7 +80,6 @@ const PositionManage = () => {
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
   const [formDisabled, setFormDisabled] = useState(false)
-  // @TODO: useFIATBalance hook can't be moved into another hook it trigger infinite updates
   const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { position, refetch: refetchPosition } = useManagePositionInfo()
 
