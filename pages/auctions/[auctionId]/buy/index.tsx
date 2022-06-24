@@ -70,32 +70,30 @@ const BuyCollateral = () => {
   } = useBuyCollateralForm(auctionData)
 
   const [isDebtSufficient, setIsDebtSufficient] = useState(false)
-  const [FIATBalance, refetchFIATBalance] = useFIATBalance()
+  const [FIATBalance, refetchFIATBalance] = useFIATBalance(true)
+  const [amountToBuy, setAmountToBuy] = useState(ZERO_BIG_NUMBER)
 
   const minimumToBuy = auctionData?.vault?.auctionDebtFloor
     ?.plus(1)
     .unscaleBy(WAD_DECIMALS)
     .dividedBy(auctionData.currentAuctionPrice as BigNumber)
 
-  const amountToBuy = useMemo(() => {
-    return form.getFieldValue('amountToBuy')
-  }, [form])
-
   const fiatToPay = useMemo(() => {
     return amountToBuy?.multipliedBy(auctionData?.currentAuctionPrice as BigNumber)
   }, [amountToBuy, auctionData?.currentAuctionPrice])
 
   const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
+    setAmountToBuy(amountToBuy)
     if (auctionData?.debt) {
       const fiatToPay = amountToBuy.multipliedBy(auctionData.currentAuctionPrice as BigNumber)
 
       // TODO: Leave this for debugging purposes
-      // console.log({
-      //   auctionDebtFloor: auctionData?.vault?.auctionDebtFloor?.toFixed(),
-      //   fiatToPay: fiatToPay.toFixed(),
-      //   debt: auctionData.debt.toFixed(),
-      //   diff: auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay).toFixed(),
-      // })
+      console.log({
+        auctionDebtFloor: auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS).toFixed(),
+        debt: auctionData.debt.unscaleBy(WAD_DECIMALS).toFixed(),
+        fiatToPay: fiatToPay.toFixed(),
+        leftoverDebt: auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay).toFixed(),
+      })
 
       // 1. check if auction.debt - fiatToPay is less than or equal to auctionDebtFloor.
       //    if true then 2. otherwise proceed and skip 2.
@@ -311,9 +309,7 @@ const BuyCollateral = () => {
                   <>
                     <div className={cn(s.balanceWrapper)}>
                       <h3 className={cn(s.balanceLabel)}>Select amount</h3>
-                      <p className={cn(s.balance)}>
-                        Balance: {FIATBalance.unscaleBy(WAD_DECIMALS)?.toFixed(2)} FIAT
-                      </p>
+                      <p className={cn(s.balance)}>Balance: {FIATBalance?.toFixed(2)} FIAT</p>
                     </div>
 
                     {/* FixMe: send proper value to `mainAsset` */}
