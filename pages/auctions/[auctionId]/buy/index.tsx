@@ -57,7 +57,6 @@ const BuyCollateral = () => {
   const auctionId = useQueryParam('auctionId')
   const { data: auctionData } = useAuction(auctionId)
   const [form] = AntdForm.useForm<FormProps>()
-
   const {
     approve,
     approveMoneta,
@@ -68,19 +67,22 @@ const BuyCollateral = () => {
     maxCredit,
     maxPrice,
   } = useBuyCollateralForm(auctionData)
-
-  const [isDebtSufficient, setIsDebtSufficient] = useState(false)
   const [FIATBalance, refetchFIATBalance] = useFIATBalance(true)
+  const [isDebtSufficient, setIsDebtSufficient] = useState(false)
   const [amountToBuy, setAmountToBuy] = useState(ZERO_BIG_NUMBER)
+  const [step, setStep] = useState(0)
+
+  const fiatToPay = useMemo(() => {
+    return (
+      amountToBuy?.multipliedBy(auctionData?.currentAuctionPrice ?? ZERO_BIG_NUMBER) ??
+      ZERO_BIG_NUMBER
+    )
+  }, [amountToBuy, auctionData?.currentAuctionPrice])
 
   const minimumToBuy = auctionData?.vault?.auctionDebtFloor
     ?.plus(1)
     .unscaleBy(WAD_DECIMALS)
     .dividedBy(auctionData.currentAuctionPrice as BigNumber)
-
-  const fiatToPay = useMemo(() => {
-    return amountToBuy?.multipliedBy(auctionData?.currentAuctionPrice as BigNumber)
-  }, [amountToBuy, auctionData?.currentAuctionPrice])
 
   const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
     setAmountToBuy(amountToBuy)
@@ -115,7 +117,6 @@ const BuyCollateral = () => {
     ? ` (minimum: ${(minimumToBuy as BigNumber).toFixed(6)})`
     : ''
 
-  const [step, setStep] = useState(0)
   const steps: Step[] = [
     {
       description: `Select the amount to buy${minimumMessage}`,
@@ -267,12 +268,7 @@ const BuyCollateral = () => {
     },
     {
       title: 'Buy price',
-      value: `${
-        form
-          .getFieldValue('amountToBuy')
-          ?.multipliedBy(auctionData?.currentAuctionPrice ?? 0)
-          .toFixed(4) ?? 0
-      } ${FIAT_TICKER}`,
+      value: `${fiatToPay.toFixed(4) ?? 0} ${FIAT_TICKER}`,
     },
     {
       title: 'APY',
@@ -338,6 +334,10 @@ const BuyCollateral = () => {
                       >
                         {getButtonTextForStep(step)}
                       </ButtonGradient>
+
+                      <div className={cn(s.summary)}>
+                        <Summary data={summaryData} />
+                      </div>
                     </Form>
                   </>
                 ) : (
