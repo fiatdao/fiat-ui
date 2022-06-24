@@ -82,11 +82,6 @@ const BuyCollateral = () => {
     )
   }, [amountToBuy, auctionData?.currentAuctionPrice])
 
-  /* const minimumToBuy = auctionData?.vault?.auctionDebtFloor */
-  /*   ?.plus(1) */
-  /*   .unscaleBy(WAD_DECIMALS) */
-  /*   .dividedBy(auctionData.currentAuctionPrice as BigNumber) */
-
   const minimumToBuy = auctionData?.debt
     ?.minus(auctionData?.vault?.auctionDebtFloor ?? ZERO_BIG_NUMBER)
     .dividedBy(auctionData.currentAuctionPrice ?? ONE_BIG_NUMBER)
@@ -104,22 +99,6 @@ const BuyCollateral = () => {
         fiatToPay: fiatToPay.toFixed(),
         leftoverDebt: auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay).toFixed(),
       })
-
-      // old error state calculation
-      // 1. check if auction.debt - fiatToPay is less than or equal to auctionDebtFloor.
-      //    if true then 2. otherwise proceed and skip 2.
-      /* const dusty = auctionData.debt */
-      /*   .unscaleBy(WAD_DECIMALS) */
-      /*   .minus(fiatToPay) */
-      /*   .lte(auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber) */
-
-      // 2. if purchase would push debt below floor, check that fiatToPay > auctionDebtFloor otherwise block
-      // Q: This would allow you to buy collateral such that debt goes below debt floor??? i thought this wasn't desired
-      /* setIsDebtSufficient( */
-      /*   dusty */
-      /*     ? fiatToPay.gt(auctionData.vault.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber) */
-      /*     : true, */
-      /* ) */
 
       // my error state calculation
       // 1. check if auction.debt - fiatToPay is less than or equal to auctionDebtFloor.
@@ -140,14 +119,9 @@ const BuyCollateral = () => {
     }
   }
 
-  /* const minimumMessage = !isDebtSufficient */
-  /*   ? ` (minimum: ${(minimumToBuy as BigNumber).toFixed(6)})` */
-  /*   : '' */
-
   const steps: Step[] = [
     {
       // previous description
-      /* description: `Select the amount to buy${minimumMessage}`, */
       description: 'Select the amount to buy',
       buttonText: 'Buy collateral',
       next() {
