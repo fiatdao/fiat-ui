@@ -3,6 +3,7 @@ import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
 import {
   FIAT_TICKER,
   INSUFFICIENT_BALANCE_TEXT,
+  ONE_BIG_NUMBER,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
@@ -64,8 +65,10 @@ const BuyCollateral = () => {
     hasAllowance,
     hasMonetaAllowance,
     loading,
-    maxCredit,
     maxPrice,
+    /* maxCredit, */
+    oldMaxCredit,
+    /* oldMaxPrice, */
   } = useBuyCollateralForm(auctionData)
   const [FIATBalance, refetchFIATBalance] = useFIATBalance(true)
   const [isDebtSufficient, setIsDebtSufficient] = useState(false)
@@ -79,17 +82,22 @@ const BuyCollateral = () => {
     )
   }, [amountToBuy, auctionData?.currentAuctionPrice])
 
-  const minimumToBuy = auctionData?.vault?.auctionDebtFloor
-    ?.plus(1)
-    .unscaleBy(WAD_DECIMALS)
-    .dividedBy(auctionData.currentAuctionPrice as BigNumber)
+  /* const minimumToBuy = auctionData?.vault?.auctionDebtFloor */
+  /*   ?.plus(1) */
+  /*   .unscaleBy(WAD_DECIMALS) */
+  /*   .dividedBy(auctionData.currentAuctionPrice as BigNumber) */
+
+  const minimumToBuy = auctionData?.debt
+    ?.minus(auctionData?.vault?.auctionDebtFloor ?? ZERO_BIG_NUMBER)
+    .dividedBy(auctionData.currentAuctionPrice ?? ONE_BIG_NUMBER)
 
   const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
     setAmountToBuy(amountToBuy)
+
     if (auctionData?.debt) {
       const fiatToPay = amountToBuy.multipliedBy(auctionData.currentAuctionPrice as BigNumber)
 
-      // TODO: Leave this for debugging purposes
+      // DEBUG (very helpful don't delete)
       console.log({
         auctionDebtFloor: auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS).toFixed(),
         debt: auctionData.debt.unscaleBy(WAD_DECIMALS).toFixed(),
@@ -97,29 +105,50 @@ const BuyCollateral = () => {
         leftoverDebt: auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay).toFixed(),
       })
 
+      // old error state calculation
       // 1. check if auction.debt - fiatToPay is less than or equal to auctionDebtFloor.
       //    if true then 2. otherwise proceed and skip 2.
-      const dusty = auctionData.debt
+      /* const dusty = auctionData.debt */
+      /*   .unscaleBy(WAD_DECIMALS) */
+      /*   .minus(fiatToPay) */
+      /*   .lte(auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber) */
+
+      // 2. if purchase would push debt below floor, check that fiatToPay > auctionDebtFloor otherwise block
+      // Q: This would allow you to buy collateral such that debt goes below debt floor??? i thought this wasn't desired
+      /* setIsDebtSufficient( */
+      /*   dusty */
+      /*     ? fiatToPay.gt(auctionData.vault.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber) */
+      /*     : true, */
+      /* ) */
+
+      // my error state calculation
+      // 1. check if auction.debt - fiatToPay is less than or equal to auctionDebtFloor.
+      const purchaseWouldPushDebtBelowFloor = auctionData.debt
         .unscaleBy(WAD_DECIMALS)
         .minus(fiatToPay)
         .lte(auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
 
-      // 2. check that fiatToPay > auctionDebtFloor otherwise block
-      setIsDebtSufficient(
-        dusty
-          ? fiatToPay.gt(auctionData.vault.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
-          : true,
-      )
+      // 2. if purchase would push debt below floor, ensure user is paying down all debt in the vault
+      if (purchaseWouldPushDebtBelowFloor) {
+        setIsDebtSufficient(fiatToPay.gte(auctionData?.debt))
+      } else {
+        setIsDebtSufficient(true)
+      }
+
+      // 3 Q: is there a case where debt can be less than auctionDebtFloor? i remember seeing something about this in the contracts,
+      // even though we would block it from the UI
     }
   }
 
-  const minimumMessage = !isDebtSufficient
-    ? ` (minimum: ${(minimumToBuy as BigNumber).toFixed(6)})`
-    : ''
+  /* const minimumMessage = !isDebtSufficient */
+  /*   ? ` (minimum: ${(minimumToBuy as BigNumber).toFixed(6)})` */
+  /*   : '' */
 
   const steps: Step[] = [
     {
-      description: `Select the amount to buy${minimumMessage}`,
+      // previous description
+      /* description: `Select the amount to buy${minimumMessage}`, */
+      description: 'Select the amount to buy',
       buttonText: 'Buy collateral',
       next() {
         if (!hasAllowance) {
@@ -198,7 +227,9 @@ const BuyCollateral = () => {
 
   const getButtonTextForStep = (stepNumber: number): string => {
     if (!isDebtSufficient) {
-      return 'No partial purchase possible'
+      return `Must purchase <${minimumToBuy
+        ?.unscaleBy(WAD_DECIMALS)
+        .toFixed(2)} or buy all collateral`
     }
     if (!isFiatBalanceSufficient) {
       return INSUFFICIENT_BALANCE_TEXT
@@ -214,11 +245,21 @@ const BuyCollateral = () => {
       return
     }
 
+    // collateral amount to send with slippage?
     const collateralAmountToSend = form
       .getFieldValue('amountToBuy')
       .multipliedBy(SLIPPAGE.plus(1))
       .decimalPlaces(WAD_DECIMALS)
       .scaleBy(WAD_DECIMALS)
+    console.log('collat to send: ', collateralAmountToSend.toString())
+    console.log(
+      'user input: ',
+      form
+        .getFieldValue('amountToBuy')
+        .decimalPlaces(WAD_DECIMALS)
+        .scaleBy(WAD_DECIMALS)
+        .toString(),
+    )
 
     const receipt = await buyCollateral({ collateralAmountToSend, maxPrice })
 
@@ -260,14 +301,14 @@ const BuyCollateral = () => {
     },
     {
       title: 'Amount',
-      value: `${form.getFieldValue('amountToBuy')?.toFixed()}`,
+      value: `${form.getFieldValue('amountToBuy')?.toFixed(4)}`,
     },
     {
       title: 'Current Auction Price',
       value: `${auctionData?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
     },
     {
-      title: 'Buy price',
+      title: 'Estimated FIAT to pay',
       value: `${fiatToPay.toFixed(4) ?? 0} ${FIAT_TICKER}`,
     },
     {
@@ -308,7 +349,6 @@ const BuyCollateral = () => {
                       <p className={cn(s.balance)}>Balance: {FIATBalance?.toFixed(2)} FIAT</p>
                     </div>
 
-                    {/* FixMe: send proper value to `mainAsset` */}
                     <Form
                       form={form}
                       initialValues={{ amountToBuy: 0 }}
@@ -319,7 +359,7 @@ const BuyCollateral = () => {
                         <TokenAmount
                           displayDecimals={4}
                           mainAsset={auctionData?.protocol.name ?? ''}
-                          max={maxCredit}
+                          max={oldMaxCredit}
                           maximumFractionDigits={6}
                           numericInputDisabled={loading}
                           secondaryAsset={auctionData?.underlier.symbol}
