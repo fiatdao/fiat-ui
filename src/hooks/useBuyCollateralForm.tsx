@@ -227,10 +227,8 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
       return maxToPay.dividedBy(oldMaxPrice.unscaleBy(WAD_DECIMALS))
     }
 
-    // If your FIAT buying power is enough to buy out the whole auction,
-    // max should be the total collateral being auctioned
-    // Q: we disable the button based on debt being bought out, but max is determined here in terms of
-    // buying all collateral. should this be max debt?
+    // Q: If your FIAT buying power is enough to buy out the whole auction,
+    // max should be <???> (auctionedCollateral/currentAuctionPrice OR debt/currentAuctionPrice)
     return maxToSell.dividedBy(oldMaxPrice.unscaleBy(WAD_DECIMALS))
   }, [auctionData?.auctionedCollateral, oldMaxPrice, FIATBalance])
 
