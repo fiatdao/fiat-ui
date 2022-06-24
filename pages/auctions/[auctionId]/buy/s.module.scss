@@ -113,6 +113,20 @@
   margin: 0;
 }
 
+.buttonTextContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.buttonText {
+  margin-top: 2px;
+}
+
+.buttonTextTooltip {
+  margin-left: 8px;
+}
+
 .buttonsWrapper {
   display: grid;
   gap: 24px;

@@ -27,6 +27,7 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useMemo, useState } from 'react'
+import { Popover } from 'antd'
 
 const StepperTitle: React.FC<{
   currentStep: number
@@ -83,7 +84,15 @@ const BuyCollateral = () => {
     )
   }, [amountToBuy, auctionData?.currentAuctionPrice])
 
-  const minimumToBuy = auctionData?.debt
+  const isFiatBalanceSufficient = useMemo(() => {
+    return FIATBalance.gte(fiatToPay)
+  }, [FIATBalance, fiatToPay])
+
+  const isExecuteButtonDisabled = useMemo(() => {
+    return loading || !isDebtSufficient || !isFiatBalanceSufficient
+  }, [loading, isDebtSufficient, isFiatBalanceSufficient])
+
+  const maxFractionalBuy = auctionData?.debt
     ?.minus(auctionData?.vault?.auctionDebtFloor ?? ZERO_BIG_NUMBER)
     .dividedBy(auctionData.currentAuctionPrice ?? ONE_BIG_NUMBER)
 
@@ -98,19 +107,22 @@ const BuyCollateral = () => {
         auctionDebtFloor: auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS).toFixed(),
         debt: auctionData.debt.unscaleBy(WAD_DECIMALS).toFixed(),
         fiatToPay: fiatToPay.toFixed(),
-        leftoverDebt: auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay).toFixed(),
+        remainingDebtAfterPurchase: auctionData.debt
+          .unscaleBy(WAD_DECIMALS)
+          .minus(fiatToPay)
+          .toFixed(),
       })
 
-      // 1. Check if debt after purchase (leftoverDebt) would be <= auctionDebtFloor.
-      const leftoverDebt = auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay)
-      const purchaseWouldPushDebtBelowFloor = leftoverDebt.lte(
+      // 1. Check if debt after purchase (remainingDebtAfterPurchase) would be <= auctionDebtFloor.
+      const remainingDebtAfterPurchase = auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay)
+      const purchaseWouldPushDebtBelowFloor = remainingDebtAfterPurchase.lte(
         auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber,
       )
 
       // 2. If purchase would push debt below floor, ensure user is buying all collateral
       if (purchaseWouldPushDebtBelowFloor) {
         // In the case where user must buy all collateral, if auctionedCollateral is undefined,
-        // default it to +infinity to prevent runtime errors or buying such that leftoverDebt < debtFloor
+        // default it to +infinity to prevent runtime errors or buying such that remainingDebtAfterPurchase < debtFloor
         setIsDebtSufficient(
           amountToBuy.gte(auctionData?.auctionedCollateral ?? INFINITE_BIG_NUMBER),
         )
@@ -126,8 +138,7 @@ const BuyCollateral = () => {
 
   const steps: Step[] = [
     {
-      // previous description
-      description: 'Select the amount to buy',
+      description: `Select the amount of collateral to purchase`,
       buttonText: 'Buy collateral',
       next() {
         if (!hasAllowance) {
@@ -202,13 +213,17 @@ const BuyCollateral = () => {
     },
   ]
 
-  const isFiatBalanceSufficient = FIATBalance.gte(fiatToPay)
-
-  const getButtonTextForStep = (stepNumber: number): string => {
+  const getButtonTextForStep = (stepNumber: number) => {
     if (!isDebtSufficient) {
-      return `Must purchase <${minimumToBuy
-        ?.unscaleBy(WAD_DECIMALS)
-        .toFixed(2)} or buy all collateral`
+      return (
+        <div className={cn(s.buttonTextContainer)}>
+          <p className={cn(s.buttonText)}>
+            {`Must purchase < ${maxFractionalBuy
+              ?.unscaleBy(WAD_DECIMALS)
+              .toFixed(2)} or buy all collateral`}
+          </p>
+        </div>
+      )
     }
     if (!isFiatBalanceSufficient) {
       return INSUFFICIENT_BALANCE_TEXT
@@ -230,15 +245,6 @@ const BuyCollateral = () => {
       .multipliedBy(SLIPPAGE.plus(1))
       .decimalPlaces(WAD_DECIMALS)
       .scaleBy(WAD_DECIMALS)
-    console.log('collat to send: ', collateralAmountToSend.toString())
-    console.log(
-      'user input: ',
-      form
-        .getFieldValue('amountToBuy')
-        .decimalPlaces(WAD_DECIMALS)
-        .scaleBy(WAD_DECIMALS)
-        .toString(),
-    )
 
     const receipt = await buyCollateral({ collateralAmountToSend, maxPrice })
 
@@ -275,20 +281,21 @@ const BuyCollateral = () => {
 
   const summaryData = [
     {
-      title: 'Asset',
-      value: `${auctionData?.asset}`,
-    },
-    {
-      title: 'Amount',
-      value: `${form.getFieldValue('amountToBuy')?.toFixed(4)}`,
-    },
-    {
-      title: 'Current Auction Price',
-      value: `${auctionData?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
-    },
-    {
       title: 'Estimated FIAT to pay',
       value: `${fiatToPay.toFixed(4) ?? 0} ${FIAT_TICKER}`,
+    },
+    {
+      title: 'Remaining debt after purchase',
+      value: `${auctionData?.debt
+        ?.unscaleBy(WAD_DECIMALS)
+        .minus(fiatToPay)
+        .toFixed(4)} ${FIAT_TICKER}`,
+    },
+    {
+      title: 'Debt floor',
+      value: `${
+        auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS).toFixed(4) ?? 0
+      } ${FIAT_TICKER}`,
     },
     {
       title: 'APY',
@@ -324,7 +331,7 @@ const BuyCollateral = () => {
                 {step === 0 ? (
                   <>
                     <div className={cn(s.balanceWrapper)}>
-                      <h3 className={cn(s.balanceLabel)}>Select amount</h3>
+                      <h3 className={cn(s.balanceLabel)}>Purchase {auctionData?.asset}</h3>
                       <p className={cn(s.balance)}>Balance: {FIATBalance?.toFixed(2)} FIAT</p>
                     </div>
 
@@ -346,13 +353,37 @@ const BuyCollateral = () => {
                           sliderDisabled={loading}
                         />
                       </Form.Item>
-                      <ButtonGradient
-                        disabled={loading || !isDebtSufficient || !isFiatBalanceSufficient}
-                        height="lg"
-                        onClick={steps[step].next}
+
+                      <Popover
+                        className={cn(s.buttonTextTooltip)}
+                        content={
+                          isExecuteButtonDisabled ? (
+                            <p style={{ maxWidth: '60ch' }}>
+                              The remaining debt after your purchase must be less than the debt
+                              floor to ensure all outstanding debt can be recovered from liquidated
+                              collateral. Learn more about auctions{' '}
+                              <a href="https://docs.fiatdao.com/protocol/fiat/collateral-auctions">
+                                here
+                              </a>
+                              .
+                            </p>
+                          ) : null
+                        }
                       >
-                        {getButtonTextForStep(step)}
-                      </ButtonGradient>
+                        {/* hack to add tooltip to a disabled button: https://github.com/react-component/tooltip/issues/18#issuecomment-411476678 */}
+                        <span
+                          style={{ cursor: isExecuteButtonDisabled ? 'not-allowed' : 'pointer' }}
+                        >
+                          <ButtonGradient
+                            disabled={isExecuteButtonDisabled}
+                            height="lg"
+                            onClick={steps[step].next}
+                            style={isExecuteButtonDisabled ? { pointerEvents: 'none' } : {}}
+                          >
+                            {getButtonTextForStep(step)}
+                          </ButtonGradient>
+                        </span>
+                      </Popover>
 
                       <div className={cn(s.summary)}>
                         <Summary data={summaryData} />
