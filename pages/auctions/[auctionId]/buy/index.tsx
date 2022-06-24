@@ -55,7 +55,7 @@ type Step = {
 
 const BuyCollateral = () => {
   const auctionId = useQueryParam('auctionId')
-  const { data } = useAuction(auctionId)
+  const { data: auctionData } = useAuction(auctionId)
   const [form] = AntdForm.useForm<FormProps>()
 
   const {
@@ -67,47 +67,47 @@ const BuyCollateral = () => {
     loading,
     maxCredit,
     maxPrice,
-  } = useBuyCollateralForm(data)
+  } = useBuyCollateralForm(auctionData)
 
   const [isDebtSufficient, setIsDebtSufficient] = useState(false)
   const [FIATBalance, refetchFIATBalance] = useFIATBalance()
 
-  const minimumToBuy = data?.vault?.auctionDebtFloor
+  const minimumToBuy = auctionData?.vault?.auctionDebtFloor
     ?.plus(1)
     .unscaleBy(WAD_DECIMALS)
-    .dividedBy(data.currentAuctionPrice as BigNumber)
+    .dividedBy(auctionData.currentAuctionPrice as BigNumber)
 
   const amountToBuy = useMemo(() => {
     return form.getFieldValue('amountToBuy')
   }, [form])
 
   const fiatToPay = useMemo(() => {
-    return amountToBuy?.multipliedBy(data?.currentAuctionPrice as BigNumber)
-  }, [amountToBuy, data?.currentAuctionPrice])
+    return amountToBuy?.multipliedBy(auctionData?.currentAuctionPrice as BigNumber)
+  }, [amountToBuy, auctionData?.currentAuctionPrice])
 
   const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
-    if (data?.debt) {
-      const fiatToPay = amountToBuy.multipliedBy(data.currentAuctionPrice as BigNumber)
+    if (auctionData?.debt) {
+      const fiatToPay = amountToBuy.multipliedBy(auctionData.currentAuctionPrice as BigNumber)
 
       // TODO: Leave this for debugging purposes
       // console.log({
-      //   auctionDebtFloor: data?.vault?.auctionDebtFloor?.toFixed(),
+      //   auctionDebtFloor: auctionData?.vault?.auctionDebtFloor?.toFixed(),
       //   fiatToPay: fiatToPay.toFixed(),
-      //   debt: data.debt.toFixed(),
-      //   diff: data.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay).toFixed(),
+      //   debt: auctionData.debt.toFixed(),
+      //   diff: auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay).toFixed(),
       // })
 
       // 1. check if auction.debt - fiatToPay is less than or equal to auctionDebtFloor.
       //    if true then 2. otherwise proceed and skip 2.
-      const dusty = data.debt
+      const dusty = auctionData.debt
         .unscaleBy(WAD_DECIMALS)
         .minus(fiatToPay)
-        .lte(data?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
+        .lte(auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
 
       // 2. check that fiatToPay > auctionDebtFloor otherwise block
       setIsDebtSufficient(
         dusty
-          ? fiatToPay.gt(data.vault.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
+          ? fiatToPay.gt(auctionData.vault.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber)
           : true,
       )
     }
@@ -207,11 +207,11 @@ const BuyCollateral = () => {
     return steps[stepNumber].buttonText
   }
 
-  useDynamicTitle(data?.protocol && `Buy ${data.protocol.humanReadableName}`)
+  useDynamicTitle(auctionData?.protocol && `Buy ${auctionData.protocol.humanReadableName}`)
 
   const onSubmit = async () => {
-    if (!data?.currentAuctionPrice) {
-      console.error('unavailable data')
+    if (!auctionData?.currentAuctionPrice) {
+      console.error('unavailable auctionData')
       return
     }
 
@@ -234,30 +234,30 @@ const BuyCollateral = () => {
     {
       title: 'Auctioned Collateral',
       tooltip: 'Units of this collateral type that are currently being auctioned.',
-      value: data?.auctionedCollateral?.toFixed(2),
+      value: auctionData?.auctionedCollateral?.toFixed(2),
     },
     {
       title: 'Current Auction Price',
       tooltip: 'The current FIAT price at which the collateral can be bought.',
-      value: `${data?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
+      value: `${auctionData?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
     },
     {
       title: 'Face Value',
       tooltip: 'The amount of underlying tokens available for redemption at maturity.',
-      value: `$${data?.faceValue?.toFixed(4)}`,
+      value: `$${auctionData?.faceValue?.toFixed(4)}`,
     },
     {
       title: 'APY',
       tooltip:
         'The annualized yield as implied by the Current Auction Price and collateral maturity.',
-      value: `${data?.apy}%`,
+      value: `${auctionData?.apy}%`,
     },
   ]
 
   const summaryData = [
     {
       title: 'Asset',
-      value: `${data?.asset}`,
+      value: `${auctionData?.asset}`,
     },
     {
       title: 'Amount',
@@ -265,20 +265,20 @@ const BuyCollateral = () => {
     },
     {
       title: 'Current Auction Price',
-      value: `${data?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
+      value: `${auctionData?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
     },
     {
       title: 'Buy price',
       value: `${
         form
           .getFieldValue('amountToBuy')
-          ?.multipliedBy(data?.currentAuctionPrice ?? 0)
+          ?.multipliedBy(auctionData?.currentAuctionPrice ?? 0)
           .toFixed(4) ?? 0
       } ${FIAT_TICKER}`,
     },
     {
       title: 'APY',
-      value: `${data?.apy}%`,
+      value: `${auctionData?.apy}%`,
     },
   ]
 
@@ -326,11 +326,11 @@ const BuyCollateral = () => {
                       <Form.Item name="amountToBuy" required>
                         <TokenAmount
                           displayDecimals={4}
-                          mainAsset={data?.protocol.name ?? ''}
+                          mainAsset={auctionData?.protocol.name ?? ''}
                           max={maxCredit}
                           maximumFractionDigits={6}
                           numericInputDisabled={loading}
-                          secondaryAsset={data?.underlier.symbol}
+                          secondaryAsset={auctionData?.underlier.symbol}
                           slider
                           sliderDisabled={loading}
                         />
