@@ -2,7 +2,6 @@ import s from './s.module.scss'
 import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
 import {
   FIAT_TICKER,
-  INFINITE_BIG_NUMBER,
   INSUFFICIENT_BALANCE_TEXT,
   ONE_BIG_NUMBER,
   WAD_DECIMALS,
@@ -14,7 +13,6 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import TokenAmount from '@/src/components/custom/token-amount'
-import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useAuction } from '@/src/hooks/subgraph/useAuction'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
@@ -73,7 +71,7 @@ const BuyCollateral = () => {
     /* oldMaxPrice, */
   } = useBuyCollateralForm(auctionData)
   const [FIATBalance, refetchFIATBalance] = useFIATBalance(true)
-  const [isDebtSufficient, setIsDebtSufficient] = useState(false)
+  const [isPurchaseAmountValid, setIsPurchaseAmountValid] = useState(false)
   const [amountToBuy, setAmountToBuy] = useState(ZERO_BIG_NUMBER)
   const [step, setStep] = useState(0)
 
@@ -89,8 +87,8 @@ const BuyCollateral = () => {
   }, [FIATBalance, fiatToPay])
 
   const isExecuteButtonDisabled = useMemo(() => {
-    return loading || !isDebtSufficient || !isFiatBalanceSufficient
-  }, [loading, isDebtSufficient, isFiatBalanceSufficient])
+    return loading || !isPurchaseAmountValid || !isFiatBalanceSufficient
+  }, [loading, isPurchaseAmountValid, isFiatBalanceSufficient])
 
   const maxFractionalBuy = auctionData?.debt
     ?.minus(auctionData?.vault?.auctionDebtFloor ?? ZERO_BIG_NUMBER)
@@ -103,36 +101,36 @@ const BuyCollateral = () => {
       const fiatToPay = amountToBuy.multipliedBy(auctionData.currentAuctionPrice as BigNumber)
 
       // DEBUG (very helpful don't delete)
-      console.log({
-        auctionDebtFloor: auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS).toFixed(),
-        debt: auctionData.debt.unscaleBy(WAD_DECIMALS).toFixed(),
-        fiatToPay: fiatToPay.toFixed(),
-        remainingDebtAfterPurchase: auctionData.debt
-          .unscaleBy(WAD_DECIMALS)
-          .minus(fiatToPay)
-          .toFixed(),
-      })
+      /* console.log({ */
+      /*   auctionDebtFloor: auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS).toFixed(), */
+      /*   debt: auctionData.debt.unscaleBy(WAD_DECIMALS).toFixed(), */
+      /*   fiatToPay: fiatToPay.toFixed(), */
+      /*   remainingDebtAfterPurchase: auctionData.debt */
+      /*     .unscaleBy(WAD_DECIMALS) */
+      /*     .minus(fiatToPay) */
+      /*     .toFixed(), */
+      /* }) */
 
-      // 1. Check if debt after purchase (remainingDebtAfterPurchase) would be <= auctionDebtFloor.
       const remainingDebtAfterPurchase = auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay)
       const purchaseWouldPushDebtBelowFloor = remainingDebtAfterPurchase.lte(
         auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS) as BigNumber,
       )
 
-      // 2. If purchase would push debt below floor, ensure user is buying all collateral
-      if (purchaseWouldPushDebtBelowFloor) {
-        // In the case where user must buy all collateral, if auctionedCollateral is undefined,
-        // default it to +infinity to prevent runtime errors or buying such that remainingDebtAfterPurchase < debtFloor
-        setIsDebtSufficient(
-          amountToBuy.gte(auctionData?.auctionedCollateral ?? INFINITE_BIG_NUMBER),
-        )
-      } else {
-        // Valid fractional purchase
-        setIsDebtSufficient(true)
+      let isBuyingAllCollateral = false
+      if (auctionData?.auctionedCollateral) {
+        isBuyingAllCollateral = amountToBuy.gte(auctionData.auctionedCollateral)
       }
 
-      // 3 Q: is there a case where debt can be less than auctionDebtFloor? i remember seeing something about this in the contracts,
-      // even though we would block it from the UI
+      if (isBuyingAllCollateral) {
+        setIsPurchaseAmountValid(true)
+      } else if (purchaseWouldPushDebtBelowFloor) {
+        // If making fractional purchase, ensure remaining debt would be <= auctionDebtFloor
+        // Also handles the rare case where debt <= auctionDebtFloor
+        setIsPurchaseAmountValid(false)
+      } else {
+        // Valid fractional purchase
+        setIsPurchaseAmountValid(true)
+      }
     }
   }
 
@@ -214,7 +212,7 @@ const BuyCollateral = () => {
   ]
 
   const getButtonTextForStep = (stepNumber: number) => {
-    if (!isDebtSufficient) {
+    if (!isPurchaseAmountValid) {
       return (
         <div className={cn(s.buttonTextContainer)}>
           <p className={cn(s.buttonText)}>
@@ -433,4 +431,4 @@ const BuyCollateral = () => {
   )
 }
 
-export default withRequiredConnection(BuyCollateral)
+export default BuyCollateral
