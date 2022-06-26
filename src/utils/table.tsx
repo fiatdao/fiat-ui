@@ -16,9 +16,23 @@ export const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
 
 export const parseTime = formatWithOptions({ locale: enUS }, 'hh:mm:ss b')
 
-export const remainingTime = (d: Date) => {
+export const remainingTime = (d: Date): string => {
   if (d.getTime() <= Date.now()) {
-    return 'Expired'
+    return 'Matured'
+  }
+  let today = new Date()
+  const diffInDays = differenceInDays(d, today)
+  today = addDays(diffInDays, today)
+  const diffInHours = differenceInHours(d, today)
+  today = addHours(diffInHours, today)
+  const diffInMinutes = differenceInMinutes(d, today)
+  today = addMinutes(diffInMinutes, today)
+  return `${diffInDays}d:${diffInHours}h:${diffInMinutes}m`
+}
+
+export const getRemainingTimeMessage = (d: Date) => {
+  if (d.getTime() <= Date.now()) {
+    return 'Matured'
   }
   let today = new Date()
   const diffInDays = differenceInDays(d, today)
