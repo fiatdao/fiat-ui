@@ -9,8 +9,9 @@ import Popover from 'src/components/antd/popover'
 import cn from 'classnames'
 import { useMemo, useState } from 'react'
 
-interface FilterState {
+export interface CollateralFilter {
   filterByInMyWallet: boolean
+  filterOutMatured: boolean
   protocolFilters: Array<ProtocolFilter>
 }
 
@@ -20,8 +21,9 @@ export const useProtocolFilters = () => {
   const initialFilters = useMemo(() => {
     return {
       filterByInMyWallet: false,
+      filterOutMatured: false,
       protocolFilters: getInitialProtocolFilters(appChainId),
-    } as FilterState
+    } as CollateralFilter
   }, [appChainId])
 
   const [filterState, setFilterState] = useState(initialFilters)
@@ -63,6 +65,13 @@ export const useProtocolFilters = () => {
     })
   }
 
+  const toggleFilterOutMatured = () => {
+    setFilterState({
+      ...filterState,
+      filterOutMatured: !filterState.filterOutMatured,
+    })
+  }
+
   const toggleInMyWallet = () => {
     setFilterState({
       ...filterState,
@@ -99,10 +108,19 @@ export const useProtocolFilters = () => {
     </>
   )
 
-  const renderFilters = (withWalletFilter = true) => (
+  const renderFilters = (withWalletFilter = true, withMaturedFilter = true) => (
     <>
       <div className={cn(s.filters)}>
         {renderFilterButtons()}
+        {withMaturedFilter && (
+          <ToggleSwitch
+            checked={filterState.filterOutMatured}
+            className={cn(s.switch)}
+            disabled={!isWalletConnected}
+            label="Filter out matured?"
+            onChange={toggleFilterOutMatured}
+          />
+        )}
         {withWalletFilter && (
           <ToggleSwitch
             checked={filterState.filterByInMyWallet}
@@ -133,9 +151,9 @@ export const useProtocolFilters = () => {
   )
 
   return {
-    areAllProtocolFiltersActive,
     protocolsToFilterBy,
     filterByInMyWallet: filterState.filterByInMyWallet,
+    filterOutMatured: filterState.filterOutMatured,
     renderFilters,
   }
 }
