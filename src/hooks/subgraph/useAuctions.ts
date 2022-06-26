@@ -8,42 +8,46 @@ import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
 import { auctions, auctionsVariables } from '@/types/subgraph/__generated__/auctions'
 import { AuctionData } from '@/src/utils/data/auctions'
 import useSWR from 'swr'
+import { useEffect, useState } from 'react'
 
 const fetchAuctions = async (appChainId: ChainsValues, where: CollateralAuction_filter | null) =>
   graphqlFetcher<auctions, auctionsVariables>(appChainId, AUCTIONS, { where })
 
-type UseAuctions = {
+type UseActiveAuctions = {
   auctions?: AuctionData[]
   loading: boolean
   error: any
 }
 
-export const useAuctions = (protocolsToFilterBy: string[]): UseAuctions => {
+export const useActiveAuctions = (protocolsToFilterBy: string[]): UseActiveAuctions => {
   const { appChainId, readOnlyAppProvider: provider } = useWeb3Connection()
+  const [auctions, setAuctions] = useState<AuctionData[]>([])
 
   const vaultAddresses = getVaultAddresses(appChainId)
 
-  // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
-  const { data, error } = useSWR(
-    ['auctions', protocolsToFilterBy.join(), appChainId, provider],
-    async () => {
-      const [{ collateralAuctions }, { timestamp }] = await Promise.all([
-        fetchAuctions(
-          appChainId,
-          protocolsToFilterBy.length
-            ? { vault_in: vaultAddresses, vaultName_not_contains_nocase: 'deprecated' }
-            : null,
-        ),
-        provider.getBlock('latest'),
-      ])
+  const { data, error } = useSWR(['auctions', appChainId], async () => {
+    const [{ collateralAuctions }, { timestamp }] = await Promise.all([
+      fetchAuctions(appChainId, {
+        vault_in: vaultAddresses,
+        vaultName_not_contains_nocase: 'deprecated',
+        debt_gt: '0', // this filters out completed auctions
+      }),
+      provider.getBlock('latest'),
+    ])
+    const wrangledAuctions = await Promise.all(
+      collateralAuctions.map((auction) => wrangleAuction(auction, provider, appChainId, timestamp)),
+    )
+    return wrangledAuctions
+  })
 
-      return Promise.all(
-        collateralAuctions.map((auction) =>
-          wrangleAuction(auction, provider, appChainId, timestamp),
-        ),
-      )
-    },
-  )
+  useEffect(() => {
+    // Apply filters
+    const wrangledFilteredAuctions = data?.filter((a) =>
+      protocolsToFilterBy.includes(a.protocol.humanReadableName),
+    )
 
-  return { auctions: data, error, loading: !data && !error }
+    setAuctions(wrangledFilteredAuctions || [])
+  }, [data, protocolsToFilterBy])
+
+  return { auctions, error, loading: !data && !error }
 }

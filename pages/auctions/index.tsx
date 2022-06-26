@@ -2,7 +2,7 @@ import s from './s.module.scss'
 import { useProtocolFilters } from '@/src/hooks/useProtocolFilters'
 import { FIAT_TICKER } from '@/src/constants/misc'
 import SafeSuspense from '@/src/components/custom/safe-suspense'
-import { useAuctions } from '@/src/hooks/subgraph/useAuctions'
+import { useActiveAuctions } from '@/src/hooks/subgraph/useAuctions'
 import ButtonGradient from '@/src/components/antd/button-gradient'
 import SkeletonTable, { SkeletonTableColumnsType } from '@/src/components/custom/skeleton-table'
 import { Table } from '@/src/components/antd'
@@ -19,7 +19,7 @@ import cn from 'classnames'
 import { Empty } from 'antd'
 
 const AuctionsTable = ({ columns, protocolsToFilterBy }: any) => {
-  const { auctions } = useAuctions(protocolsToFilterBy)
+  const { auctions } = useActiveAuctions(protocolsToFilterBy)
 
   return (
     <Table
@@ -59,15 +59,22 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'asset',
-      render: (value: string, { url }) => <CellValue url={url} value={value} />,
+      render: (asset: string, { url }) => <CellValue url={url} value={asset} />,
       title: 'Asset',
     },
     {
       align: 'left',
       dataIndex: 'endsAt',
-      render: (value: Date) => (
-        <CellValue bottomValue={parseTime(value)} value={parseDate(value)} />
-      ),
+      render: (endsAt: Date) => {
+        try {
+          const time = parseTime(endsAt)
+          const date = parseDate(endsAt)
+          return <CellValue bottomValue={time} value={date} />
+        } catch (e) {
+          console.warn('Error parsing time, likely an expired auction: ', e)
+          return <CellValue bottomValue={endsAt.toString()} value={endsAt.toString()} />
+        }
+      },
       title: 'Restarts At',
     },
     {

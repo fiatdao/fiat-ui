@@ -40,21 +40,18 @@ export const fetchCollateralById = ({
     orderBy: CollateralType_orderBy.maturity,
     orderDirection: OrderDirection.desc,
   }).then(async ({ collateralTypes, collybusDiscountRates, collybusSpots }) => {
-    // TODO: get discountRate arg in here
     return Promise.all(
-      collateralTypes
-        .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
-        .map((p) => {
-          const spotPrice: Maybe<Collaterals_collybusSpots> =
-            collybusSpots.find((s) => s.token === p.underlierAddress) ?? null
-          const discountRate: Maybe<BigNumber> =
-            BigNumber.from(
-              collybusDiscountRates.find(({ rateId }) => rateId === p.vault?.defaultRateId)
-                ?.discountRate,
-            ) ?? null
+      collateralTypes.map((p) => {
+        const spotPrice: Maybe<Collaterals_collybusSpots> =
+          collybusSpots.find((s) => s.token === p.underlierAddress) ?? null
+        const discountRate: Maybe<BigNumber> =
+          BigNumber.from(
+            collybusDiscountRates.find(({ rateId }) => rateId === p.vault?.defaultRateId)
+              ?.discountRate,
+          ) ?? null
 
-          return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
-        }),
+        return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
+      }),
     )
   })
 }
@@ -70,8 +67,6 @@ export const fetchCollaterals = ({
   appChainId: ChainsValues
 }) => {
   return graphqlFetcher<Collaterals, CollateralsVariables>(appChainId, COLLATERALS, {
-    // @TODO: add maturity filter maturity_gte (Date.now()/1000).toString()
-    // @TODO: quick fix to hide deprecated vaults, filter by vaultName_not_contains deprecated
     where: {
       address_in: userCollaterals,
       vaultName_not_contains_nocase: 'deprecated',
@@ -80,26 +75,26 @@ export const fetchCollaterals = ({
     orderDirection: OrderDirection.desc,
   }).then(async ({ collateralTypes, collybusDiscountRates, collybusSpots }) => {
     return Promise.all(
-      collateralTypes
-        .filter((c) => Number(c.maturity) > Date.now() / 1000) // TODO Review maturity after `now` only.
-        .map((p) => {
-          const spotPrice: Maybe<Collaterals_collybusSpots> =
-            collybusSpots.find((s) => s.token === p.underlierAddress) ?? null
-          const discountRate: Maybe<BigNumber> =
-            BigNumber.from(
-              collybusDiscountRates.find(({ rateId }) => rateId === p.vault?.defaultRateId)
-                ?.discountRate,
-            ) ?? null
+      collateralTypes.map((p) => {
+        const spotPrice: Maybe<Collaterals_collybusSpots> =
+          collybusSpots.find((s) => s.token === p.underlierAddress) ?? null
+        const discountRate: Maybe<BigNumber> =
+          BigNumber.from(
+            collybusDiscountRates.find(({ rateId }) => rateId === p.vault?.defaultRateId)
+              ?.discountRate,
+          ) ?? null
 
-          // should filter on collateral.vault.type (Element) or collateral.protocol (Element Finance) name ackshually
-          // vaultName_in: ["vaultEPT_eP:eyUSDC:10-AUG-22-GMT"],
-          return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
-        }),
+        return wrangleCollateral(p, provider, appChainId, spotPrice, discountRate)
+      }),
     )
   })
 }
 
-export const useCollaterals = (filterByInMyWallet: boolean, protocolsToFilterBy: string[]) => {
+export const useCollaterals = (
+  filterByInMyWallet: boolean,
+  filterOutMatured: boolean,
+  protocolsToFilterBy: string[],
+) => {
   const {
     address: currentUserAddress,
     appChainId,
@@ -123,13 +118,18 @@ export const useCollaterals = (filterByInMyWallet: boolean, protocolsToFilterBy:
   })
 
   useEffect(() => {
-    // apply filters
+    // TODO: if running into performance issues,
+    //  these filters should be applied on the subgraph queries
+    const maturityFilteredData = filterOutMatured
+      ? data?.filter((c) => Number(c.maturity) > Date.now()) // TODO Review maturity after `now` only.
+      : data
+
     const walletFilteredData = filterByInMyWallet
-      ? data?.filter(
+      ? maturityFilteredData?.filter(
           (collateral) =>
             !!userTokens?.find((userToken: string) => collateral.address === userToken),
         )
-      : data
+      : maturityFilteredData
 
     const protocolFilteredData = walletFilteredData?.filter((c) =>
       protocolsToFilterBy.includes(c.protocol),
@@ -150,7 +150,15 @@ export const useCollaterals = (filterByInMyWallet: boolean, protocolsToFilterBy:
     sortByMaturity(newCollaterals)
 
     setCollaterals(newCollaterals || [])
-  }, [data, positions, filterByInMyWallet, userTokens, protocolsToFilterBy, appChainId])
+  }, [
+    data,
+    positions,
+    filterByInMyWallet,
+    filterOutMatured,
+    userTokens,
+    protocolsToFilterBy,
+    appChainId,
+  ])
 
   if (isDev() && error) {
     console.error(error)
