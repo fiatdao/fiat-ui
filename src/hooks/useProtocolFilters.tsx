@@ -21,7 +21,7 @@ export const useProtocolFilters = () => {
   const initialFilters = useMemo(() => {
     return {
       filterByInMyWallet: false,
-      filterOutMatured: false,
+      filterOutMatured: true,
       protocolFilters: getInitialProtocolFilters(appChainId),
     } as CollateralFilter
   }, [appChainId])
@@ -112,15 +112,6 @@ export const useProtocolFilters = () => {
     <>
       <div className={cn(s.filters)}>
         {renderFilterButtons()}
-        {withMaturedFilter && (
-          <ToggleSwitch
-            checked={filterState.filterOutMatured}
-            className={cn(s.switch)}
-            disabled={!isWalletConnected}
-            label="Filter out matured?"
-            onChange={toggleFilterOutMatured}
-          />
-        )}
         {withWalletFilter && (
           <ToggleSwitch
             checked={filterState.filterByInMyWallet}
@@ -128,6 +119,15 @@ export const useProtocolFilters = () => {
             disabled={!isWalletConnected}
             label="In my wallet"
             onChange={toggleInMyWallet}
+          />
+        )}
+        {withMaturedFilter && (
+          <ToggleSwitch
+            checked={filterState.filterOutMatured}
+            className={cn(s.switch)}
+            disabled={!isWalletConnected}
+            label="Filter out matured?"
+            onChange={toggleFilterOutMatured}
           />
         )}
       </div>
