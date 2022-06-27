@@ -31,7 +31,7 @@ type ModifyCollateralAndDebt = BaseModify & {
   virtualRate: BigNumber
 }
 
-type RedeemModifyCollateralAndDebt = BaseModify & {
+type RedeemCollateralAndModifyDebt = BaseModify & {
   deltaCollateral: BigNumber
   deltaDebt: BigNumber
   virtualRate: BigNumber
@@ -77,7 +77,7 @@ export type UseUserActions = {
   approveFIAT: (to: string) => ReturnType<TransactionResponse['wait']>
   depositCollateral: (params: DepositCollateral) => ReturnType<TransactionResponse['wait']>
   redeemCollateralAndModifyDebt: (
-    params: RedeemModifyCollateralAndDebt,
+    params: RedeemCollateralAndModifyDebt,
   ) => ReturnType<TransactionResponse['wait']>
   modifyCollateralAndDebt: (
     params: ModifyCollateralAndDebt,
@@ -342,7 +342,7 @@ export const useUserActions = (type?: string): UseUserActions => {
   )
 
   const redeemCollateralAndModifyDebt = useCallback(
-    async (params: RedeemModifyCollateralAndDebt) => {
+    async (params: RedeemCollateralAndModifyDebt) => {
       if (!address || !userProxy || !userProxyAddress) {
         throw new Error(`Missing information: ${{ address, userProxy, userProxyAddress }}`)
       }
