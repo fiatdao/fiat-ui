@@ -290,8 +290,6 @@ export const useUserActions = (type?: string): UseUserActions => {
         ],
       )
 
-      console.log(22, activeContract.address)
-
       // please sign
       notification.requestSign()
 

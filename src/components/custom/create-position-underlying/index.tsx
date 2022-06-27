@@ -20,13 +20,16 @@ import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
-// import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
+import { getMinImpliedRate } from '@/src/utils/getMinImpliedRate'
+import useContractCall from '@/src/hooks/contracts/useContractCall'
+import { contracts } from '@/src/constants/contracts'
+import { currencyIds } from '@/src/constants/currencyIds'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 type CreatePositionUnderlyingProps = {
   collateral: Collateral
@@ -54,7 +57,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   const [form] = AntdForm.useForm<FormProps>()
 
   const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
-  const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
+  const { address: currentUserAddress, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const { buyCollateralAndModifyDebtERC20, buyCollateralAndModifyDebtERC1155 } = useUserActions(
     collateral.vault?.type,
@@ -143,15 +146,33 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   const underlierAmount = stateMachine.context.underlierAmount.toNumber()
   const apr = (1 - marketRate.toNumber()) * 100
   const fixedAPR = `${apr.toFixed(2)}%`
-  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)} ${
-    collateral ? collateral.underlierSymbol : '-'
-  }`
-  const redeemableValue = Number(underlierAmount) + Number(interestEarned)
+  const interestEarnedValue = Number(underlierAmount * (apr / 100)).toFixed(2)
+  const interestEarned = `${interestEarnedValue} ${collateral ? collateral.underlierSymbol : '-'}`
+  const redeemableValue = Number(underlierAmount) + Number(interestEarnedValue)
   const redeemable = `${(isNaN(redeemableValue) ? 0 : redeemableValue).toFixed(2)} ${
     collateral ? collateral.underlierSymbol : '-'
   }`
   const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
-  // const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
+
+  const underlier = collateral.underlierSymbol ?? ''
+  const currencyId = currencyIds[underlier as keyof typeof currencyIds]
+
+  const [cashGroup] =
+    useContractCall(
+      contracts.NOTIONAL.address[appChainId],
+      contracts.NOTIONAL.abi,
+      'getCashGroup',
+      [currencyId],
+    ) ?? null
+
+  const currentTimeStamp = Math.round(new Date().getTime() / 1000)
+
+  const [market] =
+    useContractCall(contracts.NOTIONAL.address[appChainId], contracts.NOTIONAL.abi, 'getMarket', [
+      currencyId,
+      new Date(collateral?.maturity).getTime() / 1000,
+      currentTimeStamp,
+    ]) ?? null
 
   const createUnderlyingPositionERC1155 = async ({
     fiatAmount,
@@ -164,6 +185,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
       ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
       : ZERO_BIG_NUMBER
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+    const minImpliedRate = getMinImpliedRate(fCashAmount, slippageTolerance, cashGroup, market)
 
     try {
       setLoading(true)
@@ -174,7 +196,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
         deltaDebt: _fiatAmount,
         virtualRate: collateral.vault.virtualRate,
         fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals
-        minImpliedRate: 100000, //minImpliedRate,
+        minImpliedRate: minImpliedRate,
         underlierAmount: _underlierAmount, //definitely correct */
       })
       setLoading(false)

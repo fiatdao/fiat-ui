@@ -1,14 +1,10 @@
-import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
-import { contracts } from '@/src/constants/contracts'
-import { Contract } from 'ethers'
-
-export const useMinImpliedRate = (fCash: any, maxSlippage: any): any => {
-  const { appChainId, web3Provider } = useWeb3Connected()
-  const contract = new Contract(
-    contracts.USER_ACTIONS_FC.address[appChainId], //probably need to grab a different contract
-    contracts.USER_ACTIONS_FC.abi,
-    web3Provider?.getSigner(),
-  )
+export const getMinImpliedRate = (
+  fCash: any,
+  maxSlippage: any,
+  cashGroup: any,
+  market: any,
+): any => {
+  console.log(55, cashGroup)
 
   const RATE_PRECISION = 10 ** 9
   const SECONDS_IN_YEAR = 360 * 86400
@@ -71,20 +67,6 @@ export const useMinImpliedRate = (fCash: any, maxSlippage: any): any => {
     return Number(annualRate).toFixed(0)
   }
 
-  const fetchMarket = (market_id: any) => {
-    return contract.functions.getMarket(market_id[0], market_id[1], market_id[2])
-  }
-
-  // fetch CashGroup details
-  const fetchCashGroup = (currencyId: any) => {
-    return contract.functions.getCashGroup(currencyId)
-  }
-
-  const market_id = [3, 1664064000, 1656288000] // DAI-September-2022
-
-  // fetch market state and CashGroup details
-  const market = fetchMarket(market_id)
-
   const minImpliedRate = (
     fCashToAccount: any,
     blockTime: any,
@@ -93,13 +75,17 @@ export const useMinImpliedRate = (fCash: any, maxSlippage: any): any => {
     maxSlippage: any,
   ) => {
     const maturity = market[1]
+    console.log(56, maturity)
     const timeToMaturity = remainingTimeToMaturity(blockTime, maturity)
+    console.log(57, timeToMaturity)
     const rate = exchangeRate(fCashToAccount, market, cashGroup, timeToMaturity)
+    console.log(58, rate)
+    console.log(59, exchangeToInterestRate(rate, timeToMaturity))
+    console.log(60, maxSlippage)
     return Number(exchangeToInterestRate(rate, timeToMaturity)) - maxSlippage
   }
 
   const currentTimestamp = new Date()
-  const cashGroup = fetchCashGroup(market_id[0])
 
   // Might need to remove /RATE_PRECISION
   return minImpliedRate(fCash, currentTimestamp, market, cashGroup, maxSlippage) / RATE_PRECISION

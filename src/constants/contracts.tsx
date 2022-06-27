@@ -8,6 +8,7 @@ import {
   moneta,
   noLossCollateralAuction,
   noLossCollateralAuctionActions,
+  notional,
   prbProxy,
   prbProxyRegistry,
   publican,
@@ -154,5 +155,12 @@ export const contracts = constantContracts({
       [Chains.goerli]: contractsByNetwork[Chains.goerli].publican.address,
     },
     abi: publican,
+  },
+  NOTIONAL: {
+    address: {
+      [Chains.mainnet]: contractsByNetwork[Chains.mainnet].notional.address,
+      [Chains.goerli]: contractsByNetwork[Chains.goerli].notional.address,
+    },
+    abi: notional,
   },
 })
