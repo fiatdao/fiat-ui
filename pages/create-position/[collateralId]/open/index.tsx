@@ -252,7 +252,7 @@ const FormERC20: React.FC<{
                     checked={tab === CreatePositionTab.bond}
                     onClick={() => setTab(CreatePositionTab.bond)}
                   >
-                    Bond
+                    Asset
                   </RadioTab>
                   <RadioTab
                     checked={tab === CreatePositionTab.underlying}

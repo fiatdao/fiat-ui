@@ -61,7 +61,7 @@ export const isFiatTab = (key: string): key is FiatTabKey => {
   return FIAT_KEYS.includes(key as FiatTabKey)
 }
 
-const COLLATERAL_KEYS = ['deposit', 'withdraw'] as const
+const COLLATERAL_KEYS = ['deposit', 'withdraw', 'withdrawUnderlier', 'depositUnderlier'] as const
 type CollateralTabKey = typeof COLLATERAL_KEYS[number]
 
 export const isCollateralTab = (key: string): key is CollateralTabKey => {
@@ -221,7 +221,6 @@ const PositionManage = () => {
   return (
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
-
       <PositionFormsLayout infoBlocks={infoBlocks}>
         {!finished ? (
           <>
@@ -273,6 +272,24 @@ const PositionManage = () => {
                         >
                           Withdraw
                         </Tab>
+                        <Tab
+                          isActive={'depositUnderlier' === activeTabKey}
+                          onClick={() => {
+                            form.setFieldsValue({ deposit: undefined })
+                            setActiveTabKey('depositUnderlier')
+                          }}
+                        >
+                          Deposit Underlier
+                        </Tab>
+                        <Tab
+                          isActive={'withdrawUnderlier' === activeTabKey}
+                          onClick={() => {
+                            form.setFieldsValue({ deposit: undefined })
+                            setActiveTabKey('withdrawUnderlier')
+                          }}
+                        >
+                          Withdraw Underlier
+                        </Tab>
                       </Tabs>
                       {'deposit' === activeTabKey && position && (
                         <>
@@ -295,7 +312,49 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
+                      {'depositUnderlier' === activeTabKey && position && (
+                        <>
+                          <Balance
+                            title="Select amount to deposit"
+                            value={`Available: ${availableDepositAmount?.toFixed(4)}`}
+                          />
+                          <Form.Item name="deposit" required>
+                            <TokenAmount
+                              displayDecimals={4}
+                              healthFactorValue={healthFactor}
+                              mainAsset={position.vaultName}
+                              max={maxDepositAmount}
+                              maximumFractionDigits={4}
+                              numericInputDisabled={formDisabled}
+                              secondaryAsset={position.underlier.symbol}
+                              slider={'healthFactorVariantReverse'}
+                              sliderDisabled={formDisabled}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
                       {'withdraw' === activeTabKey && position && (
+                        <>
+                          <Balance
+                            title="Select amount to withdraw"
+                            value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
+                          />
+                          <Form.Item name="withdraw" required>
+                            <TokenAmount
+                              displayDecimals={4}
+                              healthFactorValue={healthFactor}
+                              mainAsset={position.vaultName}
+                              max={maxWithdrawAmount}
+                              maximumFractionDigits={4}
+                              numericInputDisabled={formDisabled}
+                              secondaryAsset={position.underlier.symbol}
+                              slider={'healthFactorVariant'}
+                              sliderDisabled={formDisabled}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
+                      {'withdrawUnderlier' === activeTabKey && position && (
                         <>
                           <Balance
                             title="Select amount to withdraw"
