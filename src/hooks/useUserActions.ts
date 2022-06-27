@@ -37,6 +37,12 @@ type RedeemCollateralAndModifyDebt = BaseModify & {
   virtualRate: BigNumber
 }
 
+type SellCollateralAndModifyDebt = BaseModify & {
+  deltaCollateral: BigNumber
+  deltaDebt: BigNumber
+  virtualRate: BigNumber
+}
+
 type BuyCollateralAndModifyDebtERC1155 = BaseModify & {
   // TODO: regen types so it matches args on VaultFCActions Contract for buyCollateralAndModifyDebt
   // address vault
@@ -403,6 +409,7 @@ export const useUserActions = (type?: string): UseUserActions => {
     },
     [address, userProxy, userProxyAddress, activeContract, notification],
   )
+
   // VaultEPTActions buyCollateralAndModifyDebt
   const buyCollateralAndModifyDebtERC20 = useCallback(
     async (params: BuyCollateralAndModifyDebtERC20) => {
