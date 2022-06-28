@@ -82,7 +82,7 @@ const BuyCollateral = () => {
   }, [form])
 
   const fiatToPay = useMemo(() => {
-    return amountToBuy.multipliedBy(data?.currentAuctionPrice as BigNumber)
+    return amountToBuy?.multipliedBy(data?.currentAuctionPrice as BigNumber)
   }, [amountToBuy, data?.currentAuctionPrice])
 
   const onValuesChange = ({ amountToBuy = ZERO_BIG_NUMBER }: { amountToBuy?: BigNumber }) => {
@@ -195,7 +195,7 @@ const BuyCollateral = () => {
     },
   ]
 
-  const isFiatBalanceSufficient = FIATBalance.lt(fiatToPay)
+  const isFiatBalanceSufficient = FIATBalance.gte(fiatToPay)
 
   const getButtonTextForStep = (stepNumber: number): string => {
     if (!isDebtSufficient) {

@@ -30,7 +30,6 @@ const STORAGE_CONNECTED_WALLET = 'onboard_selectedWallet'
 const ONBOARD_STATE_DELAY = 100
 
 // @TODO: Default VALUES to connect to multiple wallets
-const PORTIS_KEY = 'Your Portis key here'
 const APP_URL = 'Your app url here'
 const CONTACT_EMAIL = 'Your contact email here'
 const RPC_URL = 'https://<network>.infura.io/v3/<INFURA_KEY>'
@@ -72,12 +71,6 @@ function initOnboard(appChainId: ChainsValues, subscriptions: Subscriptions) {
           walletName: WalletType.Ledger,
           rpcUrl: RPC_URL,
           preferred: true,
-        },
-        {
-          walletName: WalletType.Portis,
-          apiKey: PORTIS_KEY,
-          preferred: true,
-          // label: 'Login with Email'
         },
         {
           walletName: WalletType.Trezor,
