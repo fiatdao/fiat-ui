@@ -31,7 +31,7 @@ export const FIAT_TICKER = 'FIAT'
 // @TODO: var used to calculate difference between big numbers in non human format
 export const MIN_EPSILON_OFFSET = new BigNumber(0.005)
 
-export const SET_ALLOWANCE_PROXY_TEXT = 'Set allowance for Proxy'
+export const SET_FIAT_ALLOWANCE_PROXY_TEXT = 'Set Allowance for FIAT'
 export const ENABLE_PROXY_FOR_FIAT_TEXT = 'Enable Proxy for FIAT'
 export const EXECUTE_TEXT = 'Execute'
 export const DEPOSIT_COLLATERAL_TEXT = 'Deposit collateral'
