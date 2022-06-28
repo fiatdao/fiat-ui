@@ -1,5 +1,5 @@
 import s from './s.module.scss'
-import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
+import { SUCCESS_STEP } from '@/src/constants/auctions'
 import {
   FIAT_TICKER,
   INSUFFICIENT_BALANCE_TEXT,
@@ -19,6 +19,7 @@ import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import { useBuyCollateralForm } from '@/src/hooks/useBuyCollateralForm'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { Summary } from '@/src/components/custom/summary'
+import Info from '@/src/resources/svg/info.svg'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
 import AntdForm from 'antd/lib/form'
@@ -67,8 +68,6 @@ const BuyCollateral = () => {
     loading,
     maxCredit,
     maxPrice,
-    /* oldMaxCredit, */
-    /* oldMaxPrice, */
   } = useBuyCollateralForm(auctionData)
   const [FIATBalance, refetchFIATBalance] = useFIATBalance(true)
   const [isPurchaseAmountValid, setIsPurchaseAmountValid] = useState(false)
@@ -76,10 +75,10 @@ const BuyCollateral = () => {
   const [step, setStep] = useState(0)
 
   const fiatToPay = useMemo(() => {
-    return (
-      amountToBuy?.multipliedBy(auctionData?.currentAuctionPrice ?? ZERO_BIG_NUMBER) ??
-      ZERO_BIG_NUMBER
-    )
+    // TODO: 2 try this to get estfiattopay closer (oldmaxprice)
+    // const price = oldMaxPrice.unscaleBy(WAD_DECIMALS)
+    const price = auctionData?.currentAuctionPrice
+    return amountToBuy?.multipliedBy(price ?? ZERO_BIG_NUMBER) ?? ZERO_BIG_NUMBER
   }, [amountToBuy, auctionData?.currentAuctionPrice])
 
   const isFiatBalanceSufficient = useMemo(() => {
@@ -101,15 +100,18 @@ const BuyCollateral = () => {
       const fiatToPay = amountToBuy.multipliedBy(auctionData.currentAuctionPrice as BigNumber)
 
       // DEBUG (very helpful don't delete)
-      /* console.log({ */
-      /*   auctionDebtFloor: auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS).toFixed(), */
-      /*   debt: auctionData.debt.unscaleBy(WAD_DECIMALS).toFixed(), */
-      /*   fiatToPay: fiatToPay.toFixed(), */
-      /*   remainingDebtAfterPurchase: auctionData.debt */
-      /*     .unscaleBy(WAD_DECIMALS) */
-      /*     .minus(fiatToPay) */
-      /*     .toFixed(), */
-      /* }) */
+      {
+        /* console.log({
+        auctionDebtFloor: auctionData?.vault?.auctionDebtFloor?.unscaleBy(WAD_DECIMALS).toFixed(),
+        debt: auctionData.debt.unscaleBy(WAD_DECIMALS).toFixed(),
+        fiatToPay: fiatToPay.toFixed(),
+        remainingDebtAfterPurchase: auctionData.debt
+          .unscaleBy(WAD_DECIMALS)
+          .minus(fiatToPay)
+          .toFixed(),
+        })
+      */
+      }
 
       const remainingDebtAfterPurchase = auctionData.debt.unscaleBy(WAD_DECIMALS).minus(fiatToPay)
       const purchaseWouldPushDebtBelowFloor = remainingDebtAfterPurchase.lte(
@@ -220,6 +222,7 @@ const BuyCollateral = () => {
               ?.unscaleBy(WAD_DECIMALS)
               .toFixed(2)} or buy all collateral`}
           </p>
+          <Info className={cn(s.icon)} />
         </div>
       )
     }
@@ -238,9 +241,15 @@ const BuyCollateral = () => {
     }
 
     // collateral amount to send with slippage?
+    // const collateralAmountToSend = form
+    //  .getFieldValue('amountToBuy')
+    //  .multipliedBy(SLIPPAGE.plus(1))
+    //  .decimalPlaces(WAD_DECIMALS)
+    //  .scaleBy(WAD_DECIMALS)
+
+    // TODO: 1. maybe no slippage on this will actually get est fiatToPay closer actually
     const collateralAmountToSend = form
       .getFieldValue('amountToBuy')
-      .multipliedBy(SLIPPAGE.plus(1))
       .decimalPlaces(WAD_DECIMALS)
       .scaleBy(WAD_DECIMALS)
 
