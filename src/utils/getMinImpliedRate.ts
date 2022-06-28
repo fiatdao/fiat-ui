@@ -1,10 +1,38 @@
-export const getMinImpliedRate = (
+import { contracts } from '@/src/constants/contracts'
+import contractCall from '@/src/utils/contractCall'
+import { currencyIds } from '@/src/constants/currencyIds'
+import { ChainsValues } from '@/src/constants/chains'
+import { JsonRpcProvider } from '@ethersproject/providers'
+
+export const getMinImpliedRate = async (
   fCash: any,
   maxSlippage: any,
-  cashGroup: any,
-  market: any,
-): any => {
-  console.log(55, cashGroup)
+  appChainId: ChainsValues,
+  collateral: any,
+  provider: JsonRpcProvider,
+): Promise<any> => {
+  const underlier = collateral.underlierSymbol ?? ''
+  const currencyId = currencyIds[underlier as keyof typeof currencyIds]
+
+  const cashGroup = await contractCall(
+    contracts.NOTIONAL.address[appChainId],
+    contracts.NOTIONAL.abi,
+    provider,
+    'getCashGroup',
+    [currencyId],
+  )
+
+  const market = await contractCall(
+    contracts.NOTIONAL.address[appChainId],
+    contracts.NOTIONAL.abi,
+    provider,
+    'getMarket',
+    [
+      currencyId,
+      new Date(collateral?.maturity).getTime() / 1000,
+      Math.round(new Date().getTime() / 1000),
+    ],
+  )
 
   const RATE_PRECISION = 10 ** 9
   const SECONDS_IN_YEAR = 360 * 86400
@@ -75,13 +103,8 @@ export const getMinImpliedRate = (
     maxSlippage: any,
   ) => {
     const maturity = market[1]
-    console.log(56, maturity)
     const timeToMaturity = remainingTimeToMaturity(blockTime, maturity)
-    console.log(57, timeToMaturity)
     const rate = exchangeRate(fCashToAccount, market, cashGroup, timeToMaturity)
-    console.log(58, rate)
-    console.log(59, exchangeToInterestRate(rate, timeToMaturity))
-    console.log(60, maxSlippage)
     return Number(exchangeToInterestRate(rate, timeToMaturity)) - maxSlippage
   }
 

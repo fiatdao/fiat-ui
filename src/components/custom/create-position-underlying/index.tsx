@@ -21,9 +21,6 @@ import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 import { getMinImpliedRate } from '@/src/utils/getMinImpliedRate'
-import useContractCall from '@/src/hooks/contracts/useContractCall'
-import { contracts } from '@/src/constants/contracts'
-import { currencyIds } from '@/src/constants/currencyIds'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
@@ -154,26 +151,6 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   }`
   const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
 
-  const underlier = collateral.underlierSymbol ?? ''
-  const currencyId = currencyIds[underlier as keyof typeof currencyIds]
-
-  const [cashGroup] =
-    useContractCall(
-      contracts.NOTIONAL.address[appChainId],
-      contracts.NOTIONAL.abi,
-      'getCashGroup',
-      [currencyId],
-    ) ?? null
-
-  const currentTimeStamp = Math.round(new Date().getTime() / 1000)
-
-  const [market] =
-    useContractCall(contracts.NOTIONAL.address[appChainId], contracts.NOTIONAL.abi, 'getMarket', [
-      currencyId,
-      new Date(collateral?.maturity).getTime() / 1000,
-      currentTimeStamp,
-    ]) ?? null
-
   const createUnderlyingPositionERC1155 = async ({
     fiatAmount,
     underlierAmount,
@@ -185,7 +162,13 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
       ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
       : ZERO_BIG_NUMBER
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
-    const minImpliedRate = getMinImpliedRate(fCashAmount, slippageTolerance, cashGroup, market)
+    const minImpliedRate = await getMinImpliedRate(
+      fCashAmount,
+      slippageTolerance,
+      appChainId,
+      collateral,
+      readOnlyAppProvider,
+    )
 
     try {
       setLoading(true)
