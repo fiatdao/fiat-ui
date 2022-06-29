@@ -1,5 +1,5 @@
 import s from './s.module.scss'
-import { SUCCESS_STEP } from '@/src/constants/auctions'
+import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
 import {
   FIAT_TICKER,
   INSUFFICIENT_BALANCE_TEXT,
@@ -75,8 +75,10 @@ const BuyCollateral = () => {
   const [step, setStep] = useState(0)
 
   const fiatToPay = useMemo(() => {
-    // TODO: 2 try this to get estfiattopay closer (oldmaxprice)
+    // TODO more closely est fiatToPay
+    // 2nd try oldMaxPrice to get fiatToPay
     // const price = oldMaxPrice.unscaleBy(WAD_DECIMALS)
+
     const price = auctionData?.currentAuctionPrice
     return amountToBuy?.multipliedBy(price ?? ZERO_BIG_NUMBER) ?? ZERO_BIG_NUMBER
   }, [amountToBuy, auctionData?.currentAuctionPrice])
@@ -240,18 +242,18 @@ const BuyCollateral = () => {
       return
     }
 
-    // collateral amount to send with slippage?
-    // const collateralAmountToSend = form
-    //  .getFieldValue('amountToBuy')
-    //  .multipliedBy(SLIPPAGE.plus(1))
-    //  .decimalPlaces(WAD_DECIMALS)
-    //  .scaleBy(WAD_DECIMALS)
-
-    // TODO: 1. maybe no slippage on this will actually get est fiatToPay closer actually
     const collateralAmountToSend = form
       .getFieldValue('amountToBuy')
+      .multipliedBy(SLIPPAGE.plus(1))
       .decimalPlaces(WAD_DECIMALS)
       .scaleBy(WAD_DECIMALS)
+
+    // TODO more closely est fiatToPay
+    // maybe no slippage on collateralAmountToSend will actually get est fiatToPay closer actually
+    // const collateralAmountToSend = form
+    //  .getFieldValue('amountToBuy')
+    //  .decimalPlaces(WAD_DECIMALS)
+    //  .scaleBy(WAD_DECIMALS)
 
     const receipt = await buyCollateral({ collateralAmountToSend, maxPrice })
 
@@ -282,7 +284,7 @@ const BuyCollateral = () => {
       title: 'APY',
       tooltip:
         'The annualized yield as implied by the Current Auction Price and collateral maturity.',
-      value: `${auctionData?.apy}%`,
+      value: auctionData?.apy,
     },
   ]
 
@@ -306,7 +308,7 @@ const BuyCollateral = () => {
     },
     {
       title: 'APY',
-      value: `${auctionData?.apy}%`,
+      value: auctionData?.apy,
     },
   ]
 
