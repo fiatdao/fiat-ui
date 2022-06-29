@@ -196,9 +196,6 @@ const FormERC20: React.FC<{
     deltaCollateral,
     deltaDebt,
   )
-  console.log('delta collat:', deltaCollateral.toString())
-  console.log('collateral: ', collateral)
-  console.log('[collateralId] healthFactor: ', hf.toString())
 
   const summaryData = [
     {
