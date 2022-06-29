@@ -19,8 +19,13 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import cn from 'classnames'
 import Link from 'next/link'
 
-const PositionsTable = ({ columns, filterByInMyWallet, protocolsToFilterBy }: any) => {
-  const collaterals = useCollaterals(filterByInMyWallet, protocolsToFilterBy)
+const PositionsTable = ({
+  columns,
+  filterByInMyWallet,
+  filterOutMatured,
+  protocolsToFilterBy,
+}: any) => {
+  const collaterals = useCollaterals(filterByInMyWallet, filterOutMatured, protocolsToFilterBy)
 
   return (
     <Table
@@ -37,7 +42,8 @@ const PositionsTable = ({ columns, filterByInMyWallet, protocolsToFilterBy }: an
 
 const CreatePosition = () => {
   const { isWalletConnected } = useWeb3Connection()
-  const { filterByInMyWallet, protocolsToFilterBy, renderFilters } = useProtocolFilters()
+  const { filterByInMyWallet, filterOutMatured, protocolsToFilterBy, renderFilters } =
+    useProtocolFilters()
   const { positions } = usePositionsByUser()
 
   const columns: ColumnsType<Collateral> = [
@@ -81,9 +87,9 @@ const CreatePosition = () => {
     {
       align: 'left',
       dataIndex: 'maturity',
-      render: (date: Collateral['maturity']) => (
-        <CellValue bottomValue={parseDate(date)} value={`${remainingTime(date)} Left`} />
-      ),
+      render: (date: Collateral['maturity']) => {
+        return <CellValue bottomValue={remainingTime(date)} value={parseDate(date)} />
+      },
       title: 'Maturity',
     },
     {
@@ -122,6 +128,7 @@ const CreatePosition = () => {
         <PositionsTable
           columns={columns}
           filterByInMyWallet={filterByInMyWallet}
+          filterOutMatured={filterOutMatured}
           protocolsToFilterBy={protocolsToFilterBy}
         />
       </SafeSuspense>

@@ -12,7 +12,7 @@ import {
   INSUFFICIENT_BALANCE_TEXT,
   MIN_EPSILON_OFFSET,
   ONE_BIG_NUMBER,
-  SET_ALLOWANCE_PROXY_TEXT,
+  SET_FIAT_ALLOWANCE_PROXY_TEXT,
   VIRTUAL_RATE_MAX_SLIPPAGE,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
@@ -34,7 +34,11 @@ import {
   isValidHealthFactor,
 } from '@/src/utils/data/positions'
 import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
-import { PositionManageFormFields } from '@/pages/your-positions/[positionId]/manage'
+import {
+  CollateralTabKey,
+  FiatTabKey,
+  PositionManageFormFields,
+} from '@/pages/your-positions/[positionId]/manage'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -47,6 +51,7 @@ export type TokenInfo = {
 export const useManagePositionForm = (
   position: Position | undefined,
   positionFormFields: PositionManageFormFields | undefined,
+  activeTabKey: FiatTabKey | CollateralTabKey,
   onSuccess?: () => void,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
@@ -302,8 +307,8 @@ export const useManagePositionForm = (
       setIsRepayingFIAT(true)
 
       let text = EXECUTE_TEXT
-      if (!hasFiatAllowance) {
-        text = SET_ALLOWANCE_PROXY_TEXT
+      if (!hasFiatAllowance && activeTabKey === 'burn') {
+        text = SET_FIAT_ALLOWANCE_PROXY_TEXT
       } else if (!hasMonetaAllowance) {
         text = ENABLE_PROXY_FOR_FIAT_TEXT
       } else if (!hasMinimumFIAT) {
@@ -318,8 +323,8 @@ export const useManagePositionForm = (
       setIsRepayingFIAT(false)
 
       let text = EXECUTE_TEXT
-      if (!hasFiatAllowance) {
-        text = SET_ALLOWANCE_PROXY_TEXT
+      if (!hasFiatAllowance && activeTabKey === 'burn') {
+        text = SET_FIAT_ALLOWANCE_PROXY_TEXT
       } else if (isBorrowingMoreThanMaxBorrow) {
         text = `Cannot borrow more than ${maxBorrow.toFormat(3).toString()}`
       }
@@ -337,6 +342,7 @@ export const useManagePositionForm = (
       }
     }
   }, [
+    activeTabKey,
     getPositionValues,
     tokenInfo?.humanValue,
     calculateHealthFactorFromPosition,
