@@ -63,25 +63,26 @@ const getTimeToMaturity = (maturity: number, blockTimestamp: number) => {
 }
 
 // APY === Yield
-const calcAPY = (
+const calcAPYString = (
   faceValue?: BigNumber,
   currentAuctionPrice?: BigNumber,
   maturity = 0,
   blockTimestamp = 0,
-) => {
-  if (!faceValue || !currentAuctionPrice) {
+): string => {
+  const timeToMaturity = getTimeToMaturity(maturity, blockTimestamp)
+
+  if (!faceValue || !currentAuctionPrice || timeToMaturity === 0) {
     return 'Unavailable'
   }
 
   // APY: ( faceValue / currentAuctionPrice - 1) / ( max(0, maturity - block.timestamp) / (365*86400) )
-  return faceValue
+  const apy = faceValue
     .dividedBy(currentAuctionPrice)
     .minus(1)
-    .dividedBy(
-      BigNumber.from(getTimeToMaturity(maturity, blockTimestamp)).dividedBy(SECONDS_IN_A_YEAR),
-    )
+    .dividedBy(BigNumber.from(timeToMaturity).dividedBy(SECONDS_IN_A_YEAR))
     .multipliedBy(100)
-    .toFixed(2)
+
+  return `${apy.toFixed(2)}%`
 }
 
 const getAuctionStatus = (
@@ -110,7 +111,8 @@ const wrangleAuction = async (
     collateralAuction.startPrice &&
     collateralAuction.vault
   ) {
-    // floorPrice = auction.debt / auction.collateralToSell
+    // TODO: use this for determining auction is over or not when we display past auctions
+    // const isAuctionActive = BigNumber.from(collateralAuction.debt)?.eq(0)
     const floorPrice = BigNumber.from(collateralAuction.debt)?.dividedBy(
       collateralAuction.collateralToSell,
     ) as BigNumber
@@ -179,7 +181,7 @@ const wrangleAuction = async (
       decimals: scaleToDecimalsCount(collateralAuction.collateralType?.underlierScale) ?? 0,
     },
     endsAt: stringToDateOrCurrent(endsAt),
-    apy: calcAPY(
+    apy: calcAPYString(
       faceValue,
       currentAuctionPrice,
       Number(collateralAuction.collateralType?.maturity ?? 0),

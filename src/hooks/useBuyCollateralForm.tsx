@@ -70,7 +70,7 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
     }
   }, [approveFIAT, appChainId, notification])
 
-  const [FIATBalance] = useFIATBalance()
+  const [FIATBalance] = useFIATBalance(true)
 
   const noLossCollateralAuctionActions = useMemo(
     () =>
@@ -173,6 +173,36 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
 
   const maxPrice = useMemo(
     () =>
+      auctionData?.currentAuctionPrice?.decimalPlaces(WAD_DECIMALS).scaleBy(WAD_DECIMALS) ??
+      ZERO_BIG_NUMBER,
+    [auctionData?.currentAuctionPrice],
+  )
+
+  const maxCredit = useMemo(() => {
+    const maxToSell = auctionData?.auctionedCollateral
+
+    if (!maxToSell || maxPrice.eq(ZERO_BIG_NUMBER)) {
+      return
+    }
+
+    const maxToPay = FIATBalance
+
+    // If your FIAT buying power is not enough to buy out the whole auction,
+    // max should be the max amount of collateral you can afford to buy (maxToPay / maxPrice)
+    if (maxToPay.lt(maxToSell)) {
+      return maxToPay.dividedBy(maxPrice.unscaleBy(WAD_DECIMALS))
+    }
+
+    // If your FIAT buying power is enough to buy out the whole auction,
+    // max should be the total collateral being auctioned
+    return auctionData?.auctionedCollateral
+  }, [auctionData?.auctionedCollateral, maxPrice, FIATBalance])
+
+  // below were some values including slippage calculations
+  // Q: Why would max price factor in positive slippage?
+  // Isn't there a constantly _decreasing_ value of auctioned collateral (till redo)?
+  const oldMaxPrice = useMemo(
+    () =>
       auctionData?.currentAuctionPrice
         ?.multipliedBy(SLIPPAGE.plus(1))
         .decimalPlaces(WAD_DECIMALS)
@@ -180,25 +210,27 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
     [auctionData?.currentAuctionPrice],
   )
 
-  const maxCredit = useMemo(() => {
+  const oldMaxCredit = useMemo(() => {
     const maxToSell = auctionData?.auctionedCollateral?.multipliedBy(
       BigNumber.from(1).minus(SLIPPAGE),
     )
 
-    if (!maxToSell || maxPrice.eq(ZERO_BIG_NUMBER)) {
+    if (!maxToSell || oldMaxPrice.eq(ZERO_BIG_NUMBER)) {
       return
     }
 
-    const maxToPay = FIATBalance.unscaleBy(WAD_DECIMALS).multipliedBy(
-      BigNumber.from(1).minus(SLIPPAGE),
-    )
+    const maxToPay = FIATBalance.multipliedBy(BigNumber.from(1).minus(SLIPPAGE))
 
+    // If your FIAT buying power is not enough to buy out the whole auction,
+    // max should be the max amount of collateral you can afford to buy (maxToPay / oldMaxPrice)
     if (maxToPay.lt(maxToSell)) {
-      return maxToPay.dividedBy(maxPrice.unscaleBy(WAD_DECIMALS))
+      return maxToPay.dividedBy(oldMaxPrice.unscaleBy(WAD_DECIMALS))
     }
 
-    return maxToSell.dividedBy(maxPrice.unscaleBy(WAD_DECIMALS))
-  }, [auctionData?.auctionedCollateral, maxPrice, FIATBalance])
+    // Q: If your FIAT buying power is enough to buy out the whole auction,
+    // max should be <???> (auctionedCollateral/currentAuctionPrice OR debt/currentAuctionPrice)
+    return maxToSell.dividedBy(oldMaxPrice.unscaleBy(WAD_DECIMALS))
+  }, [auctionData?.auctionedCollateral, oldMaxPrice, FIATBalance])
 
   return {
     approve,
@@ -208,6 +240,8 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
     buyCollateral,
     maxPrice,
     maxCredit,
+    oldMaxCredit,
+    oldMaxPrice,
     ...txStatus,
   }
 }
