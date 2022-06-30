@@ -45,6 +45,7 @@ import {
   perSecondToAPR,
 } from '@/src/web3/utils'
 import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
+import StepperTitle from '@/src/components/custom/stepper-title'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
@@ -58,23 +59,6 @@ enum CreatePositionTab {
 
 // @TODO: hardcoded step from open-position-form
 const LAST_STEP = 7
-
-const StepperTitle: React.FC<{
-  currentStep: number
-  description: string
-  title: string
-  totalSteps: number
-}> = ({ currentStep, description, title, totalSteps }) => (
-  <div className={cn(s.stepperWrapper)}>
-    <div className={cn(s.stepperTitleWrapper)}>
-      <h2 className={cn(s.stepperTitle)}>{title}</h2>
-      <div className={cn(s.steps)}>
-        <span className={cn(s.currentStep)}>{currentStep}</span>/{totalSteps}
-      </div>
-    </div>
-    <p className={cn(s.stepperDescription)}>{description}</p>
-  </div>
-)
 
 const FormERC20: React.FC<{
   tokenSymbol: string
