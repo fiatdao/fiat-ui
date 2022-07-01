@@ -217,6 +217,12 @@ const PositionManage = () => {
     (!hasFiatAllowance && isRepayingFIAT) ||
     (!hasMonetaAllowance && isRepayingFIAT)
 
+  const getMaturedFCashMessage = () => {
+    if (position?.protocol === 'Notional Finance' && position.maturity.getTime() < Date.now()) {
+      return '(note: this FCash has matured; you will receive the underlying asset)'
+    }
+  }
+
   return (
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
@@ -297,7 +303,7 @@ const PositionManage = () => {
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to withdraw"
+                            title={`Select amount to withdraw ${getMaturedFCashMessage()}`}
                             value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
                           />
                           <Form.Item name="withdraw" required>
