@@ -12,7 +12,7 @@ import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { contracts } from '@/src/constants/contracts'
-import { ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import { SET_FIAT_ALLOWANCE_PROXY_TEXT, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import {
   useManageFormSummary,
   useManagePositionForm,
@@ -55,14 +55,14 @@ type Step = {
 }
 
 const FIAT_KEYS = ['mint', 'burn'] as const
-type FiatTabKey = typeof FIAT_KEYS[number]
+export type FiatTabKey = typeof FIAT_KEYS[number]
 
 export const isFiatTab = (key: string): key is FiatTabKey => {
   return FIAT_KEYS.includes(key as FiatTabKey)
 }
 
 const COLLATERAL_KEYS = ['deposit', 'withdraw'] as const
-type CollateralTabKey = typeof COLLATERAL_KEYS[number]
+export type CollateralTabKey = typeof COLLATERAL_KEYS[number]
 
 export const isCollateralTab = (key: string): key is CollateralTabKey => {
   return COLLATERAL_KEYS.includes(key as CollateralTabKey)
@@ -80,7 +80,6 @@ const PositionManage = () => {
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
   const [formDisabled, setFormDisabled] = useState(false)
-  // @TODO: useFIATBalance hook can't be moved into another hook it trigger infinite updates
   const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { position, refetch: refetchPosition } = useManagePositionInfo()
 
@@ -126,7 +125,7 @@ const PositionManage = () => {
     maxWithdrawAmount,
     setFinished,
     setupProxy,
-  } = useManagePositionForm(position as Position, formValues, onSuccess)
+  } = useManagePositionForm(position as Position, formValues, activeTabKey, onSuccess)
 
   const summary = useManageFormSummary(position as Position, formValues)
 
@@ -218,6 +217,12 @@ const PositionManage = () => {
     (!hasFiatAllowance && isRepayingFIAT) ||
     (!hasMonetaAllowance && isRepayingFIAT)
 
+  const getMaturedFCashMessage = () => {
+    if (position?.protocol === 'Notional Finance' && position.maturity.getTime() < Date.now()) {
+      return '(note: this FCash has matured; you will receive the underlying asset)'
+    }
+  }
+
   return (
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
@@ -298,7 +303,7 @@ const PositionManage = () => {
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to withdraw"
+                            title={`Select amount to withdraw ${getMaturedFCashMessage()}`}
                             value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
                           />
                           <Form.Item name="withdraw" required>
@@ -409,7 +414,7 @@ const PositionManage = () => {
                           height="lg"
                           onClick={onApproveFiatAllowance}
                         >
-                          Set Allowance for FIAT
+                          {SET_FIAT_ALLOWANCE_PROXY_TEXT}
                         </ButtonGradient>
                       )}
                       {hasFiatAllowance && !hasMonetaAllowance && isRepayingFIAT && (

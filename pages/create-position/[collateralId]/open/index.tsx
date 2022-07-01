@@ -52,7 +52,7 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
 enum CreatePositionTab {
-  bond = 'bond',
+  asset = 'asset',
   underlying = 'tab',
 }
 
@@ -143,7 +143,7 @@ const FormERC20: React.FC<{
 
   const [activeMachine, setActiveMachine] = useState(stateMachine)
 
-  const [tab, setTab] = useState(CreatePositionTab.bond)
+  const [tab, setTab] = useState(CreatePositionTab.asset)
 
   const hasMinimumFIAT = useMemo(() => {
     const fiatAmount = activeMachine.context.fiatAmount ?? ZERO_BIG_NUMBER
@@ -153,7 +153,7 @@ const FormERC20: React.FC<{
   }, [activeMachine.context.fiatAmount, collateral.vault.debtFloor])
 
   const hasSufficientCollateral = useMemo(() => {
-    return tab === CreatePositionTab.bond
+    return tab === CreatePositionTab.asset
       ? tokenInfo?.humanValue?.gte(activeMachine.context.erc20Amount)
       : underlyingInfo?.humanValue?.gte(activeMachine.context.underlierAmount)
   }, [
@@ -171,7 +171,7 @@ const FormERC20: React.FC<{
     if (!hasSufficientCollateral) {
       return INSUFFICIENT_BALANCE_TEXT
     }
-    return tab === CreatePositionTab.bond ? DEPOSIT_COLLATERAL_TEXT : DEPOSIT_UNDERLYING_TEXT
+    return tab === CreatePositionTab.asset ? DEPOSIT_COLLATERAL_TEXT : DEPOSIT_UNDERLYING_TEXT
   }, [tab, hasMinimumFIAT, hasSufficientCollateral, collateral.vault.debtFloor])
 
   const marketRate =
@@ -183,7 +183,7 @@ const FormERC20: React.FC<{
 
   // TODO: figure out why deltaCollateral is 0. This is keeping health factor from displaying properly. This is probably a scaling issue
   const deltaCollateral = getNonHumanValue(
-    tab === CreatePositionTab.bond
+    tab === CreatePositionTab.asset
       ? activeMachine.context.erc20Amount
       : marketRate.times(activeMachine.context.underlierAmount),
     WAD_DECIMALS,
@@ -196,9 +196,6 @@ const FormERC20: React.FC<{
     deltaCollateral,
     deltaDebt,
   )
-  console.log('delta collat:', deltaCollateral.toString())
-  console.log('collateral: ', collateral)
-  console.log('[collateralId] healthFactor: ', hf.toString())
 
   const summaryData = [
     {
@@ -232,7 +229,7 @@ const FormERC20: React.FC<{
     setActiveMachine(machine)
   }
 
-  const activeTitles = tab === CreatePositionTab.bond ? TITLES_BY_STEP : TITLES_BY_STEP_UNDERLYING
+  const activeTitles = tab === CreatePositionTab.asset ? TITLES_BY_STEP : TITLES_BY_STEP_UNDERLYING
 
   return (
     <>
@@ -249,10 +246,10 @@ const FormERC20: React.FC<{
               SHOW_UNDERLYING_FLOW && ( // Feature Flag
                 <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
                   <RadioTab
-                    checked={tab === CreatePositionTab.bond}
-                    onClick={() => setTab(CreatePositionTab.bond)}
+                    checked={tab === CreatePositionTab.asset}
+                    onClick={() => setTab(CreatePositionTab.asset)}
                   >
-                    Bond
+                    Asset
                   </RadioTab>
                   <RadioTab
                     checked={tab === CreatePositionTab.underlying}

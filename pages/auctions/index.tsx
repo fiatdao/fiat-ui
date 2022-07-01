@@ -100,7 +100,7 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'apy',
-      render: (value: string) => <CellValue value={`${value}%`} />,
+      render: (value: string) => <CellValue value={value} />,
       title: 'APY',
     },
     {
@@ -122,7 +122,7 @@ const Auctions = () => {
   return (
     <>
       <h2 className={cn(s.title)}>Select a collateral asset on auction to buy</h2>
-      {renderFilters(false)}
+      {renderFilters(false, false)}
       <SafeSuspense
         fallback={
           <SkeletonTable columns={columns as SkeletonTableColumnsType[]} loading rowCount={2} />
