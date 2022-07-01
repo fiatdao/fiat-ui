@@ -13,6 +13,7 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { InfoBlock } from '@/src/components/custom/info-block'
 import TokenAmount from '@/src/components/custom/token-amount'
+import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useAuction } from '@/src/hooks/subgraph/useAuction'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
@@ -442,4 +443,4 @@ const BuyCollateral = () => {
   )
 }
 
-export default BuyCollateral
+export default withRequiredConnection(BuyCollateral)
