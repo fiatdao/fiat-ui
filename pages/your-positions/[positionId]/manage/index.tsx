@@ -217,8 +217,10 @@ const PositionManage = () => {
     (!hasFiatAllowance && isRepayingFIAT) ||
     (!hasMonetaAllowance && isRepayingFIAT)
 
+  const isMatured = position?.maturity.getTime() && position?.maturity.getTime() < Date.now()
+
   const getMaturedFCashMessage = () => {
-    if (position?.protocol === 'Notional Finance' && position.maturity.getTime() < Date.now()) {
+    if (position?.protocol === 'Notional Finance' && isMatured) {
       return '(note: this FCash has matured; you will receive the underlying asset)'
     }
   }
@@ -260,15 +262,17 @@ const PositionManage = () => {
                   {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
                     <>
                       <Tabs className={cn(s.tabs)}>
-                        <Tab
-                          isActive={'deposit' === activeTabKey}
-                          onClick={() => {
-                            form.setFieldsValue({ withdraw: undefined })
-                            setActiveTabKey('deposit')
-                          }}
-                        >
-                          Deposit
-                        </Tab>
+                        {!isMatured && (
+                          <Tab
+                            isActive={'deposit' === activeTabKey}
+                            onClick={() => {
+                              form.setFieldsValue({ withdraw: undefined })
+                              setActiveTabKey('deposit')
+                            }}
+                          >
+                            Deposit
+                          </Tab>
+                        )}
                         <Tab
                           isActive={'withdraw' === activeTabKey}
                           onClick={() => {
