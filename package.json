@@ -16,7 +16,8 @@
     "start": "next start",
     "export": "next export",
     "typechain": "typechain --target=ethers-v5 ./src/abis/**/*.json --out-dir ./types/typechain/",
-    "schema": "bash scripts/apollo-schema.sh"
+    "schema": "bash scripts/apollo-schema.sh",
+    "testnet": "bash scripts/run-testnet.sh"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -94,6 +95,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-sort-destructure-keys": "^1.3.5",
+    "ganache": "^7.3.2",
     "husky": "^7.0.2",
     "lessc": "^1.0.2",
     "lint-staged": "^11.1.2",

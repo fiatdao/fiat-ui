@@ -1,6 +1,7 @@
 import {
   DEFAULT_CHAIN_ID,
   RPC_URL_GOERLI,
+  RPC_URL_LOCALHOST,
   RPC_URL_MAINNET,
   SUBGRAPH_GOERLI,
   SUBGRAPH_MAINNET,
@@ -10,6 +11,7 @@ import EthLogo from '@/src/resources/svg/ethereum.svg'
 import { ObjectValues } from '@/types/utils'
 
 export const Chains = {
+  localhost: 1337,
   mainnet: 1,
   goerli: 5,
 } as const
@@ -36,6 +38,20 @@ export type ChainConfig = {
 export const INITIAL_APP_CHAIN_ID = Number(DEFAULT_CHAIN_ID) as ChainsValues
 
 export const chainsConfig: Record<ChainsValues, ChainConfig> = {
+  [Chains.localhost]: {
+    id: Chains.mainnet,
+    name: 'Localhost Mainnet',
+    shortName: 'Localhost Mainnet',
+    chainId: Chains.localhost,
+    chainIdHex: '0x539',
+    rpcUrl: RPC_URL_LOCALHOST,
+    blockExplorerUrls: ['https://etherscan.io/'],
+    iconUrls: [],
+    svg: EthLogo,
+    subgraphApi: SUBGRAPH_MAINNET,
+    contractsDeployed: true,
+    isDev: true,
+  },
   [Chains.mainnet]: {
     id: Chains.mainnet,
     name: 'Mainnet',
