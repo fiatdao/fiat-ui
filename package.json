@@ -17,7 +17,8 @@
     "export": "next export",
     "typechain": "typechain --target=ethers-v5 ./src/abis/**/*.json --out-dir ./types/typechain/",
     "schema": "bash scripts/apollo-schema.sh",
-    "testnet": "bash scripts/run-testnet.sh"
+    "testnet": "bash scripts/run-testnet.sh",
+    "transferLocalhostTokens": "node scripts/transfer_localhost_tokens.js"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -104,6 +105,7 @@
     "stylelint": "^14.1.0",
     "stylelint-config-sass-guidelines": "^9.0.1",
     "typechain": "5.0.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "yargs": "^17.5.1"
   }
 }

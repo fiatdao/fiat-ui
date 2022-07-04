@@ -25,12 +25,20 @@ Get leverage and access secondary liquidity for your favorite DeFi fixed income 
     yarn run testnet
     ```
 
-1. Add the first ganache user to your wallet <TODO>
+1. Import the first ganache user into your wallet. See here for metamask [instructions](https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4)
+
+1. Copy the address of the first user and run
+    ```sh
+    yarn run transferLocalhostTokens --to=<first_user_address>
+    ```
+    to transfer USDC into your first ganache account. After running, you should have 10,000 USDC and 1,000 ETH in your imported account!
 
 1. In another terminal, run the frontend with
     ```sh
     yarn dev
     ```
+
+1. You're done! You can now open any USDC position via underlier and code away!
 
 ## How to Contribute
 To contribute, start by grabbing one of the open issues on the repo, and assigning it to yourself. Once the task has been completed, open a PR against the `main` branch.
