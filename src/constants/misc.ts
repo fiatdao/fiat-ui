@@ -17,6 +17,7 @@ export const SUBGRAPH_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_MAINN
 
 export const RPC_URL_GOERLI = process.env.NEXT_PUBLIC_REACT_APP_RPC_URL_GOERLI || ''
 export const RPC_URL_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_RPC_URL_MAINNET || ''
+export const RPC_URL_LOCALHOST = 'http://localhost:8545' || ''
 
 export const WAD_DECIMALS = 18
 
