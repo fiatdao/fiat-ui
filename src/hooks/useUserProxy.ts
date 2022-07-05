@@ -1,21 +1,11 @@
 import { useNotifications } from './useNotifications'
-import { ChainsValues } from '../constants/chains'
 import { contracts } from '@/src/constants/contracts'
 import { ZERO_ADDRESS } from '@/src/constants/misc'
+import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import { graphqlFetcher } from '@/src/utils/graphqlFetcher'
-import { userProxies, userProxiesVariables } from '@/types/subgraph/__generated__/userProxies'
-import { USER_PROXIES } from '@/src/queries/userProxies'
-import useSWR from 'swr'
-import { useCallback, useMemo, useState } from 'react'
+import { PRBProxyRegistry } from '@/types/typechain'
 import { Contract } from 'ethers'
-
-const fetchUserProxies = (appChainId: ChainsValues, address: string) =>
-  graphqlFetcher<userProxies, userProxiesVariables>(appChainId, USER_PROXIES, {
-    where: {
-      owner: address,
-    },
-  })
+import { useCallback, useMemo, useState } from 'react'
 
 const useUserProxy = () => {
   const {
@@ -27,15 +17,16 @@ const useUserProxy = () => {
   const [loadingProxy, setLoadingProxy] = useState(false)
   const notification = useNotifications()
 
-  const { data: proxyAddress, mutate: refetch } = useSWR(
-    ['user-proxies', appChainId, currentUserAddress],
-    async () => {
-      if (currentUserAddress) {
-        const data = await fetchUserProxies(appChainId, currentUserAddress)
-        return data.userProxies.length ? data.userProxies[0].proxyAddress : ZERO_ADDRESS
-      }
-      return ZERO_ADDRESS
-    },
+  const [proxyAddress, refetch] = useContractCall<
+    PRBProxyRegistry,
+    'getCurrentProxy',
+    [string],
+    Promise<string>
+  >(
+    contracts.PRB_PROXY_REGISTRY.address[appChainId],
+    contracts.PRB_PROXY_REGISTRY.abi,
+    'getCurrentProxy',
+    [currentUserAddress as string],
   )
 
   const setupProxy = useCallback(async () => {
@@ -70,7 +61,6 @@ const useUserProxy = () => {
     return new Contract(proxyAddress, contracts.PRB_PROXY.abi, web3Provider.getSigner())
   }, [proxyAddress, web3Provider])
 
-  // isProxyAvailable: !!userProxy
   return {
     userProxy,
     setupProxy,
