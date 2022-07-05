@@ -243,6 +243,69 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     setMaxTransactionTime(maxTransactionTime)
   }
 
+  const getActionButton = () => {
+    if (stateMachine.context.currentStepNumber === 1) {
+      return (
+        <>
+          {!isProxyAvailable && (
+            <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}>
+              Setup Proxy
+            </ButtonGradient>
+          )}
+          {isProxyAvailable && !hasAllowance && (
+            <ButtonGradient
+              disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
+              height="lg"
+              onClick={() => send({ type: 'CLICK_ALLOW' })}
+            >
+              {stateMachine.context.erc20Amount.gt(0)
+                ? 'Set Allowance'
+                : `Insufficient Balance for ${collateral?.symbol}`}
+            </ButtonGradient>
+          )}
+        </>
+      )
+    } else if (stateMachine.context.currentStepNumber === 2) {
+      return (
+        <>
+          <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
+            Create Proxy
+          </ButtonGradient>
+          <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
+            &#8592; Go back
+          </button>
+        </>
+      )
+    } else if (stateMachine.context.currentStepNumber === 3) {
+      return (
+        <>
+          <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
+            {`Set Allowance`}
+          </ButtonGradient>
+          <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
+            &#8592; Go back
+          </button>
+        </>
+      )
+    }
+
+    return (
+      <ButtonGradient
+        disabled={isDisabledCreatePosition}
+        height="lg"
+        onClick={() =>
+          send({
+            type: 'CONFIRM',
+            // @ts-ignore TODO types
+            createUnderlyingPosition,
+          })
+        }
+      >
+        {confirmButtonText}
+      </ButtonGradient>
+    )
+  }
+
   return (
     <Form form={form} initialValues={{ underlierAmount: 0 }}>
       {[1, 4].includes(stateMachine.context.currentStepNumber) && (
@@ -302,7 +365,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
         </>
       )}
       <ButtonsWrapper>
-        {stateMachine.context.currentStepNumber === 1 && (
+        {/*stateMachine.context.currentStepNumber === 1 && (
           <>
             {!isProxyAvailable && (
               <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}>
@@ -321,8 +384,8 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
               </ButtonGradient>
             )}
           </>
-        )}
-        {stateMachine.context.currentStepNumber === 2 && (
+        )*/}
+        {/*stateMachine.context.currentStepNumber === 2 && (
           <>
             <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
               Create Proxy
@@ -331,8 +394,8 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
               &#8592; Go back
             </button>
           </>
-        )}
-        {stateMachine.context.currentStepNumber === 3 && (
+        )*/}
+        {/*stateMachine.context.currentStepNumber === 3 && (
           <>
             <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
               {`Set Allowance`}
@@ -341,29 +404,29 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
               &#8592; Go back
             </button>
           </>
-        )}
-        {stateMachine.context.currentStepNumber === 4 && (
-          <>
-            {!mintFiat && (
-              <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
-                Mint FIAT with this transaction
-              </ButtonExtraFormAction>
-            )}
-            <ButtonGradient
-              disabled={isDisabledCreatePosition}
-              height="lg"
-              onClick={() =>
-                send({
-                  type: 'CONFIRM',
-                  // @ts-ignore TODO types
-                  createUnderlyingPosition,
-                })
-              }
-            >
-              {confirmButtonText}
-            </ButtonGradient>
-          </>
-        )}
+        )*/}
+        <>
+          {!mintFiat && (
+            <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
+              Mint FIAT with this transaction
+            </ButtonExtraFormAction>
+          )}
+          {getActionButton()}
+          {/*<ButtonGradient
+            disabled={isDisabledCreatePosition}
+            height="lg"
+            onClick={() =>
+              send({
+                type: 'CONFIRM',
+                // @ts-ignore TODO types
+                createUnderlyingPosition,
+              })
+            }
+          >
+            {confirmButtonText}
+          </ButtonGradient>
+            */}
+        </>
       </ButtonsWrapper>
       {stateMachine.context.currentStepNumber === 4 && (
         <div className={cn(s.summary)}>{/* <Summary data={summaryData} /> */}</div>
