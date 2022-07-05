@@ -254,13 +254,13 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
           )}
           {isProxyAvailable && !hasAllowance && (
             <ButtonGradient
-              disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
+              disabled={!stateMachine.context.underlierAmount.gt(0) || !isProxyAvailable}
               height="lg"
               onClick={() => send({ type: 'CLICK_ALLOW' })}
             >
-              {stateMachine.context.erc20Amount.gt(0)
+              {stateMachine.context.underlierAmount.gt(0)
                 ? 'Set Allowance'
-                : `Insufficient Balance for ${collateral?.symbol}`}
+                : `Insufficient Balance for ${collateral?.underlierSymbol}`}
             </ButtonGradient>
           )}
         </>
