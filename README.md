@@ -35,6 +35,7 @@ Get leverage and access secondary liquidity for your favorite DeFi fixed income 
     yarn transferLocalhostTokens --to=<first_account_address>
     ```
     to transfer stablecoins into your imported account. After running, you should have thousands of stablecoins to test with!
+    > Note: To see the balances in your wallet, you may have to import the tokens. Here's a [guide for importing tokens to metamask](https://metamask.zendesk.com/hc/en-us/articles/360015489031-How-to-add-unlisted-tokens-custom-tokens-in-MetaMask). The USDC address is `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, and the DAI address is `0x6B175474E89094C44Da98b954EedeAC495271d0F`.
 
 1. In another terminal, run the frontend with
     ```sh
