@@ -18,27 +18,30 @@ Get leverage and access secondary liquidity for your favorite DeFi fixed income 
     yarn
     ```
 
-1. Install the latest release of Ganache from [here](https://github.com/trufflesuite/ganache-ui/releases) and it to your path. Ensure it's installed by running `ganache --version`.
+1. Run `yarn dev` and connect to the Goerli Network to test the app!
 
-1. Run a local testnet with
+#### Running with Localhost Network backend
+1. After setting up your `.env.local` file & installing deps, run a local testnet with
     ```sh 
-    yarn run testnet
+    yarn testnet
     ```
 
-1. Import the first ganache user into your wallet. See here for metamask [instructions](https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4)
+1. Import the first ganache account into your wallet via private key. See here for metamask [instructions](https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4).
 
-1. Copy the address of the first user and run
+1. Ensure you have the Localhost Network in your wallet.
+
+1. Copy the address of the first ganache account and run
     ```sh
-    yarn run transferLocalhostTokens --to=<first_user_address>
+    yarn transferLocalhostTokens --to=<first_account_address>
     ```
-    to transfer USDC into your first ganache account. After running, you should have 10,000 USDC and 1,000 ETH in your imported account!
+    to transfer stablecoins into your imported account. After running, you should have thousands of stablecoins to test with!
 
 1. In another terminal, run the frontend with
     ```sh
     yarn dev
     ```
 
-1. You're done! You can now open any USDC position via underlier and code away!
+1. You're done! You can now open positions via underlier and buidl!
 
 ## How to Contribute
 To contribute, start by grabbing one of the open issues on the repo, and assigning it to yourself. Once the task has been completed, open a PR against the `main` branch.

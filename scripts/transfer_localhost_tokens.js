@@ -24,7 +24,7 @@ const fs = require('fs')
         await connectedTokContract.balanceOf(toAddress)
       )
         .div(exp)
-        .toString()}`,
+        .toString()}\n`,
     )
   }
 
