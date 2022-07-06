@@ -100,13 +100,17 @@ const CreatePosition = () => {
           collateral.manageId &&
           positions.filter((position) => collateral.tokenId === position.tokenId).length > 0
 
+        const isMatured = remainingTime(collateral.maturity) === 'Matured'
+
         return hasPositionForCollateral ? (
           <Link href={`/your-positions`} passHref>
             <ButtonOutlineGradient disabled={!isWalletConnected}>Manage</ButtonOutlineGradient>
           </Link>
         ) : (
           <Link href={`/create-position/${collateral.id}/open`} passHref>
-            <ButtonGradient disabled={!isWalletConnected}>Create Position</ButtonGradient>
+            <ButtonGradient disabled={!isWalletConnected || isMatured}>
+              Create Position
+            </ButtonGradient>
           </Link>
         )
       },
