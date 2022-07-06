@@ -363,46 +363,6 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
         </>
       )}
       <ButtonsWrapper>
-        {/*stateMachine.context.currentStepNumber === 1 && (
-          <>
-            {!isProxyAvailable && (
-              <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}>
-                Setup Proxy
-              </ButtonGradient>
-            )}
-            {isProxyAvailable && !hasAllowance && (
-              <ButtonGradient
-                disabled={!stateMachine.context.underlierAmount.gt(0) || !isProxyAvailable}
-                height="lg"
-                onClick={() => send({ type: 'CLICK_ALLOW' })}
-              >
-                {stateMachine.context.underlierAmount.gt(0)
-                  ? 'Set Allowance'
-                  : `Insufficient Balance for ${collateral.underlierSymbol}`}
-              </ButtonGradient>
-            )}
-          </>
-        )*/}
-        {/*stateMachine.context.currentStepNumber === 2 && (
-          <>
-            <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
-              Create Proxy
-            </ButtonGradient>
-            <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
-              &#8592; Go back
-            </button>
-          </>
-        )*/}
-        {/* stateMachine.context.currentStepNumber === 3 && (
-          <>
-            <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
-              {`Set Allowance`}
-            </ButtonGradient>
-            <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
-              &#8592; Go back
-            </button>
-          </>
-        )*/}
         <>
           {!mintFiat &&
             stateMachine.context.currentStepNumber !== 2 &&
@@ -412,20 +372,6 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
               </ButtonExtraFormAction>
             )}
           {getActionButton()}
-          {/*<ButtonGradient
-            disabled={isDisabledCreatePosition}
-            height="lg"
-            onClick={() =>
-              send({
-                type: 'CONFIRM',
-                // @ts-ignore TODO types
-                createUnderlyingPosition,
-              })
-            }
-          >
-            {confirmButtonText}
-          </ButtonGradient>
-            */}
         </>
       </ButtonsWrapper>
       {stateMachine.context.currentStepNumber === 4 && (
