@@ -219,10 +219,11 @@ const PositionManage = () => {
 
   const isMatured = position?.maturity.getTime() && position?.maturity.getTime() < Date.now()
 
-  const getMaturedFCashMessage = () => {
+  const getMaturedFCashMessage = (): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
-      return '(note: this FCash has matured; you will receive the underlying asset)'
+      return 'Note: This fCash has matured; you will receive the underlying asset'
     }
+    return null
   }
 
   return (
@@ -307,7 +308,8 @@ const PositionManage = () => {
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
-                            title={`Select amount to withdraw ${getMaturedFCashMessage()}`}
+                            description={getMaturedFCashMessage()}
+                            title={'Select amount to withdraw'}
                             value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
                           />
                           <Form.Item name="withdraw" required>
