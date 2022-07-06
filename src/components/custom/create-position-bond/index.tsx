@@ -298,7 +298,7 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
           </>
           )*/}
         <>
-          {!mintFiat && (
+          {!mintFiat && stateMachine.context.currentStepNumber !== 2 && (
             <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
               Mint FIAT with this transaction
             </ButtonExtraFormAction>

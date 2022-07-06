@@ -395,7 +395,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
             </button>
           </>
         )*/}
-        {/*stateMachine.context.currentStepNumber === 3 && (
+        {/* stateMachine.context.currentStepNumber === 3 && (
           <>
             <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
               {`Set Allowance`}
@@ -406,7 +406,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
           </>
         )*/}
         <>
-          {!mintFiat && (
+          {!mintFiat && stateMachine.context.currentStepNumber !== 2 && (
             <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
               Mint FIAT with this transaction
             </ButtonExtraFormAction>
