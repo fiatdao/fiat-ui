@@ -337,7 +337,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
                   val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
                 }
                 slider
-                sliderDisabled={loading}
+                sliderDisabled={loading || underlyingInfo?.humanValue?.eq(0)}
               />
             </Form.Item>
             <div className={cn(s.summary)}>
