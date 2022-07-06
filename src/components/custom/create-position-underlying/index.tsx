@@ -254,13 +254,11 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
           )}
           {isProxyAvailable && !hasAllowance && (
             <ButtonGradient
-              disabled={!stateMachine.context.underlierAmount.gt(0) || !isProxyAvailable}
+              disabled={!isProxyAvailable}
               height="lg"
               onClick={() => send({ type: 'CLICK_ALLOW' })}
             >
-              {stateMachine.context.underlierAmount.gt(0)
-                ? 'Set Allowance'
-                : `Insufficient Balance for ${collateral?.underlierSymbol}`}
+              Set Allowance
             </ButtonGradient>
           )}
         </>
@@ -406,11 +404,13 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
           </>
         )*/}
         <>
-          {!mintFiat && stateMachine.context.currentStepNumber !== 2 && (
-            <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
-              Mint FIAT with this transaction
-            </ButtonExtraFormAction>
-          )}
+          {!mintFiat &&
+            stateMachine.context.currentStepNumber !== 2 &&
+            stateMachine.context.currentStepNumber !== 3 && (
+              <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
+                Mint FIAT with this transaction
+              </ButtonExtraFormAction>
+            )}
           {getActionButton()}
           {/*<ButtonGradient
             disabled={isDisabledCreatePosition}

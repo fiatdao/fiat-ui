@@ -173,13 +173,11 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
           )}
           {isProxyAvailable && !hasAllowance && (
             <ButtonGradient
-              disabled={!stateMachine.context.erc20Amount.gt(0) || !isProxyAvailable}
+              disabled={!isProxyAvailable}
               height="lg"
               onClick={() => send({ type: 'CLICK_ALLOW' })}
             >
-              {stateMachine.context.erc20Amount.gt(0)
-                ? 'Set Allowance'
-                : `Insufficient Balance for ${collateral?.symbol}`}
+              Set Allowance
             </ButtonGradient>
           )}
         </>
@@ -298,11 +296,13 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
           </>
           )*/}
         <>
-          {!mintFiat && stateMachine.context.currentStepNumber !== 2 && (
-            <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
-              Mint FIAT with this transaction
-            </ButtonExtraFormAction>
-          )}
+          {!mintFiat &&
+            stateMachine.context.currentStepNumber !== 2 &&
+            stateMachine.context.currentStepNumber !== 3 && (
+              <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
+                Mint FIAT with this transaction
+              </ButtonExtraFormAction>
+            )}
           {getActionButton()}
         </>
       </ButtonsWrapper>
