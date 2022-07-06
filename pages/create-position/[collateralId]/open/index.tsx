@@ -200,22 +200,33 @@ const FormERC20: React.FC<{
   const summaryData = [
     {
       title: 'In your wallet',
-      value: `${tokenInfo?.humanValue?.toFixed(3)} ${tokenSymbol}`,
+      value:
+        tab === CreatePositionTab.asset
+          ? `${tokenInfo?.humanValue?.toFixed(3)} ${tokenSymbol}`
+          : `${underlyingInfo?.humanValue?.toFixed(3)} ${collateral.underlierSymbol}`,
     },
     {
       title: 'Depositing into position',
-      value: `${activeMachine.context.erc20Amount.toFixed(3)} ${tokenSymbol}`,
+      value:
+        tab === CreatePositionTab.asset
+          ? `${activeMachine.context.erc20Amount.toFixed(3)} ${tokenSymbol}`
+          : `${activeMachine.context.underlierAmount.toFixed(3)} ${collateral.underlierSymbol}`,
     },
     {
       title: 'Remaining in wallet',
-      value: `${tokenInfo?.humanValue
-        ?.minus(activeMachine.context.erc20Amount)
-        .toFixed(4)} ${tokenSymbol}`,
+      value:
+        tab === CreatePositionTab.asset
+          ? `${tokenInfo?.humanValue
+              ?.minus(activeMachine.context.erc20Amount)
+              .toFixed(4)} ${tokenSymbol}`
+          : `${underlyingInfo?.humanValue
+              ?.minus(activeMachine.context.underlierAmount)
+              .toFixed(4)} ${collateral.underlierSymbol}`,
     },
     {
       title: 'Estimated FIAT debt',
       titleTooltip: EST_FIAT_TOOLTIP_TEXT,
-      value: `${activeMachine.context.fiatAmount.toFixed(3)}`,
+      value: `${activeMachine.context.fiatAmount.toFixed(3)} FIAT`,
     },
     {
       state: getHealthFactorState(hf),
@@ -231,74 +242,75 @@ const FormERC20: React.FC<{
 
   const activeTitles = tab === CreatePositionTab.asset ? TITLES_BY_STEP : TITLES_BY_STEP_UNDERLYING
 
+  if (activeMachine.context.currentStepNumber === LAST_STEP) {
+    // Return success gif and position summary for last step
+    return (
+      <div className={cn(s.form)}>
+        <div className={cn(s.lastStepAnimation)}>
+          <Lottie animationData={SuccessAnimation} autoplay loop />
+        </div>
+        <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
+        <p className={cn(s.lastStepText)}>
+          Your position has been successfully created! It may take a couple seconds for your
+          position to show in the app.
+        </p>
+        <Summary data={summaryData} />
+        <Link href={`/your-positions/`} passHref>
+          <ButtonGradient height="lg">Go to Your Positions</ButtonGradient>
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <>
-      {activeMachine.context.currentStepNumber !== LAST_STEP ? (
-        <>
-          <StepperTitle
-            currentStep={activeMachine.context.currentStepNumber}
-            description={activeTitles[activeMachine.context.currentStepNumber].subtitle}
-            title={activeTitles[activeMachine.context.currentStepNumber].title}
-            totalSteps={activeMachine.context.totalStepNumber}
+      <StepperTitle
+        currentStep={activeMachine.context.currentStepNumber}
+        description={activeTitles[activeMachine.context.currentStepNumber].subtitle}
+        title={activeTitles[activeMachine.context.currentStepNumber].title}
+        totalSteps={activeMachine.context.totalStepNumber}
+      />
+      <div className={cn(s.form)}>
+        {[1, 4].includes(activeMachine.context.currentStepNumber) &&
+          SHOW_UNDERLYING_FLOW && ( // Feature Flag
+            <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
+              <RadioTab
+                checked={tab === CreatePositionTab.asset}
+                onClick={() => setTab(CreatePositionTab.asset)}
+              >
+                Asset
+              </RadioTab>
+              <RadioTab
+                checked={tab === CreatePositionTab.underlying}
+                onClick={() => setTab(CreatePositionTab.underlying)}
+              >
+                Underlying
+              </RadioTab>
+            </RadioTabsWrapper>
+          )}
+        {tab === CreatePositionTab.underlying ? (
+          <CreatePositionUnderlying
+            collateral={collateral}
+            confirmButtonText={confirmButtonText}
+            hasMinimumFIAT={hasMinimumFIAT}
+            healthFactorNumber={hf}
+            loading={loading}
+            marketRate={marketRate}
+            setLoading={setFormLoading}
+            setMachine={switchActiveMachine}
           />
-          <div className={cn(s.form)}>
-            {[1, 4].includes(activeMachine.context.currentStepNumber) &&
-              SHOW_UNDERLYING_FLOW && ( // Feature Flag
-                <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
-                  <RadioTab
-                    checked={tab === CreatePositionTab.asset}
-                    onClick={() => setTab(CreatePositionTab.asset)}
-                  >
-                    Asset
-                  </RadioTab>
-                  <RadioTab
-                    checked={tab === CreatePositionTab.underlying}
-                    onClick={() => setTab(CreatePositionTab.underlying)}
-                  >
-                    Underlying
-                  </RadioTab>
-                </RadioTabsWrapper>
-              )}
-            {tab === CreatePositionTab.underlying ? (
-              <CreatePositionUnderlying
-                collateral={collateral}
-                confirmButtonText={confirmButtonText}
-                hasMinimumFIAT={hasMinimumFIAT}
-                healthFactorNumber={hf}
-                loading={loading}
-                marketRate={marketRate}
-                setLoading={setFormLoading}
-                setMachine={switchActiveMachine}
-              />
-            ) : (
-              <CreatePositionBond
-                collateral={collateral}
-                confirmButtonText={confirmButtonText}
-                hasMinimumFIAT={hasMinimumFIAT}
-                loading={loading}
-                setLoading={setFormLoading}
-                setMachine={switchActiveMachine}
-                tokenAddress={tokenAddress}
-              />
-            )}
-          </div>
-        </>
-      ) : (
-        <div className={cn(s.form)}>
-          <div className={cn(s.lastStepAnimation)}>
-            <Lottie animationData={SuccessAnimation} autoplay loop />
-          </div>
-          <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
-          <p className={cn(s.lastStepText)}>
-            Your position has been successfully created! It may take a couple seconds for your
-            position to show in the app.
-          </p>
-          <Summary data={summaryData} />
-          <Link href={`/your-positions/`} passHref>
-            <ButtonGradient height="lg">Go to Your Positions</ButtonGradient>
-          </Link>
-        </div>
-      )}
+        ) : (
+          <CreatePositionBond
+            collateral={collateral}
+            confirmButtonText={confirmButtonText}
+            hasMinimumFIAT={hasMinimumFIAT}
+            loading={loading}
+            setLoading={setFormLoading}
+            setMachine={switchActiveMachine}
+            tokenAddress={tokenAddress}
+          />
+        )}
+      </div>
     </>
   )
 }

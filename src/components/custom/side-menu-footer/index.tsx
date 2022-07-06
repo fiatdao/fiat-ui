@@ -27,17 +27,16 @@ export const SideMenuFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
 
   return (
     <div className={cn(s.sideMenuFooter, className)} {...restProps}>
-      {/*/!**/}
       <ul className={cn(s.links)}>
         <li className={cn(s.item)}>
           <a
             className={cn(s.link)}
-            href="https://app.rari.capital/fuse/pool/130"
+            href="https://app.balancer.fi/#/pool/0x178e029173417b1f9c8bc16dcec6f697bc32374600000000000000000000025d"
             rel="noreferrer"
             target={'_blank'}
-            title="Borrow and lend on Rari Fuse"
+            title="Buy and sell on Balancer"
           >
-            Borrow and lend on Rari Fuse <InternalArrow />
+            Buy and sell on Balancer <InternalArrow />
           </a>
         </li>
         <li className={cn(s.item)}>
