@@ -1,5 +1,5 @@
 .component {
-  align-items: center;
+  align-items: flex-end;
   display: flex;
   justify-content: space-between;
   margin-bottom: 5px;
@@ -10,6 +10,11 @@
   font-size: 12px;
   font-weight: 500;
   margin: 0;
+}
+
+.titleAndDescriptionContainer {
+  display: flex;
+  flex-direction: column;
 }
 
 .balance {

@@ -25,6 +25,7 @@ export const TITLES_BY_STEP_UNDERLYING: { [key: number]: { title: string; subtit
 }
 
 interface Context {
+  // TODO: remove erc20amount on this machine, and in parent position form user underlier amount
   erc20Amount: BigNumber
   underlierAmount: BigNumber
   fiatAmount: BigNumber

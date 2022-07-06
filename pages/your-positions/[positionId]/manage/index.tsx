@@ -217,6 +217,15 @@ const PositionManage = () => {
     (!hasFiatAllowance && isRepayingFIAT) ||
     (!hasMonetaAllowance && isRepayingFIAT)
 
+  const isMatured = position?.maturity.getTime() && position?.maturity.getTime() < Date.now()
+
+  const getMaturedFCashMessage = (): string | null => {
+    if (position?.protocol === 'Notional Finance' && isMatured) {
+      return 'Note: This fCash has matured; you will receive the underlying asset'
+    }
+    return null
+  }
+
   return (
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
@@ -253,15 +262,17 @@ const PositionManage = () => {
                   {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
                     <>
                       <Tabs className={cn(s.tabs)}>
-                        <Tab
-                          isActive={'deposit' === activeTabKey}
-                          onClick={() => {
-                            form.setFieldsValue({ withdraw: undefined })
-                            setActiveTabKey('deposit')
-                          }}
-                        >
-                          Deposit
-                        </Tab>
+                        {!isMatured && (
+                          <Tab
+                            isActive={'deposit' === activeTabKey}
+                            onClick={() => {
+                              form.setFieldsValue({ withdraw: undefined })
+                              setActiveTabKey('deposit')
+                            }}
+                          >
+                            Deposit
+                          </Tab>
+                        )}
                         <Tab
                           isActive={'withdraw' === activeTabKey}
                           onClick={() => {
@@ -335,7 +346,8 @@ const PositionManage = () => {
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to withdraw"
+                            description={getMaturedFCashMessage()}
+                            title={'Select amount to withdraw'}
                             value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
                           />
                           <Form.Item name="withdraw" required>
