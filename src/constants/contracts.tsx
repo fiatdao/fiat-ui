@@ -40,6 +40,7 @@ function constantContracts<T extends { [key in string]: AppContractInfo }>(o: T)
 export const contracts = constantContracts({
   ERC_20: {
     address: {
+      [Chains.localhost]: '',
       [Chains.mainnet]: '',
       [Chains.goerli]: '',
     },
@@ -47,6 +48,7 @@ export const contracts = constantContracts({
   },
   ERC_1155: {
     address: {
+      [Chains.localhost]: '',
       [Chains.mainnet]: '',
       [Chains.goerli]: '',
     },
@@ -54,6 +56,7 @@ export const contracts = constantContracts({
   },
   FIAT: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].fiat.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].fiat.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].fiat.address,
     },
@@ -64,6 +67,7 @@ export const contracts = constantContracts({
   },
   FIAT_DAO: {
     address: {
+      [Chains.localhost]: '0xed1480d12be41d92f36f5f7bdd88212e381a3677',
       [Chains.mainnet]: '0xed1480d12be41d92f36f5f7bdd88212e381a3677',
       [Chains.goerli]: '0xe10afb811c4ea6d5fd99aa48b0a894401c5cd72c',
     },
@@ -73,6 +77,7 @@ export const contracts = constantContracts({
   },
   CODEX: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].codex.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].codex.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].codex.address,
     },
@@ -80,6 +85,7 @@ export const contracts = constantContracts({
   },
   COLLYBUS: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].collybus.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].collybus.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].collybus.address,
     },
@@ -87,6 +93,7 @@ export const contracts = constantContracts({
   },
   VAULT_20: {
     address: {
+      [Chains.localhost]: '',
       [Chains.mainnet]: '',
       [Chains.goerli]: '',
     },
@@ -94,6 +101,7 @@ export const contracts = constantContracts({
   },
   NO_LOSS_COLLATERAL_AUCTION: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].collateralAuction.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].collateralAuction.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].collateralAuction.address,
     },
@@ -101,6 +109,7 @@ export const contracts = constantContracts({
   },
   PRB_PROXY: {
     address: {
+      [Chains.localhost]: '',
       [Chains.mainnet]: '',
       [Chains.goerli]: '',
     },
@@ -108,6 +117,7 @@ export const contracts = constantContracts({
   },
   PRB_PROXY_REGISTRY: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].proxyRegistry.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].proxyRegistry.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].proxyRegistry.address,
     },
@@ -115,6 +125,7 @@ export const contracts = constantContracts({
   },
   USER_ACTIONS_EPT: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].vaultEPTActions.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultEPTActions.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultEPTActions.address,
     },
@@ -122,6 +133,7 @@ export const contracts = constantContracts({
   },
   USER_ACTIONS_FC: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].vaultFCActions.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultFCActions.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFCActions.address,
     },
@@ -129,6 +141,7 @@ export const contracts = constantContracts({
   },
   USER_ACTIONS_FY: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].vaultFYActions.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].vaultFYActions.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].vaultFYActions.address,
     },
@@ -136,6 +149,7 @@ export const contracts = constantContracts({
   },
   MONETA: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].moneta.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].moneta.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].moneta.address,
     },
@@ -143,6 +157,7 @@ export const contracts = constantContracts({
   },
   NO_LOSS_COLLATERAL_AUCTION_ACTIONS: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].noLossCollateralAuctionActions.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].noLossCollateralAuctionActions.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].noLossCollateralAuctionActions.address,
     },
@@ -150,6 +165,7 @@ export const contracts = constantContracts({
   },
   PUBLICAN: {
     address: {
+      [Chains.localhost]: contractsByNetwork[Chains.mainnet].publican.address,
       [Chains.mainnet]: contractsByNetwork[Chains.mainnet].publican.address,
       [Chains.goerli]: contractsByNetwork[Chains.goerli].publican.address,
     },
