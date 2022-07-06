@@ -4,7 +4,7 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { MintFiat } from '@/src/components/custom/mint-fiat'
-import { Summary, SummaryItem } from '@/src/components/custom/summary'
+import { Summary } from '@/src/components/custom/summary'
 import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
 import TokenAmount from '@/src/components/custom/token-amount'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
@@ -123,6 +123,19 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     amount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
   })
 
+  const underlierAmount = stateMachine.context.underlierAmount.toNumber()
+  const apr = (1 - marketRate.toNumber()) * 100
+  const fixedAPR = `${apr.toFixed(2)}%`
+  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)} ${
+    collateral ? collateral.underlierSymbol : '-'
+  }`
+  const redeemableValue = Number(underlierAmount) + Number(interestEarned)
+  const redeemable = `${(isNaN(redeemableValue) ? 0 : redeemableValue).toFixed(2)} ${
+    collateral ? collateral.underlierSymbol : '-'
+  }`
+  const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
+  // const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
+
   const underlyingData = [
     {
       title: 'Market rate',
@@ -138,20 +151,21 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
       title: 'Slippage tolerance',
       value: `${slippageTolerance.toFixed(2)}%`,
     },
+    {
+      title: 'Fixed APR',
+      value: fixedAPR,
+    },
+    {
+      title: 'Interest earned',
+      value: interestEarned,
+    },
+    {
+      title: `Redeemable at maturity | ${
+        collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
+      }`,
+      value: redeemable,
+    },
   ]
-
-  const underlierAmount = stateMachine.context.underlierAmount.toNumber()
-  const apr = (1 - marketRate.toNumber()) * 100
-  const fixedAPR = `${apr.toFixed(2)}%`
-  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)} ${
-    collateral ? collateral.underlierSymbol : '-'
-  }`
-  const redeemableValue = Number(underlierAmount) + Number(interestEarned)
-  const redeemable = `${(isNaN(redeemableValue) ? 0 : redeemableValue).toFixed(2)} ${
-    collateral ? collateral.underlierSymbol : '-'
-  }`
-  const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
-  // const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
 
   const createUnderlyingPositionERC1155 = async ({
     fiatAmount,
@@ -338,17 +352,6 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
                 sliderDisabled={loading || underlyingInfo?.humanValue?.eq(0)}
               />
             </Form.Item>
-            <div className={cn(s.summary)}>
-              <Summary data={underlyingData} />
-              <SummaryItem title={'Fixed APR'} value={fixedAPR} />
-              <SummaryItem title={'Interest earned'} value={interestEarned} />
-              <SummaryItem
-                title={`Redeemable at maturity | ${
-                  collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
-                }`}
-                value={redeemable}
-              />
-            </div>
             {mintFiat && (
               <MintFiat
                 activeMachine={stateMachine}
@@ -359,6 +362,9 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
                 send={send}
               />
             )}
+            <div className={cn(s.summary)}>
+              <Summary data={underlyingData} />
+            </div>
           </div>
         </>
       )}
