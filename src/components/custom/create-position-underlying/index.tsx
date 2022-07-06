@@ -362,9 +362,6 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
                 send={send}
               />
             )}
-            <div className={cn(s.summary)}>
-              <Summary data={underlyingData} />
-            </div>
           </div>
         </>
       )}
@@ -380,9 +377,12 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
           {getActionButton()}
         </>
       </ButtonsWrapper>
-      {stateMachine.context.currentStepNumber === 4 && (
-        <div className={cn(s.summary)}>{/* <Summary data={summaryData} /> */}</div>
-      )}
+      {stateMachine.context.currentStepNumber !== 2 &&
+        stateMachine.context.currentStepNumber !== 3 && (
+          <div className={cn(s.summary)}>
+            <Summary data={underlyingData} />
+          </div>
+        )}
     </Form>
   )
 }

@@ -266,9 +266,12 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
           {getActionButton()}
         </>
       </ButtonsWrapper>
-      <div className={cn(s.summary)}>
-        <Summary data={summaryData} />
-      </div>
+      {stateMachine.context.currentStepNumber !== 2 &&
+        stateMachine.context.currentStepNumber !== 3 && (
+          <div className={cn(s.summary)}>
+            <Summary data={summaryData} />
+          </div>
+        )}
     </Form>
   )
 }
