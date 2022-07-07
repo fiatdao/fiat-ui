@@ -23,6 +23,7 @@ import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+import StepperTitle from '@/src/components/custom/stepper-title'
 import cn from 'classnames'
 import React, { useCallback, useEffect, useState } from 'react'
 import AntdForm from 'antd/lib/form'
@@ -31,23 +32,6 @@ import Lottie from 'lottie-react'
 import Link from 'next/link'
 
 const LAST_STEP = 4
-
-const StepperTitle: React.FC<{
-  currentStep: number
-  description: string
-  title: string
-  totalSteps: number
-}> = ({ currentStep, description, title, totalSteps }) => (
-  <div className={cn(s.stepperWrapper)}>
-    <div className={cn(s.stepperTitleWrapper)}>
-      <h2 className={cn(s.stepperTitle)}>{title}</h2>
-      <div className={s.steps}>
-        <span className={s.currentStep}>{currentStep}</span>/{totalSteps}
-      </div>
-    </div>
-    <p className={cn(s.stepperDescription)}>{description}</p>
-  </div>
-)
 
 type Step = {
   id: number
