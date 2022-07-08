@@ -71,6 +71,7 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
   }, [stateMachine, setMachine])
 
   useEffect(() => {
+    // https://xstate.js.org/docs/recipes/react.html#syncing-data-with-useeffect
     send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
     send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
   }, [hasAllowance, isProxyAvailable, send])

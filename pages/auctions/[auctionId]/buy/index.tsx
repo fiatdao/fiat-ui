@@ -27,8 +27,11 @@ import Link from 'next/link'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Popover } from 'antd'
+import { useMachine } from '@xstate/react'
+import auctionFormMachine from '@/src/state/auction-form-machine'
+import useUserProxy from '@/src/hooks/useUserProxy'
 
 type FormProps = { amountToBuy: BigNumber }
 
@@ -57,7 +60,26 @@ const BuyCollateral = () => {
   const [FIATBalance, refetchFIATBalance] = useFIATBalance(true)
   const [isPurchaseAmountValid, setIsPurchaseAmountValid] = useState(false)
   const [amountToBuy, setAmountToBuy] = useState(ZERO_BIG_NUMBER)
+  const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [step, setStep] = useState(0)
+  const [state, send] = useMachine(auctionFormMachine)
+
+  const stepss = useMemo(() => (state.machine ? Object.keys(state.machine.states) : []), [state])
+  const currentMeta = useMemo(() => state.meta[`${state.machine?.id}.${state.value}`], [state])
+  const currentStateName = useMemo(() => state.value, [state])
+  console.log('state: ', state)
+  console.log('current state: ', currentStateName)
+  // key value for current metadata is the state node's delimited full path, e.g. "machineId.stateName"
+  // https://xstate.js.org/docs/guides/ids.html#identifying-state-nodes
+  console.log('current meta: ', currentMeta)
+  console.log('steps: ', stepss)
+  console.log('steps tostrings: ', state.toStrings())
+
+  useEffect(() => {
+    // https://xstate.js.org/docs/recipes/react.html#syncing-data-with-useeffect
+    send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
+    send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
+  }, [hasAllowance, isProxyAvailable, send])
 
   const fiatToPay = useMemo(() => {
     // TODO more closely est fiatToPay
@@ -121,102 +143,6 @@ const BuyCollateral = () => {
         setIsPurchaseAmountValid(true)
       }
     }
-  }
-
-  const steps: Step[] = [
-    {
-      description: `Select the amount of collateral to purchase`,
-      buttonText: 'Buy collateral',
-      next() {
-        if (!hasAllowance) {
-          setStep(1)
-        } else if (!hasMonetaAllowance) {
-          setStep(2)
-        } else {
-          setStep(3)
-        }
-      },
-      prev() {
-        return
-      },
-      callback() {
-        this.next()
-      },
-    },
-    {
-      description: 'Set Allowance for FIAT',
-      buttonText: 'Set Allowance for FIAT',
-      next() {
-        if (!hasMonetaAllowance) {
-          setStep(2)
-        } else {
-          setStep(3)
-        }
-      },
-      prev() {
-        setStep(0)
-      },
-      async callback() {
-        await approve()
-        this.next()
-      },
-    },
-    {
-      description: 'Enable Proxy for FIAT',
-      buttonText: 'Enable Proxy for FIAT',
-      next() {
-        setStep(3)
-      },
-      prev() {
-        if (!hasAllowance) {
-          setStep(1)
-        } else {
-          setStep(0)
-        }
-      },
-      async callback() {
-        await approveMoneta()
-        this.next()
-      },
-    },
-    {
-      description: 'Confirm the details',
-      buttonText: 'Confirm',
-      next() {
-        return
-      },
-      prev() {
-        if (!hasMonetaAllowance) {
-          setStep(2)
-        } else if (!hasAllowance) {
-          setStep(1)
-        } else {
-          setStep(0)
-        }
-      },
-      callback() {
-        form.submit()
-      },
-    },
-  ]
-
-  const getButtonTextForStep = (stepNumber: number) => {
-    if (!isPurchaseAmountValid) {
-      return (
-        <div className={cn(s.buttonTextContainer)}>
-          <p className={cn(s.buttonText)}>
-            {`Must purchase < ${maxFractionalBuy
-              ?.unscaleBy(WAD_DECIMALS)
-              .toFixed(2)} or buy all collateral`}
-          </p>
-          <Info className={cn(s.icon)} />
-        </div>
-      )
-    }
-    if (!isFiatBalanceSufficient) {
-      return INSUFFICIENT_BALANCE_TEXT
-    }
-    return steps[stepNumber].buttonText
   }
 
   useDynamicTitle(auctionData?.protocol && `Buy ${auctionData.protocol.humanReadableName}`)
@@ -297,6 +223,23 @@ const BuyCollateral = () => {
     },
   ]
 
+  if (state.value === 'success') {
+    // if on final step, return success gif & summary
+    return (
+      <div className={cn(s.form)}>
+        <div className={cn(s.lastStepAnimation)}>
+          <Lottie animationData={SuccessAnimation} autoplay loop />
+        </div>
+        <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
+        <p className={cn(s.lastStepText)}>You have successfully bought collateral tokens.</p>
+        <Summary data={summaryData} />
+        <Link href={`/auctions/`} passHref>
+          <ButtonGradient height="lg">Go to Auctions</ButtonGradient>
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <>
       <ButtonBack href="/auctions">Back</ButtonBack>
@@ -313,114 +256,85 @@ const BuyCollateral = () => {
         </div>
 
         <div className={cn(s.formWrapper)}>
-          {step + 1 !== SUCCESS_STEP ? (
-            <>
-              <StepperTitle
-                currentStep={step + 1}
-                description={steps[step].description}
-                title={'Buy collateral'}
-                totalSteps={steps.length}
-              />
-              <div className={cn(s.form)}>
-                {step === 0 ? (
-                  <>
-                    <div className={cn(s.balanceWrapper)}>
-                      <h3 className={cn(s.balanceLabel)}>Purchase {auctionData?.asset}</h3>
-                      <p className={cn(s.balance)}>Balance: {FIATBalance?.toFixed(2)} FIAT</p>
-                    </div>
-
-                    <Form
-                      form={form}
-                      initialValues={{ amountToBuy: 0 }}
-                      onFinish={onSubmit}
-                      onValuesChange={onValuesChange}
-                    >
-                      <Form.Item name="amountToBuy" required>
-                        <TokenAmount
-                          displayDecimals={4}
-                          mainAsset={auctionData?.protocol.name ?? ''}
-                          max={maxCredit}
-                          maximumFractionDigits={6}
-                          numericInputDisabled={loading}
-                          secondaryAsset={auctionData?.underlier.symbol}
-                          slider
-                          sliderDisabled={loading}
-                        />
-                      </Form.Item>
-
-                      <Popover
-                        className={cn(s.buttonTextTooltip)}
-                        content={
-                          isExecuteButtonDisabled ? (
-                            <p style={{ maxWidth: '60ch' }}>
-                              The remaining debt after your purchase must be less than the debt
-                              floor to ensure all outstanding debt can be recovered from liquidated
-                              collateral. Learn more about auctions{' '}
-                              <a href="https://docs.fiatdao.com/protocol/fiat/collateral-auctions">
-                                here
-                              </a>
-                              .
-                            </p>
-                          ) : null
-                        }
-                      >
-                        {/* hack to add tooltip to a disabled button: https://github.com/react-component/tooltip/issues/18#issuecomment-411476678 */}
-                        <span
-                          style={{ cursor: isExecuteButtonDisabled ? 'not-allowed' : 'pointer' }}
-                        >
-                          <ButtonGradient
-                            disabled={isExecuteButtonDisabled}
-                            height="lg"
-                            onClick={steps[step].next}
-                            style={isExecuteButtonDisabled ? { pointerEvents: 'none' } : {}}
-                          >
-                            {getButtonTextForStep(step)}
-                          </ButtonGradient>
-                        </span>
-                      </Popover>
-
-                      <div className={cn(s.summary)}>
-                        <Summary data={summaryData} />
-                      </div>
-                    </Form>
-                  </>
-                ) : (
-                  <>
-                    {step === 3 && <Summary data={summaryData} />}
-                    <div className={s.buttonsWrapper}>
-                      <ButtonGradient
-                        disabled={loading || !isFiatBalanceSufficient}
-                        height="lg"
-                        loading={loading}
-                        onClick={steps[step].callback.bind(steps[step])}
-                      >
-                        {getButtonTextForStep(step)}
-                      </ButtonGradient>
-                      <button
-                        className={s.backButton}
-                        disabled={loading}
-                        onClick={steps[step].prev}
-                      >
-                        &#8592; Go back
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
-          ) : (
+          <>
+            <StepperTitle
+              currentStep={state.context.stepNumber}
+              description={currentMeta.description}
+              title={'Buy collateral'}
+              totalSteps={stepss.length}
+            />
             <div className={cn(s.form)}>
-              <div className={cn(s.lastStepAnimation)}>
-                <Lottie animationData={SuccessAnimation} autoplay loop />
-              </div>
-              <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
-              <p className={cn(s.lastStepText)}>You have successfully bought collateral tokens.</p>
-              <Summary data={summaryData} />
-              <Link href={`/auctions/`} passHref>
-                <ButtonGradient height="lg">Go to Auctions</ButtonGradient>
-              </Link>
+              <>
+                <div className={cn(s.balanceWrapper)}>
+                  <h3 className={cn(s.balanceLabel)}>Purchase {auctionData?.asset}</h3>
+                  <p className={cn(s.balance)}>Balance: {FIATBalance?.toFixed(2)} FIAT</p>
+                </div>
+
+                <Form
+                  form={form}
+                  initialValues={{ amountToBuy: 0 }}
+                  onFinish={onSubmit}
+                  onValuesChange={onValuesChange}
+                >
+                  <Form.Item name="amountToBuy" required>
+                    <TokenAmount
+                      displayDecimals={4}
+                      mainAsset={auctionData?.protocol.name ?? ''}
+                      max={maxCredit}
+                      maximumFractionDigits={6}
+                      numericInputDisabled={loading}
+                      secondaryAsset={auctionData?.underlier.symbol}
+                      slider
+                      sliderDisabled={loading}
+                    />
+                  </Form.Item>
+
+                  <Popover
+                    className={cn(s.buttonTextTooltip)}
+                    content={
+                      isExecuteButtonDisabled ? (
+                        <p style={{ maxWidth: '60ch' }}>
+                          The remaining debt after your purchase must be less than the debt floor to
+                          ensure all outstanding debt can be recovered from liquidated collateral.
+                          Learn more about auctions{' '}
+                          <a href="https://docs.fiatdao.com/protocol/fiat/collateral-auctions">
+                            here
+                          </a>
+                          .
+                        </p>
+                      ) : null
+                    }
+                  >
+                    {/* hack to add tooltip to a disabled button: https://github.com/react-component/tooltip/issues/18#issuecomment-411476678 */}
+                    <span style={{ cursor: isExecuteButtonDisabled ? 'not-allowed' : 'pointer' }}>
+                      <div className={s.buttonsWrapper}>
+                        <ButtonGradient
+                          disabled={isExecuteButtonDisabled}
+                          height="lg"
+                          onClick={() => console.log('execute action for current step')}
+                          style={isExecuteButtonDisabled ? { pointerEvents: 'none' } : {}}
+                        >
+                          {currentMeta.buttonText}
+                        </ButtonGradient>
+                        {currentStateName === 'confirmPurchase' && (
+                          <button
+                            className={s.backButton}
+                            disabled={loading}
+                            onClick={() => console.log('go back')}
+                          >
+                            &#8592; Go back
+                          </button>
+                        )}
+                      </div>
+                    </span>
+                  </Popover>
+                  <div className={cn(s.summary)}>
+                    <Summary data={summaryData} />
+                  </div>
+                </Form>
+              </>
             </div>
-          )}
+          </>
         </div>
       </div>
     </>
