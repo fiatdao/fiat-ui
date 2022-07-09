@@ -37,10 +37,11 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
   const { address: userAddress, appChainId, isAppConnected, web3Provider } = useWeb3Connected()
   const { userProxy, userProxyAddress } = useUserProxy()
 
-  const { approve, hasAllowance, loadingApprove } = useERC20Allowance(
-    contracts.FIAT.address[appChainId],
-    userProxyAddress ?? '',
-  )
+  const {
+    approve: approveProxyForFiat,
+    hasAllowance: proxyHasFiatAllowance,
+    loadingApprove: loadingApproveProxyForFiat,
+  } = useERC20Allowance(contracts.FIAT.address[appChainId], userProxyAddress ?? '')
 
   const { approveFIAT } = useUserActions(auctionData?.vault?.type)
 
@@ -165,8 +166,11 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
   )
 
   useEffect(() => {
-    setTxStatus((prev) => ({ ...prev, loading: loadingApprove || loadingMonetaApprove }))
-  }, [loadingApprove, loadingMonetaApprove])
+    setTxStatus((prev) => ({
+      ...prev,
+      loading: loadingApproveProxyForFiat || loadingMonetaApprove,
+    }))
+  }, [loadingApproveProxyForFiat, loadingMonetaApprove])
 
   // resets the status
   useEffect(() => () => setTxStatus(initialState), [initialState])
@@ -233,9 +237,9 @@ export const useBuyCollateralForm = (auctionData?: AuctionData) => {
   }, [auctionData?.auctionedCollateral, oldMaxPrice, FIATBalance])
 
   return {
-    approve,
+    approveProxyForFiat,
     approveMoneta,
-    hasAllowance,
+    proxyHasFiatAllowance,
     hasMonetaAllowance,
     buyCollateral,
     maxPrice,

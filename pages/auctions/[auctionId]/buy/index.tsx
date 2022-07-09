@@ -5,6 +5,7 @@ import {
   INSUFFICIENT_BALANCE_TEXT,
   ONE_BIG_NUMBER,
   WAD_DECIMALS,
+  ZERO_ADDRESS,
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
@@ -30,7 +31,7 @@ import cn from 'classnames'
 import { useMemo, useState, useEffect } from 'react'
 import { Popover } from 'antd'
 import { useMachine } from '@xstate/react'
-import auctionFormMachine from '@/src/state/auction-form-machine'
+import auctionFormMachine, { AuctionStates } from '@/src/state/auction-form-machine'
 import useUserProxy from '@/src/hooks/useUserProxy'
 
 type FormProps = { amountToBuy: BigNumber }
@@ -48,10 +49,10 @@ const BuyCollateral = () => {
   const { data: auctionData } = useAuction(auctionId)
   const [form] = AntdForm.useForm<FormProps>()
   const {
-    approve,
+    approveProxyForFiat,
     approveMoneta,
     buyCollateral,
-    hasAllowance,
+    proxyHasFiatAllowance,
     hasMonetaAllowance,
     loading,
     maxCredit,
@@ -61,25 +62,31 @@ const BuyCollateral = () => {
   const [isPurchaseAmountValid, setIsPurchaseAmountValid] = useState(false)
   const [amountToBuy, setAmountToBuy] = useState(ZERO_BIG_NUMBER)
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
-  const [step, setStep] = useState(0)
+  console.log('proxyAddress: ', userProxyAddress)
+  console.log('isproxyavailable: ', isProxyAvailable)
   const [state, send] = useMachine(auctionFormMachine)
 
   const stepss = useMemo(() => (state.machine ? Object.keys(state.machine.states) : []), [state])
   const currentMeta = useMemo(() => state.meta[`${state.machine?.id}.${state.value}`], [state])
-  const currentStateName = useMemo(() => state.value, [state])
+  const currentStateName = useMemo(() => state.value as AuctionStates, [state])
   console.log('state: ', state)
   console.log('current state: ', currentStateName)
   // key value for current metadata is the state node's delimited full path, e.g. "machineId.stateName"
   // https://xstate.js.org/docs/guides/ids.html#identifying-state-nodes
   console.log('current meta: ', currentMeta)
   console.log('steps: ', stepss)
-  console.log('steps tostrings: ', state.toStrings())
 
   useEffect(() => {
+    // Notify machine of state changes
     // https://xstate.js.org/docs/recipes/react.html#syncing-data-with-useeffect
-    send({ type: 'SET_HAS_ALLOWANCE', hasAllowance })
-    send({ type: 'SET_PROXY_AVAILABLE', isProxyAvailable })
-  }, [hasAllowance, isProxyAvailable, send])
+    console.log('[machine notifier hook] proxy avail? ', isProxyAvailable)
+    console.log('[machine notifier hook] proxy addr: ', userProxyAddress)
+    const hasProxy = userProxyAddress != ZERO_ADDRESS && userProxyAddress !== null
+    send({ type: 'SET_HAS_PROXY', hasProxy })
+
+    console.log('[machine notifier hook] has allowance? ', proxyHasFiatAllowance)
+    send({ type: 'SET_PROXY_HAS_FIAT_ALLOWANCE', proxyHasFiatAllowance })
+  }, [proxyHasFiatAllowance, isProxyAvailable, userProxyAddress, send])
 
   const fiatToPay = useMemo(() => {
     // TODO more closely est fiatToPay
@@ -223,7 +230,31 @@ const BuyCollateral = () => {
     },
   ]
 
-  if (state.value === 'success') {
+  const handleClick = async () => {
+    let handler
+    // because our existing hooks have lifecycles (loading states, success states, etc)
+    // invoke them as is. once resolved their new results will be picked up
+    // by a useEffect hook to sync the machine state
+    // https://xstate.js.org/docs/recipes/react.html#syncing-data-with-useeffect
+    switch (currentStateName) {
+      case AuctionStates.createProxy:
+        handler = setupProxy
+        break
+      case AuctionStates.setFiatAllowance:
+        handler = approveProxyForFiat
+        break
+
+      default:
+        console.error('Unknown state, not setting button onClick handler')
+        return
+    }
+
+    await handler()
+
+    // console.log('execute action for current step')
+  }
+
+  const renderSuccessPage = () => {
     // if on final step, return success gif & summary
     return (
       <div className={cn(s.form)}>
@@ -256,85 +287,89 @@ const BuyCollateral = () => {
         </div>
 
         <div className={cn(s.formWrapper)}>
-          <>
-            <StepperTitle
-              currentStep={state.context.stepNumber}
-              description={currentMeta.description}
-              title={'Buy collateral'}
-              totalSteps={stepss.length}
-            />
-            <div className={cn(s.form)}>
-              <>
-                <div className={cn(s.balanceWrapper)}>
-                  <h3 className={cn(s.balanceLabel)}>Purchase {auctionData?.asset}</h3>
-                  <p className={cn(s.balance)}>Balance: {FIATBalance?.toFixed(2)} FIAT</p>
-                </div>
-
-                <Form
-                  form={form}
-                  initialValues={{ amountToBuy: 0 }}
-                  onFinish={onSubmit}
-                  onValuesChange={onValuesChange}
-                >
-                  <Form.Item name="amountToBuy" required>
-                    <TokenAmount
-                      displayDecimals={4}
-                      mainAsset={auctionData?.protocol.name ?? ''}
-                      max={maxCredit}
-                      maximumFractionDigits={6}
-                      numericInputDisabled={loading}
-                      secondaryAsset={auctionData?.underlier.symbol}
-                      slider
-                      sliderDisabled={loading}
-                    />
-                  </Form.Item>
-
-                  <Popover
-                    className={cn(s.buttonTextTooltip)}
-                    content={
-                      isExecuteButtonDisabled ? (
-                        <p style={{ maxWidth: '60ch' }}>
-                          The remaining debt after your purchase must be less than the debt floor to
-                          ensure all outstanding debt can be recovered from liquidated collateral.
-                          Learn more about auctions{' '}
-                          <a href="https://docs.fiatdao.com/protocol/fiat/collateral-auctions">
-                            here
-                          </a>
-                          .
-                        </p>
-                      ) : null
-                    }
-                  >
-                    {/* hack to add tooltip to a disabled button: https://github.com/react-component/tooltip/issues/18#issuecomment-411476678 */}
-                    <span style={{ cursor: isExecuteButtonDisabled ? 'not-allowed' : 'pointer' }}>
-                      <div className={s.buttonsWrapper}>
-                        <ButtonGradient
-                          disabled={isExecuteButtonDisabled}
-                          height="lg"
-                          onClick={() => console.log('execute action for current step')}
-                          style={isExecuteButtonDisabled ? { pointerEvents: 'none' } : {}}
-                        >
-                          {currentMeta.buttonText}
-                        </ButtonGradient>
-                        {currentStateName === 'confirmPurchase' && (
-                          <button
-                            className={s.backButton}
-                            disabled={loading}
-                            onClick={() => console.log('go back')}
-                          >
-                            &#8592; Go back
-                          </button>
-                        )}
-                      </div>
-                    </span>
-                  </Popover>
-                  <div className={cn(s.summary)}>
-                    <Summary data={summaryData} />
+          {state.value === AuctionStates.success ? (
+            renderSuccessPage()
+          ) : (
+            <>
+              <StepperTitle
+                currentStep={state.context.stepNumber}
+                description={currentMeta.description}
+                title={'Buy collateral'}
+                totalSteps={stepss.length}
+              />
+              <div className={cn(s.form)}>
+                <>
+                  <div className={cn(s.balanceWrapper)}>
+                    <h3 className={cn(s.balanceLabel)}>Purchase {auctionData?.asset}</h3>
+                    <p className={cn(s.balance)}>Balance: {FIATBalance?.toFixed(2)} FIAT</p>
                   </div>
-                </Form>
-              </>
-            </div>
-          </>
+
+                  <Form
+                    form={form}
+                    initialValues={{ amountToBuy: 0 }}
+                    onFinish={onSubmit}
+                    onValuesChange={onValuesChange}
+                  >
+                    <Form.Item name="amountToBuy" required>
+                      <TokenAmount
+                        displayDecimals={4}
+                        mainAsset={auctionData?.protocol.name ?? ''}
+                        max={maxCredit}
+                        maximumFractionDigits={6}
+                        numericInputDisabled={loading}
+                        secondaryAsset={auctionData?.underlier.symbol}
+                        slider
+                        sliderDisabled={loading}
+                      />
+                    </Form.Item>
+
+                    <Popover
+                      className={cn(s.buttonTextTooltip)}
+                      content={
+                        isExecuteButtonDisabled ? (
+                          <p style={{ maxWidth: '60ch' }}>
+                            The remaining debt after your purchase must be less than the debt floor
+                            to ensure all outstanding debt can be recovered from liquidated
+                            collateral. Learn more about auctions{' '}
+                            <a href="https://docs.fiatdao.com/protocol/fiat/collateral-auctions">
+                              here
+                            </a>
+                            .
+                          </p>
+                        ) : null
+                      }
+                    >
+                      {/* hack to add tooltip to a disabled button: https://github.com/react-component/tooltip/issues/18#issuecomment-411476678 */}
+                      <span style={{ cursor: isExecuteButtonDisabled ? 'not-allowed' : 'pointer' }}>
+                        <div className={s.buttonsWrapper}>
+                          <ButtonGradient
+                            disabled={isExecuteButtonDisabled}
+                            height="lg"
+                            onClick={handleClick}
+                            style={isExecuteButtonDisabled ? { pointerEvents: 'none' } : {}}
+                          >
+                            {currentMeta.buttonText}
+                          </ButtonGradient>
+                          {currentStateName === 'confirmPurchase' && (
+                            <button
+                              className={s.backButton}
+                              disabled={loading}
+                              onClick={() => console.log('go back')}
+                            >
+                              &#8592; Go back
+                            </button>
+                          )}
+                        </div>
+                      </span>
+                    </Popover>
+                    <div className={cn(s.summary)}>
+                      <Summary data={summaryData} />
+                    </div>
+                  </Form>
+                </>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>
