@@ -27,7 +27,7 @@ import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
+import { useUnderlierToPToken } from '@/src/hooks/useUnderlierToPToken'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -91,7 +91,7 @@ const FormERC20: React.FC<{
 
   const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
 
-  const [underlierToPToken] = useUnderlyingExchangeValue({
+  const [underlierToPToken] = useUnderlierToPToken({
     vault: collateral?.vault?.address ?? '',
     balancerVault: collateral?.eptData?.balancerVault,
     curvePoolId: collateral?.eptData?.poolId,

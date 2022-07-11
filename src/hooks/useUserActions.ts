@@ -437,25 +437,25 @@ export const useUserActions = (type?: string): UseUserActions => {
         8,
       )
 
-      console.log(
-        '',
-        88,
-        '\n',
-        params.vault,
-        '\n', // address vault
-        userProxyAddress,
-        '\n', // address position
-        address,
-        '\n', // address collateralizer
-        address,
-        '\n', // address creditor
-        params.underlierAmount.toFixed(0, 8),
-        '\n', // uint256 underlierAmount,
-        deltaNormalDebt,
-        '\n', // int256 deltaNormalDebt,
-        params.swapParams,
-        '\n', // calldata swapParams
-      )
+      // console.log(
+      //   '',
+      //   88,
+      //   '\n',
+      //   params.vault,
+      //   '\n', // address vault
+      //   userProxyAddress,
+      //   '\n', // address position
+      //   address,
+      //   '\n', // address collateralizer
+      //   address,
+      //   '\n', // address creditor
+      //   params.underlierAmount.toFixed(0, 8),
+      //   '\n', // uint256 underlierAmount,
+      //   deltaNormalDebt,
+      //   '\n', // int256 deltaNormalDebt,
+      //   params.swapParams,
+      //   '\n', // calldata swapParams
+      // )
 
       const buyCollateralAndModifyDebtEncoded = userActionFY.interface.encodeFunctionData(
         'buyCollateralAndModifyDebt', //issue here is that swapParams has 2 potential types... need to remove the or statement

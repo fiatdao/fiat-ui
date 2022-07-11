@@ -12,9 +12,7 @@ type UnderlierToPToken = {
   underlierAmount: BigNumber
 }
 
-export const useUnderlyingExchangeValue = (
-  params: UnderlierToPToken,
-): [BigNumber, KeyedMutator<any>] => {
+export const useUnderlierToPToken = (params: UnderlierToPToken): [BigNumber, KeyedMutator<any>] => {
   const { appChainId } = useWeb3Connection()
 
   const [underlierToPToken, refetchUnderlierToPToken] = useContractCall(

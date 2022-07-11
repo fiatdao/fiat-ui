@@ -10,7 +10,7 @@ import TokenAmount from '@/src/components/custom/token-amount'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
+import { useUnderlierToPToken } from '@/src/hooks/useUnderlierToPToken'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
@@ -114,7 +114,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     )
   }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT, hasSufficientCollateral])
 
-  const [underlierToPToken] = useUnderlyingExchangeValue({
+  const [underlierToPToken] = useUnderlierToPToken({
     vault: collateral?.vault?.address ?? '',
     balancerVault: collateral?.eptData?.balancerVault,
     curvePoolId: collateral?.eptData?.poolId,
