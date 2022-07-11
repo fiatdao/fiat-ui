@@ -237,16 +237,32 @@ const PositionManage = () => {
       })
   }, [handleManage, formValues])
 
-  const enableButtons =
-    !isProxyAvailable ||
-    !hasTokenAllowance ||
-    (!hasFiatAllowance && isRepayingFIAT) ||
-    (!hasMonetaAllowance && isRepayingFIAT)
+  const enableButtons = useMemo(
+    () =>
+      !isProxyAvailable ||
+      !hasTokenAllowance ||
+      (!hasFiatAllowance && isRepayingFIAT) ||
+      (!hasMonetaAllowance && isRepayingFIAT),
+    [hasFiatAllowance, hasTokenAllowance, hasMonetaAllowance, isProxyAvailable, isRepayingFIAT],
+  )
 
   const isMatured = useMemo(
     () => position?.maturity.getTime() && position?.maturity.getTime() < Date.now(),
     [position],
   )
+
+  const shouldRenderCollateralTabs = useMemo(
+    () => 'collateral' === activeSection && isCollateralTab(activeTabKey),
+    [activeSection, activeTabKey],
+  )
+
+  useEffect(() => {
+    if (isMatured) {
+      // ensure deposit tab is not implicitly selected for matured collaterals,
+      // since the tab should not be rendered for matured collaterals
+      setActiveTabKey('withdraw')
+    }
+  }, [isMatured])
 
   const getMaturedFCashMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
@@ -255,7 +271,7 @@ const PositionManage = () => {
     return null
   }, [position, isMatured])
 
-  const renderSuccessPage = () => {
+  const SuccessPage = () => {
     return (
       <div className={cn(s.form)}>
         <div className={cn(s.lastStepAnimation)}>
@@ -280,12 +296,36 @@ const PositionManage = () => {
     )
   }
 
+  const TopTabs = () => (
+    <div className={cn(s.top)}>
+      <RadioTabsWrapper>
+        <RadioTab
+          checked={activeSection === 'collateral'}
+          disabled={formDisabled}
+          onClick={() => setActiveSection('collateral')}
+        >
+          Collateral
+        </RadioTab>
+        <RadioTab
+          checked={activeSection === 'fiat'}
+          disabled={formDisabled}
+          onClick={() => setActiveSection('fiat')}
+        >
+          FIAT
+        </RadioTab>
+      </RadioTabsWrapper>
+    </div>
+  )
+
+  /* const CollateralTabs = () => ( */
+  /* ) */
+
   return (
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
       <PositionFormsLayout infoBlocks={infoBlocks}>
         {finished ? (
-          renderSuccessPage()
+          <SuccessPage />
         ) : (
           <>
             <StepperTitle
@@ -294,28 +334,11 @@ const PositionManage = () => {
               title={'Manage your position'}
               totalSteps={steps.length}
             />
-            <div className={cn(s.top)}>
-              <RadioTabsWrapper>
-                <RadioTab
-                  checked={activeSection === 'collateral'}
-                  disabled={formDisabled}
-                  onClick={() => setActiveSection('collateral')}
-                >
-                  Collateral
-                </RadioTab>
-                <RadioTab
-                  checked={activeSection === 'fiat'}
-                  disabled={formDisabled}
-                  onClick={() => setActiveSection('fiat')}
-                >
-                  FIAT
-                </RadioTab>
-              </RadioTabsWrapper>
-            </div>
+            <TopTabs />
             <Form form={form} onValuesChange={handleFormChange}>
               <fieldset>
                 <div className={cn(s.component)}>
-                  {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
+                  {shouldRenderCollateralTabs ? (
                     <>
                       <Tabs className={cn(s.tabs)}>
                         {!isMatured && (
@@ -469,14 +492,16 @@ const PositionManage = () => {
                         </>
                       )}
                     </>
-                  )}
-                  {'fiat' === activeSection && isFiatTab(activeTabKey) && (
+                  ) : (
                     <>
                       <Tabs className={cn(s.tabs)}>
                         <Tab
                           isActive={'borrow' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ repay: undefined })
+                            form.setFieldsValue({
+                              // leave collateral tabs untouched, reset other fiat subtab
+                              repay: undefined,
+                            })
                             setActiveTabKey('borrow')
                           }}
                         >
@@ -485,7 +510,10 @@ const PositionManage = () => {
                         <Tab
                           isActive={'repay' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ borrow: undefined })
+                            form.setFieldsValue({
+                              // leave collateral tabs untouched, reset other fiat subtab
+                              borrow: undefined,
+                            })
                             setActiveTabKey('repay')
                           }}
                         >
