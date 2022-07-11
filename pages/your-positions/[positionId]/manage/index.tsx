@@ -279,15 +279,26 @@ const PositionManage = () => {
                     <>
                       <Tabs className={cn(s.tabs)}>
                         {!isMatured && (
-                          <Tab
-                            isActive={'deposit' === activeTabKey}
-                            onClick={() => {
-                              form.setFieldsValue({ withdraw: undefined })
-                              setActiveTabKey('deposit')
-                            }}
-                          >
-                            Deposit
-                          </Tab>
+                          <>
+                            <Tab
+                              isActive={'deposit' === activeTabKey}
+                              onClick={() => {
+                                form.setFieldsValue({ withdraw: undefined })
+                                setActiveTabKey('deposit')
+                              }}
+                            >
+                              Deposit
+                            </Tab>
+                            <Tab
+                              isActive={'depositUnderlier' === activeTabKey}
+                              onClick={() => {
+                                form.setFieldsValue({ deposit: undefined })
+                                setActiveTabKey('depositUnderlier')
+                              }}
+                            >
+                              Deposit Underlier
+                            </Tab>
+                          </>
                         )}
                         <Tab
                           isActive={'withdraw' === activeTabKey}
@@ -297,15 +308,6 @@ const PositionManage = () => {
                           }}
                         >
                           Withdraw
-                        </Tab>
-                        <Tab
-                          isActive={'depositUnderlier' === activeTabKey}
-                          onClick={() => {
-                            form.setFieldsValue({ deposit: undefined })
-                            setActiveTabKey('depositUnderlier')
-                          }}
-                        >
-                          Deposit Underlier
                         </Tab>
                         {/*<Tab*/}
                         {/*  isActive={'withdrawUnderlier' === activeTabKey}*/}
