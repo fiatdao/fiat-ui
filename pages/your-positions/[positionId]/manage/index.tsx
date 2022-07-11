@@ -57,7 +57,7 @@ type Step = {
   description: string
 }
 
-const FIAT_KEYS = ['mint', 'burn'] as const
+const FIAT_KEYS = ['borrow', 'repay'] as const
 export type FiatTabKey = typeof FIAT_KEYS[number]
 
 export const isFiatTab = (key: string): key is FiatTabKey => {
@@ -72,11 +72,20 @@ export const isCollateralTab = (key: string): key is CollateralTabKey => {
 }
 
 export type PositionManageFormFields = {
-  burn: BigNumber
+  repay: BigNumber
   withdraw: BigNumber
-  mint: BigNumber
+  borrow: BigNumber
   deposit: BigNumber
 }
+
+/* const defaultManageFormFields = { */
+/*   repay: ZERO_BIG_NUMBER, */
+/*   borrow: ZERO_BIG_NUMBER, */
+/*   withdraw: ZERO_BIG_NUMBER, */
+/*   withdrawUnderlier: ZERO_BIG_NUMBER, */
+/*   deposit: ZERO_BIG_NUMBER, */
+/*   depositUnderlier: ZERO_BIG_NUMBER, */
+/* } */
 
 const PositionManage = () => {
   const [form] = AntdForm.useForm<PositionManageFormFields>()
@@ -87,7 +96,7 @@ const PositionManage = () => {
   const { position, refetch: refetchPosition } = useManagePositionInfo()
 
   useEffect(() => {
-    setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
+    setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'borrow'))
   }, [activeSection])
 
   useDynamicTitle(`Manage Position`)
@@ -309,15 +318,15 @@ const PositionManage = () => {
                         >
                           Withdraw
                         </Tab>
-                        {/*<Tab*/}
-                        {/*  isActive={'withdrawUnderlier' === activeTabKey}*/}
-                        {/*  onClick={() => {*/}
-                        {/*    form.setFieldsValue({ deposit: undefined })*/}
-                        {/*    setActiveTabKey('withdrawUnderlier')*/}
-                        {/*  }}*/}
-                        {/*>*/}
-                        {/*  Withdraw Underlier*/}
-                        {/*</Tab>*/}
+                        <Tab
+                          isActive={'withdrawUnderlier' === activeTabKey}
+                          onClick={() => {
+                            form.setFieldsValue({ deposit: undefined })
+                            setActiveTabKey('withdrawUnderlier')
+                          }}
+                        >
+                          Withdraw Underlier
+                        </Tab>
                       </Tabs>
                       {'deposit' === activeTabKey && position && (
                         <>
@@ -413,31 +422,31 @@ const PositionManage = () => {
                     <>
                       <Tabs className={cn(s.tabs)}>
                         <Tab
-                          isActive={'mint' === activeTabKey}
+                          isActive={'borrow' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ burn: undefined })
-                            setActiveTabKey('mint')
+                            form.setFieldsValue({ repay: undefined })
+                            setActiveTabKey('borrow')
                           }}
                         >
                           Borrow
                         </Tab>
                         <Tab
-                          isActive={'burn' === activeTabKey}
+                          isActive={'repay' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ mint: undefined })
-                            setActiveTabKey('burn')
+                            form.setFieldsValue({ borrow: undefined })
+                            setActiveTabKey('repay')
                           }}
                         >
                           Repay
                         </Tab>
                       </Tabs>
-                      {'mint' === activeTabKey && position && (
+                      {'borrow' === activeTabKey && position && (
                         <>
                           <Balance
                             title="Select amount to borrow"
                             value={`Available: ${fiatBalance?.toFixed(4)}`}
                           />
-                          <Form.Item name="mint" required>
+                          <Form.Item name="borrow" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactor}
@@ -451,13 +460,13 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
-                      {'burn' === activeTabKey && position && (
+                      {'repay' === activeTabKey && position && (
                         <>
                           <Balance
                             title="Select amount to repay"
                             value={`Available: ${fiatBalance?.toFixed(4)}`}
                           />
-                          <Form.Item name="burn" required>
+                          <Form.Item name="repay" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactor}

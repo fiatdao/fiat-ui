@@ -141,9 +141,9 @@ export const useManagePositionForm = (
   const calculateMaxWithdrawAmount = useCallback(
     (totalCollateral: BigNumber, totalDebt: BigNumber) => {
       // If repay amount is maxed out, max withdraw amount should be equal to collateral deposited so the user can close their position
-      const toMint = getNonHumanValue(positionFormFields?.mint, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-      const toBurn = getNonHumanValue(positionFormFields?.burn, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-      const deltaDebt = toMint.minus(toBurn)
+      const toMint = getNonHumanValue(positionFormFields?.borrow, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const toRepay = getNonHumanValue(positionFormFields?.repay, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const deltaDebt = toMint.minus(toRepay)
       const positionDebt = position?.totalDebt ?? ZERO_BIG_NUMBER
       const newDebt = positionDebt.plus(deltaDebt) ?? ZERO_BIG_NUMBER
       const isUserMaxRepaying = newDebt.lt(MIN_EPSILON_OFFSET)
@@ -168,8 +168,8 @@ export const useManagePositionForm = (
       position?.vaultCollateralizationRatio,
       position?.currentValue,
       position?.totalDebt,
-      positionFormFields?.mint,
-      positionFormFields?.burn,
+      positionFormFields?.borrow,
+      positionFormFields?.repay,
     ],
   )
 
@@ -203,18 +203,18 @@ export const useManagePositionForm = (
     const toDeposit = getNonHumanValue(positionFormFields?.deposit, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
     const toWithdraw =
       getNonHumanValue(positionFormFields?.withdraw, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-    const toMint = getNonHumanValue(positionFormFields?.mint, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-    const toBurn = getNonHumanValue(positionFormFields?.burn, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const toMint = getNonHumanValue(positionFormFields?.borrow, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const toRepay = getNonHumanValue(positionFormFields?.repay, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
 
     const deltaCollateral = toDeposit.minus(toWithdraw)
-    const deltaDebt = toMint.minus(toBurn)
+    const deltaDebt = toMint.minus(toRepay)
 
     return { deltaCollateral, deltaDebt }
   }, [
     positionFormFields?.deposit,
     positionFormFields?.withdraw,
-    positionFormFields?.mint,
-    positionFormFields?.burn,
+    positionFormFields?.borrow,
+    positionFormFields?.repay,
   ])
 
   const getPositionValues = useCallback(() => {
@@ -240,19 +240,19 @@ export const useManagePositionForm = (
   }, [getPositionValues, position?.debtFloor])
 
   const isRepayingMoreThanBalance = useMemo(() => {
-    const repayAmount = positionFormFields?.burn ?? ZERO_BIG_NUMBER
+    const repayAmount = positionFormFields?.repay ?? ZERO_BIG_NUMBER
     return repayAmount.gt(FIATBalance.plus(MIN_EPSILON_OFFSET))
-  }, [positionFormFields?.burn, FIATBalance])
+  }, [positionFormFields?.repay, FIATBalance])
 
   const isRepayingMoreThanMaxRepay = useMemo(() => {
-    const repayAmount = positionFormFields?.burn ?? ZERO_BIG_NUMBER
+    const repayAmount = positionFormFields?.repay ?? ZERO_BIG_NUMBER
     return repayAmount.gt(maxRepayAmount.plus(MIN_EPSILON_OFFSET))
-  }, [positionFormFields?.burn, maxRepayAmount])
+  }, [positionFormFields?.repay, maxRepayAmount])
 
   const isBorrowingMoreThanMaxBorrow = useMemo(() => {
-    const borrowAmount = positionFormFields?.mint ?? ZERO_BIG_NUMBER
+    const borrowAmount = positionFormFields?.borrow ?? ZERO_BIG_NUMBER
     return borrowAmount.gt(maxBorrowAmount.plus(MIN_EPSILON_OFFSET))
-  }, [positionFormFields?.mint, maxBorrowAmount])
+  }, [positionFormFields?.borrow, maxBorrowAmount])
 
   const isDepositingMoreThanMaxDeposit = useMemo(() => {
     const depositAmount = positionFormFields?.deposit ?? ZERO_BIG_NUMBER
@@ -307,7 +307,7 @@ export const useManagePositionForm = (
       setIsRepayingFIAT(true)
 
       let text = EXECUTE_TEXT
-      if (!hasFiatAllowance && activeTabKey === 'burn') {
+      if (!hasFiatAllowance && activeTabKey === 'repay') {
         text = SET_FIAT_ALLOWANCE_PROXY_TEXT
       } else if (!hasMonetaAllowance) {
         text = ENABLE_PROXY_FOR_FIAT_TEXT
@@ -323,7 +323,7 @@ export const useManagePositionForm = (
       setIsRepayingFIAT(false)
 
       let text = EXECUTE_TEXT
-      if (!hasFiatAllowance && activeTabKey === 'burn') {
+      if (!hasFiatAllowance && activeTabKey === 'repay') {
         text = SET_FIAT_ALLOWANCE_PROXY_TEXT
       } else if (isBorrowingMoreThanMaxBorrow) {
         text = `Cannot borrow more than ${maxBorrow.toFormat(3).toString()}`
@@ -370,9 +370,9 @@ export const useManagePositionForm = (
   }, [updateAmounts])
 
   const handleManage = async ({
-    burn,
+    borrow,
     deposit,
-    mint,
+    repay,
     withdraw,
   }: PositionManageFormFields): Promise<void> => {
     try {
@@ -380,11 +380,11 @@ export const useManagePositionForm = (
 
       const toDeposit = getNonHumanValue(deposit, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
       const toWithdraw = getNonHumanValue(withdraw, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-      const toMint = getNonHumanValue(mint, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-      const toBurn = getNonHumanValue(burn, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const toMint = getNonHumanValue(borrow, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const toRepay = getNonHumanValue(repay, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
 
       const deltaCollateral = toDeposit.minus(toWithdraw)
-      const deltaDebt = toMint.minus(toBurn)
+      const deltaDebt = toMint.minus(toRepay)
 
       setIsLoading(true)
       await modifyCollateralAndDebt({
@@ -447,17 +447,17 @@ export const useManageFormSummary = (
   {
     deposit = ZERO_BIG_NUMBER,
     withdraw = ZERO_BIG_NUMBER,
-    mint = ZERO_BIG_NUMBER,
-    burn = ZERO_BIG_NUMBER,
+    borrow = ZERO_BIG_NUMBER,
+    repay = ZERO_BIG_NUMBER,
   }: PositionManageFormFields,
 ) => {
   const toDeposit = getNonHumanValue(deposit, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
   const toWithdraw = getNonHumanValue(withdraw, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-  const toMint = getNonHumanValue(mint, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-  const toBurn = getNonHumanValue(burn, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+  const toMint = getNonHumanValue(borrow, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+  const toRepay = getNonHumanValue(repay, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
 
   const deltaCollateral = toDeposit.minus(toWithdraw)
-  const deltaDebt = toMint.minus(toBurn)
+  const deltaDebt = toMint.minus(toRepay)
 
   const newCollateral = position.totalCollateral.plus(deltaCollateral)
   const newDebt = position.totalDebt.plus(deltaDebt)
