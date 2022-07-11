@@ -20,6 +20,7 @@ import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
+import { useUnderlierToFYToken } from '@/src/hooks/useUnderlierToFYToken'
 // import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
@@ -56,9 +57,11 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
-  const { buyCollateralAndModifyDebtERC20, buyCollateralAndModifyDebtERC1155 } = useUserActions(
-    collateral.vault?.type,
-  )
+  const {
+    buyCollateralAndModifyDebtERC20,
+    buyCollateralAndModifyDebtERC1155,
+    buyCollateralAndModifyDebtYield,
+  } = useUserActions(collateral.vault?.type)
 
   const erc20 = useERC20Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
   const { approve, hasAllowance, loadingApprove } = erc20
@@ -116,6 +119,11 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     balancerVault: collateral?.eptData?.balancerVault,
     curvePoolId: collateral?.eptData?.poolId,
     underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+  })
+
+  const [underlierToFYToken] = useUnderlierToFYToken({
+    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+    yieldSpacePool: collateral.fyData.yieldSpacePool,
   })
 
   const [underlierToFCash] = useUnderlierToFCash({
@@ -205,6 +213,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     underlierAmount: BigNumber
     fiatAmount: BigNumber
   }): Promise<void> => {
+    const activeProtocol = collateral.vault?.type
     // Underlier amount formatted with proper decimals
     const _underlierAmount = underlierAmount
       ? getNonHumanValue(underlierAmount, underlierDecimals)
@@ -212,45 +221,66 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     // Fiat amount formatted with proper decimals
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
 
-    const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
-    const pTokenAmount = underlierAmount.multipliedBy(
-      getHumanValue(underlierToPToken, underlierDecimals),
-    )
-    const slippageDecimal = 1 - slippageTolerance / 100
-    const minOutput = getNonHumanValue(
-      pTokenAmount.multipliedBy(slippageDecimal),
-      underlierDecimals,
-    )
     const approve = _underlierAmount.toFixed(0, 8)
+    const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
+    const conversionRate = activeProtocol === 'YIELD' ? underlierToFYToken : underlierToPToken
+    const tokenAmount = underlierAmount.multipliedBy(
+      getHumanValue(conversionRate, underlierDecimals),
+    )
 
-    try {
-      setLoading(true)
-      await buyCollateralAndModifyDebtERC20({
-        vault: collateral.vault.address,
-        deltaDebt: _fiatAmount,
-        virtualRate: collateral.vault.virtualRate,
-        underlierAmount: _underlierAmount,
-        swapParams: {
-          balancerVault: collateral.eptData.balancerVault,
-          poolId: collateral.eptData?.poolId ?? '',
-          assetIn: collateral.underlierAddress ?? '',
-          assetOut: collateral.address ?? '',
-          minOutput: minOutput.toFixed(0, 8),
-          deadline: deadline,
-          approve: approve,
-        },
-      })
-      setLoading(false)
-    } catch (err) {
-      setLoading(false)
-      throw err
+    const slippageDecimal = 1 - slippageTolerance / 100
+    const minOutput = getNonHumanValue(tokenAmount.multipliedBy(slippageDecimal), underlierDecimals)
+
+    if (activeProtocol === 'ELEMENT') {
+      try {
+        setLoading(true)
+        await buyCollateralAndModifyDebtERC20({
+          vault: collateral.vault.address,
+          deltaDebt: _fiatAmount,
+          virtualRate: collateral.vault.virtualRate,
+          underlierAmount: _underlierAmount,
+          swapParams: {
+            balancerVault: collateral.eptData.balancerVault,
+            poolId: collateral.eptData?.poolId ?? '',
+            assetIn: collateral.underlierAddress ?? '',
+            assetOut: collateral.address ?? '',
+            minOutput: minOutput.toFixed(0, 8),
+            deadline: deadline,
+            approve: approve,
+          },
+        })
+        setLoading(false)
+      } catch (err) {
+        setLoading(false)
+        throw err
+      }
+    } else {
+      try {
+        setLoading(true)
+        await buyCollateralAndModifyDebtYield({
+          vault: collateral.vault.address,
+          deltaDebt: _fiatAmount,
+          virtualRate: collateral.vault.virtualRate,
+          underlierAmount: _underlierAmount,
+          swapParams: {
+            minAssetOut: minOutput.toFixed(0, 8),
+            yieldSpacePool: collateral.fyData.yieldSpacePool,
+            assetIn: collateral.underlierAddress ?? '',
+            assetOut: collateral.address ?? '',
+          },
+        })
+        setLoading(false)
+      } catch (err) {
+        setLoading(false)
+        throw err
+      }
     }
   }
 
   const createUnderlyingPosition =
-    collateral.vault.name.substring(0, 8) === 'vaultEPT'
-      ? createUnderlyingPositionERC20
-      : createUnderlyingPositionERC1155
+    collateral.vault?.type === 'NOTIONAL'
+      ? createUnderlyingPositionERC1155
+      : createUnderlyingPositionERC20
 
   const updateSwapSettings = (slippageTolerance: number, maxTransactionTime: number) => {
     setSlippageTolerance(slippageTolerance)

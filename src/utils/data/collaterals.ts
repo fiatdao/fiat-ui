@@ -33,6 +33,10 @@ export type Collateral = {
     id: string
     poolId: string
   }
+  fyData: {
+    id: string
+    yieldSpacePool: string
+  }
   address: Maybe<string>
   faceValue: Maybe<BigNumber>
   currentValue: Maybe<BigNumber>
@@ -147,6 +151,10 @@ const wrangleCollateral = async (
       convergentCurvePool: collateral.eptData?.convergentCurvePool ?? '',
       id: collateral.eptData?.id ?? '',
       poolId: collateral.eptData?.poolId ?? '',
+    },
+    fyData: {
+      id: collateral.fyData?.id ?? '',
+      yieldSpacePool: collateral.fyData?.yieldSpacePool ?? '',
     },
     url: urls?.asset,
   }
