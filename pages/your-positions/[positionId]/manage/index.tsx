@@ -1,4 +1,6 @@
 import s from './s.module.scss'
+import { useTokenDecimalsAndBalance } from '../../../../src/hooks/useTokenDecimalsAndBalance'
+import { useWeb3Connection } from '../../../../src/providers/web3ConnectionProvider'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Position } from '@/src/utils/data/positions'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
@@ -29,6 +31,7 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
+import { send } from 'xstate'
 
 const LAST_STEP = 4
 
@@ -129,8 +132,21 @@ const PositionManage = () => {
 
   const summary = useManageFormSummary(position as Position, formValues)
 
+  const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
+
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
   const tokenSymbol = position?.symbol ?? ''
+
+  const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
+    tokenData: {
+      decimals: 8,
+      symbol: position?.underlier?.symbol ?? '',
+      address: position?.underlier?.address ?? '',
+    },
+    address: currentUserAddress,
+    readOnlyAppProvider,
+    tokenId: position?.tokenId ?? '0',
+  })
 
   const reset = async () => {
     setFinished(false)
@@ -291,15 +307,15 @@ const PositionManage = () => {
                         >
                           Deposit Underlier
                         </Tab>
-                        <Tab
-                          isActive={'withdrawUnderlier' === activeTabKey}
-                          onClick={() => {
-                            form.setFieldsValue({ deposit: undefined })
-                            setActiveTabKey('withdrawUnderlier')
-                          }}
-                        >
-                          Withdraw Underlier
-                        </Tab>
+                        {/*<Tab*/}
+                        {/*  isActive={'withdrawUnderlier' === activeTabKey}*/}
+                        {/*  onClick={() => {*/}
+                        {/*    form.setFieldsValue({ deposit: undefined })*/}
+                        {/*    setActiveTabKey('withdrawUnderlier')*/}
+                        {/*  }}*/}
+                        {/*>*/}
+                        {/*  Withdraw Underlier*/}
+                        {/*</Tab>*/}
                       </Tabs>
                       {'deposit' === activeTabKey && position && (
                         <>
@@ -325,17 +341,20 @@ const PositionManage = () => {
                       {'depositUnderlier' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to deposit"
-                            value={`Available: ${availableDepositAmount?.toFixed(4)}`}
+                            title="Swap and deposit"
+                            value={`Available: ${underlyingInfo?.humanValue?.toFixed(2)}`}
                           />
                           <Form.Item name="deposit" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
-                              max={maxDepositAmount}
+                              max={underlyingInfo?.humanValue}
                               maximumFractionDigits={4}
                               numericInputDisabled={formDisabled}
+                              onChange={(val) =>
+                                val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
+                              }
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
                               sliderDisabled={formDisabled}
