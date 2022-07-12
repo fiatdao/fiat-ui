@@ -10,7 +10,6 @@ import TokenAmount from '@/src/components/custom/token-amount'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useUnderlierToPToken } from '@/src/hooks/useUnderlierToPToken'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
@@ -19,8 +18,6 @@ import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
-import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
-import { useUnderlierToFYToken } from '@/src/hooks/useUnderlierToFYToken'
 // import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
@@ -28,6 +25,7 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
 import { useEffect, useMemo, useState } from 'react'
+import { useMarketRate } from '@/src/hooks/useMarketRate'
 
 type CreatePositionUnderlyingProps = {
   collateral: Collateral
@@ -35,7 +33,6 @@ type CreatePositionUnderlyingProps = {
   loading: boolean
   hasMinimumFIAT: boolean
   healthFactorNumber: BigNumber
-  marketRate: BigNumber
   setLoading: (newLoadingState: boolean) => void
   setMachine: (machine: any) => void
 }
@@ -48,7 +45,6 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   hasMinimumFIAT,
   healthFactorNumber,
   loading,
-  marketRate,
   setLoading,
   setMachine,
 }) => {
@@ -114,40 +110,30 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     )
   }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT, hasSufficientCollateral])
 
-  const [underlierToPToken] = useUnderlierToPToken({
-    vault: collateral?.vault?.address ?? '',
-    balancerVault: collateral?.eptData?.balancerVault,
-    curvePoolId: collateral?.eptData?.poolId,
-    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
-  })
-
-  const [underlierToFYToken] = useUnderlierToFYToken({
-    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
-    yieldSpacePool: collateral.fyData.yieldSpacePool,
-  })
-
-  const [underlierToFCash] = useUnderlierToFCash({
-    tokenId: collateral.tokenId ?? '',
-    amount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+  const { marketRateTokenScale, marketRateDecimal } = useMarketRate({
+    protocol: collateral.vault?.type,
+    collateral,
+    underlierDecimals,
   })
 
   const underlierAmount = stateMachine.context.underlierAmount.toNumber()
-  const apr = (1 - marketRate.toNumber()) * 100
+  const apr = (1 - marketRateDecimal.toNumber()) * 100
   const fixedAPR = `${apr.toFixed(2)}%`
-  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)} ${
+  const interestEarnedValue = Number(underlierAmount * (apr / 100)).toFixed(2)
+  const interestEarned = `${interestEarnedValue} ${
     collateral ? collateral.underlierSymbol : '-'
   }`
-  const redeemableValue = Number(underlierAmount) + Number(interestEarned)
+  const redeemableValue = Number(underlierAmount) + Number(interestEarnedValue)
   const redeemable = `${(isNaN(redeemableValue) ? 0 : redeemableValue).toFixed(2)} ${
     collateral ? collateral.underlierSymbol : '-'
   }`
-  const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
+  const fCashAmount = getHumanValue(marketRateTokenScale, WAD_DECIMALS).multipliedBy(underlierAmount)
   // const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
 
   const underlyingData = [
     {
       title: 'Market rate',
-      value: `1 Principal Token = ${marketRate.toFixed(4)} ${
+      value: `1 Principal Token = ${marketRateDecimal.toFixed(4)} ${
         collateral ? collateral.underlierSymbol : '-'
       }`,
     },
@@ -223,9 +209,8 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
 
     const approve = _underlierAmount.toFixed(0, 8)
     const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
-    const conversionRate = activeProtocol === 'YIELD' ? underlierToFYToken : underlierToPToken
     const tokenAmount = underlierAmount.multipliedBy(
-      getHumanValue(conversionRate, underlierDecimals),
+      getHumanValue(marketRateTokenScale, underlierDecimals),
     )
 
     const slippageDecimal = 1 - slippageTolerance / 100
@@ -388,7 +373,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
                 collateral={collateral}
                 healthFactorNumber={healthFactorNumber}
                 loading={loading}
-                marketRate={marketRate}
+                marketRate={marketRateDecimal}
                 send={send}
               />
             )}

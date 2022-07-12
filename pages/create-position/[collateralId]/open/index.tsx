@@ -14,20 +14,17 @@ import {
   EST_FIAT_TOOLTIP_TEXT,
   EST_HEALTH_FACTOR_TOOLTIP_TEXT,
   INSUFFICIENT_BALANCE_TEXT,
-  ONE_BIG_NUMBER,
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
   getBorrowAmountBelowDebtFloorText,
 } from '@/src/constants/misc'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
-import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useUnderlierToPToken } from '@/src/hooks/useUnderlierToPToken'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
@@ -50,6 +47,7 @@ import cn from 'classnames'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { useMarketRate } from '@/src/hooks/useMarketRate'
 
 enum CreatePositionTab {
   asset = 'asset',
@@ -90,18 +88,6 @@ const FormERC20: React.FC<{
   const erc1155 = useERC155Allowance(tokenAddress, userProxyAddress ?? '')
 
   const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
-
-  const [underlierToPToken] = useUnderlierToPToken({
-    vault: collateral?.vault?.address ?? '',
-    balancerVault: collateral?.eptData?.balancerVault,
-    curvePoolId: collateral?.eptData?.poolId,
-    underlierAmount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
-  })
-
-  const [underlierToFCash] = useUnderlierToFCash({
-    tokenId: collateral.tokenId ?? '',
-    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
-  })
 
   const setFormLoading = (newLoadingState: boolean): void => {
     setLoading(newLoadingState)
@@ -174,18 +160,18 @@ const FormERC20: React.FC<{
     return tab === CreatePositionTab.asset ? DEPOSIT_COLLATERAL_TEXT : DEPOSIT_UNDERLYING_TEXT
   }, [tab, hasMinimumFIAT, hasSufficientCollateral, collateral.vault.debtFloor])
 
-  const marketRate =
-    collateral.vault.type === 'NOTIONAL'
-      ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
-      : ONE_BIG_NUMBER.div(getHumanValue(underlierToPToken, underlierDecimals))
-
-  // const priceImpact = (1 - marketRate) / 0.01
+  const { marketRateDecimal } = useMarketRate({
+    protocol: collateral.vault?.type,
+    collateral,
+    underlierDecimals,
+  })
+  // const priceImpact = (1 - marketRateDecimal) / 0.01
 
   // TODO: figure out why deltaCollateral is 0. This is keeping health factor from displaying properly. This is probably a scaling issue
   const deltaCollateral = getNonHumanValue(
     tab === CreatePositionTab.asset
       ? activeMachine.context.erc20Amount
-      : marketRate.times(activeMachine.context.underlierAmount),
+      : marketRateDecimal.times(activeMachine.context.underlierAmount),
     WAD_DECIMALS,
   )
   const deltaDebt = getNonHumanValue(activeMachine.context.fiatAmount, WAD_DECIMALS)
@@ -295,7 +281,6 @@ const FormERC20: React.FC<{
             hasMinimumFIAT={hasMinimumFIAT}
             healthFactorNumber={hf}
             loading={loading}
-            marketRate={marketRate}
             setLoading={setFormLoading}
             setMachine={switchActiveMachine}
           />

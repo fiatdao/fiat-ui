@@ -161,6 +161,7 @@ export const KNOWN_TOKENS: TokenMeta[] = [
   FDTToken,
   EthToken,
   UsdcToken,
+  DaiToken,
   BondToken,
   UMAToken,
   MKRToken,
