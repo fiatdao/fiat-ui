@@ -1,4 +1,6 @@
 import s from './s.module.scss'
+import { useTokenDecimalsAndBalance } from '../../../../src/hooks/useTokenDecimalsAndBalance'
+import { useWeb3Connection } from '../../../../src/providers/web3ConnectionProvider'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Position } from '@/src/utils/data/positions'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
@@ -29,6 +31,7 @@ import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
+import { send } from 'xstate'
 
 const LAST_STEP = 4
 
@@ -61,7 +64,7 @@ export const isFiatTab = (key: string): key is FiatTabKey => {
   return FIAT_KEYS.includes(key as FiatTabKey)
 }
 
-const COLLATERAL_KEYS = ['deposit', 'withdraw'] as const
+const COLLATERAL_KEYS = ['deposit', 'withdraw', 'withdrawUnderlier', 'depositUnderlier'] as const
 export type CollateralTabKey = typeof COLLATERAL_KEYS[number]
 
 export const isCollateralTab = (key: string): key is CollateralTabKey => {
@@ -129,8 +132,21 @@ const PositionManage = () => {
 
   const summary = useManageFormSummary(position as Position, formValues)
 
+  const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
+
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
   const tokenSymbol = position?.symbol ?? ''
+
+  const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
+    tokenData: {
+      decimals: 8,
+      symbol: position?.underlier?.symbol ?? '',
+      address: position?.underlier?.address ?? '',
+    },
+    address: currentUserAddress,
+    readOnlyAppProvider,
+    tokenId: position?.tokenId ?? '0',
+  })
 
   const reset = async () => {
     setFinished(false)
@@ -229,7 +245,6 @@ const PositionManage = () => {
   return (
     <>
       <ButtonBack href="/your-positions">Back</ButtonBack>
-
       <PositionFormsLayout infoBlocks={infoBlocks}>
         {!finished ? (
           <>
@@ -264,15 +279,26 @@ const PositionManage = () => {
                     <>
                       <Tabs className={cn(s.tabs)}>
                         {!isMatured && (
-                          <Tab
-                            isActive={'deposit' === activeTabKey}
-                            onClick={() => {
-                              form.setFieldsValue({ withdraw: undefined })
-                              setActiveTabKey('deposit')
-                            }}
-                          >
-                            Deposit
-                          </Tab>
+                          <>
+                            <Tab
+                              isActive={'deposit' === activeTabKey}
+                              onClick={() => {
+                                form.setFieldsValue({ withdraw: undefined })
+                                setActiveTabKey('deposit')
+                              }}
+                            >
+                              Deposit
+                            </Tab>
+                            <Tab
+                              isActive={'depositUnderlier' === activeTabKey}
+                              onClick={() => {
+                                form.setFieldsValue({ deposit: undefined })
+                                setActiveTabKey('depositUnderlier')
+                              }}
+                            >
+                              Deposit Underlier
+                            </Tab>
+                          </>
                         )}
                         <Tab
                           isActive={'withdraw' === activeTabKey}
@@ -283,6 +309,15 @@ const PositionManage = () => {
                         >
                           Withdraw
                         </Tab>
+                        {/*<Tab*/}
+                        {/*  isActive={'withdrawUnderlier' === activeTabKey}*/}
+                        {/*  onClick={() => {*/}
+                        {/*    form.setFieldsValue({ deposit: undefined })*/}
+                        {/*    setActiveTabKey('withdrawUnderlier')*/}
+                        {/*  }}*/}
+                        {/*>*/}
+                        {/*  Withdraw Underlier*/}
+                        {/*</Tab>*/}
                       </Tabs>
                       {'deposit' === activeTabKey && position && (
                         <>
@@ -305,11 +340,56 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
+                      {'depositUnderlier' === activeTabKey && position && (
+                        <>
+                          <Balance
+                            title="Swap and deposit"
+                            value={`Available: ${underlyingInfo?.humanValue?.toFixed(2)}`}
+                          />
+                          <Form.Item name="deposit" required>
+                            <TokenAmount
+                              displayDecimals={4}
+                              healthFactorValue={healthFactor}
+                              mainAsset={position.vaultName}
+                              max={underlyingInfo?.humanValue}
+                              maximumFractionDigits={4}
+                              numericInputDisabled={formDisabled}
+                              onChange={(val) =>
+                                val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
+                              }
+                              secondaryAsset={position.underlier.symbol}
+                              slider={'healthFactorVariantReverse'}
+                              sliderDisabled={formDisabled}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
                             description={getMaturedFCashMessage()}
                             title={'Select amount to withdraw'}
+                            value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
+                          />
+                          <Form.Item name="withdraw" required>
+                            <TokenAmount
+                              displayDecimals={4}
+                              healthFactorValue={healthFactor}
+                              mainAsset={position.vaultName}
+                              max={maxWithdrawAmount}
+                              maximumFractionDigits={4}
+                              numericInputDisabled={formDisabled}
+                              secondaryAsset={position.underlier.symbol}
+                              slider={'healthFactorVariant'}
+                              sliderDisabled={formDisabled}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
+                      {'withdrawUnderlier' === activeTabKey && position && (
+                        <>
+                          <Balance
+                            title="Select amount to withdraw"
                             value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
                           />
                           <Form.Item name="withdraw" required>

@@ -31,6 +31,18 @@ type ModifyCollateralAndDebt = BaseModify & {
   virtualRate: BigNumber
 }
 
+type RedeemCollateralAndModifyDebt = BaseModify & {
+  deltaCollateral: BigNumber
+  deltaDebt: BigNumber
+  virtualRate: BigNumber
+}
+
+type SellCollateralAndModifyDebt = BaseModify & {
+  deltaCollateral: BigNumber
+  deltaDebt: BigNumber
+  virtualRate: BigNumber
+}
+
 type BuyCollateralAndModifyDebtERC1155 = BaseModify & {
   // TODO: regen types so it matches args on VaultFCActions Contract for buyCollateralAndModifyDebt
   // address vault
@@ -87,6 +99,9 @@ type BuyCollateralAndModifyDebtYield = {
 export type UseUserActions = {
   approveFIAT: (to: string) => ReturnType<TransactionResponse['wait']>
   depositCollateral: (params: DepositCollateral) => ReturnType<TransactionResponse['wait']>
+  redeemCollateralAndModifyDebt: (
+    params: RedeemCollateralAndModifyDebt,
+  ) => ReturnType<TransactionResponse['wait']>
   modifyCollateralAndDebt: (
     params: ModifyCollateralAndDebt,
   ) => ReturnType<TransactionResponse['wait']>
@@ -350,6 +365,69 @@ export const useUserActions = (type?: string): UseUserActions => {
     ],
   )
 
+  const redeemCollateralAndModifyDebt = useCallback(
+    async (params: RedeemCollateralAndModifyDebt) => {
+      if (!address || !userProxy || !userProxyAddress) {
+        throw new Error(`Missing information: ${{ address, userProxy, userProxyAddress }}`)
+      }
+
+      // @TODO: toFixed(0, ROUNDED) transforms BigNumber into String without decimals
+      const deltaCollateral = params.deltaCollateral.toFixed(0, 8)
+
+      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
+        0,
+        8,
+      )
+
+      const redeemCollateralAndModifyDebtEncoded = (
+        activeContract as VaultEPTActions
+      ).interface.encodeFunctionData('redeemCollateralAndModifyDebt', [
+        params.vault,
+        params.token,
+        userProxyAddress,
+        address,
+        address,
+        deltaCollateral,
+        deltaNormalDebt,
+      ])
+
+      // please sign
+      notification.requestSign()
+
+      const tx: TransactionResponse | TransactionError = await userProxy
+        .execute(activeContract.address, redeemCollateralAndModifyDebtEncoded, {
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            activeContract.address,
+            redeemCollateralAndModifyDebtEncoded,
+          ]),
+        })
+        .catch(notification.handleTxError)
+
+      if (tx instanceof TransactionError) {
+        throw tx
+      }
+
+      // awaiting exec
+      if (params.wait) {
+        notification.awaitingTxBlocks(tx.hash, params.wait)
+      } else {
+        notification.awaitingTx(tx.hash)
+      }
+
+      const receipt = await tx.wait(params.wait).catch(notification.handleTxError)
+
+      if (receipt instanceof TransactionError) {
+        throw receipt
+      }
+
+      // tx successful
+      notification.successfulTx(tx.hash)
+
+      return receipt
+    },
+    [address, userProxy, userProxyAddress, activeContract, notification],
+  )
+
   // VaultEPTActions buyCollateralAndModifyDebt
   const buyCollateralAndModifyDebtERC20 = useCallback(
     async (params: BuyCollateralAndModifyDebtERC20) => {
@@ -522,6 +600,7 @@ export const useUserActions = (type?: string): UseUserActions => {
   )
 
   return {
+    redeemCollateralAndModifyDebt,
     approveFIAT,
     depositCollateral,
     modifyCollateralAndDebt,
