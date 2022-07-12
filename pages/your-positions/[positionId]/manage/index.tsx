@@ -71,21 +71,21 @@ export const isCollateralTab = (key: string): key is CollateralTabKey => {
 }
 
 export type PositionManageFormFields = {
-  borrow: BigNumber
-  deposit: BigNumber
-  depositUnderlier: BigNumber
-  repay: BigNumber
-  withdraw: BigNumber
-  withdrawUnderlier: BigNumber
+  borrow: BigNumber | undefined
+  deposit: BigNumber | undefined
+  depositUnderlier: BigNumber | undefined
+  repay: BigNumber | undefined
+  withdraw: BigNumber | undefined
+  withdrawUnderlier: BigNumber | undefined
 }
 
 const defaultManageFormFields = {
-  repay: ZERO_BIG_NUMBER,
-  borrow: ZERO_BIG_NUMBER,
-  withdraw: ZERO_BIG_NUMBER,
-  withdrawUnderlier: ZERO_BIG_NUMBER,
-  deposit: ZERO_BIG_NUMBER,
-  depositUnderlier: ZERO_BIG_NUMBER,
+  repay: undefined,
+  borrow: undefined,
+  withdraw: undefined,
+  withdrawUnderlier: undefined,
+  deposit: undefined,
+  depositUnderlier: undefined,
 }
 
 const PositionManage = () => {
@@ -95,10 +95,6 @@ const PositionManage = () => {
   const [formDisabled, setFormDisabled] = useState(false)
   const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { position, refetch: refetchPosition } = useManagePositionInfo()
-
-  useEffect(() => {
-    setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'borrow'))
-  }, [activeSection])
 
   useDynamicTitle(`Manage Position`)
 
@@ -202,10 +198,6 @@ const PositionManage = () => {
     [hasMonetaAllowance, isRepayingFIAT, hasFiatAllowance, hasTokenAllowance, isProxyAvailable],
   )
 
-  useEffect(() => {
-    updateNextState(0)
-  }, [updateNextState])
-
   const onSetupProxy = useCallback(async () => {
     await setupProxy()
     updateNextState(1)
@@ -257,12 +249,22 @@ const PositionManage = () => {
   )
 
   useEffect(() => {
-    if (isMatured) {
-      // ensure deposit tab is not implicitly selected for matured collaterals,
-      // since the tab should not be rendered for matured collaterals
-      setActiveTabKey('withdraw')
+    // initialize step to 0
+    updateNextState(0)
+  }, [updateNextState])
+
+  useEffect(() => {
+    // if switching to tab and no subtab is selected, select first tab in the section that makes sense that
+    setActiveTabKey(activeSection === 'collateral' ? 'deposit' : 'borrow')
+  }, [activeSection])
+
+  useEffect(() => {
+    if (activeSection === 'collateral') {
+      if (isMatured && activeTabKey !== 'withdraw' && activeTabKey !== 'withdrawUnderlier') {
+        setActiveTabKey('withdraw')
+      }
     }
-  }, [isMatured])
+  }, [activeSection, activeTabKey, isMatured])
 
   const getMaturedFCashMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
@@ -473,7 +475,7 @@ const PositionManage = () => {
                       {'withdrawUnderlier' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to withdraw"
+                            title="Select amount of underlier to withdraw"
                             value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
                           />
                           <Form.Item name="withdrawUnderlier" required>
