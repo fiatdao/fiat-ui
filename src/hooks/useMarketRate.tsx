@@ -18,13 +18,14 @@ type MarketRateReturnValue = {
 }
 
 export const useMarketRate = (params: MarketRateParams): MarketRateReturnValue => {
+  const singleUnderlier = new BigNumber(1)
   switch (params.protocol) {
     case "ELEMENT": {
       const [underlierToPToken] = useUnderlierToPToken({
         vault: params.collateral?.vault?.address ?? '',
         balancerVault: params.collateral?.eptData?.balancerVault,
         curvePoolId: params.collateral?.eptData?.poolId,
-        underlierAmount: getNonHumanValue(new BigNumber(1), params.underlierDecimals), //single underlier value
+        underlierAmount: getNonHumanValue(singleUnderlier, params.underlierDecimals),
       })
       return {
         marketRateTokenScale: underlierToPToken, 
@@ -33,7 +34,7 @@ export const useMarketRate = (params: MarketRateParams): MarketRateReturnValue =
     }
     case "YIELD": {
       const [underlierToFYToken] = useUnderlierToFYToken({
-        underlierAmount: getNonHumanValue(new BigNumber(1), params.underlierDecimals), //single underlier value
+        underlierAmount: getNonHumanValue(singleUnderlier, params.underlierDecimals),
         yieldSpacePool: params.collateral.fyData.yieldSpacePool,
       })
       return {
@@ -44,11 +45,11 @@ export const useMarketRate = (params: MarketRateParams): MarketRateReturnValue =
     case "NOTIONAL": {
       const [underlierToFCash] = useUnderlierToFCash({
         tokenId: params.collateral.tokenId ?? '',
-        amount: getNonHumanValue(new BigNumber(1), params.underlierDecimals), //single underlier value
+        amount: getNonHumanValue(singleUnderlier, params.underlierDecimals),
       })
       return {
         marketRateTokenScale: underlierToFCash, 
-        marketRateDecimal: ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77))
+        marketRateDecimal: ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 8)) //TODO: This needs to not be hardcoded
       }
     }
     default: 
