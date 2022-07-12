@@ -3,6 +3,7 @@ import { useERC155Allowance } from './useERC1155Allowance'
 import { useERC20Allowance } from './useERC20Allowance'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useFIATBalance } from './useFIATBalance'
+import { useUnderlyingExchangeValue } from './useUnderlyingExchangeValue'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
   EST_FIAT_TOOLTIP_TEXT,
@@ -21,6 +22,7 @@ import {
 import { parseDate } from '../utils/dateTime'
 import { getHealthFactorState } from '../utils/table'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
+import { getDecimalsFromScale } from '../constants/bondTokens'
 import { contracts } from '@/src/constants/contracts'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
@@ -40,6 +42,8 @@ import {
   PositionManageFormFields,
 } from '@/pages/your-positions/[positionId]/manage'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
+import { Collateral } from '@/src/utils/data/collaterals'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -50,12 +54,15 @@ export type TokenInfo = {
 
 export const useManagePositionForm = (
   position: Position | undefined,
+  collateral: Collateral | undefined,
   positionFormFields: PositionManageFormFields | undefined,
   activeTabKey: FiatTabKey | CollateralTabKey,
   onSuccess?: () => void,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
-  const { approveFIAT, modifyCollateralAndDebt } = useUserActions(position?.vaultType)
+  const { approveFIAT, buyCollateralAndModifyDebtERC20, modifyCollateralAndDebt } = useUserActions(
+    position?.vaultType,
+  )
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -81,6 +88,18 @@ export const useManagePositionForm = (
     tokenData: {
       symbol: position?.collateral.symbol ?? '',
       address: position?.collateral.address ?? '',
+      decimals: 8, // TODO: Fix me
+    },
+    vaultType: position?.vaultType ?? '',
+    tokenId: position?.tokenId ?? '0',
+  })
+
+  const { tokenInfo: underlyingInfo, updateToken: updateUnderlying } = useTokenDecimalsAndBalance({
+    address,
+    readOnlyAppProvider,
+    tokenData: {
+      symbol: position?.underlier.symbol ?? '',
+      address: position?.underlier.address ?? '',
       decimals: 8, // TODO: Fix me
     },
     vaultType: position?.vaultType ?? '',
@@ -225,6 +244,18 @@ export const useManagePositionForm = (
     const debt = positionDebt.plus(deltaDebt) ?? ZERO_BIG_NUMBER
     return { positionCollateral, positionDebt, collateral, debt, deltaCollateral, deltaDebt }
   }, [position?.totalCollateral, position?.totalDebt, getDeltasFromForm])
+
+  const underlierDecimals = useMemo(
+    () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
+    [collateral],
+  )
+
+  const [underlierToPToken] = useUnderlyingExchangeValue({
+    vault: collateral?.vault?.address ?? '',
+    balancerVault: collateral?.eptData?.balancerVault ?? '',
+    curvePoolId: collateral?.eptData?.poolId ?? '',
+    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+  })
 
   const hasMinimumFIAT = useMemo(() => {
     // Minimum fiat to have in a position is the debtFloor
@@ -372,8 +403,10 @@ export const useManagePositionForm = (
   const handleManage = async ({
     borrow,
     deposit,
+    depositUnderlier,
     repay,
     withdraw,
+    withdrawUnderlier,
   }: PositionManageFormFields): Promise<void> => {
     try {
       if (!position || !position.protocolAddress || !position.collateral.address) return
@@ -387,17 +420,57 @@ export const useManagePositionForm = (
       const deltaDebt = toMint.minus(toRepay)
 
       setIsLoading(true)
-      await modifyCollateralAndDebt({
-        vault: position?.protocolAddress,
-        token: position?.collateral.address,
-        tokenId: Number(position.tokenId),
-        deltaCollateral,
-        deltaDebt: deltaDebt,
-        wait: 3,
-        virtualRate: position.virtualRate,
-      })
 
-      await updateToken()
+      if (depositUnderlier !== ZERO_BIG_NUMBER && depositUnderlier !== undefined) {
+        console.log('none')
+        // If depositing underlier, use deposit underlier action
+        if (position?.vaultType === VaultType.ELEMENT) {
+          const pTokenAmount = depositUnderlier.multipliedBy(
+            getHumanValue(underlierToPToken, underlierDecimals),
+          )
+          console.log('ptokamt: ', pTokenAmount)
+          console.log('t: ', buyCollateralAndModifyDebtERC20)
+          console.log('underlying infO: : ', underlyingInfo)
+          console.log('withdrawUnderlier', withdrawUnderlier)
+
+          /* const minOutput = getNonHumanValue( */
+          /*   pTokenAmount.multipliedBy(slippageDecimal), */
+          /*   underlierDecimals, */
+          /* ) */
+
+          /* const slippageDecimal = 1 - slippageTolerance / 100 */
+
+          /* await buyCollateralAndModifyDebtERC20({ */
+          /*   vault: position?.protocolAddress, */
+          /*   deltaDebt, */
+          /*   virtualRate: position.virtualRate, */
+          /*   underlierAmount: depositUnderlier, */
+          /*   swapParams: { */
+          /*     balancerVault: position?.collateral.eptData.balancerVault, */
+          /*     poolId: position?.collateral.eptData?.poolId ?? '', */
+          /*     assetIn: position?.collateral.underlierAddress ?? '', */
+          /*     assetOut: position?.collateral.address ?? '', */
+          /*     minOutput: getNonHumanValue().toFixed(0, 8), */
+          /*     deadline: deadline, */
+          /*     approve: approve, */
+          /*   }, */
+          /* }) */
+          await updateUnderlying()
+        }
+      } else {
+        // TODO: protocol to vaultAddress
+        await modifyCollateralAndDebt({
+          vault: position?.protocolAddress,
+          token: position?.collateral.address,
+          tokenId: Number(position.tokenId),
+          deltaCollateral,
+          deltaDebt,
+          wait: 3,
+          virtualRate: position.virtualRate,
+        })
+        await updateToken()
+      }
+
       setFinished(true)
 
       if (onSuccess) {

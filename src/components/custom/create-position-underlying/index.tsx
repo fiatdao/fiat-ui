@@ -13,7 +13,6 @@ import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalan
 import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
-import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
@@ -21,6 +20,7 @@ import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 // import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
+import { getDecimalsFromScale } from '@/src/constants/bondTokens'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
@@ -53,7 +53,6 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
 }) => {
   const [form] = AntdForm.useForm<FormProps>()
 
-  const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const { buyCollateralAndModifyDebtERC20, buyCollateralAndModifyDebtERC1155 } = useUserActions(
@@ -100,6 +99,11 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     readOnlyAppProvider,
     tokenId: collateral.tokenId ?? '0',
   })
+
+  const underlierDecimals = useMemo(
+    () => getDecimalsFromScale(collateral.underlierScale),
+    [collateral],
+  )
 
   const hasSufficientCollateral = useMemo(() => {
     return underlyingInfo?.humanValue?.gte(stateMachine.context.underlierAmount)

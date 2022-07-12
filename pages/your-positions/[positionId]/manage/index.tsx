@@ -3,6 +3,7 @@ import { useTokenDecimalsAndBalance } from '../../../../src/hooks/useTokenDecima
 import { useWeb3Connection } from '../../../../src/providers/web3ConnectionProvider'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Position } from '@/src/utils/data/positions'
+import { Collateral } from '@/src/utils/data/collaterals'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
@@ -25,6 +26,7 @@ import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import cn from 'classnames'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import AntdForm from 'antd/lib/form'
@@ -89,15 +91,15 @@ const defaultManageFormFields = {
 }
 
 const PositionManage = () => {
+  useDynamicTitle(`Manage Position`)
   const [form] = AntdForm.useForm<PositionManageFormFields>()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
   const [formDisabled, setFormDisabled] = useState(false)
   const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { position, refetch: refetchPosition } = useManagePositionInfo()
-
-  useDynamicTitle(`Manage Position`)
-
+  // collateral id is compound id of <vaultAddress>-<tokenId>
+  const { data: collateral } = useCollateral(`${position?.protocolAddress}-${position?.tokenId}`)
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
 
@@ -134,7 +136,13 @@ const PositionManage = () => {
     maxWithdrawAmount,
     setFinished,
     setupProxy,
-  } = useManagePositionForm(position as Position, formValues, activeTabKey, onSuccess)
+  } = useManagePositionForm(
+    position as Position,
+    collateral as Collateral,
+    formValues,
+    activeTabKey,
+    onSuccess,
+  )
 
   const summary = useManageFormSummary(position as Position, formValues)
 
