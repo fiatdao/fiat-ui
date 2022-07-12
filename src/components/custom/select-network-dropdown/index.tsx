@@ -7,9 +7,12 @@ import Grid from '@/src/components/custom/grid'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import cn from 'classnames'
 import React, { useState } from 'react'
+import { useRouter } from 'next/router'
 
 const ConnectedWallet: React.FC = () => {
   const { setNetwork, walletChainId } = useWeb3Connection()
+  const router = useRouter()
+
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false)
 
   const availableChains = Object.keys(chainsConfig)
@@ -19,6 +22,15 @@ const ConnectedWallet: React.FC = () => {
     })
 
   const currentChainConfig = getNetworkConfig(walletChainId as ChainsValues)
+
+  const selectNetwork = async (chainId: ChainsValues) => {
+    await setNetwork(chainId)
+    // Redirect the user to the overview page b/c contract ids are not identical across networks
+    if (router.pathname === '/your-positions/[positionId]/manage') {
+      await router.push('/your-positions')
+    }
+    setIsDropdownVisible(false)
+  }
 
   return (
     <Grid align="center" flow="col" gap={20} justify="center">
@@ -39,8 +51,7 @@ const ConnectedWallet: React.FC = () => {
                   key={index}
                   onClick={async () => {
                     try {
-                      await setNetwork(item.chainId)
-                      setIsDropdownVisible(false)
+                      await selectNetwork(item.chainId)
                     } catch (e) {
                       console.error('Error setting network: ', e)
                     }

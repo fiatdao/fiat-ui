@@ -113,10 +113,29 @@
   margin: 0;
 }
 
+.buttonTextContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.buttonText {
+  margin-top: 2px;
+}
+
+.buttonTextTooltip {
+  margin-left: 8px;
+}
+
 .buttonsWrapper {
   display: grid;
   gap: 24px;
   grid-template-columns: 1fr;
+}
+
+
+.icon {
+  margin-left: 8px;
 }
 
 .backButton {
@@ -183,47 +202,7 @@
 }
 
 .summary {
-  border-radius: 4px;
-  border: 1px solid var(--theme-border-color);
-  margin-bottom: 24px;
-  padding: 16px;
-}
-
-.summaryRow {
-  align-items: flex-start;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.summaryTitle {
-  color: var(--theme-light-text-color);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.2;
-}
-
-.summaryValue {
-  color: var(--theme-text-color);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.2;
-
-  &.ok {
-    color: var(--theme-ok-color);
-  }
-
-  &.warning {
-    color: var(--theme-warning-color);
-  }
-
-  &.danger {
-    color: var(--theme-danger-color);
-  }
+  padding: 24px 0 0 0;
 }
 
 .lastStepTitle {

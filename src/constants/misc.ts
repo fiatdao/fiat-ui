@@ -17,6 +17,7 @@ export const SUBGRAPH_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_MAINN
 
 export const RPC_URL_GOERLI = process.env.NEXT_PUBLIC_REACT_APP_RPC_URL_GOERLI || ''
 export const RPC_URL_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_RPC_URL_MAINNET || ''
+export const RPC_URL_LOCALHOST = 'http://localhost:8545' || ''
 
 export const WAD_DECIMALS = 18
 
@@ -31,7 +32,7 @@ export const FIAT_TICKER = 'FIAT'
 // @TODO: var used to calculate difference between big numbers in non human format
 export const MIN_EPSILON_OFFSET = new BigNumber(0.005)
 
-export const SET_ALLOWANCE_PROXY_TEXT = 'Set allowance for Proxy'
+export const SET_FIAT_ALLOWANCE_PROXY_TEXT = 'Set Allowance for FIAT'
 export const ENABLE_PROXY_FOR_FIAT_TEXT = 'Enable Proxy for FIAT'
 export const EXECUTE_TEXT = 'Execute'
 export const DEPOSIT_COLLATERAL_TEXT = 'Deposit collateral'

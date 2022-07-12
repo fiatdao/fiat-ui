@@ -4,7 +4,7 @@ import ButtonGradient from '@/src/components/antd/button-gradient'
 import { ButtonExtraFormAction } from '@/src/components/custom/button-extra-form-action'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { MintFiat } from '@/src/components/custom/mint-fiat'
-import { Summary, SummaryItem } from '@/src/components/custom/summary'
+import { Summary } from '@/src/components/custom/summary'
 import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
 import TokenAmount from '@/src/components/custom/token-amount'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
@@ -123,6 +123,19 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     amount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
   })
 
+  const underlierAmount = stateMachine.context.underlierAmount.toNumber()
+  const apr = (1 - marketRate.toNumber()) * 100
+  const fixedAPR = `${apr.toFixed(2)}%`
+  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)} ${
+    collateral ? collateral.underlierSymbol : '-'
+  }`
+  const redeemableValue = Number(underlierAmount) + Number(interestEarned)
+  const redeemable = `${(isNaN(redeemableValue) ? 0 : redeemableValue).toFixed(2)} ${
+    collateral ? collateral.underlierSymbol : '-'
+  }`
+  const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
+  // const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
+
   const underlyingData = [
     {
       title: 'Market rate',
@@ -137,6 +150,20 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     {
       title: 'Slippage tolerance',
       value: `${slippageTolerance.toFixed(2)}%`,
+    },
+    {
+      title: 'Fixed APR',
+      value: fixedAPR,
+    },
+    {
+      title: 'Interest earned',
+      value: interestEarned,
+    },
+    {
+      title: `Redeemable at maturity | ${
+        collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
+      }`,
+      value: redeemable,
     },
   ]
 
@@ -248,6 +275,67 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     setMaxTransactionTime(maxTransactionTime)
   }
 
+  const getActionButton = () => {
+    if (stateMachine.context.currentStepNumber === 1) {
+      return (
+        <>
+          {!isProxyAvailable && (
+            <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}>
+              Setup Proxy
+            </ButtonGradient>
+          )}
+          {isProxyAvailable && !hasAllowance && (
+            <ButtonGradient
+              disabled={!isProxyAvailable}
+              height="lg"
+              onClick={() => send({ type: 'CLICK_ALLOW' })}
+            >
+              Set Allowance
+            </ButtonGradient>
+          )}
+        </>
+      )
+    } else if (stateMachine.context.currentStepNumber === 2) {
+      return (
+        <>
+          <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
+            Create Proxy
+          </ButtonGradient>
+          <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
+            &#8592; Go back
+          </button>
+        </>
+      )
+    } else if (stateMachine.context.currentStepNumber === 3) {
+      return (
+        <>
+          <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
+            {`Set Allowance`}
+          </ButtonGradient>
+          <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
+            &#8592; Go back
+          </button>
+        </>
+      )
+    }
+
+    return (
+      <ButtonGradient
+        disabled={isDisabledCreatePosition}
+        height="lg"
+        onClick={() =>
+          send({
+            type: 'CONFIRM',
+            // @ts-ignore TODO types
+            createUnderlyingPosition,
+          })
+        }
+      >
+        {confirmButtonText}
+      </ButtonGradient>
+    )
+  }
+
   return (
     <Form form={form} initialValues={{ underlierAmount: 0 }}>
       {[1, 4].includes(stateMachine.context.currentStepNumber) && (
@@ -279,20 +367,9 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
                   val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
                 }
                 slider
-                sliderDisabled={loading}
+                sliderDisabled={loading || underlyingInfo?.humanValue?.eq(0)}
               />
             </Form.Item>
-            <div className={cn(s.summary)}>
-              <Summary data={underlyingData} />
-              <SummaryItem title={'Fixed APR'} value={fixedAPR} />
-              <SummaryItem title={'Interest earned'} value={interestEarned} />
-              <SummaryItem
-                title={`Redeemable at maturity | ${
-                  collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
-                }`}
-                value={redeemable}
-              />
-            </div>
             {mintFiat && (
               <MintFiat
                 activeMachine={stateMachine}
@@ -307,72 +384,23 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
         </>
       )}
       <ButtonsWrapper>
-        {stateMachine.context.currentStepNumber === 1 && (
-          <>
-            {!isProxyAvailable && (
-              <ButtonGradient height="lg" onClick={() => send({ type: 'CLICK_SETUP_PROXY' })}>
-                Setup Proxy
-              </ButtonGradient>
-            )}
-            {isProxyAvailable && !hasAllowance && (
-              <ButtonGradient
-                disabled={!stateMachine.context.underlierAmount.gt(0) || !isProxyAvailable}
-                height="lg"
-                onClick={() => send({ type: 'CLICK_ALLOW' })}
-              >
-                {stateMachine.context.underlierAmount.gt(0)
-                  ? 'Set Allowance'
-                  : `Insufficient Balance for ${collateral.underlierSymbol}`}
-              </ButtonGradient>
-            )}
-          </>
-        )}
-        {stateMachine.context.currentStepNumber === 2 && (
-          <>
-            <ButtonGradient height="lg" loading={loadingProxy} onClick={setupProxy}>
-              Create Proxy
-            </ButtonGradient>
-            <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
-              &#8592; Go back
-            </button>
-          </>
-        )}
-        {stateMachine.context.currentStepNumber === 3 && (
-          <>
-            <ButtonGradient height="lg" loading={loadingApprove} onClick={approve}>
-              {`Set Allowance`}
-            </ButtonGradient>
-            <button className={cn(s.backButton)} onClick={() => send({ type: 'GO_BACK' })}>
-              &#8592; Go back
-            </button>
-          </>
-        )}
-        {stateMachine.context.currentStepNumber === 4 && (
-          <>
-            {!mintFiat && (
+        <>
+          {!mintFiat &&
+            stateMachine.context.currentStepNumber !== 2 &&
+            stateMachine.context.currentStepNumber !== 3 && (
               <ButtonExtraFormAction onClick={() => setMintFiat(!mintFiat)}>
                 Mint FIAT with this transaction
               </ButtonExtraFormAction>
             )}
-            <ButtonGradient
-              disabled={isDisabledCreatePosition}
-              height="lg"
-              onClick={() =>
-                send({
-                  type: 'CONFIRM',
-                  // @ts-ignore TODO types
-                  createUnderlyingPosition,
-                })
-              }
-            >
-              {confirmButtonText}
-            </ButtonGradient>
-          </>
-        )}
+          {getActionButton()}
+        </>
       </ButtonsWrapper>
-      {stateMachine.context.currentStepNumber === 4 && (
-        <div className={cn(s.summary)}>{/* <Summary data={summaryData} /> */}</div>
-      )}
+      {stateMachine.context.currentStepNumber !== 2 &&
+        stateMachine.context.currentStepNumber !== 3 && (
+          <div className={cn(s.summary)}>
+            <Summary data={underlyingData} />
+          </div>
+        )}
     </Form>
   )
 }

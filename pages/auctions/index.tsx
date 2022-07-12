@@ -100,7 +100,7 @@ const Auctions = () => {
     {
       align: 'left',
       dataIndex: 'apy',
-      render: (value: string) => <CellValue value={`${value}%`} />,
+      render: (value: string) => <CellValue value={value} />,
       title: 'APY',
     },
     {

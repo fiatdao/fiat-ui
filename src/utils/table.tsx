@@ -12,7 +12,7 @@ export const getHealthFactorState = (hf: BigNumber): 'ok' | 'warning' | 'danger'
 }
 
 // curried version
-export const parseDate = formatWithOptions({ locale: enUS }, 'MM/dd/yyyy')
+export const parseDate = formatWithOptions({ locale: enUS }, 'PP')
 
 export const parseTime = formatWithOptions({ locale: enUS }, 'hh:mm:ss b')
 
