@@ -1,13 +1,37 @@
-import { useWeb3Connected } from '@/src/providers/web3ConnectionProvider'
 import { contracts } from '@/src/constants/contracts'
-import { Contract } from 'ethers'
+import contractCall from '@/src/utils/contractCall'
+import { currencyIds } from '@/src/constants/currencyIds'
+import { ChainsValues } from '@/src/constants/chains'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
-export const useMinImpliedRate = (fCash: any, maxSlippage: any): any => {
-  const { appChainId, web3Provider } = useWeb3Connected()
-  const contract = new Contract(
-    contracts.USER_ACTIONS_FC.address[appChainId], //probably need to grab a different contract
-    contracts.USER_ACTIONS_FC.abi,
-    web3Provider?.getSigner(),
+export const getMinImpliedRate = async (
+  fCash: any,
+  maxSlippage: any,
+  appChainId: ChainsValues,
+  collateral: any,
+  provider: JsonRpcProvider,
+): Promise<any> => {
+  const underlier = collateral.underlierSymbol ?? ''
+  const currencyId = currencyIds[underlier as keyof typeof currencyIds]
+
+  const cashGroup = await contractCall(
+    contracts.NOTIONAL.address[appChainId],
+    contracts.NOTIONAL.abi,
+    provider,
+    'getCashGroup',
+    [currencyId],
+  )
+
+  const market = await contractCall(
+    contracts.NOTIONAL.address[appChainId],
+    contracts.NOTIONAL.abi,
+    provider,
+    'getMarket',
+    [
+      currencyId,
+      new Date(collateral?.maturity).getTime() / 1000,
+      Math.round(new Date().getTime() / 1000),
+    ],
   )
 
   const RATE_PRECISION = 10 ** 9
@@ -71,20 +95,6 @@ export const useMinImpliedRate = (fCash: any, maxSlippage: any): any => {
     return Number(annualRate).toFixed(0)
   }
 
-  const fetchMarket = (market_id: any) => {
-    return contract.functions.getMarket(market_id[0], market_id[1], market_id[2])
-  }
-
-  // fetch CashGroup details
-  const fetchCashGroup = (currencyId: any) => {
-    return contract.functions.getCashGroup(currencyId)
-  }
-
-  const market_id = [3, 1664064000, 1656288000] // DAI-September-2022
-
-  // fetch market state and CashGroup details
-  const market = fetchMarket(market_id)
-
   const minImpliedRate = (
     fCashToAccount: any,
     blockTime: any,
@@ -99,7 +109,6 @@ export const useMinImpliedRate = (fCash: any, maxSlippage: any): any => {
   }
 
   const currentTimestamp = new Date()
-  const cashGroup = fetchCashGroup(market_id[0])
 
   // Might need to remove /RATE_PRECISION
   return minImpliedRate(fCash, currentTimestamp, market, cashGroup, maxSlippage) / RATE_PRECISION

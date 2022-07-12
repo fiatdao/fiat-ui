@@ -18,14 +18,14 @@ import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
-// import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
+import { getMinImpliedRate } from '@/src/utils/getMinImpliedRate'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useEffect, useMemo, useState } from 'react'
 import { useMarketRate } from '@/src/hooks/useMarketRate'
+import React, { useEffect, useMemo, useState } from 'react'
 
 type CreatePositionUnderlyingProps = {
   collateral: Collateral
@@ -51,7 +51,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   const [form] = AntdForm.useForm<FormProps>()
 
   const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
-  const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
+  const { address: currentUserAddress, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const {
     buyCollateralAndModifyDebtERC20,
@@ -172,6 +172,13 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
       ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
       : ZERO_BIG_NUMBER
     const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+    const minImpliedRate = await getMinImpliedRate(
+      fCashAmount,
+      slippageTolerance,
+      appChainId,
+      collateral,
+      readOnlyAppProvider,
+    )
 
     try {
       setLoading(true)
@@ -182,7 +189,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
         deltaDebt: _fiatAmount,
         virtualRate: collateral.vault.virtualRate,
         fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals
-        minImpliedRate: 100000, //minImpliedRate,
+        minImpliedRate: minImpliedRate,
         underlierAmount: _underlierAmount, //definitely correct */
       })
       setLoading(false)

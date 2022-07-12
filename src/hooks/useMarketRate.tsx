@@ -4,7 +4,7 @@ import { useUnderlierToPToken } from '@/src/hooks/useUnderlierToPToken'
 import BigNumber from 'bignumber.js'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { getNonHumanValue, getHumanValue } from '@/src/web3/utils'
-import { ONE_BIG_NUMBER } from '@/src/constants/misc'
+import { ONE_BIG_NUMBER, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 
 type MarketRateParams = {
   protocol: string // "NOTIONAL" | "YIELD" | "ELEMENT"
@@ -51,6 +51,11 @@ export const useMarketRate = (params: MarketRateParams): MarketRateReturnValue =
         marketRateDecimal: ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77))
       }
     }
+    default: 
+      return {
+        marketRateTokenScale: ZERO_BIG_NUMBER, 
+        marketRateDecimal: ZERO_BIG_NUMBER
+      }
   }
 }
 

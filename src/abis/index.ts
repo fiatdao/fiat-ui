@@ -18,6 +18,7 @@ import vaultEptActions from './VaultEPTActions.json'
 import vaultFcActions from './VaultFCActions.json'
 import vaultFyActions from './VaultFYActions.json'
 import publican from './Publican.json'
+import notional from './Notional.json'
 
 export {
   codex,
@@ -40,4 +41,5 @@ export {
   moneta,
   publican,
   vaultFyActions,
+  notional,
 }
