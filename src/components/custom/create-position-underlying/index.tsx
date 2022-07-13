@@ -16,11 +16,11 @@ import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
-import { parseDate } from '@/src/utils/dateTime'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 // import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
 import { getDecimalsFromScale } from '@/src/constants/bondTokens'
+import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
@@ -128,48 +128,15 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   })
 
   const underlierAmount = stateMachine.context.underlierAmount.toNumber()
-  const apr = (1 - marketRate.toNumber()) * 100
-  const fixedAPR = `${apr.toFixed(2)}%`
-  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)} ${
-    collateral ? collateral.underlierSymbol : '-'
-  }`
-  const redeemableValue = Number(underlierAmount) + Number(interestEarned)
-  const redeemable = `${(isNaN(redeemableValue) ? 0 : redeemableValue).toFixed(2)} ${
-    collateral ? collateral.underlierSymbol : '-'
-  }`
   const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
   // const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
 
-  const underlyingData = [
-    {
-      title: 'Market rate',
-      value: `1 Principal Token = ${marketRate.toFixed(4)} ${
-        collateral ? collateral.underlierSymbol : '-'
-      }`,
-    },
-    // {
-    //   title: 'Price impact',
-    //   value: `${priceImpact.toFixed(2)}%`,
-    // },
-    {
-      title: 'Slippage tolerance',
-      value: `${slippageTolerance.toFixed(2)}%`,
-    },
-    {
-      title: 'Fixed APR',
-      value: fixedAPR,
-    },
-    {
-      title: 'Interest earned',
-      value: interestEarned,
-    },
-    {
-      title: `Redeemable at maturity | ${
-        collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--'
-      }`,
-      value: redeemable,
-    },
-  ]
+  const underlyingData = getUnderlyingDataSummary(
+    marketRate,
+    slippageTolerance,
+    collateral,
+    underlierAmount,
+  )
 
   const createUnderlyingPositionERC1155 = async ({
     fiatAmount,

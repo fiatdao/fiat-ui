@@ -12,7 +12,7 @@ import { Balance } from '@/src/components/custom/balance'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
-import { SummaryItem } from '@/src/components/custom/summary'
+import { Summary } from '@/src/components/custom/summary'
 import { contracts } from '@/src/constants/contracts'
 import { SET_FIAT_ALLOWANCE_PROXY_TEXT, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import {
@@ -150,7 +150,7 @@ const PositionManage = () => {
     onSuccess,
   )
 
-  const summary = useManageFormSummary(position as Position, formValues)
+  const bondSummary = useManageFormSummary(position as Position, formValues)
 
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
 
@@ -649,17 +649,7 @@ const PositionManage = () => {
                     </ButtonsWrapper>
                   )}
                   <div className={cn(s.summary)}>
-                    {summary.map((item, index) => {
-                      return (
-                        <SummaryItem
-                          key={index}
-                          state={item?.state}
-                          title={item.title}
-                          titleTooltip={item?.titleTooltip}
-                          value={item.value}
-                        />
-                      )
-                    })}
+                    <Summary data={bondSummary} />
                   </div>
                 </div>
               </fieldset>
