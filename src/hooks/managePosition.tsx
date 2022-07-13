@@ -57,6 +57,8 @@ export const useManagePositionForm = (
   collateral: Collateral | undefined,
   positionFormFields: PositionManageFormFields | undefined,
   activeTabKey: FiatTabKey | CollateralTabKey,
+  slippageTolerance: number,
+  maxTransactionTime: number,
   onSuccess?: () => void,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
@@ -422,43 +424,51 @@ export const useManagePositionForm = (
       setIsLoading(true)
 
       if (depositUnderlier !== ZERO_BIG_NUMBER && depositUnderlier !== undefined) {
-        console.log('none')
         // If depositing underlier, use deposit underlier action
+        if (!collateral) {
+          // We need a valid collateral to be loaded for this to work
+          return
+        }
+
+        const pTokenAmount = depositUnderlier.multipliedBy(
+          getHumanValue(underlierToPToken, underlierDecimals),
+        )
+
+        const slippageDecimal = 1 - slippageTolerance / 100
+        const minOutput = getNonHumanValue(
+          pTokenAmount.multipliedBy(slippageDecimal),
+          underlierDecimals,
+        )
+
+        const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
+        const approve = depositUnderlier.toFixed(0, 8)
         if (position?.vaultType === VaultType.ELEMENT) {
-          const pTokenAmount = depositUnderlier.multipliedBy(
-            getHumanValue(underlierToPToken, underlierDecimals),
-          )
-          console.log('ptokamt: ', pTokenAmount)
-          console.log('t: ', buyCollateralAndModifyDebtERC20)
-          console.log('underlying infO: : ', underlyingInfo)
-          console.log('withdrawUnderlier', withdrawUnderlier)
+          // call the respective element vault action
 
-          /* const minOutput = getNonHumanValue( */
-          /*   pTokenAmount.multipliedBy(slippageDecimal), */
-          /*   underlierDecimals, */
-          /* ) */
-
-          /* const slippageDecimal = 1 - slippageTolerance / 100 */
-
-          /* await buyCollateralAndModifyDebtERC20({ */
-          /*   vault: position?.protocolAddress, */
-          /*   deltaDebt, */
-          /*   virtualRate: position.virtualRate, */
-          /*   underlierAmount: depositUnderlier, */
-          /*   swapParams: { */
-          /*     balancerVault: position?.collateral.eptData.balancerVault, */
-          /*     poolId: position?.collateral.eptData?.poolId ?? '', */
-          /*     assetIn: position?.collateral.underlierAddress ?? '', */
-          /*     assetOut: position?.collateral.address ?? '', */
-          /*     minOutput: getNonHumanValue().toFixed(0, 8), */
-          /*     deadline: deadline, */
-          /*     approve: approve, */
-          /*   }, */
-          /* }) */
+          // TODO: make dis werk
+          console.log('calling deposit underlier')
+          console.log(underlyingInfo)
+          console.log(withdrawUnderlier?.toString())
+          await buyCollateralAndModifyDebtERC20({
+            vault: collateral.vault.address,
+            deltaDebt,
+            virtualRate: collateral.vault.virtualRate,
+            underlierAmount: depositUnderlier,
+            swapParams: {
+              balancerVault: collateral.eptData.balancerVault,
+              poolId: collateral.eptData?.poolId ?? '',
+              assetIn: collateral.underlierAddress ?? '',
+              assetOut: collateral.address ?? '',
+              minOutput: minOutput.toFixed(0, 8),
+              deadline: deadline,
+              approve: approve,
+            },
+          })
           await updateUnderlying()
         }
+        // TODO: call other underlying actions
+        /* if (position?.vaultType === VaultType.YIELD) */
       } else {
-        // TODO: protocol to vaultAddress
         await modifyCollateralAndDebt({
           vault: position?.protocolAddress,
           token: position?.collateral.address,

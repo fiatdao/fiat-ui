@@ -11,7 +11,6 @@ import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
 import { Balance } from '@/src/components/custom/balance'
 import { ButtonBack } from '@/src/components/custom/button-back'
 import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
-
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { SummaryItem } from '@/src/components/custom/summary'
 import { contracts } from '@/src/constants/contracts'
@@ -27,12 +26,14 @@ import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
+import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
 import cn from 'classnames'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
+import { SettingFilled } from '@ant-design/icons'
 
 const LAST_STEP = 4
 
@@ -94,6 +95,9 @@ const PositionManage = () => {
   useDynamicTitle(`Manage Position`)
   const [form] = AntdForm.useForm<PositionManageFormFields>()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
+  const [swapSettingsOpen, setSwapSettingsOpen] = useState(false)
+  const [slippageTolerance, setSlippageTolerance] = useState(0.1)
+  const [maxTransactionTime, setMaxTransactionTime] = useState(20)
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
   const [formDisabled, setFormDisabled] = useState(false)
   const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
@@ -141,6 +145,8 @@ const PositionManage = () => {
     collateral as Collateral,
     formValues,
     activeTabKey,
+    slippageTolerance,
+    maxTransactionTime,
     onSuccess,
   )
 
@@ -237,6 +243,14 @@ const PositionManage = () => {
       })
   }, [handleManage, formValues])
 
+  const updateSwapSettings = useCallback(
+    (slippageTolerance: number, maxTransactionTime: number) => {
+      setSlippageTolerance(slippageTolerance)
+      setMaxTransactionTime(maxTransactionTime)
+    },
+    [],
+  )
+
   const enableButtons = useMemo(
     () =>
       !isProxyAvailable ||
@@ -327,11 +341,15 @@ const PositionManage = () => {
     </div>
   )
 
-  /* const CollateralTabs = () => ( */
-  /* ) */
-
   return (
     <>
+      <SwapSettingsModal
+        isOpen={swapSettingsOpen}
+        maxTransactionTime={maxTransactionTime}
+        slippageTolerance={slippageTolerance}
+        toggleOpen={() => setSwapSettingsOpen(!swapSettingsOpen)}
+        updateSwapSettings={updateSwapSettings}
+      />
       <ButtonBack href="/your-positions">Back</ButtonBack>
       <PositionFormsLayout infoBlocks={infoBlocks}>
         {finished ? (
@@ -439,10 +457,16 @@ const PositionManage = () => {
                       )}
                       {'depositUnderlier' === activeTabKey && position && (
                         <>
-                          <Balance
-                            title="Swap and deposit"
-                            value={`Available: ${underlyingInfo?.humanValue?.toFixed(2)}`}
-                          />
+                          <div className={cn(s.balanceContainer)}>
+                            <Balance
+                              title="Swap and deposit"
+                              value={`Available: ${underlyingInfo?.humanValue?.toFixed(2)}`}
+                            />
+                            <SettingFilled
+                              className={cn(s.settings)}
+                              onClick={() => setSwapSettingsOpen(!swapSettingsOpen)}
+                            />
+                          </div>
                           <Form.Item name="depositUnderlier" required>
                             <TokenAmount
                               displayDecimals={4}
