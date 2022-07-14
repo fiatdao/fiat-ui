@@ -345,7 +345,6 @@ export const useUserActions = (type?: string): UseUserActions => {
     ],
   )
 
-  // TODO: implement this
   // VaultEPTActions sellCollateralAndModifyDebt
   const sellCollateralAndModifyDebtERC20 = useCallback(
     async (params: SellCollateralAndModifyDebtERC20) => {
@@ -357,16 +356,6 @@ export const useUserActions = (type?: string): UseUserActions => {
         0,
         8,
       )
-
-      // console.log('',88,  '\n',
-      //   params.vault, '\n',                        // address vault
-      //   userProxyAddress, '\n',                    // address position
-      //   address, '\n',                             // address collateralizer
-      //   address, '\n',                             // address creditor
-      //   params.underlierAmount.toFixed(0,8), '\n', // uint256 underlierAmount,
-      //   deltaNormalDebt, '\n',                     // int256 deltaNormalDebt,
-      //   params.swapParams, '\n',                   // calldata swapParams
-      // )
 
       const sellCollateralAndModifyDebtEncoded = userActionEPT.interface.encodeFunctionData(
         'sellCollateralAndModifyDebt',
