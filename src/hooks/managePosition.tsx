@@ -499,8 +499,6 @@ export const useManagePositionForm = (
         const approve = underlierWithdrawAmountFixedPoint.toFixed(0, 8)
         switch (position?.vaultType) {
           case VaultType.ELEMENT: {
-            // TODO: call this with semantically correct args
-            console.log('sellCollateralAndModifyDebtERC20')
             await sellCollateralAndModifyDebtERC20({
               vault: collateral.vault.address,
               deltaDebt,
@@ -509,8 +507,8 @@ export const useManagePositionForm = (
               swapParams: {
                 balancerVault: collateral.eptData.balancerVault,
                 poolId: collateral.eptData?.poolId ?? '',
-                assetIn: collateral.underlierAddress ?? '',
-                assetOut: collateral.address ?? '',
+                assetIn: collateral.address ?? '',
+                assetOut: collateral.underlierAddress ?? '',
                 minOutput: minOutput.toFixed(0, 8),
                 deadline: deadline,
                 approve: approve,
