@@ -279,13 +279,12 @@ const PositionManage = () => {
     [collateral?.vault.type, underlierDecimals, underlierToFCash, underlierToPToken],
   )
 
-  // TODO: fix NaN value for interest earned
   const depositUnderlierSummary = collateral
     ? getUnderlyingDataSummary(
         marketRate,
         slippageTolerance,
         collateral,
-        form.getFieldValue('underlierDepositAmount'),
+        form.getFieldValue('underlierDepositAmount') ?? ZERO_BIG_NUMBER,
       )
     : []
 
@@ -294,7 +293,7 @@ const PositionManage = () => {
         marketRate,
         slippageTolerance,
         collateral,
-        form.getFieldValue('underlierWithdrawAmount'),
+        form.getFieldValue('underlierWithdrawAmount') ?? ZERO_BIG_NUMBER,
       )
     : []
 
@@ -536,7 +535,7 @@ const PositionManage = () => {
                           <Balance
                             description={getMaturedFCashMessage()}
                             title={'Select amount to withdraw'}
-                            value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
+                            value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="withdraw" required>
                             <TokenAmount
@@ -613,7 +612,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to borrow"
-                            value={`Available: ${fiatBalance?.toFixed(4)}`}
+                            value={`Available: ${fiatBalance?.toFixed(2)}`}
                           />
                           <Form.Item name="borrow" required>
                             <TokenAmount
@@ -633,7 +632,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to repay"
-                            value={`Available: ${fiatBalance?.toFixed(4)}`}
+                            value={`Available: ${fiatBalance?.toFixed(2)}`}
                           />
                           <Form.Item name="repay" required>
                             <TokenAmount

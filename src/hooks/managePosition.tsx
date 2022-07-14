@@ -348,8 +348,8 @@ export const useManagePositionForm = (
     setAvailableUnderlierDepositAmount(underlyingBalance)
     setMaxUnderlierDepositAmount(underlyingBalance)
     // TODO: set real nums
+    setAvailableUnderlierWithdrawAmount(underlyingBalance)
     setMaxUnderlierWithdrawAmount(ZERO_BIG_NUMBER)
-    setAvailableUnderlierWithdrawAmount(ZERO_BIG_NUMBER)
     // TODO: also est. new healthfactor for underlier vals
 
     const maxBorrow = calculateMaxBorrowAmount(collateral, positionDebt)
