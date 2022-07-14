@@ -14,7 +14,11 @@ import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { Summary } from '@/src/components/custom/summary'
 import { contracts } from '@/src/constants/contracts'
-import { SET_FIAT_ALLOWANCE_PROXY_TEXT, ZERO_BIG_NUMBER } from '@/src/constants/misc'
+import {
+  ONE_BIG_NUMBER,
+  SET_FIAT_ALLOWANCE_PROXY_TEXT,
+  ZERO_BIG_NUMBER,
+} from '@/src/constants/misc'
 import {
   useManageFormSummary,
   useManagePositionForm,
@@ -27,6 +31,11 @@ import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
+import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
+import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
+import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
+import { getDecimalsFromScale } from '@/src/constants/bondTokens'
+import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import cn from 'classnames'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import AntdForm from 'antd/lib/form'
@@ -150,7 +159,24 @@ const PositionManage = () => {
     onSuccess,
   )
 
+  const underlierDecimals = useMemo(
+    () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
+    [collateral],
+  )
+
+  const [underlierToPToken] = useUnderlyingExchangeValue({
+    vault: collateral?.vault?.address ?? '',
+    balancerVault: collateral?.eptData?.balancerVault ?? '',
+    curvePoolId: collateral?.eptData?.poolId ?? '',
+    underlierAmount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
+  })
+
   const bondSummary = useManageFormSummary(position as Position, formValues)
+
+  const [underlierToFCash] = useUnderlierToFCash({
+    tokenId: collateral?.tokenId ?? '',
+    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
+  })
 
   const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
 
@@ -250,6 +276,24 @@ const PositionManage = () => {
     },
     [],
   )
+
+  const marketRate = useMemo(
+    () =>
+      collateral?.vault.type === 'NOTIONAL'
+        ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
+        : ONE_BIG_NUMBER.div(getHumanValue(underlierToPToken, underlierDecimals)),
+    [collateral?.vault.type, underlierDecimals, underlierToFCash, underlierToPToken],
+  )
+
+  // TODO: fix NaN value for interest earned
+  const underlyingSummary = collateral
+    ? getUnderlyingDataSummary(
+        marketRate,
+        slippageTolerance,
+        collateral,
+        form.getFieldValue('depositUnderlier'),
+      )
+    : []
 
   const enableButtons = useMemo(
     () =>
@@ -649,7 +693,13 @@ const PositionManage = () => {
                     </ButtonsWrapper>
                   )}
                   <div className={cn(s.summary)}>
-                    <Summary data={bondSummary} />
+                    {activeTabKey === 'depositUnderlier' ? (
+                      <Summary data={underlyingSummary} />
+                    ) : activeTabKey === 'withdrawUnderlier' ? (
+                      <p>todo</p>
+                    ) : (
+                      <Summary data={bondSummary} />
+                    )}
                   </div>
                 </div>
               </fieldset>
