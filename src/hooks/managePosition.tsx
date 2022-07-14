@@ -73,10 +73,22 @@ export const useManagePositionForm = (
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [finished, setFinished] = useState<boolean>(false)
 
+  // max & available bond values
   const [maxDepositAmount, setMaxDepositAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
   const [availableDepositAmount, setAvailableDepositAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
-  const [maxWithdrawAmount, setMaxWithdrawAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
   const [availableWithdrawAmount, setAvailableWithdrawAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [maxWithdrawAmount, setMaxWithdrawAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
+
+  // max & available underlier values
+  const [maxUnderlierDepositAmount, setMaxUnderlierDepositAmount] =
+    useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [availableUnderlierDepositAmount, setAvailableUnderlierDepositAmount] =
+    useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [maxUnderlierWithdrawAmount, setMaxUnderlierWithdrawAmount] =
+    useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [availableUnderlierWithdrawAmount, setAvailableUnderlierWithdrawAmount] =
+    useState<BigNumber>(ZERO_BIG_NUMBER)
+
   const [maxBorrowAmount, setMaxBorrowAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
   const [maxRepayAmount, setMaxRepayAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
 
@@ -99,7 +111,7 @@ export const useManagePositionForm = (
     tokenId: position?.tokenId ?? '0',
   })
 
-  const { updateToken: updateUnderlying } = useTokenDecimalsAndBalance({
+  const { tokenInfo: underlyingInfo, updateToken: updateUnderlying } = useTokenDecimalsAndBalance({
     address,
     readOnlyAppProvider,
     tokenData: {
@@ -326,18 +338,26 @@ export const useManagePositionForm = (
 
     const collateralBalance = tokenInfo?.humanValue ?? ZERO_BIG_NUMBER
     const maxWithdraw = calculateMaxWithdrawAmount(positionCollateral, debt)
-    const maxBorrow = calculateMaxBorrowAmount(collateral, positionDebt)
-    const maxRepay = calculateMaxRepayAmount(positionDebt)
-
-    const newHealthFactor = calculateHealthFactorFromPosition(collateral, debt)
 
     setMaxDepositAmount(collateralBalance)
+    setAvailableDepositAmount(collateralBalance)
+    setAvailableWithdrawAmount(collateralBalance)
     setMaxWithdrawAmount(maxWithdraw)
+
+    const underlyingBalance = underlyingInfo?.humanValue ?? ZERO_BIG_NUMBER
+    setAvailableUnderlierDepositAmount(underlyingBalance)
+    setMaxUnderlierDepositAmount(underlyingBalance)
+    // TODO: set real nums
+    setMaxUnderlierWithdrawAmount(ZERO_BIG_NUMBER)
+    setAvailableUnderlierWithdrawAmount(ZERO_BIG_NUMBER)
+    // TODO: also est. new healthfactor for underlier vals
+
+    const maxBorrow = calculateMaxBorrowAmount(collateral, positionDebt)
+    const maxRepay = calculateMaxRepayAmount(positionDebt)
+    const newHealthFactor = calculateHealthFactorFromPosition(collateral, debt)
     setMaxBorrowAmount(maxBorrow)
     setMaxRepayAmount(maxRepay)
     setHealthFactor(newHealthFactor)
-    setAvailableDepositAmount(collateralBalance)
-    setAvailableWithdrawAmount(collateralBalance)
 
     if (deltaDebt.isNegative()) {
       setIsRepayingFIAT(true)
@@ -381,6 +401,7 @@ export const useManagePositionForm = (
     activeTabKey,
     getPositionValues,
     tokenInfo?.humanValue,
+    underlyingInfo?.humanValue,
     calculateHealthFactorFromPosition,
     calculateMaxWithdrawAmount,
     calculateMaxBorrowAmount,
@@ -408,10 +429,10 @@ export const useManagePositionForm = (
   const handleManage = async ({
     borrow,
     deposit,
-    depositUnderlier,
     repay,
+    underlierDepositAmount,
+    underlierWithdrawAmount,
     withdraw,
-    withdrawUnderlier,
   }: PositionManageFormFields): Promise<void> => {
     try {
       if (!position || !position.protocolAddress || !position.collateral.address) return
@@ -426,7 +447,7 @@ export const useManagePositionForm = (
 
       setIsLoading(true)
 
-      if (depositUnderlier !== ZERO_BIG_NUMBER && depositUnderlier !== undefined) {
+      if (underlierDepositAmount !== ZERO_BIG_NUMBER && underlierDepositAmount !== undefined) {
         // If depositing underlier, call respective deposit underlier action
         if (!collateral) {
           console.error('Attempted to deposit underlier without valid collateral')
@@ -434,11 +455,11 @@ export const useManagePositionForm = (
         }
 
         const underlierDepositAmountFixedPoint = getNonHumanValue(
-          depositUnderlier,
+          underlierDepositAmount,
           underlierDecimals,
         )
         const slippageDecimal = 1 - slippageTolerance / 100
-        const pTokenAmount = depositUnderlier.multipliedBy(
+        const pTokenAmount = underlierDepositAmount.multipliedBy(
           getHumanValue(underlierToPToken, underlierDecimals),
         )
         const minOutput = getNonHumanValue(
@@ -476,7 +497,10 @@ export const useManagePositionForm = (
             console.error('Attempted to buyCollateralAndModifyDebt for unknown vault type')
           }
         }
-      } else if (withdrawUnderlier !== ZERO_BIG_NUMBER && withdrawUnderlier !== undefined) {
+      } else if (
+        underlierWithdrawAmount !== ZERO_BIG_NUMBER &&
+        underlierWithdrawAmount !== undefined
+      ) {
         if (!collateral) {
           console.error('Attempted to withdraw underlier without valid collateral')
           return
@@ -484,11 +508,11 @@ export const useManagePositionForm = (
 
         // If withdrawing underlier, call respective withdraw underlier action
         const underlierWithdrawAmountFixedPoint = getNonHumanValue(
-          withdrawUnderlier,
+          underlierWithdrawAmount,
           underlierDecimals,
         )
         const slippageDecimal = 1 - slippageTolerance / 100
-        const pTokenAmount = withdrawUnderlier.multipliedBy(
+        const pTokenAmount = underlierWithdrawAmount.multipliedBy(
           getHumanValue(underlierToPToken, underlierDecimals),
         )
         const minOutput = getNonHumanValue(
@@ -551,7 +575,11 @@ export const useManagePositionForm = (
 
   return {
     availableDepositAmount,
+    availableUnderlierDepositAmount,
     maxDepositAmount,
+    maxUnderlierDepositAmount,
+    maxUnderlierWithdrawAmount,
+    availableUnderlierWithdrawAmount,
     availableWithdrawAmount,
     maxWithdrawAmount,
     maxRepayAmount,

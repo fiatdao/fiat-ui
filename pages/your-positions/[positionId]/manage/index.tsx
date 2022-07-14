@@ -1,6 +1,4 @@
 import s from './s.module.scss'
-import { useTokenDecimalsAndBalance } from '../../../../src/hooks/useTokenDecimalsAndBalance'
-import { useWeb3Connection } from '../../../../src/providers/web3ConnectionProvider'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Position } from '@/src/utils/data/positions'
 import { Collateral } from '@/src/utils/data/collaterals'
@@ -75,7 +73,12 @@ export const isFiatTab = (key: string): key is FiatTabKey => {
   return FIAT_KEYS.includes(key as FiatTabKey)
 }
 
-const COLLATERAL_KEYS = ['deposit', 'withdraw', 'withdrawUnderlier', 'depositUnderlier'] as const
+const COLLATERAL_KEYS = [
+  'deposit',
+  'withdraw',
+  'underlierWithdrawAmount',
+  'underlierDepositAmount',
+] as const
 export type CollateralTabKey = typeof COLLATERAL_KEYS[number]
 
 export const isCollateralTab = (key: string): key is CollateralTabKey => {
@@ -85,19 +88,19 @@ export const isCollateralTab = (key: string): key is CollateralTabKey => {
 export type PositionManageFormFields = {
   borrow: BigNumber | undefined
   deposit: BigNumber | undefined
-  depositUnderlier: BigNumber | undefined
+  underlierDepositAmount: BigNumber | undefined
   repay: BigNumber | undefined
   withdraw: BigNumber | undefined
-  withdrawUnderlier: BigNumber | undefined
+  underlierWithdrawAmount: BigNumber | undefined
 }
 
 const defaultManageFormFields = {
   repay: undefined,
   borrow: undefined,
   withdraw: undefined,
-  withdrawUnderlier: undefined,
+  underlierWithdrawAmount: undefined,
   deposit: undefined,
-  depositUnderlier: undefined,
+  underlierDepositAmount: undefined,
 }
 
 const PositionManage = () => {
@@ -126,6 +129,7 @@ const PositionManage = () => {
     approveMonetaAllowance,
     approveTokenAllowance,
     availableDepositAmount,
+    availableUnderlierDepositAmount,
     availableWithdrawAmount,
     buttonText,
     finished,
@@ -146,6 +150,7 @@ const PositionManage = () => {
     maxBorrowAmount,
     maxDepositAmount,
     maxRepayAmount,
+    maxUnderlierDepositAmount,
     maxWithdrawAmount,
     setFinished,
     setupProxy,
@@ -178,21 +183,8 @@ const PositionManage = () => {
     amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
   })
 
-  const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
-
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
   const tokenSymbol = position?.symbol ?? ''
-
-  const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
-    tokenData: {
-      decimals: 8,
-      symbol: position?.underlier?.symbol ?? '',
-      address: position?.underlier?.address ?? '',
-    },
-    address: currentUserAddress,
-    readOnlyAppProvider,
-    tokenId: position?.tokenId ?? '0',
-  })
 
   const reset = async () => {
     setFinished(false)
@@ -286,12 +278,21 @@ const PositionManage = () => {
   )
 
   // TODO: fix NaN value for interest earned
-  const underlyingSummary = collateral
+  const depositUnderlierSummary = collateral
     ? getUnderlyingDataSummary(
         marketRate,
         slippageTolerance,
         collateral,
-        form.getFieldValue('depositUnderlier'),
+        form.getFieldValue('underlierDepositAmount'),
+      )
+    : []
+
+  const withdrawUnderlierSummary = collateral
+    ? getUnderlyingDataSummary(
+        marketRate,
+        slippageTolerance,
+        collateral,
+        form.getFieldValue('underlierWithdrawAmount'),
       )
     : []
 
@@ -326,7 +327,7 @@ const PositionManage = () => {
 
   useEffect(() => {
     if (activeSection === 'collateral') {
-      if (isMatured && activeTabKey !== 'withdraw' && activeTabKey !== 'withdrawUnderlier') {
+      if (isMatured && activeTabKey !== 'withdraw' && activeTabKey !== 'underlierWithdrawAmount') {
         setActiveTabKey('withdraw')
       }
     }
@@ -431,16 +432,17 @@ const PositionManage = () => {
                               Deposit
                             </Tab>
                             <Tab
-                              isActive={'depositUnderlier' === activeTabKey}
+                              isActive={'underlierDepositAmount' === activeTabKey}
                               onClick={() => {
                                 form.setFieldsValue({
                                   ...defaultManageFormFields,
-                                  depositUnderlier: form.getFieldValue('depositUnderlier'),
+                                  underlierDepositAmount:
+                                    form.getFieldValue('underlierDepositAmount'),
                                   // maintain fiat tab values
                                   borrow: form.getFieldValue('borrow'),
                                   repay: form.getFieldValue('repay'),
                                 })
-                                setActiveTabKey('depositUnderlier')
+                                setActiveTabKey('underlierDepositAmount')
                               }}
                             >
                               Deposit Underlier
@@ -463,16 +465,17 @@ const PositionManage = () => {
                           Withdraw
                         </Tab>
                         <Tab
-                          isActive={'withdrawUnderlier' === activeTabKey}
+                          isActive={'underlierWithdrawAmount' === activeTabKey}
                           onClick={() => {
                             form.setFieldsValue({
                               ...defaultManageFormFields,
-                              withdrawUnderlier: form.getFieldValue('withdrawUnderlier'),
+                              underlierWithdrawAmount:
+                                form.getFieldValue('underlierWithdrawAmount'),
                               // maintain fiat tab values
                               borrow: form.getFieldValue('borrow'),
                               repay: form.getFieldValue('repay'),
                             })
-                            setActiveTabKey('withdrawUnderlier')
+                            setActiveTabKey('underlierWithdrawAmount')
                           }}
                         >
                           Withdraw Underlier
@@ -482,7 +485,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Select amount to deposit"
-                            value={`Available: ${availableDepositAmount?.toFixed(4)}`}
+                            value={`Available: ${availableDepositAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="deposit" required>
                             <TokenAmount
@@ -499,24 +502,24 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
-                      {'depositUnderlier' === activeTabKey && position && (
+                      {'underlierDepositAmount' === activeTabKey && position && (
                         <>
                           <div className={cn(s.balanceContainer)}>
                             <Balance
                               title="Swap and deposit"
-                              value={`Available: ${underlyingInfo?.humanValue?.toFixed(2)}`}
+                              value={`Available: ${availableUnderlierDepositAmount?.toFixed(2)}`}
                             />
                             <SettingFilled
                               className={cn(s.settings)}
                               onClick={() => setSwapSettingsOpen(!swapSettingsOpen)}
                             />
                           </div>
-                          <Form.Item name="depositUnderlier" required>
+                          <Form.Item name="underlierDepositAmount" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
-                              max={underlyingInfo?.humanValue}
+                              max={maxUnderlierDepositAmount}
                               maximumFractionDigits={4}
                               numericInputDisabled={formDisabled}
                               secondaryAsset={position.underlier.symbol}
@@ -548,13 +551,19 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
-                      {'withdrawUnderlier' === activeTabKey && position && (
+                      {'underlierWithdrawAmount' === activeTabKey && position && (
                         <>
-                          <Balance
-                            title="Select amount of underlier to withdraw"
-                            value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
-                          />
-                          <Form.Item name="withdrawUnderlier" required>
+                          <div className={cn(s.balanceContainer)}>
+                            <Balance
+                              title="Select amount of underlier to withdraw"
+                              value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
+                            />
+                            <SettingFilled
+                              className={cn(s.settings)}
+                              onClick={() => setSwapSettingsOpen(!swapSettingsOpen)}
+                            />
+                          </div>
+                          <Form.Item name="underlierWithdrawAmount" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
@@ -693,10 +702,10 @@ const PositionManage = () => {
                     </ButtonsWrapper>
                   )}
                   <div className={cn(s.summary)}>
-                    {activeTabKey === 'depositUnderlier' ? (
-                      <Summary data={underlyingSummary} />
-                    ) : activeTabKey === 'withdrawUnderlier' ? (
-                      <p>todo</p>
+                    {activeTabKey === 'underlierDepositAmount' ? (
+                      <Summary data={depositUnderlierSummary} />
+                    ) : activeTabKey === 'underlierWithdrawAmount' ? (
+                      <Summary data={withdrawUnderlierSummary} />
                     ) : (
                       <Summary data={bondSummary} />
                     )}
