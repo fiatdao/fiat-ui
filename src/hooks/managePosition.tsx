@@ -338,18 +338,26 @@ export const useManagePositionForm = (
 
     const collateralBalance = tokenInfo?.humanValue ?? ZERO_BIG_NUMBER
     const maxWithdraw = calculateMaxWithdrawAmount(positionCollateral, debt)
-
     setMaxDepositAmount(collateralBalance)
     setAvailableDepositAmount(collateralBalance)
     setAvailableWithdrawAmount(collateralBalance)
     setMaxWithdrawAmount(maxWithdraw)
 
+    /* console.log('underlier to p token', underlierToPToken.toString()) */
+    /* console.log( */
+    /*   'underlier to p token scaled: ', */
+    /*   underlierToPToken.unscaleBy(underlierDecimals).toString(), */
+    /* ) */
+    /* console.log( */
+    /*   'max withdraw underlier divved ', */
+    /*   maxWithdraw.div(underlierToPToken.unscaleBy(underlierDecimals)).toString(), */
+    /* ) */
     const underlyingBalance = underlyingInfo?.humanValue ?? ZERO_BIG_NUMBER
+    const maxUnderlierWithdraw = maxWithdraw.div(underlierToPToken.unscaleBy(underlierDecimals))
     setAvailableUnderlierDepositAmount(underlyingBalance)
     setMaxUnderlierDepositAmount(underlyingBalance)
-    // TODO: set real nums
     setAvailableUnderlierWithdrawAmount(underlyingBalance)
-    setMaxUnderlierWithdrawAmount(ZERO_BIG_NUMBER)
+    setMaxUnderlierWithdrawAmount(maxUnderlierWithdraw)
     // TODO: also est. new healthfactor for underlier vals
 
     const maxBorrow = calculateMaxBorrowAmount(collateral, positionDebt)
@@ -410,6 +418,8 @@ export const useManagePositionForm = (
     hasFiatAllowance,
     hasMonetaAllowance,
     position?.debtFloor,
+    underlierDecimals,
+    underlierToPToken,
     isRepayingMoreThanMaxRepay,
     isRepayingMoreThanBalance,
     isBorrowingMoreThanMaxBorrow,
