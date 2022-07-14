@@ -130,6 +130,7 @@ const PositionManage = () => {
     approveTokenAllowance,
     availableDepositAmount,
     availableUnderlierDepositAmount,
+    availableUnderlierWithdrawAmount,
     availableWithdrawAmount,
     buttonText,
     finished,
@@ -151,6 +152,7 @@ const PositionManage = () => {
     maxDepositAmount,
     maxRepayAmount,
     maxUnderlierDepositAmount,
+    maxUnderlierWithdrawAmount,
     maxWithdrawAmount,
     setFinished,
     setupProxy,
@@ -556,7 +558,7 @@ const PositionManage = () => {
                           <div className={cn(s.balanceContainer)}>
                             <Balance
                               title="Select amount of underlier to withdraw"
-                              value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
+                              value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
                             />
                             <SettingFilled
                               className={cn(s.settings)}
@@ -568,7 +570,7 @@ const PositionManage = () => {
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
-                              max={maxWithdrawAmount}
+                              max={maxUnderlierWithdrawAmount}
                               maximumFractionDigits={4}
                               numericInputDisabled={formDisabled}
                               secondaryAsset={position.underlier.symbol}
