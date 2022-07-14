@@ -426,34 +426,30 @@ export const useManagePositionForm = (
       if (depositUnderlier !== ZERO_BIG_NUMBER && depositUnderlier !== undefined) {
         // If depositing underlier, use deposit underlier action
         if (!collateral) {
-          // We need a valid collateral to be loaded for this to work
+          console.error('Attempted to deposit underlier without valid collateral')
           return
         }
+        console.log(underlyingInfo)
+        console.log(withdrawUnderlier)
 
+        const underlierAmountFixedPoint = getNonHumanValue(depositUnderlier, underlierDecimals)
         const pTokenAmount = depositUnderlier.multipliedBy(
           getHumanValue(underlierToPToken, underlierDecimals),
         )
-
         const slippageDecimal = 1 - slippageTolerance / 100
         const minOutput = getNonHumanValue(
           pTokenAmount.multipliedBy(slippageDecimal),
           underlierDecimals,
         )
-
         const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
-        const approve = depositUnderlier.toFixed(0, 8)
+        const approve = underlierAmountFixedPoint.toFixed(0, 8)
         if (position?.vaultType === VaultType.ELEMENT) {
-          // call the respective element vault action
-
-          // TODO: make dis werk
-          console.log('calling deposit underlier')
-          console.log(underlyingInfo)
-          console.log(withdrawUnderlier?.toString())
+          // Call the respective element vault action
           await buyCollateralAndModifyDebtERC20({
             vault: collateral.vault.address,
             deltaDebt,
             virtualRate: collateral.vault.virtualRate,
-            underlierAmount: depositUnderlier,
+            underlierAmount: underlierAmountFixedPoint,
             swapParams: {
               balancerVault: collateral.eptData.balancerVault,
               poolId: collateral.eptData?.poolId ?? '',
