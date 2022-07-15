@@ -265,8 +265,8 @@ const PositionManage = () => {
 
   const updateSwapSettings = useCallback(
     (slippageTolerance: number, maxTransactionTime: number) => {
-      setSlippageTolerance(slippageTolerance)
-      setMaxTransactionTime(maxTransactionTime)
+      setSlippageTolerance(slippageTolerance ?? 0)
+      setMaxTransactionTime(maxTransactionTime ?? 0)
     },
     [],
   )

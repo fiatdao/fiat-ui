@@ -44,6 +44,7 @@ import {
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
 import { Collateral } from '@/src/utils/data/collaterals'
+import { pTokenToUnderlier } from '@/src/utils/getPTokenToUnderlier'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -274,6 +275,28 @@ export const useManagePositionForm = (
     underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
   })
 
+  useEffect(() => {
+    // updateMaxUnderlierWithdraw
+    const updateMaxUnderlierWithdraw = async () => {
+      const maxUnderlierWithdraw = await pTokenToUnderlier(appChainId, readOnlyAppProvider, {
+        vault: collateral?.vault?.address ?? '',
+        balancerVault: collateral?.eptData?.balancerVault ?? '',
+        curvePoolId: collateral?.eptData?.poolId ?? '',
+        pTokenAmount: getNonHumanValue(maxWithdrawAmount, underlierDecimals),
+      })
+      setMaxUnderlierWithdrawAmount(maxUnderlierWithdraw.unscaleBy(underlierDecimals))
+    }
+    updateMaxUnderlierWithdraw()
+  }, [
+    appChainId,
+    collateral?.eptData?.balancerVault,
+    collateral?.eptData?.poolId,
+    collateral?.vault?.address,
+    maxWithdrawAmount,
+    readOnlyAppProvider,
+    underlierDecimals,
+  ])
+
   const hasMinimumFIAT = useMemo(() => {
     // Minimum fiat to have in a position is the debtFloor
     // there are two cases where we disable the button:
@@ -353,11 +376,11 @@ export const useManagePositionForm = (
     /*   maxWithdraw.div(underlierToPToken.unscaleBy(underlierDecimals)).toString(), */
     /* ) */
     const underlyingBalance = underlyingInfo?.humanValue ?? ZERO_BIG_NUMBER
-    const maxUnderlierWithdraw = maxWithdraw.div(underlierToPToken.unscaleBy(underlierDecimals))
+    // const maxUnderlierWithdraw = maxWithdraw.div(underlierToPToken.unscaleBy(underlierDecimals))
     setAvailableUnderlierDepositAmount(underlyingBalance)
     setMaxUnderlierDepositAmount(underlyingBalance)
     setAvailableUnderlierWithdrawAmount(underlyingBalance)
-    setMaxUnderlierWithdrawAmount(maxUnderlierWithdraw)
+    /* setMaxUnderlierWithdrawAmount(maxUnderlierWithdraw) */
     // TODO: also est. new healthfactor for underlier vals
 
     const maxBorrow = calculateMaxBorrowAmount(collateral, positionDebt)
@@ -418,8 +441,6 @@ export const useManagePositionForm = (
     hasFiatAllowance,
     hasMonetaAllowance,
     position?.debtFloor,
-    underlierDecimals,
-    underlierToPToken,
     isRepayingMoreThanMaxRepay,
     isRepayingMoreThanBalance,
     isBorrowingMoreThanMaxBorrow,
