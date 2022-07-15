@@ -4,6 +4,7 @@ import { useERC20Allowance } from './useERC20Allowance'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useFIATBalance } from './useFIATBalance'
 import { useUnderlyingExchangeValue } from './useUnderlyingExchangeValue'
+import { usePTokenToUnderlier } from './usePTokenToUnderlier'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
   EST_FIAT_TOOLTIP_TEXT,
@@ -44,7 +45,6 @@ import {
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
 import { Collateral } from '@/src/utils/data/collaterals'
-import { pTokenToUnderlier } from '@/src/utils/getPTokenToUnderlier'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -85,7 +85,7 @@ export const useManagePositionForm = (
     useState<BigNumber>(ZERO_BIG_NUMBER)
   const [availableUnderlierDepositAmount, setAvailableUnderlierDepositAmount] =
     useState<BigNumber>(ZERO_BIG_NUMBER)
-  const [maxUnderlierWithdrawAmount, setMaxUnderlierWithdrawAmount] =
+  const [estimatedUnderlierToReceive, setEstimatedUnderlierToReceive] =
     useState<BigNumber>(ZERO_BIG_NUMBER)
   const [availableUnderlierWithdrawAmount, setAvailableUnderlierWithdrawAmount] =
     useState<BigNumber>(ZERO_BIG_NUMBER)
@@ -173,6 +173,25 @@ export const useManagePositionForm = (
     setHasMonetaAllowance(!!monetaFiatAllowance && monetaFiatAllowance?.gt(ZERO_BIG_NUMBER))
   }, [monetaFiatAllowance])
 
+  const underlierDecimals = useMemo(
+    () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
+    [collateral],
+  )
+
+  const [underlierToPToken] = useUnderlyingExchangeValue({
+    vault: collateral?.vault?.address ?? '',
+    balancerVault: collateral?.eptData?.balancerVault ?? '',
+    curvePoolId: collateral?.eptData?.poolId ?? '',
+    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+  })
+
+  const [singlePTokenToUnderlier] = usePTokenToUnderlier({
+    vault: collateral?.vault?.address ?? '',
+    balancerVault: collateral?.eptData?.balancerVault ?? '',
+    curvePoolId: collateral?.eptData?.poolId ?? '',
+    pTokenAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+  })
+
   // If user is repaying the max FIAT debt, maxWithdraw = totalCollateral. Otherwise,
   // maxWithdraw = collateral * collateralPrice - debt * collateralizationRation * maxSlippage
   const calculateMaxWithdrawAmount = useCallback(
@@ -209,6 +228,14 @@ export const useManagePositionForm = (
       positionFormFields?.repay,
     ],
   )
+
+  const calculateEstimatedUnderlierToReceive = useCallback(() => {
+    const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
+    const estimate = singlePTokenToUnderlier
+      .times(underlierWithdrawAmount)
+      .unscaleBy(underlierDecimals)
+    return estimate
+  }, [positionFormFields?.underlierWithdrawAmount, singlePTokenToUnderlier, underlierDecimals])
 
   // maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
   const calculateMaxBorrowAmount = useCallback(
@@ -262,40 +289,6 @@ export const useManagePositionForm = (
     const debt = positionDebt.plus(deltaDebt) ?? ZERO_BIG_NUMBER
     return { positionCollateral, positionDebt, collateral, debt, deltaCollateral, deltaDebt }
   }, [position?.totalCollateral, position?.totalDebt, getDeltasFromForm])
-
-  const underlierDecimals = useMemo(
-    () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
-    [collateral],
-  )
-
-  const [underlierToPToken] = useUnderlyingExchangeValue({
-    vault: collateral?.vault?.address ?? '',
-    balancerVault: collateral?.eptData?.balancerVault ?? '',
-    curvePoolId: collateral?.eptData?.poolId ?? '',
-    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
-  })
-
-  useEffect(() => {
-    // updateMaxUnderlierWithdraw
-    const updateMaxUnderlierWithdraw = async () => {
-      const maxUnderlierWithdraw = await pTokenToUnderlier(appChainId, readOnlyAppProvider, {
-        vault: collateral?.vault?.address ?? '',
-        balancerVault: collateral?.eptData?.balancerVault ?? '',
-        curvePoolId: collateral?.eptData?.poolId ?? '',
-        pTokenAmount: getNonHumanValue(maxWithdrawAmount, underlierDecimals),
-      })
-      setMaxUnderlierWithdrawAmount(maxUnderlierWithdraw.unscaleBy(underlierDecimals))
-    }
-    updateMaxUnderlierWithdraw()
-  }, [
-    appChainId,
-    collateral?.eptData?.balancerVault,
-    collateral?.eptData?.poolId,
-    collateral?.vault?.address,
-    maxWithdrawAmount,
-    readOnlyAppProvider,
-    underlierDecimals,
-  ])
 
   const hasMinimumFIAT = useMemo(() => {
     // Minimum fiat to have in a position is the debtFloor
@@ -361,27 +354,18 @@ export const useManagePositionForm = (
 
     const collateralBalance = tokenInfo?.humanValue ?? ZERO_BIG_NUMBER
     const maxWithdraw = calculateMaxWithdrawAmount(positionCollateral, debt)
+    // TODO: remove these unnecessary state updates, just use collateralBalance in the component itself
     setMaxDepositAmount(collateralBalance)
     setAvailableDepositAmount(collateralBalance)
     setAvailableWithdrawAmount(collateralBalance)
     setMaxWithdrawAmount(maxWithdraw)
 
-    /* console.log('underlier to p token', underlierToPToken.toString()) */
-    /* console.log( */
-    /*   'underlier to p token scaled: ', */
-    /*   underlierToPToken.unscaleBy(underlierDecimals).toString(), */
-    /* ) */
-    /* console.log( */
-    /*   'max withdraw underlier divved ', */
-    /*   maxWithdraw.div(underlierToPToken.unscaleBy(underlierDecimals)).toString(), */
-    /* ) */
     const underlyingBalance = underlyingInfo?.humanValue ?? ZERO_BIG_NUMBER
-    // const maxUnderlierWithdraw = maxWithdraw.div(underlierToPToken.unscaleBy(underlierDecimals))
     setAvailableUnderlierDepositAmount(underlyingBalance)
     setMaxUnderlierDepositAmount(underlyingBalance)
     setAvailableUnderlierWithdrawAmount(underlyingBalance)
-    /* setMaxUnderlierWithdrawAmount(maxUnderlierWithdraw) */
-    // TODO: also est. new healthfactor for underlier vals
+    const estimate = calculateEstimatedUnderlierToReceive()
+    setEstimatedUnderlierToReceive(estimate)
 
     const maxBorrow = calculateMaxBorrowAmount(collateral, positionDebt)
     const maxRepay = calculateMaxRepayAmount(positionDebt)
@@ -430,22 +414,23 @@ export const useManagePositionForm = (
     }
   }, [
     activeTabKey,
-    getPositionValues,
-    tokenInfo?.humanValue,
-    underlyingInfo?.humanValue,
+    calculateEstimatedUnderlierToReceive,
     calculateHealthFactorFromPosition,
-    calculateMaxWithdrawAmount,
     calculateMaxBorrowAmount,
     calculateMaxRepayAmount,
-    hasMinimumFIAT,
+    calculateMaxWithdrawAmount,
+    getPositionValues,
     hasFiatAllowance,
+    hasMinimumFIAT,
     hasMonetaAllowance,
-    position?.debtFloor,
-    isRepayingMoreThanMaxRepay,
-    isRepayingMoreThanBalance,
     isBorrowingMoreThanMaxBorrow,
     isDepositingMoreThanMaxDeposit,
+    isRepayingMoreThanBalance,
+    isRepayingMoreThanMaxRepay,
     isWithdrawingMoreThanMaxWithdraw,
+    position?.debtFloor,
+    tokenInfo?.humanValue,
+    underlyingInfo?.humanValue,
   ])
 
   const handleFormChange = () => {
@@ -544,7 +529,7 @@ export const useManagePositionForm = (
         )
         const slippageDecimal = 1 - slippageTolerance / 100
         const pTokenAmount = underlierWithdrawAmount.multipliedBy(
-          getHumanValue(underlierToPToken, underlierDecimals),
+          getHumanValue(singlePTokenToUnderlier, underlierDecimals),
         )
         const minOutput = getNonHumanValue(
           pTokenAmount.multipliedBy(slippageDecimal),
@@ -609,7 +594,8 @@ export const useManagePositionForm = (
     availableUnderlierDepositAmount,
     maxDepositAmount,
     maxUnderlierDepositAmount,
-    maxUnderlierWithdrawAmount,
+    estimatedUnderlierToReceive,
+    setEstimatedUnderlierToReceive,
     availableUnderlierWithdrawAmount,
     availableWithdrawAmount,
     maxWithdrawAmount,

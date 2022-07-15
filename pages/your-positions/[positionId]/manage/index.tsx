@@ -133,6 +133,7 @@ const PositionManage = () => {
     availableUnderlierWithdrawAmount,
     availableWithdrawAmount,
     buttonText,
+    estimatedUnderlierToReceive,
     finished,
     handleFormChange,
     handleManage,
@@ -152,7 +153,6 @@ const PositionManage = () => {
     maxDepositAmount,
     maxRepayAmount,
     maxUnderlierDepositAmount,
-    maxUnderlierWithdrawAmount,
     maxWithdrawAmount,
     setFinished,
     setupProxy,
@@ -175,14 +175,14 @@ const PositionManage = () => {
     vault: collateral?.vault?.address ?? '',
     balancerVault: collateral?.eptData?.balancerVault ?? '',
     curvePoolId: collateral?.eptData?.poolId ?? '',
-    underlierAmount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
+    underlierAmount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), // single underlier value
   })
 
   const bondSummary = useManageFormSummary(position as Position, formValues)
 
   const [underlierToFCash] = useUnderlierToFCash({
     tokenId: collateral?.tokenId ?? '',
-    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
+    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), // single underlier value
   })
 
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
@@ -289,12 +289,18 @@ const PositionManage = () => {
     : []
 
   const withdrawUnderlierSummary = collateral
-    ? getUnderlyingDataSummary(
-        marketRate,
-        slippageTolerance,
-        collateral,
-        form.getFieldValue('underlierWithdrawAmount') ?? ZERO_BIG_NUMBER,
-      )
+    ? [
+        {
+          title: 'Estimated underlier to receive',
+          value: estimatedUnderlierToReceive.toFixed(3),
+        },
+        ...getUnderlyingDataSummary(
+          marketRate,
+          slippageTolerance,
+          collateral,
+          form.getFieldValue('underlierWithdrawAmount') ?? ZERO_BIG_NUMBER,
+        ),
+      ]
     : []
 
   const enableButtons = useMemo(
@@ -485,7 +491,7 @@ const PositionManage = () => {
                       {'deposit' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to deposit"
+                            title="Amount to deposit"
                             value={`Available: ${availableDepositAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="deposit" required>
@@ -507,7 +513,7 @@ const PositionManage = () => {
                         <>
                           <div className={cn(s.balanceContainer)}>
                             <Balance
-                              title="Swap and deposit"
+                              title="Amount to swap for collateral and deposit"
                               value={`Available: ${availableUnderlierDepositAmount?.toFixed(2)}`}
                             />
                             <SettingFilled
@@ -534,7 +540,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             description={getMaturedFCashMessage()}
-                            title={'Select amount to withdraw'}
+                            title={'Amount to withdraw'}
                             value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="withdraw" required>
@@ -556,7 +562,7 @@ const PositionManage = () => {
                         <>
                           <div className={cn(s.balanceContainer)}>
                             <Balance
-                              title="Select amount of underlier to withdraw"
+                              title="Amount to withdraw and swap for underlier"
                               value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
                             />
                             <SettingFilled
@@ -569,7 +575,7 @@ const PositionManage = () => {
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
-                              max={maxUnderlierWithdrawAmount}
+                              max={maxWithdrawAmount}
                               maximumFractionDigits={4}
                               numericInputDisabled={formDisabled}
                               secondaryAsset={position.underlier.symbol}
@@ -611,7 +617,7 @@ const PositionManage = () => {
                       {'borrow' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to borrow"
+                            title="Amount to borrow"
                             value={`Available: ${fiatBalance?.toFixed(2)}`}
                           />
                           <Form.Item name="borrow" required>
@@ -631,7 +637,7 @@ const PositionManage = () => {
                       {'repay' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to repay"
+                            title="Amount to repay"
                             value={`Available: ${fiatBalance?.toFixed(2)}`}
                           />
                           <Form.Item name="repay" required>

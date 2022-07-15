@@ -9,7 +9,7 @@ type PTokenToUnderlier = {
   vault: string
   balancerVault: string
   curvePoolId: BytesLike
-  underlierAmount: BigNumber
+  pTokenAmount: BigNumber
 }
 
 export const usePTokenToUnderlier = (params: PTokenToUnderlier): [BigNumber, KeyedMutator<any>] => {
@@ -19,7 +19,7 @@ export const usePTokenToUnderlier = (params: PTokenToUnderlier): [BigNumber, Key
     contracts.USER_ACTIONS_EPT.address[appChainId],
     contracts.USER_ACTIONS_EPT.abi,
     'pTokenToUnderlier',
-    [params.vault, params.balancerVault, params.curvePoolId, params.underlierAmount.toFixed(0, 8)],
+    [params.vault, params.balancerVault, params.curvePoolId, params.pTokenAmount.toFixed(0, 8)],
   ) ?? ['ZERO_BIG_NUMBER', null]
 
   return [pTokenToUnderlier, refetchPTokenToUnderlier]
