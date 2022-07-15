@@ -178,7 +178,7 @@ export const useManagePositionForm = (
     [collateral],
   )
 
-  const [underlierToPToken] = useUnderlyingExchangeValue({
+  const [singleUnderlierToPToken] = useUnderlyingExchangeValue({
     vault: collateral?.vault?.address ?? '',
     balancerVault: collateral?.eptData?.balancerVault ?? '',
     curvePoolId: collateral?.eptData?.poolId ?? '',
@@ -264,17 +264,33 @@ export const useManagePositionForm = (
   }, [approveFIAT, appChainId])
 
   const getDeltasFromForm = useCallback(() => {
+    // TODO: calc hf correctly taking into account underlier deposit / withdraw amts
     const toDeposit = getNonHumanValue(positionFormFields?.deposit, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const estCollateralToDepositFromUnderlier =
+      getNonHumanValue(
+        positionFormFields?.underlierDepositAmount?.times(singleUnderlierToPToken),
+        WAD_DECIMALS,
+      ) ?? ZERO_BIG_NUMBER
+
     const toWithdraw =
       getNonHumanValue(positionFormFields?.withdraw, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const underlierWithdrawAmount =
+      getNonHumanValue(positionFormFields?.underlierWithdrawAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+
+    const deltaCollateral = toDeposit
+      .plus(estCollateralToDepositFromUnderlier)
+      .minus(toWithdraw)
+      .minus(underlierWithdrawAmount)
+
     const toMint = getNonHumanValue(positionFormFields?.borrow, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
     const toRepay = getNonHumanValue(positionFormFields?.repay, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-
-    const deltaCollateral = toDeposit.minus(toWithdraw)
     const deltaDebt = toMint.minus(toRepay)
 
     return { deltaCollateral, deltaDebt }
   }, [
+    positionFormFields?.underlierDepositAmount,
+    positionFormFields?.underlierWithdrawAmount,
+    singleUnderlierToPToken,
     positionFormFields?.deposit,
     positionFormFields?.withdraw,
     positionFormFields?.borrow,
@@ -369,6 +385,7 @@ export const useManagePositionForm = (
 
     const maxBorrow = calculateMaxBorrowAmount(collateral, positionDebt)
     const maxRepay = calculateMaxRepayAmount(positionDebt)
+    console.log('collateral: ', collateral.toString())
     const newHealthFactor = calculateHealthFactorFromPosition(collateral, debt)
     setMaxBorrowAmount(maxBorrow)
     setMaxRepayAmount(maxRepay)
@@ -476,7 +493,7 @@ export const useManagePositionForm = (
         )
         const slippageDecimal = 1 - slippageTolerance / 100
         const pTokenAmount = underlierDepositAmount.multipliedBy(
-          getHumanValue(underlierToPToken, underlierDecimals),
+          getHumanValue(singleUnderlierToPToken, underlierDecimals),
         )
         const minOutput = getNonHumanValue(
           pTokenAmount.multipliedBy(slippageDecimal),

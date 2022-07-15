@@ -1,6 +1,6 @@
 import s from './s.module.scss'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { Position } from '@/src/utils/data/positions'
+import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Form } from '@/src/components/antd'
@@ -13,6 +13,7 @@ import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
 import { Summary } from '@/src/components/custom/summary'
 import { contracts } from '@/src/constants/contracts'
 import {
+  EST_HEALTH_FACTOR_TOOLTIP_TEXT,
   ONE_BIG_NUMBER,
   SET_FIAT_ALLOWANCE_PROXY_TEXT,
   ZERO_BIG_NUMBER,
@@ -34,6 +35,8 @@ import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 import { getDecimalsFromScale } from '@/src/constants/bondTokens'
 import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
+import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { getHealthFactorState } from '@/src/utils/table'
 import cn from 'classnames'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import AntdForm from 'antd/lib/form'
@@ -279,15 +282,25 @@ const PositionManage = () => {
     [collateral?.vault.type, underlierDecimals, underlierToFCash, underlierToPToken],
   )
 
+  // TODO: put these with the other summaries
   const depositUnderlierSummary = collateral
-    ? getUnderlyingDataSummary(
-        marketRate,
-        slippageTolerance,
-        collateral,
-        form.getFieldValue('underlierDepositAmount') ?? ZERO_BIG_NUMBER,
-      )
+    ? [
+        ...getUnderlyingDataSummary(
+          marketRate,
+          slippageTolerance,
+          collateral,
+          form.getFieldValue('underlierDepositAmount') ?? ZERO_BIG_NUMBER,
+        ),
+        {
+          title: 'Estimated new Health Factor',
+          titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+          state: getHealthFactorState(healthFactor ?? ZERO_BIG_NUMBER),
+          value: isValidHealthFactor(healthFactor)
+            ? healthFactor?.toFixed(3)
+            : DEFAULT_HEALTH_FACTOR,
+        },
+      ]
     : []
-
   const withdrawUnderlierSummary = collateral
     ? [
         {
@@ -300,6 +313,14 @@ const PositionManage = () => {
           collateral,
           form.getFieldValue('underlierWithdrawAmount') ?? ZERO_BIG_NUMBER,
         ),
+        {
+          title: 'Estimated new Health Factor',
+          titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+          state: getHealthFactorState(healthFactor ?? ZERO_BIG_NUMBER),
+          value: isValidHealthFactor(healthFactor)
+            ? healthFactor?.toFixed(3)
+            : DEFAULT_HEALTH_FACTOR,
+        },
       ]
     : []
 

@@ -115,7 +115,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     )
   }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT, hasSufficientCollateral])
 
-  const [underlierToPToken] = useUnderlyingExchangeValue({
+  const [singleUnderlierToPToken] = useUnderlyingExchangeValue({
     vault: collateral?.vault?.address ?? '',
     balancerVault: collateral?.eptData?.balancerVault,
     curvePoolId: collateral?.eptData?.poolId,
@@ -185,7 +185,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
 
     const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
     const pTokenAmount = underlierAmount.multipliedBy(
-      getHumanValue(underlierToPToken, underlierDecimals),
+      getHumanValue(singleUnderlierToPToken, underlierDecimals),
     )
     const slippageDecimal = 1 - slippageTolerance / 100
     const minOutput = getNonHumanValue(
