@@ -628,15 +628,7 @@ export const useManagePositionForm = (
 
     const newCollateral = position?.totalCollateral.plus(deltaCollateral)
 
-    const bondSummary = [
-      {
-        title: 'Current collateral deposited',
-        value: getHumanValue(position?.totalCollateral, WAD_DECIMALS).toFixed(3),
-      },
-      {
-        title: 'New collateral deposited',
-        value: getHumanValue(newCollateral, WAD_DECIMALS).toFixed(3),
-      },
+    const fiatDebtSummarySections = [
       {
         title: 'Current FIAT debt',
         value: getHumanValue(position?.totalDebt, WAD_DECIMALS).toFixed(3),
@@ -646,6 +638,9 @@ export const useManagePositionForm = (
         titleTooltip: EST_FIAT_TOOLTIP_TEXT,
         value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(3),
       },
+    ]
+
+    const healthFactorSummarySections = [
       {
         title: 'Current Health Factor',
         state: getHealthFactorState(position?.healthFactor ?? ZERO_BIG_NUMBER),
@@ -661,37 +656,46 @@ export const useManagePositionForm = (
       },
     ]
 
+    const bondSummary = [
+      {
+        title: 'Current collateral deposited',
+        value: getHumanValue(position?.totalCollateral, WAD_DECIMALS).toFixed(3),
+      },
+      {
+        title: 'New collateral deposited',
+        value: getHumanValue(newCollateral, WAD_DECIMALS).toFixed(3),
+      },
+      ...fiatDebtSummarySections,
+      ...healthFactorSummarySections,
+    ]
+
     const underlierDepositAmount = positionFormFields?.underlierDepositAmount ?? ZERO_BIG_NUMBER
-    const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
-
-    const estimate = singlePTokenToUnderlier
-      .times(underlierWithdrawAmount)
-      .unscaleBy(underlierDecimals)
-
+    const estimatedCollateralToDeposit = underlierDepositAmount.multipliedBy(
+      getHumanValue(singleUnderlierToPToken, underlierDecimals),
+    )
     const depositUnderlierSummary = collateral
       ? [
+          {
+            title: 'Estimated collateral to deposit',
+            value: estimatedCollateralToDeposit.toFixed(3),
+          },
           ...getUnderlyingDataSummary(
             marketRate,
             slippageTolerance,
             collateral,
             underlierDepositAmount.toNumber(),
           ),
-          {
-            title: 'Estimated new Health Factor',
-            titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-            state: getHealthFactorState(healthFactor ?? ZERO_BIG_NUMBER),
-            value: isValidHealthFactor(healthFactor)
-              ? healthFactor?.toFixed(3)
-              : DEFAULT_HEALTH_FACTOR,
-          },
+          ...fiatDebtSummarySections,
+          ...healthFactorSummarySections,
         ]
       : []
 
+    const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
     const withdrawUnderlierSummary = collateral
       ? [
           {
             title: 'Estimated underlier to receive',
-            value: estimate.toFixed(3),
+            value: estimatedUnderlierToReceive.toFixed(3),
           },
           ...getUnderlyingDataSummary(
             marketRate,
@@ -699,14 +703,8 @@ export const useManagePositionForm = (
             collateral,
             underlierWithdrawAmount.toNumber(),
           ),
-          {
-            title: 'Estimated new Health Factor',
-            titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-            state: getHealthFactorState(healthFactor ?? ZERO_BIG_NUMBER),
-            value: isValidHealthFactor(healthFactor)
-              ? healthFactor?.toFixed(3)
-              : DEFAULT_HEALTH_FACTOR,
-          },
+          ...fiatDebtSummarySections,
+          ...healthFactorSummarySections,
         ]
       : []
 
