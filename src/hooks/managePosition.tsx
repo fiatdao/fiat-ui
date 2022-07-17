@@ -631,12 +631,12 @@ export const useManagePositionForm = (
     const fiatDebtSummarySections = [
       {
         title: 'Current FIAT debt',
-        value: getHumanValue(position?.totalDebt, WAD_DECIMALS).toFixed(3),
+        value: getHumanValue(position?.totalDebt, WAD_DECIMALS).toFixed(2),
       },
       {
         title: 'Estimated new FIAT debt',
         titleTooltip: EST_FIAT_TOOLTIP_TEXT,
-        value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(3),
+        value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(2),
       },
     ]
 
@@ -645,25 +645,25 @@ export const useManagePositionForm = (
         title: 'Current Health Factor',
         state: getHealthFactorState(position?.healthFactor ?? ZERO_BIG_NUMBER),
         value: isValidHealthFactor(position?.healthFactor)
-          ? position?.healthFactor?.toFixed(3)
+          ? position?.healthFactor?.toFixed(2)
           : DEFAULT_HEALTH_FACTOR,
       },
       {
         title: 'Estimated new Health Factor',
         titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
         state: getHealthFactorState(healthFactor ?? ZERO_BIG_NUMBER),
-        value: isValidHealthFactor(healthFactor) ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
+        value: isValidHealthFactor(healthFactor) ? healthFactor?.toFixed(2) : DEFAULT_HEALTH_FACTOR,
       },
     ]
 
     const bondSummary = [
       {
         title: 'Current collateral deposited',
-        value: getHumanValue(position?.totalCollateral, WAD_DECIMALS).toFixed(3),
+        value: getHumanValue(position?.totalCollateral, WAD_DECIMALS).toFixed(2),
       },
       {
         title: 'New collateral deposited',
-        value: getHumanValue(newCollateral, WAD_DECIMALS).toFixed(3),
+        value: getHumanValue(newCollateral, WAD_DECIMALS).toFixed(2),
       },
       ...fiatDebtSummarySections,
       ...healthFactorSummarySections,
@@ -677,7 +677,7 @@ export const useManagePositionForm = (
       ? [
           {
             title: 'Estimated collateral to deposit',
-            value: estimatedCollateralToDeposit.toFixed(3),
+            value: estimatedCollateralToDeposit.toFixed(2),
           },
           ...getUnderlyingDataSummary(
             marketRate,
@@ -695,7 +695,7 @@ export const useManagePositionForm = (
       ? [
           {
             title: 'Estimated underlier to receive',
-            value: estimatedUnderlierToReceive.toFixed(3),
+            value: estimatedUnderlierToReceive.toFixed(2),
           },
           ...getUnderlyingDataSummary(
             marketRate,
