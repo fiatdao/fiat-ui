@@ -1,49 +1,36 @@
 import s from './s.module.scss'
-import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { Position, isValidHealthFactor } from '@/src/utils/data/positions'
-import { Collateral } from '@/src/utils/data/collaterals'
-import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
+import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
 import { Balance } from '@/src/components/custom/balance'
 import { ButtonBack } from '@/src/components/custom/button-back'
-import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
+import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Summary } from '@/src/components/custom/summary'
+import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
 import { contracts } from '@/src/constants/contracts'
+import { SET_FIAT_ALLOWANCE_PROXY_TEXT, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import {
-  EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-  ONE_BIG_NUMBER,
-  SET_FIAT_ALLOWANCE_PROXY_TEXT,
-  ZERO_BIG_NUMBER,
-} from '@/src/constants/misc'
-import {
-  useManageFormSummary,
   useManagePositionForm,
   useManagePositionInfo,
   useManagePositionsInfoBlock,
 } from '@/src/hooks/managePosition'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
+import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
-import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
-import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
-import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
-import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
-import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
-import { getDecimalsFromScale } from '@/src/constants/bondTokens'
-import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
-import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
-import { getHealthFactorState } from '@/src/utils/table'
-import cn from 'classnames'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { Collateral } from '@/src/utils/data/collaterals'
+import { Position } from '@/src/utils/data/positions'
+import { SettingFilled } from '@ant-design/icons'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import cn from 'classnames'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
-import { SettingFilled } from '@ant-design/icons'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 const LAST_STEP = 4
 
@@ -136,8 +123,8 @@ const PositionManage = () => {
     availableUnderlierWithdrawAmount,
     availableWithdrawAmount,
     buttonText,
-    estimatedUnderlierToReceive,
     finished,
+    getFormSummaryData,
     handleFormChange,
     handleManage,
     hasFiatAllowance,
@@ -168,25 +155,6 @@ const PositionManage = () => {
     maxTransactionTime,
     onSuccess,
   )
-
-  const underlierDecimals = useMemo(
-    () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
-    [collateral],
-  )
-
-  const [underlierToPToken] = useUnderlyingExchangeValue({
-    vault: collateral?.vault?.address ?? '',
-    balancerVault: collateral?.eptData?.balancerVault ?? '',
-    curvePoolId: collateral?.eptData?.poolId ?? '',
-    underlierAmount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), // single underlier value
-  })
-
-  const bondSummary = useManageFormSummary(position as Position, formValues)
-
-  const [underlierToFCash] = useUnderlierToFCash({
-    tokenId: collateral?.tokenId ?? '',
-    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), // single underlier value
-  })
 
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
   const tokenSymbol = position?.symbol ?? ''
@@ -274,55 +242,7 @@ const PositionManage = () => {
     [],
   )
 
-  const marketRate = useMemo(
-    () =>
-      collateral?.vault.type === 'NOTIONAL'
-        ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
-        : ONE_BIG_NUMBER.div(getHumanValue(underlierToPToken, underlierDecimals)),
-    [collateral?.vault.type, underlierDecimals, underlierToFCash, underlierToPToken],
-  )
-
-  // TODO: put these with the other summaries
-  const depositUnderlierSummary = collateral
-    ? [
-        ...getUnderlyingDataSummary(
-          marketRate,
-          slippageTolerance,
-          collateral,
-          form.getFieldValue('underlierDepositAmount') ?? ZERO_BIG_NUMBER,
-        ),
-        {
-          title: 'Estimated new Health Factor',
-          titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-          state: getHealthFactorState(healthFactor ?? ZERO_BIG_NUMBER),
-          value: isValidHealthFactor(healthFactor)
-            ? healthFactor?.toFixed(3)
-            : DEFAULT_HEALTH_FACTOR,
-        },
-      ]
-    : []
-  const withdrawUnderlierSummary = collateral
-    ? [
-        {
-          title: 'Estimated underlier to receive',
-          value: estimatedUnderlierToReceive.toFixed(3),
-        },
-        ...getUnderlyingDataSummary(
-          marketRate,
-          slippageTolerance,
-          collateral,
-          form.getFieldValue('underlierWithdrawAmount') ?? ZERO_BIG_NUMBER,
-        ),
-        {
-          title: 'Estimated new Health Factor',
-          titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-          state: getHealthFactorState(healthFactor ?? ZERO_BIG_NUMBER),
-          value: isValidHealthFactor(healthFactor)
-            ? healthFactor?.toFixed(3)
-            : DEFAULT_HEALTH_FACTOR,
-        },
-      ]
-    : []
+  const summaryData = getFormSummaryData()
 
   const enableButtons = useMemo(
     () =>
@@ -730,13 +650,7 @@ const PositionManage = () => {
                     </ButtonsWrapper>
                   )}
                   <div className={cn(s.summary)}>
-                    {activeTabKey === 'underlierDepositAmount' ? (
-                      <Summary data={depositUnderlierSummary} />
-                    ) : activeTabKey === 'underlierWithdrawAmount' ? (
-                      <Summary data={withdrawUnderlierSummary} />
-                    ) : (
-                      <Summary data={bondSummary} />
-                    )}
+                    <Summary data={summaryData} />
                   </div>
                 </div>
               </fieldset>
