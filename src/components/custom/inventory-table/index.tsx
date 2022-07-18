@@ -84,7 +84,9 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'id', // FIXME Check on chain this
     render: (id: Position['id'], { userAddress }) => {
       const { proxyAddress } = extractFieldsFromPositionId(id)
+      // id is ???
       const canManage = proxyAddress.toLowerCase() !== userAddress.toLowerCase()
+      console.log('id: ', id)
 
       return (
         <Link href={`/your-positions/${id}/manage`} passHref>

@@ -21,12 +21,13 @@ import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 // import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
 import { getDecimalsFromScale } from '@/src/constants/bondTokens'
 import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
+import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 type CreatePositionUnderlyingProps = {
   collateral: Collateral
@@ -138,90 +139,119 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     underlierAmount,
   )
 
-  const createUnderlyingPositionERC1155 = async ({
-    fiatAmount,
-    underlierAmount,
-  }: {
-    underlierAmount: BigNumber
-    fiatAmount: BigNumber
-  }): Promise<void> => {
-    const _underlierAmount = underlierAmount
-      ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
-      : ZERO_BIG_NUMBER
-    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+  const createUnderlyingPositionERC1155 = useCallback(
+    async ({
+      fiatAmount,
+      underlierAmount,
+    }: {
+      underlierAmount: BigNumber
+      fiatAmount: BigNumber
+    }): Promise<void> => {
+      const _underlierAmount = underlierAmount
+        ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
+        : ZERO_BIG_NUMBER
+      const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
 
-    try {
-      setLoading(true)
-      await buyCollateralAndModifyDebtERC1155({
-        vault: collateral.vault.address,
-        token: collateral.address ?? '',
-        tokenId: Number(collateral.tokenId),
-        deltaDebt: _fiatAmount,
-        virtualRate: collateral.vault.virtualRate,
-        fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals
-        minImpliedRate: 100000, //minImpliedRate,
-        underlierAmount: _underlierAmount, //definitely correct */
-      })
-      setLoading(false)
-    } catch (err) {
-      setLoading(false)
-      throw err
-    }
-  }
+      try {
+        setLoading(true)
+        await buyCollateralAndModifyDebtERC1155({
+          vault: collateral.vault.address,
+          token: collateral.address ?? '',
+          tokenId: Number(collateral.tokenId),
+          deltaDebt: _fiatAmount,
+          virtualRate: collateral.vault.virtualRate,
+          fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals
+          minImpliedRate: 100000, //minImpliedRate,
+          underlierAmount: _underlierAmount, //definitely correct */
+        })
+        setLoading(false)
+      } catch (err) {
+        setLoading(false)
+        throw err
+      }
+    },
+    [
+      buyCollateralAndModifyDebtERC1155,
+      collateral.address,
+      collateral.tokenId,
+      collateral.vault.address,
+      collateral.vault.virtualRate,
+      fCashAmount,
+      setLoading,
+    ],
+  )
 
-  const createUnderlyingPositionERC20 = async ({
-    fiatAmount,
-    underlierAmount,
-  }: {
-    underlierAmount: BigNumber
-    fiatAmount: BigNumber
-  }): Promise<void> => {
-    // Underlier amount formatted with proper decimals
-    const _underlierAmount = underlierAmount
-      ? getNonHumanValue(underlierAmount, underlierDecimals)
-      : ZERO_BIG_NUMBER
-    // Fiat amount formatted with proper decimals
-    const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+  const createUnderlyingPositionERC20 = useCallback(
+    async ({
+      fiatAmount,
+      underlierAmount,
+    }: {
+      underlierAmount: BigNumber
+      fiatAmount: BigNumber
+    }): Promise<void> => {
+      // Underlier amount formatted with proper decimals
+      const _underlierAmount = underlierAmount
+        ? getNonHumanValue(underlierAmount, underlierDecimals)
+        : ZERO_BIG_NUMBER
+      // Fiat amount formatted with proper decimals
+      const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
 
-    const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
-    const pTokenAmount = underlierAmount.multipliedBy(
-      getHumanValue(singleUnderlierToPToken, underlierDecimals),
-    )
-    const slippageDecimal = 1 - slippageTolerance / 100
-    const minOutput = getNonHumanValue(
-      pTokenAmount.multipliedBy(slippageDecimal),
+      const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
+      const pTokenAmount = underlierAmount.multipliedBy(
+        getHumanValue(singleUnderlierToPToken, underlierDecimals),
+      )
+      const slippageDecimal = 1 - slippageTolerance / 100
+      const minOutput = getNonHumanValue(
+        pTokenAmount.multipliedBy(slippageDecimal),
+        underlierDecimals,
+      )
+      const approve = _underlierAmount.toFixed(0, 8)
+
+      try {
+        setLoading(true)
+        await buyCollateralAndModifyDebtERC20({
+          vault: collateral.vault.address,
+          deltaDebt: _fiatAmount,
+          virtualRate: collateral.vault.virtualRate,
+          underlierAmount: _underlierAmount,
+          swapParams: {
+            balancerVault: collateral.eptData.balancerVault,
+            poolId: collateral.eptData?.poolId ?? '',
+            assetIn: collateral.underlierAddress ?? '',
+            assetOut: collateral.address ?? '',
+            minOutput: minOutput.toFixed(0, 8),
+            deadline: deadline,
+            approve: approve,
+          },
+        })
+        setLoading(false)
+      } catch (err) {
+        setLoading(false)
+        throw err
+      }
+    },
+    [
+      buyCollateralAndModifyDebtERC20,
+      collateral.address,
+      collateral.eptData.balancerVault,
+      collateral.eptData?.poolId,
+      collateral.underlierAddress,
+      collateral.vault.address,
+      collateral.vault.virtualRate,
+      maxTransactionTime,
+      setLoading,
+      singleUnderlierToPToken,
+      slippageTolerance,
       underlierDecimals,
-    )
-    const approve = _underlierAmount.toFixed(0, 8)
+    ],
+  )
 
-    try {
-      setLoading(true)
-      await buyCollateralAndModifyDebtERC20({
-        vault: collateral.vault.address,
-        deltaDebt: _fiatAmount,
-        virtualRate: collateral.vault.virtualRate,
-        underlierAmount: _underlierAmount,
-        swapParams: {
-          balancerVault: collateral.eptData.balancerVault,
-          poolId: collateral.eptData?.poolId ?? '',
-          assetIn: collateral.underlierAddress ?? '',
-          assetOut: collateral.address ?? '',
-          minOutput: minOutput.toFixed(0, 8),
-          deadline: deadline,
-          approve: approve,
-        },
-      })
-      setLoading(false)
-    } catch (err) {
-      setLoading(false)
-      throw err
-    }
-  }
-
-  const createUnderlyingPosition =
-    collateral.vault.name.substring(0, 8) === 'vaultEPT'
+  const createUnderlyingPosition = useMemo(() => {
+    // TODO: this reinits every time. actually memoize it
+    return collateral.vault.type === VaultType.ELEMENT
       ? createUnderlyingPositionERC20
       : createUnderlyingPositionERC1155
+  }, [collateral.vault.type, createUnderlyingPositionERC1155, createUnderlyingPositionERC20])
 
   const updateSwapSettings = (slippageTolerance: number, maxTransactionTime: number) => {
     setSlippageTolerance(slippageTolerance)
