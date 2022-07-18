@@ -8,6 +8,7 @@ import { PositionFormsLayout } from '@/src/components/custom/position-forms-layo
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { Summary } from '@/src/components/custom/summary'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import {
   DEPOSIT_COLLATERAL_TEXT,
   DEPOSIT_UNDERLYING_TEXT,
@@ -26,7 +27,6 @@ import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import useUserProxy from '@/src/hooks/useUserProxy'
-import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
@@ -42,12 +42,12 @@ import {
   perSecondToAPR,
 } from '@/src/web3/utils'
 import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
+import { useMarketRate } from '@/src/hooks/useMarketRate'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { useMarketRate } from '@/src/hooks/useMarketRate'
 
 enum CreatePositionTab {
   asset = 'asset',

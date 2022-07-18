@@ -1,37 +1,36 @@
 import s from './s.module.scss'
-import { useTokenDecimalsAndBalance } from '../../../../src/hooks/useTokenDecimalsAndBalance'
-import { useWeb3Connection } from '../../../../src/providers/web3ConnectionProvider'
-import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
-import { Position } from '@/src/utils/data/positions'
-import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
 import { Form } from '@/src/components/antd'
 import ButtonGradient from '@/src/components/antd/button-gradient'
+import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
 import { Tab, Tabs, TokenAmount } from '@/src/components/custom'
 import { Balance } from '@/src/components/custom/balance'
 import { ButtonBack } from '@/src/components/custom/button-back'
-import { RadioTab, RadioTabsWrapper } from '@/src/components/antd/radio-tab'
-
 import { ButtonsWrapper } from '@/src/components/custom/buttons-wrapper'
-import { SummaryItem } from '@/src/components/custom/summary'
+import { PositionFormsLayout } from '@/src/components/custom/position-forms-layout'
+import { Summary } from '@/src/components/custom/summary'
+import SwapSettingsModal from '@/src/components/custom/swap-settings-modal'
 import { contracts } from '@/src/constants/contracts'
 import { SET_FIAT_ALLOWANCE_PROXY_TEXT, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import {
-  useManageFormSummary,
   useManagePositionForm,
   useManagePositionInfo,
   useManagePositionsInfoBlock,
 } from '@/src/hooks/managePosition'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
+import { useCollateral } from '@/src/hooks/subgraph/useCollateral'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
-import cn from 'classnames'
-import React, { useCallback, useEffect, useState } from 'react'
+import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
+import { Collateral } from '@/src/utils/data/collaterals'
+import { Position } from '@/src/utils/data/positions'
+import { SettingFilled } from '@ant-design/icons'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import cn from 'classnames'
 import Lottie from 'lottie-react'
 import Link from 'next/link'
-import { send } from 'xstate'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 const LAST_STEP = 4
 
@@ -57,14 +56,19 @@ type Step = {
   description: string
 }
 
-const FIAT_KEYS = ['mint', 'burn'] as const
+const FIAT_KEYS = ['borrow', 'repay'] as const
 export type FiatTabKey = typeof FIAT_KEYS[number]
 
 export const isFiatTab = (key: string): key is FiatTabKey => {
   return FIAT_KEYS.includes(key as FiatTabKey)
 }
 
-const COLLATERAL_KEYS = ['deposit', 'withdraw', 'withdrawUnderlier', 'depositUnderlier'] as const
+const COLLATERAL_KEYS = [
+  'deposit',
+  'withdraw',
+  'underlierWithdrawAmount',
+  'underlierDepositAmount',
+] as const
 export type CollateralTabKey = typeof COLLATERAL_KEYS[number]
 
 export const isCollateralTab = (key: string): key is CollateralTabKey => {
@@ -72,26 +76,36 @@ export const isCollateralTab = (key: string): key is CollateralTabKey => {
 }
 
 export type PositionManageFormFields = {
-  burn: BigNumber
-  withdraw: BigNumber
-  mint: BigNumber
-  deposit: BigNumber
+  borrow: BigNumber | undefined
+  deposit: BigNumber | undefined
+  underlierDepositAmount: BigNumber | undefined
+  repay: BigNumber | undefined
+  withdraw: BigNumber | undefined
+  underlierWithdrawAmount: BigNumber | undefined
+}
+
+const defaultManageFormFields = {
+  repay: undefined,
+  borrow: undefined,
+  withdraw: undefined,
+  underlierWithdrawAmount: undefined,
+  deposit: undefined,
+  underlierDepositAmount: undefined,
 }
 
 const PositionManage = () => {
+  useDynamicTitle(`Manage Position`)
   const [form] = AntdForm.useForm<PositionManageFormFields>()
   const [activeSection, setActiveSection] = useState<'collateral' | 'fiat'>('collateral')
+  const [swapSettingsOpen, setSwapSettingsOpen] = useState(false)
+  const [slippageTolerance, setSlippageTolerance] = useState(0.1)
+  const [maxTransactionTime, setMaxTransactionTime] = useState(20)
   const [activeTabKey, setActiveTabKey] = useState<FiatTabKey | CollateralTabKey>('deposit')
   const [formDisabled, setFormDisabled] = useState(false)
   const [fiatBalance, refetchFiatBalance] = useFIATBalance(true)
   const { position, refetch: refetchPosition } = useManagePositionInfo()
-
-  useEffect(() => {
-    setActiveTabKey(() => (activeSection === 'collateral' ? 'deposit' : 'mint'))
-  }, [activeSection])
-
-  useDynamicTitle(`Manage Position`)
-
+  // collateral id is compound id of <vaultAddress>-<tokenId>
+  const { data: collateral } = useCollateral(`${position?.protocolAddress}-${position?.tokenId}`)
   const infoBlocks = useManagePositionsInfoBlock(position as Position)
   const formValues = form.getFieldsValue(true) as PositionManageFormFields
 
@@ -105,9 +119,12 @@ const PositionManage = () => {
     approveMonetaAllowance,
     approveTokenAllowance,
     availableDepositAmount,
+    availableUnderlierDepositAmount,
+    availableUnderlierWithdrawAmount,
     availableWithdrawAmount,
     buttonText,
     finished,
+    getFormSummaryData,
     handleFormChange,
     handleManage,
     hasFiatAllowance,
@@ -125,28 +142,22 @@ const PositionManage = () => {
     maxBorrowAmount,
     maxDepositAmount,
     maxRepayAmount,
+    maxUnderlierDepositAmount,
     maxWithdrawAmount,
     setFinished,
     setupProxy,
-  } = useManagePositionForm(position as Position, formValues, activeTabKey, onSuccess)
-
-  const summary = useManageFormSummary(position as Position, formValues)
-
-  const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
+  } = useManagePositionForm(
+    position as Position,
+    collateral as Collateral,
+    formValues,
+    activeTabKey,
+    slippageTolerance,
+    maxTransactionTime,
+    onSuccess,
+  )
 
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
   const tokenSymbol = position?.symbol ?? ''
-
-  const { tokenInfo: underlyingInfo } = useTokenDecimalsAndBalance({
-    tokenData: {
-      decimals: 8,
-      symbol: position?.underlier?.symbol ?? '',
-      address: position?.underlier?.address ?? '',
-    },
-    address: currentUserAddress,
-    readOnlyAppProvider,
-    tokenId: position?.tokenId ?? '0',
-  })
 
   const reset = async () => {
     setFinished(false)
@@ -192,10 +203,6 @@ const PositionManage = () => {
     [hasMonetaAllowance, isRepayingFIAT, hasFiatAllowance, hasTokenAllowance, isProxyAvailable],
   )
 
-  useEffect(() => {
-    updateNextState(0)
-  }, [updateNextState])
-
   const onSetupProxy = useCallback(async () => {
     await setupProxy()
     updateNextState(1)
@@ -227,26 +234,120 @@ const PositionManage = () => {
       })
   }, [handleManage, formValues])
 
-  const enableButtons =
-    !isProxyAvailable ||
-    !hasTokenAllowance ||
-    (!hasFiatAllowance && isRepayingFIAT) ||
-    (!hasMonetaAllowance && isRepayingFIAT)
+  const updateSwapSettings = useCallback(
+    (slippageTolerance: number, maxTransactionTime: number) => {
+      setSlippageTolerance(slippageTolerance ?? 0)
+      setMaxTransactionTime(maxTransactionTime ?? 0)
+    },
+    [],
+  )
 
-  const isMatured = position?.maturity.getTime() && position?.maturity.getTime() < Date.now()
+  const summaryData = getFormSummaryData()
 
-  const getMaturedFCashMessage = (): string | null => {
+  const enableButtons = useMemo(
+    () =>
+      !isProxyAvailable ||
+      !hasTokenAllowance ||
+      (!hasFiatAllowance && isRepayingFIAT) ||
+      (!hasMonetaAllowance && isRepayingFIAT),
+    [hasFiatAllowance, hasTokenAllowance, hasMonetaAllowance, isProxyAvailable, isRepayingFIAT],
+  )
+
+  const isMatured = useMemo(
+    () => position?.maturity.getTime() && position?.maturity.getTime() < Date.now(),
+    [position],
+  )
+
+  const shouldRenderCollateralTabs = useMemo(
+    () => 'collateral' === activeSection && isCollateralTab(activeTabKey),
+    [activeSection, activeTabKey],
+  )
+
+  useEffect(() => {
+    // initialize step to 0
+    updateNextState(0)
+  }, [updateNextState])
+
+  useEffect(() => {
+    // if switching to tab and no subtab is selected, select first tab in the section that makes sense that
+    setActiveTabKey(activeSection === 'collateral' ? 'deposit' : 'borrow')
+  }, [activeSection])
+
+  useEffect(() => {
+    if (activeSection === 'collateral') {
+      if (isMatured && activeTabKey !== 'withdraw' && activeTabKey !== 'underlierWithdrawAmount') {
+        setActiveTabKey('withdraw')
+      }
+    }
+  }, [activeSection, activeTabKey, isMatured])
+
+  const getMaturedFCashMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
       return 'Note: This fCash has matured; you will receive the underlying asset'
     }
     return null
+  }, [position, isMatured])
+
+  const SuccessPage = () => {
+    return (
+      <div className={cn(s.form)}>
+        <div className={cn(s.lastStepAnimation)}>
+          <Lottie animationData={SuccessAnimation} autoplay loop />
+        </div>
+        <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
+        <p className={cn(s.lastStepText)}>
+          Your position has been successfully updated! It may take a couple seconds for your
+          position to show in the app.
+        </p>
+        <div className={cn(s.summary)}>
+          <ButtonsWrapper>
+            <ButtonGradient height="lg" onClick={reset}>
+              Continue
+            </ButtonGradient>
+            <Link href={`/your-positions/`} passHref>
+              <button className={cn(s.finishButton)}>Go to Your Positions</button>
+            </Link>
+          </ButtonsWrapper>
+        </div>
+      </div>
+    )
   }
+
+  const TopTabs = () => (
+    <div className={cn(s.top)}>
+      <RadioTabsWrapper>
+        <RadioTab
+          checked={activeSection === 'collateral'}
+          disabled={formDisabled}
+          onClick={() => setActiveSection('collateral')}
+        >
+          Collateral
+        </RadioTab>
+        <RadioTab
+          checked={activeSection === 'fiat'}
+          disabled={formDisabled}
+          onClick={() => setActiveSection('fiat')}
+        >
+          FIAT
+        </RadioTab>
+      </RadioTabsWrapper>
+    </div>
+  )
 
   return (
     <>
+      <SwapSettingsModal
+        isOpen={swapSettingsOpen}
+        maxTransactionTime={maxTransactionTime}
+        slippageTolerance={slippageTolerance}
+        toggleOpen={() => setSwapSettingsOpen(!swapSettingsOpen)}
+        updateSwapSettings={updateSwapSettings}
+      />
       <ButtonBack href="/your-positions">Back</ButtonBack>
       <PositionFormsLayout infoBlocks={infoBlocks}>
-        {!finished ? (
+        {finished ? (
+          <SuccessPage />
+        ) : (
           <>
             <StepperTitle
               currentStep={step + 1}
@@ -254,28 +355,11 @@ const PositionManage = () => {
               title={'Manage your position'}
               totalSteps={steps.length}
             />
-            <div className={cn(s.top)}>
-              <RadioTabsWrapper>
-                <RadioTab
-                  checked={activeSection === 'collateral'}
-                  disabled={formDisabled}
-                  onClick={() => setActiveSection('collateral')}
-                >
-                  Collateral
-                </RadioTab>
-                <RadioTab
-                  checked={activeSection === 'fiat'}
-                  disabled={formDisabled}
-                  onClick={() => setActiveSection('fiat')}
-                >
-                  FIAT
-                </RadioTab>
-              </RadioTabsWrapper>
-            </div>
+            <TopTabs />
             <Form form={form} onValuesChange={handleFormChange}>
               <fieldset>
                 <div className={cn(s.component)}>
-                  {'collateral' === activeSection && isCollateralTab(activeTabKey) && (
+                  {shouldRenderCollateralTabs ? (
                     <>
                       <Tabs className={cn(s.tabs)}>
                         {!isMatured && (
@@ -283,17 +367,30 @@ const PositionManage = () => {
                             <Tab
                               isActive={'deposit' === activeTabKey}
                               onClick={() => {
-                                form.setFieldsValue({ withdraw: undefined })
+                                form.setFieldsValue({
+                                  ...defaultManageFormFields,
+                                  deposit: form.getFieldValue('deposit'),
+                                  // maintain fiat tab values
+                                  borrow: form.getFieldValue('borrow'),
+                                  repay: form.getFieldValue('repay'),
+                                })
                                 setActiveTabKey('deposit')
                               }}
                             >
                               Deposit
                             </Tab>
                             <Tab
-                              isActive={'depositUnderlier' === activeTabKey}
+                              isActive={'underlierDepositAmount' === activeTabKey}
                               onClick={() => {
-                                form.setFieldsValue({ deposit: undefined })
-                                setActiveTabKey('depositUnderlier')
+                                form.setFieldsValue({
+                                  ...defaultManageFormFields,
+                                  underlierDepositAmount:
+                                    form.getFieldValue('underlierDepositAmount'),
+                                  // maintain fiat tab values
+                                  borrow: form.getFieldValue('borrow'),
+                                  repay: form.getFieldValue('repay'),
+                                })
+                                setActiveTabKey('underlierDepositAmount')
                               }}
                             >
                               Deposit Underlier
@@ -303,27 +400,40 @@ const PositionManage = () => {
                         <Tab
                           isActive={'withdraw' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ deposit: undefined })
+                            form.setFieldsValue({
+                              ...defaultManageFormFields,
+                              withdraw: form.getFieldValue('withdraw'),
+                              // maintain fiat tab values
+                              borrow: form.getFieldValue('borrow'),
+                              repay: form.getFieldValue('repay'),
+                            })
                             setActiveTabKey('withdraw')
                           }}
                         >
                           Withdraw
                         </Tab>
-                        {/*<Tab*/}
-                        {/*  isActive={'withdrawUnderlier' === activeTabKey}*/}
-                        {/*  onClick={() => {*/}
-                        {/*    form.setFieldsValue({ deposit: undefined })*/}
-                        {/*    setActiveTabKey('withdrawUnderlier')*/}
-                        {/*  }}*/}
-                        {/*>*/}
-                        {/*  Withdraw Underlier*/}
-                        {/*</Tab>*/}
+                        <Tab
+                          isActive={'underlierWithdrawAmount' === activeTabKey}
+                          onClick={() => {
+                            form.setFieldsValue({
+                              ...defaultManageFormFields,
+                              underlierWithdrawAmount:
+                                form.getFieldValue('underlierWithdrawAmount'),
+                              // maintain fiat tab values
+                              borrow: form.getFieldValue('borrow'),
+                              repay: form.getFieldValue('repay'),
+                            })
+                            setActiveTabKey('underlierWithdrawAmount')
+                          }}
+                        >
+                          Withdraw Underlier
+                        </Tab>
                       </Tabs>
                       {'deposit' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to deposit"
-                            value={`Available: ${availableDepositAmount?.toFixed(4)}`}
+                            title="Amount to deposit"
+                            value={`Available: ${availableDepositAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="deposit" required>
                             <TokenAmount
@@ -340,23 +450,26 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
-                      {'depositUnderlier' === activeTabKey && position && (
+                      {'underlierDepositAmount' === activeTabKey && position && (
                         <>
-                          <Balance
-                            title="Swap and deposit"
-                            value={`Available: ${underlyingInfo?.humanValue?.toFixed(2)}`}
-                          />
-                          <Form.Item name="deposit" required>
+                          <div className={cn(s.balanceContainer)}>
+                            <Balance
+                              title="Amount to swap for collateral and deposit"
+                              value={`Available: ${availableUnderlierDepositAmount?.toFixed(2)}`}
+                            />
+                            <SettingFilled
+                              className={cn(s.settings)}
+                              onClick={() => setSwapSettingsOpen(!swapSettingsOpen)}
+                            />
+                          </div>
+                          <Form.Item name="underlierDepositAmount" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
                               mainAsset={position.vaultName}
-                              max={underlyingInfo?.humanValue}
+                              max={maxUnderlierDepositAmount}
                               maximumFractionDigits={4}
                               numericInputDisabled={formDisabled}
-                              onChange={(val) =>
-                                val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
-                              }
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
                               sliderDisabled={formDisabled}
@@ -368,8 +481,8 @@ const PositionManage = () => {
                         <>
                           <Balance
                             description={getMaturedFCashMessage()}
-                            title={'Select amount to withdraw'}
-                            value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
+                            title={'Amount to withdraw'}
+                            value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="withdraw" required>
                             <TokenAmount
@@ -386,13 +499,19 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
-                      {'withdrawUnderlier' === activeTabKey && position && (
+                      {'underlierWithdrawAmount' === activeTabKey && position && (
                         <>
-                          <Balance
-                            title="Select amount to withdraw"
-                            value={`Available: ${availableWithdrawAmount?.toFixed(4)}`}
-                          />
-                          <Form.Item name="withdraw" required>
+                          <div className={cn(s.balanceContainer)}>
+                            <Balance
+                              title="Amount to withdraw and swap for underlier"
+                              value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
+                            />
+                            <SettingFilled
+                              className={cn(s.settings)}
+                              onClick={() => setSwapSettingsOpen(!swapSettingsOpen)}
+                            />
+                          </div>
+                          <Form.Item name="underlierWithdrawAmount" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
@@ -408,36 +527,41 @@ const PositionManage = () => {
                         </>
                       )}
                     </>
-                  )}
-                  {'fiat' === activeSection && isFiatTab(activeTabKey) && (
+                  ) : (
                     <>
                       <Tabs className={cn(s.tabs)}>
                         <Tab
-                          isActive={'mint' === activeTabKey}
+                          isActive={'borrow' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ burn: undefined })
-                            setActiveTabKey('mint')
+                            form.setFieldsValue({
+                              // leave collateral tabs untouched, reset other fiat subtab
+                              repay: undefined,
+                            })
+                            setActiveTabKey('borrow')
                           }}
                         >
                           Borrow
                         </Tab>
                         <Tab
-                          isActive={'burn' === activeTabKey}
+                          isActive={'repay' === activeTabKey}
                           onClick={() => {
-                            form.setFieldsValue({ mint: undefined })
-                            setActiveTabKey('burn')
+                            form.setFieldsValue({
+                              // leave collateral tabs untouched, reset other fiat subtab
+                              borrow: undefined,
+                            })
+                            setActiveTabKey('repay')
                           }}
                         >
                           Repay
                         </Tab>
                       </Tabs>
-                      {'mint' === activeTabKey && position && (
+                      {'borrow' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to borrow"
-                            value={`Available: ${fiatBalance?.toFixed(4)}`}
+                            title="Amount to borrow"
+                            value={`Available: ${fiatBalance?.toFixed(2)}`}
                           />
-                          <Form.Item name="mint" required>
+                          <Form.Item name="borrow" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactor}
@@ -451,13 +575,13 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
-                      {'burn' === activeTabKey && position && (
+                      {'repay' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Select amount to repay"
-                            value={`Available: ${fiatBalance?.toFixed(4)}`}
+                            title="Amount to repay"
+                            value={`Available: ${fiatBalance?.toFixed(2)}`}
                           />
-                          <Form.Item name="burn" required>
+                          <Form.Item name="repay" required>
                             <TokenAmount
                               displayDecimals={contracts.FIAT.decimals}
                               healthFactorValue={healthFactor}
@@ -526,43 +650,12 @@ const PositionManage = () => {
                     </ButtonsWrapper>
                   )}
                   <div className={cn(s.summary)}>
-                    {summary.map((item, index) => {
-                      return (
-                        <SummaryItem
-                          key={index}
-                          state={item?.state}
-                          title={item.title}
-                          titleTooltip={item?.titleTooltip}
-                          value={item.value}
-                        />
-                      )
-                    })}
+                    <Summary data={summaryData} />
                   </div>
                 </div>
               </fieldset>
             </Form>
           </>
-        ) : (
-          <div className={cn(s.form)}>
-            <div className={cn(s.lastStepAnimation)}>
-              <Lottie animationData={SuccessAnimation} autoplay loop />
-            </div>
-            <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
-            <p className={cn(s.lastStepText)}>
-              Your position has been successfully updated! It may take a couple seconds for your
-              position to show in the app.
-            </p>
-            <div className={cn(s.summary)}>
-              <ButtonsWrapper>
-                <ButtonGradient height="lg" onClick={reset}>
-                  Continue
-                </ButtonGradient>
-                <Link href={`/your-positions/`} passHref>
-                  <button className={cn(s.finishButton)}>Go to Your Positions</button>
-                </Link>
-              </ButtonsWrapper>
-            </div>
-          </div>
         )}
       </PositionFormsLayout>
     </>
