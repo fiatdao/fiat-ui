@@ -122,7 +122,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     underlierAmount,
   )
   const underlyingData = getUnderlyingDataSummary(
-    marketRateTokenScale,
+    marketRateDecimal,
     slippageTolerance,
     collateral,
     underlierAmount,

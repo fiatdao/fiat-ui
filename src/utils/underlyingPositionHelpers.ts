@@ -11,11 +11,10 @@ export function getUnderlyingDataSummary(
   const apr = (1 - marketRate.toNumber()) * 100
   const fixedAPR = `${apr.toFixed(2)}%`
 
-  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)} ${
-    collateral ? collateral.underlierSymbol : '-'
-  }`
+  const interestEarnedValue = Number(underlierAmount * (apr / 100)).toFixed(2)
+  const interestEarned = `${interestEarnedValue} ${collateral ? collateral.underlierSymbol : '-'}`
 
-  const redeemableValue = Number(underlierAmount) + Number(interestEarned)
+  const redeemableValue = Number(underlierAmount) + Number(interestEarnedValue)
   const redeemable = `${(isNaN(redeemableValue) ? 0 : redeemableValue).toFixed(2)} ${
     collateral ? collateral.underlierSymbol : '-'
   }`
