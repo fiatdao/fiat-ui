@@ -10,4 +10,5 @@ yarn run ganache \
 	--miner.defaultGasPrice 30000000000 \
 	--chain.vmErrorsOnRPCResponse=true \
   --unlock="0xCFFAd3200574698b78f32232aa9D63eABD290703" \
-  --unlock="0x16b34ce9a6a6f7fc2dd25ba59bf7308e7b38e186"
+  --unlock="0x16b34ce9a6a6f7fc2dd25ba59bf7308e7b38e186" \
+  --unlock="0x3ddfa8ec3052539b6c9549f12cea2c295cff5296"

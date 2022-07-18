@@ -3,6 +3,9 @@ import { useERC155Allowance } from './useERC1155Allowance'
 import { useERC20Allowance } from './useERC20Allowance'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useFIATBalance } from './useFIATBalance'
+import { useUnderlyingExchangeValue } from './useUnderlyingExchangeValue'
+import { usePTokenToUnderlier } from './usePTokenToUnderlier'
+import { useUnderlierToFCash } from './underlierToFCash'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
   EST_FIAT_TOOLTIP_TEXT,
@@ -21,7 +24,9 @@ import {
 import { parseDate } from '../utils/dateTime'
 import { getHealthFactorState } from '../utils/table'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
+import { getDecimalsFromScale } from '../constants/bondTokens'
 import { contracts } from '@/src/constants/contracts'
+import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useUserActions } from '@/src/hooks/useUserActions'
@@ -40,6 +45,8 @@ import {
   PositionManageFormFields,
 } from '@/pages/your-positions/[positionId]/manage'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
+import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
+import { Collateral } from '@/src/utils/data/collaterals'
 import BigNumber from 'bignumber.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -50,21 +57,41 @@ export type TokenInfo = {
 
 export const useManagePositionForm = (
   position: Position | undefined,
+  collateral: Collateral | undefined,
   positionFormFields: PositionManageFormFields | undefined,
   activeTabKey: FiatTabKey | CollateralTabKey,
+  slippageTolerance: number,
+  maxTransactionTime: number,
   onSuccess?: () => void,
 ) => {
   const { address, appChainId, readOnlyAppProvider } = useWeb3Connection()
-  const { approveFIAT, modifyCollateralAndDebt } = useUserActions(position?.vaultType)
+  const {
+    approveFIAT,
+    buyCollateralAndModifyDebtERC20,
+    modifyCollateralAndDebt,
+    sellCollateralAndModifyDebtERC20,
+  } = useUserActions(position?.vaultType)
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
   const [hasMonetaAllowance, setHasMonetaAllowance] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [finished, setFinished] = useState<boolean>(false)
 
+  // max & available bond values
   const [maxDepositAmount, setMaxDepositAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
   const [availableDepositAmount, setAvailableDepositAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
-  const [maxWithdrawAmount, setMaxWithdrawAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
   const [availableWithdrawAmount, setAvailableWithdrawAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [maxWithdrawAmount, setMaxWithdrawAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
+
+  // max & available underlier values
+  const [maxUnderlierDepositAmount, setMaxUnderlierDepositAmount] =
+    useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [availableUnderlierDepositAmount, setAvailableUnderlierDepositAmount] =
+    useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [estimatedUnderlierToReceive, setEstimatedUnderlierToReceive] =
+    useState<BigNumber>(ZERO_BIG_NUMBER)
+  const [availableUnderlierWithdrawAmount, setAvailableUnderlierWithdrawAmount] =
+    useState<BigNumber>(ZERO_BIG_NUMBER)
+
   const [maxBorrowAmount, setMaxBorrowAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
   const [maxRepayAmount, setMaxRepayAmount] = useState<BigNumber>(ZERO_BIG_NUMBER)
 
@@ -81,6 +108,18 @@ export const useManagePositionForm = (
     tokenData: {
       symbol: position?.collateral.symbol ?? '',
       address: position?.collateral.address ?? '',
+      decimals: 8, // TODO: Fix me
+    },
+    vaultType: position?.vaultType ?? '',
+    tokenId: position?.tokenId ?? '0',
+  })
+
+  const { tokenInfo: underlyingInfo, updateToken: updateUnderlying } = useTokenDecimalsAndBalance({
+    address,
+    readOnlyAppProvider,
+    tokenData: {
+      symbol: position?.underlier.symbol ?? '',
+      address: position?.underlier.address ?? '',
       decimals: 8, // TODO: Fix me
     },
     vaultType: position?.vaultType ?? '',
@@ -136,14 +175,46 @@ export const useManagePositionForm = (
     setHasMonetaAllowance(!!monetaFiatAllowance && monetaFiatAllowance?.gt(ZERO_BIG_NUMBER))
   }, [monetaFiatAllowance])
 
+  const underlierDecimals = useMemo(
+    () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
+    [collateral],
+  )
+
+  const [singleUnderlierToPToken] = useUnderlyingExchangeValue({
+    vault: collateral?.vault?.address ?? '',
+    balancerVault: collateral?.eptData?.balancerVault ?? '',
+    curvePoolId: collateral?.eptData?.poolId ?? '',
+    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+  })
+
+  const [singlePTokenToUnderlier] = usePTokenToUnderlier({
+    vault: collateral?.vault?.address ?? '',
+    balancerVault: collateral?.eptData?.balancerVault ?? '',
+    curvePoolId: collateral?.eptData?.poolId ?? '',
+    pTokenAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+  })
+
+  const [underlierToFCash] = useUnderlierToFCash({
+    tokenId: collateral?.tokenId ?? '',
+    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), // single underlier value
+  })
+
+  const marketRate = useMemo(
+    () =>
+      collateral?.vault.type === 'NOTIONAL'
+        ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
+        : ONE_BIG_NUMBER.div(getHumanValue(singleUnderlierToPToken, underlierDecimals)),
+    [collateral?.vault.type, underlierDecimals, underlierToFCash, singleUnderlierToPToken],
+  )
+
   // If user is repaying the max FIAT debt, maxWithdraw = totalCollateral. Otherwise,
   // maxWithdraw = collateral * collateralPrice - debt * collateralizationRation * maxSlippage
   const calculateMaxWithdrawAmount = useCallback(
     (totalCollateral: BigNumber, totalDebt: BigNumber) => {
       // If repay amount is maxed out, max withdraw amount should be equal to collateral deposited so the user can close their position
-      const toMint = getNonHumanValue(positionFormFields?.mint, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-      const toBurn = getNonHumanValue(positionFormFields?.burn, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-      const deltaDebt = toMint.minus(toBurn)
+      const toMint = getNonHumanValue(positionFormFields?.borrow, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const toRepay = getNonHumanValue(positionFormFields?.repay, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const deltaDebt = toMint.minus(toRepay)
       const positionDebt = position?.totalDebt ?? ZERO_BIG_NUMBER
       const newDebt = positionDebt.plus(deltaDebt) ?? ZERO_BIG_NUMBER
       const isUserMaxRepaying = newDebt.lt(MIN_EPSILON_OFFSET)
@@ -168,10 +239,18 @@ export const useManagePositionForm = (
       position?.vaultCollateralizationRatio,
       position?.currentValue,
       position?.totalDebt,
-      positionFormFields?.mint,
-      positionFormFields?.burn,
+      positionFormFields?.borrow,
+      positionFormFields?.repay,
     ],
   )
+
+  const calculateEstimatedUnderlierToReceive = useCallback(() => {
+    const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
+    const estimate = singlePTokenToUnderlier
+      .times(underlierWithdrawAmount)
+      .unscaleBy(underlierDecimals)
+    return estimate
+  }, [positionFormFields?.underlierWithdrawAmount, singlePTokenToUnderlier, underlierDecimals])
 
   // maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
   const calculateMaxBorrowAmount = useCallback(
@@ -201,20 +280,38 @@ export const useManagePositionForm = (
 
   const getDeltasFromForm = useCallback(() => {
     const toDeposit = getNonHumanValue(positionFormFields?.deposit, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const underlierToSwap =
+      getNonHumanValue(
+        positionFormFields?.underlierDepositAmount?.times(
+          getHumanValue(singleUnderlierToPToken, underlierDecimals),
+        ),
+        WAD_DECIMALS,
+      ) ?? ZERO_BIG_NUMBER
+
     const toWithdraw =
       getNonHumanValue(positionFormFields?.withdraw, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-    const toMint = getNonHumanValue(positionFormFields?.mint, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-    const toBurn = getNonHumanValue(positionFormFields?.burn, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const underlierWithdrawAmount =
+      getNonHumanValue(positionFormFields?.underlierWithdrawAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
 
-    const deltaCollateral = toDeposit.minus(toWithdraw)
-    const deltaDebt = toMint.minus(toBurn)
+    const deltaCollateral = toDeposit
+      .plus(underlierToSwap)
+      .minus(toWithdraw)
+      .minus(underlierWithdrawAmount)
+
+    const toMint = getNonHumanValue(positionFormFields?.borrow, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const toRepay = getNonHumanValue(positionFormFields?.repay, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const deltaDebt = toMint.minus(toRepay)
 
     return { deltaCollateral, deltaDebt }
   }, [
+    positionFormFields?.underlierDepositAmount,
+    positionFormFields?.underlierWithdrawAmount,
     positionFormFields?.deposit,
     positionFormFields?.withdraw,
-    positionFormFields?.mint,
-    positionFormFields?.burn,
+    positionFormFields?.borrow,
+    positionFormFields?.repay,
+    singleUnderlierToPToken,
+    underlierDecimals,
   ])
 
   const getPositionValues = useCallback(() => {
@@ -240,19 +337,19 @@ export const useManagePositionForm = (
   }, [getPositionValues, position?.debtFloor])
 
   const isRepayingMoreThanBalance = useMemo(() => {
-    const repayAmount = positionFormFields?.burn ?? ZERO_BIG_NUMBER
+    const repayAmount = positionFormFields?.repay ?? ZERO_BIG_NUMBER
     return repayAmount.gt(FIATBalance.plus(MIN_EPSILON_OFFSET))
-  }, [positionFormFields?.burn, FIATBalance])
+  }, [positionFormFields?.repay, FIATBalance])
 
   const isRepayingMoreThanMaxRepay = useMemo(() => {
-    const repayAmount = positionFormFields?.burn ?? ZERO_BIG_NUMBER
+    const repayAmount = positionFormFields?.repay ?? ZERO_BIG_NUMBER
     return repayAmount.gt(maxRepayAmount.plus(MIN_EPSILON_OFFSET))
-  }, [positionFormFields?.burn, maxRepayAmount])
+  }, [positionFormFields?.repay, maxRepayAmount])
 
   const isBorrowingMoreThanMaxBorrow = useMemo(() => {
-    const borrowAmount = positionFormFields?.mint ?? ZERO_BIG_NUMBER
+    const borrowAmount = positionFormFields?.borrow ?? ZERO_BIG_NUMBER
     return borrowAmount.gt(maxBorrowAmount.plus(MIN_EPSILON_OFFSET))
-  }, [positionFormFields?.mint, maxBorrowAmount])
+  }, [positionFormFields?.borrow, maxBorrowAmount])
 
   const isDepositingMoreThanMaxDeposit = useMemo(() => {
     const depositAmount = positionFormFields?.deposit ?? ZERO_BIG_NUMBER
@@ -290,24 +387,31 @@ export const useManagePositionForm = (
 
     const collateralBalance = tokenInfo?.humanValue ?? ZERO_BIG_NUMBER
     const maxWithdraw = calculateMaxWithdrawAmount(positionCollateral, debt)
+    // TODO: remove these unnecessary state updates, just use collateralBalance in the component itself
+    setMaxDepositAmount(collateralBalance)
+    setAvailableDepositAmount(collateralBalance)
+    setAvailableWithdrawAmount(collateralBalance)
+    setMaxWithdrawAmount(maxWithdraw)
+
+    const underlyingBalance = underlyingInfo?.humanValue ?? ZERO_BIG_NUMBER
+    setAvailableUnderlierDepositAmount(underlyingBalance)
+    setMaxUnderlierDepositAmount(underlyingBalance)
+    setAvailableUnderlierWithdrawAmount(underlyingBalance)
+    const estimate = calculateEstimatedUnderlierToReceive()
+    setEstimatedUnderlierToReceive(estimate)
+
     const maxBorrow = calculateMaxBorrowAmount(collateral, positionDebt)
     const maxRepay = calculateMaxRepayAmount(positionDebt)
-
     const newHealthFactor = calculateHealthFactorFromPosition(collateral, debt)
-
-    setMaxDepositAmount(collateralBalance)
-    setMaxWithdrawAmount(maxWithdraw)
     setMaxBorrowAmount(maxBorrow)
     setMaxRepayAmount(maxRepay)
     setHealthFactor(newHealthFactor)
-    setAvailableDepositAmount(collateralBalance)
-    setAvailableWithdrawAmount(collateralBalance)
 
     if (deltaDebt.isNegative()) {
       setIsRepayingFIAT(true)
 
       let text = EXECUTE_TEXT
-      if (!hasFiatAllowance && activeTabKey === 'burn') {
+      if (!hasFiatAllowance && activeTabKey === 'repay') {
         text = SET_FIAT_ALLOWANCE_PROXY_TEXT
       } else if (!hasMonetaAllowance) {
         text = ENABLE_PROXY_FOR_FIAT_TEXT
@@ -323,7 +427,7 @@ export const useManagePositionForm = (
       setIsRepayingFIAT(false)
 
       let text = EXECUTE_TEXT
-      if (!hasFiatAllowance && activeTabKey === 'burn') {
+      if (!hasFiatAllowance && activeTabKey === 'repay') {
         text = SET_FIAT_ALLOWANCE_PROXY_TEXT
       } else if (isBorrowingMoreThanMaxBorrow) {
         text = `Cannot borrow more than ${maxBorrow.toFormat(3).toString()}`
@@ -343,21 +447,23 @@ export const useManagePositionForm = (
     }
   }, [
     activeTabKey,
-    getPositionValues,
-    tokenInfo?.humanValue,
+    calculateEstimatedUnderlierToReceive,
     calculateHealthFactorFromPosition,
-    calculateMaxWithdrawAmount,
     calculateMaxBorrowAmount,
     calculateMaxRepayAmount,
-    hasMinimumFIAT,
+    calculateMaxWithdrawAmount,
+    getPositionValues,
     hasFiatAllowance,
+    hasMinimumFIAT,
     hasMonetaAllowance,
-    position?.debtFloor,
-    isRepayingMoreThanMaxRepay,
-    isRepayingMoreThanBalance,
     isBorrowingMoreThanMaxBorrow,
     isDepositingMoreThanMaxDeposit,
+    isRepayingMoreThanBalance,
+    isRepayingMoreThanMaxRepay,
     isWithdrawingMoreThanMaxWithdraw,
+    position?.debtFloor,
+    tokenInfo?.humanValue,
+    underlyingInfo?.humanValue,
   ])
 
   const handleFormChange = () => {
@@ -370,9 +476,11 @@ export const useManagePositionForm = (
   }, [updateAmounts])
 
   const handleManage = async ({
-    burn,
+    borrow,
     deposit,
-    mint,
+    repay,
+    underlierDepositAmount,
+    underlierWithdrawAmount,
     withdraw,
   }: PositionManageFormFields): Promise<void> => {
     try {
@@ -380,24 +488,128 @@ export const useManagePositionForm = (
 
       const toDeposit = getNonHumanValue(deposit, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
       const toWithdraw = getNonHumanValue(withdraw, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-      const toMint = getNonHumanValue(mint, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-      const toBurn = getNonHumanValue(burn, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const toMint = getNonHumanValue(borrow, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const toRepay = getNonHumanValue(repay, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
 
       const deltaCollateral = toDeposit.minus(toWithdraw)
-      const deltaDebt = toMint.minus(toBurn)
+      const deltaDebt = toMint.minus(toRepay)
 
       setIsLoading(true)
-      await modifyCollateralAndDebt({
-        vault: position?.protocolAddress,
-        token: position?.collateral.address,
-        tokenId: Number(position.tokenId),
-        deltaCollateral,
-        deltaDebt: deltaDebt,
-        wait: 3,
-        virtualRate: position.virtualRate,
-      })
 
-      await updateToken()
+      if (underlierDepositAmount !== ZERO_BIG_NUMBER && underlierDepositAmount !== undefined) {
+        // If depositing underlier, call respective deposit underlier action
+        if (!collateral) {
+          console.error('Attempted to deposit underlier without valid collateral')
+          return
+        }
+
+        const underlierDepositAmountFixedPoint = getNonHumanValue(
+          underlierDepositAmount,
+          underlierDecimals,
+        )
+        const slippageDecimal = 1 - slippageTolerance / 100
+        const pTokenAmount = underlierDepositAmount.multipliedBy(
+          getHumanValue(singleUnderlierToPToken, underlierDecimals),
+        )
+        const minOutput = getNonHumanValue(
+          pTokenAmount.multipliedBy(slippageDecimal),
+          underlierDecimals,
+        )
+        const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
+        const approve = underlierDepositAmountFixedPoint.toFixed(0, 8)
+        switch (position?.vaultType) {
+          case VaultType.ELEMENT: {
+            await buyCollateralAndModifyDebtERC20({
+              vault: collateral.vault.address,
+              deltaDebt,
+              virtualRate: collateral.vault.virtualRate,
+              underlierAmount: underlierDepositAmountFixedPoint,
+              swapParams: {
+                balancerVault: collateral.eptData.balancerVault,
+                poolId: collateral.eptData?.poolId ?? '',
+                assetIn: collateral.underlierAddress ?? '',
+                assetOut: collateral.address ?? '',
+                minOutput: minOutput.toFixed(0, 8),
+                deadline: deadline,
+                approve: approve,
+              },
+            })
+            await updateUnderlying()
+            break
+          }
+          case VaultType.YIELD:
+          case VaultType.NOTIONAL: {
+            console.error('unimplemented')
+            break
+          }
+          default: {
+            console.error('Attempted to buyCollateralAndModifyDebt for unknown vault type')
+          }
+        }
+      } else if (
+        underlierWithdrawAmount !== ZERO_BIG_NUMBER &&
+        underlierWithdrawAmount !== undefined
+      ) {
+        if (!collateral) {
+          console.error('Attempted to withdraw underlier without valid collateral')
+          return
+        }
+
+        // If withdrawing underlier, call respective withdraw underlier action
+        const underlierWithdrawAmountFixedPoint = getNonHumanValue(
+          underlierWithdrawAmount,
+          underlierDecimals,
+        )
+        const slippageDecimal = 1 - slippageTolerance / 100
+        const pTokenAmount = underlierWithdrawAmount.multipliedBy(
+          getHumanValue(singlePTokenToUnderlier, underlierDecimals),
+        )
+        const minOutput = getNonHumanValue(
+          pTokenAmount.multipliedBy(slippageDecimal),
+          underlierDecimals,
+        )
+        const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
+        const approve = underlierWithdrawAmountFixedPoint.toFixed(0, 8)
+        switch (position?.vaultType) {
+          case VaultType.ELEMENT: {
+            await sellCollateralAndModifyDebtERC20({
+              vault: collateral.vault.address,
+              deltaDebt,
+              virtualRate: collateral.vault.virtualRate,
+              pTokenAmount: underlierWithdrawAmountFixedPoint,
+              swapParams: {
+                balancerVault: collateral.eptData.balancerVault,
+                poolId: collateral.eptData?.poolId ?? '',
+                assetIn: collateral.address ?? '',
+                assetOut: collateral.underlierAddress ?? '',
+                minOutput: minOutput.toFixed(0, 8),
+                deadline: deadline,
+                approve: approve,
+              },
+            })
+            await updateUnderlying()
+            break
+          }
+          case VaultType.YIELD:
+          case VaultType.NOTIONAL:
+            console.error('unimplemented')
+            break
+          default:
+            console.error('Attempted to sellCollateralAndModifyDebtERC20 for unknown vault type')
+        }
+      } else {
+        await modifyCollateralAndDebt({
+          vault: position?.protocolAddress,
+          token: position?.collateral.address,
+          tokenId: Number(position.tokenId),
+          deltaCollateral,
+          deltaDebt,
+          wait: 3,
+          virtualRate: position.virtualRate,
+        })
+        await updateToken()
+      }
+
       setFinished(true)
 
       if (onSuccess) {
@@ -410,10 +622,114 @@ export const useManagePositionForm = (
     }
   }
 
+  const getFormSummaryData = () => {
+    const { deltaCollateral, deltaDebt } = getDeltasFromForm()
+    const newDebt = position?.totalDebt.plus(deltaDebt)
+
+    const newCollateral = position?.totalCollateral.plus(deltaCollateral)
+
+    const fiatDebtSummarySections = [
+      {
+        title: 'Current FIAT debt',
+        value: getHumanValue(position?.totalDebt, WAD_DECIMALS).toFixed(2),
+      },
+      {
+        title: 'Estimated new FIAT debt',
+        titleTooltip: EST_FIAT_TOOLTIP_TEXT,
+        value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(2),
+      },
+    ]
+
+    const healthFactorSummarySections = [
+      {
+        title: 'Current Health Factor',
+        state: getHealthFactorState(position?.healthFactor ?? ZERO_BIG_NUMBER),
+        value: isValidHealthFactor(position?.healthFactor)
+          ? position?.healthFactor?.toFixed(2)
+          : DEFAULT_HEALTH_FACTOR,
+      },
+      {
+        title: 'Estimated new Health Factor',
+        titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+        state: getHealthFactorState(healthFactor ?? ZERO_BIG_NUMBER),
+        value: isValidHealthFactor(healthFactor) ? healthFactor?.toFixed(2) : DEFAULT_HEALTH_FACTOR,
+      },
+    ]
+
+    const bondSummary = [
+      {
+        title: 'Current collateral deposited',
+        value: getHumanValue(position?.totalCollateral, WAD_DECIMALS).toFixed(2),
+      },
+      {
+        title: 'New collateral deposited',
+        value: getHumanValue(newCollateral, WAD_DECIMALS).toFixed(2),
+      },
+      ...fiatDebtSummarySections,
+      ...healthFactorSummarySections,
+    ]
+
+    const underlierDepositAmount = positionFormFields?.underlierDepositAmount ?? ZERO_BIG_NUMBER
+    const estimatedCollateralToDeposit = underlierDepositAmount.multipliedBy(
+      getHumanValue(singleUnderlierToPToken, underlierDecimals),
+    )
+    const depositUnderlierSummary = collateral
+      ? [
+          {
+            title: 'Estimated collateral to deposit',
+            value: estimatedCollateralToDeposit.toFixed(2),
+          },
+          ...getUnderlyingDataSummary(
+            marketRate,
+            slippageTolerance,
+            collateral,
+            underlierDepositAmount.toNumber(),
+          ),
+          ...fiatDebtSummarySections,
+          ...healthFactorSummarySections,
+        ]
+      : []
+
+    const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
+    const withdrawUnderlierSummary = collateral
+      ? [
+          {
+            title: 'Estimated underlier to receive',
+            value: estimatedUnderlierToReceive.toFixed(2),
+          },
+          ...getUnderlyingDataSummary(
+            marketRate,
+            slippageTolerance,
+            collateral,
+            underlierWithdrawAmount.toNumber(),
+          ),
+          ...fiatDebtSummarySections,
+          ...healthFactorSummarySections,
+        ]
+      : []
+
+    if (activeTabKey === 'underlierDepositAmount' || underlierDepositAmount !== ZERO_BIG_NUMBER) {
+      return depositUnderlierSummary
+    } else if (
+      activeTabKey === 'underlierWithdrawAmount' ||
+      underlierWithdrawAmount !== ZERO_BIG_NUMBER
+    ) {
+      return withdrawUnderlierSummary
+    } else {
+      return bondSummary
+    }
+  }
+
   return {
     availableDepositAmount,
+    availableUnderlierDepositAmount,
     maxDepositAmount,
+    maxUnderlierDepositAmount,
+    estimatedUnderlierToReceive,
+    setEstimatedUnderlierToReceive,
+    availableUnderlierWithdrawAmount,
     availableWithdrawAmount,
+    getFormSummaryData,
     maxWithdrawAmount,
     maxRepayAmount,
     maxBorrowAmount,
@@ -440,66 +756,6 @@ export const useManagePositionForm = (
     loadingMonetaAllowanceApprove,
     isRepayingFIAT,
   }
-}
-
-export const useManageFormSummary = (
-  position: Position,
-  {
-    deposit = ZERO_BIG_NUMBER,
-    withdraw = ZERO_BIG_NUMBER,
-    mint = ZERO_BIG_NUMBER,
-    burn = ZERO_BIG_NUMBER,
-  }: PositionManageFormFields,
-) => {
-  const toDeposit = getNonHumanValue(deposit, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-  const toWithdraw = getNonHumanValue(withdraw, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-  const toMint = getNonHumanValue(mint, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-  const toBurn = getNonHumanValue(burn, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-
-  const deltaCollateral = toDeposit.minus(toWithdraw)
-  const deltaDebt = toMint.minus(toBurn)
-
-  const newCollateral = position.totalCollateral.plus(deltaCollateral)
-  const newDebt = position.totalDebt.plus(deltaDebt)
-  const { healthFactor } = calculateHealthFactor(
-    position.currentValue,
-    position.vaultCollateralizationRatio,
-    newCollateral,
-    newDebt,
-  )
-
-  return [
-    {
-      title: 'Current collateral deposited',
-      value: getHumanValue(position.totalCollateral, WAD_DECIMALS).toFixed(3),
-    },
-    {
-      title: 'New collateral deposited',
-      value: getHumanValue(newCollateral, WAD_DECIMALS).toFixed(3),
-    },
-    {
-      title: 'Current FIAT debt',
-      value: getHumanValue(position.totalDebt, WAD_DECIMALS).toFixed(3),
-    },
-    {
-      title: 'Estimated new FIAT debt',
-      titleTooltip: EST_FIAT_TOOLTIP_TEXT,
-      value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(3),
-    },
-    {
-      title: 'Current Health Factor',
-      state: getHealthFactorState(position.healthFactor),
-      value: isValidHealthFactor(position.healthFactor)
-        ? position.healthFactor?.toFixed(3)
-        : DEFAULT_HEALTH_FACTOR,
-    },
-    {
-      title: 'Estimated new Health Factor',
-      titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-      state: getHealthFactorState(healthFactor),
-      value: isValidHealthFactor(healthFactor) ? healthFactor?.toFixed(3) : DEFAULT_HEALTH_FACTOR,
-    },
-  ]
 }
 
 export const useManagePositionsInfoBlock = (position: Position) => {

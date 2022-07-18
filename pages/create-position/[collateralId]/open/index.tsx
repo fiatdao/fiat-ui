@@ -29,7 +29,6 @@ import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import useUserProxy from '@/src/hooks/useUserProxy'
-import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
@@ -45,6 +44,7 @@ import {
   perSecondToAPR,
 } from '@/src/web3/utils'
 import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
+import { getDecimalsFromScale } from '@/src/constants/bondTokens'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
@@ -89,7 +89,10 @@ const FormERC20: React.FC<{
   const erc20 = useERC20Allowance(tokenAddress, userProxyAddress ?? '')
   const erc1155 = useERC155Allowance(tokenAddress, userProxyAddress ?? '')
 
-  const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
+  const underlierDecimals = useMemo(
+    () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
+    [collateral],
+  )
 
   const [underlierToPToken] = useUnderlyingExchangeValue({
     vault: collateral?.vault?.address ?? '',
