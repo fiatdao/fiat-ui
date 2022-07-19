@@ -11,11 +11,12 @@ export function getUnderlyingDataSummary(
   const apr = (1 - marketRate.toNumber()) * 100
   const fixedAPR = `${apr.toFixed(2)}%`
 
-  const interestEarned = `${Number(underlierAmount * (apr / 100)).toFixed(2)} ${
+  const interestEarned = underlierAmount * (apr / 100)
+  const interestEarnedStr = `${interestEarned.toFixed(2)} ${
     collateral ? collateral.underlierSymbol : '-'
   }`
 
-  const redeemableValue = Number(underlierAmount) + Number(interestEarned)
+  const redeemableValue = underlierAmount + interestEarned
   const redeemable = `${(isNaN(redeemableValue) ? 0 : redeemableValue).toFixed(2)} ${
     collateral ? collateral.underlierSymbol : '-'
   }`
@@ -41,7 +42,7 @@ export function getUnderlyingDataSummary(
     },
     {
       title: 'Interest earned',
-      value: interestEarned,
+      value: interestEarnedStr,
     },
     {
       title: `Redeemable at maturity | ${
