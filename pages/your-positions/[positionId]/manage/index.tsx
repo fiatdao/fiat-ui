@@ -24,6 +24,8 @@ import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { Position } from '@/src/utils/data/positions'
+import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
+import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
 import { SettingFilled } from '@ant-design/icons'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -263,6 +265,11 @@ const PositionManage = () => {
     [activeSection, activeTabKey],
   )
 
+  const shouldShowUnderlyingUi = useMemo(() => {
+    // Show underlying ui if SHOW_UNDERLYING_FLOW is true. Always show for element
+    return SHOW_UNDERLYING_FLOW || collateral?.vault.type === VaultType.ELEMENT
+  }, [collateral?.vault.type])
+
   useEffect(() => {
     // initialize step to 0
     updateNextState(0)
@@ -281,9 +288,9 @@ const PositionManage = () => {
     }
   }, [activeSection, activeTabKey, isMatured])
 
-  const getMaturedFCashMessage = useCallback((): string | null => {
+  const getMaturedCollateralMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
-      return 'Note: This fCash has matured; you will receive the underlying asset'
+      return 'Note: This collateral has matured; you will receive the underlying asset'
     }
     return null
   }, [position, isMatured])
@@ -379,22 +386,24 @@ const PositionManage = () => {
                             >
                               Deposit
                             </Tab>
-                            <Tab
-                              isActive={'underlierDepositAmount' === activeTabKey}
-                              onClick={() => {
-                                form.setFieldsValue({
-                                  ...defaultManageFormFields,
-                                  underlierDepositAmount:
-                                    form.getFieldValue('underlierDepositAmount'),
-                                  // maintain fiat tab values
-                                  borrow: form.getFieldValue('borrow'),
-                                  repay: form.getFieldValue('repay'),
-                                })
-                                setActiveTabKey('underlierDepositAmount')
-                              }}
-                            >
-                              Deposit Underlier
-                            </Tab>
+                            {shouldShowUnderlyingUi ? (
+                              <Tab
+                                isActive={'underlierDepositAmount' === activeTabKey}
+                                onClick={() => {
+                                  form.setFieldsValue({
+                                    ...defaultManageFormFields,
+                                    underlierDepositAmount:
+                                      form.getFieldValue('underlierDepositAmount'),
+                                    // maintain fiat tab values
+                                    borrow: form.getFieldValue('borrow'),
+                                    repay: form.getFieldValue('repay'),
+                                  })
+                                  setActiveTabKey('underlierDepositAmount')
+                                }}
+                              >
+                                Deposit Underlier
+                              </Tab>
+                            ) : null}
                           </>
                         )}
                         <Tab
@@ -412,22 +421,24 @@ const PositionManage = () => {
                         >
                           Withdraw
                         </Tab>
-                        <Tab
-                          isActive={'underlierWithdrawAmount' === activeTabKey}
-                          onClick={() => {
-                            form.setFieldsValue({
-                              ...defaultManageFormFields,
-                              underlierWithdrawAmount:
-                                form.getFieldValue('underlierWithdrawAmount'),
-                              // maintain fiat tab values
-                              borrow: form.getFieldValue('borrow'),
-                              repay: form.getFieldValue('repay'),
-                            })
-                            setActiveTabKey('underlierWithdrawAmount')
-                          }}
-                        >
-                          Withdraw Underlier
-                        </Tab>
+                        {shouldShowUnderlyingUi ? (
+                          <Tab
+                            isActive={'underlierWithdrawAmount' === activeTabKey}
+                            onClick={() => {
+                              form.setFieldsValue({
+                                ...defaultManageFormFields,
+                                underlierWithdrawAmount:
+                                  form.getFieldValue('underlierWithdrawAmount'),
+                                // maintain fiat tab values
+                                borrow: form.getFieldValue('borrow'),
+                                repay: form.getFieldValue('repay'),
+                              })
+                              setActiveTabKey('underlierWithdrawAmount')
+                            }}
+                          >
+                            Withdraw Underlier
+                          </Tab>
+                        ) : null}
                       </Tabs>
                       {'deposit' === activeTabKey && position && (
                         <>
@@ -480,7 +491,7 @@ const PositionManage = () => {
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
-                            description={getMaturedFCashMessage()}
+                            description={getMaturedCollateralMessage()}
                             title={'Amount to withdraw'}
                             value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
                           />

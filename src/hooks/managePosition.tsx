@@ -21,7 +21,7 @@ import {
 import { parseDate } from '../utils/dateTime'
 import { getHealthFactorState } from '../utils/table'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
-import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
+import { getDecimalsFromScale } from '../constants/bondTokens'
 import { useMarketRate } from '@/src/hooks/useMarketRate'
 import { contracts } from '@/src/constants/contracts'
 import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
@@ -120,8 +120,7 @@ export const useManagePositionForm = (
       address: position?.underlier.address ?? '',
       decimals: 8, // TODO: Fix me
     },
-    vaultType: position?.vaultType ?? '',
-    tokenId: position?.tokenId ?? '0',
+    tokenId: collateral?.tokenId ?? '0',
   })
 
   const [FIATBalance] = useFIATBalance(true) // true param requests as human value
@@ -173,7 +172,10 @@ export const useManagePositionForm = (
     setHasMonetaAllowance(!!monetaFiatAllowance && monetaFiatAllowance?.gt(ZERO_BIG_NUMBER))
   }, [monetaFiatAllowance])
 
-  const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
+  const underlierDecimals = useMemo(
+    () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
+    [collateral],
+  )
 
   const { marketRateDecimal, marketRateTokenScale } = useMarketRate({
     protocol: collateral?.vault?.type ?? '',
@@ -218,13 +220,21 @@ export const useManagePositionForm = (
     ],
   )
 
-  const calculateEstimatedUnderlierToReceive = useCallback(() => {
+  const calculateEstimatedUnderlierToReceive = useCallback((): BigNumber => {
+    if (collateral?.vault.type !== VaultType.ELEMENT) {
+      return ZERO_BIG_NUMBER
+    }
     const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
     const estimate = marketRateTokenScale
       .times(underlierWithdrawAmount)
       .unscaleBy(underlierDecimals)
     return estimate
-  }, [positionFormFields?.underlierWithdrawAmount, marketRateTokenScale, underlierDecimals])
+  }, [
+    collateral?.vault.type,
+    positionFormFields?.underlierWithdrawAmount,
+    underlierDecimals,
+    marketRateTokenScale,
+  ])
 
   // maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
   const calculateMaxBorrowAmount = useCallback(

@@ -111,3 +111,11 @@ export const getInitialProtocolFilters = memoize(
     return initialProtocolFilters as Array<ProtocolFilter>
   },
 )
+
+// for parsing decimals from a string scale (for ex. on Collateral type where collateral.scale => "1000000")
+export const getDecimalsFromScale = (scale: Maybe<string>): number => {
+  if (scale === null) {
+    return 0
+  }
+  return Math.log10(Number.parseInt(scale))
+}

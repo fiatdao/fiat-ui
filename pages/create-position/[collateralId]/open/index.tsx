@@ -8,7 +8,6 @@ import { PositionFormsLayout } from '@/src/components/custom/position-forms-layo
 import SafeSuspense from '@/src/components/custom/safe-suspense'
 import { Summary } from '@/src/components/custom/summary'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
-import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import {
   DEPOSIT_COLLATERAL_TEXT,
   DEPOSIT_UNDERLYING_TEXT,
@@ -42,6 +41,8 @@ import {
   perSecondToAPR,
 } from '@/src/web3/utils'
 import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
+import { getDecimalsFromScale } from '@/src/constants/bondTokens'
+import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
 import { useMarketRate } from '@/src/hooks/useMarketRate'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
@@ -87,7 +88,10 @@ const FormERC20: React.FC<{
   const erc20 = useERC20Allowance(tokenAddress, userProxyAddress ?? '')
   const erc1155 = useERC155Allowance(tokenAddress, userProxyAddress ?? '')
 
-  const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
+  const underlierDecimals = useMemo(
+    () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
+    [collateral],
+  )
 
   const setFormLoading = (newLoadingState: boolean): void => {
     setLoading(newLoadingState)
@@ -258,7 +262,8 @@ const FormERC20: React.FC<{
       />
       <div className={cn(s.form)}>
         {[1, 4].includes(activeMachine.context.currentStepNumber) &&
-          SHOW_UNDERLYING_FLOW && ( // Feature Flag
+          // Show underlying ui if SHOW_UNDERLYING_FLOW is true. Always show for element
+          (SHOW_UNDERLYING_FLOW || collateral.vault.type == VaultType.ELEMENT) && ( // Feature Flag
             <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
               <RadioTab
                 checked={tab === CreatePositionTab.asset}
