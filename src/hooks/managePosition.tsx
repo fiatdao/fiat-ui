@@ -526,13 +526,15 @@ export const useManagePositionsInfoBlock = (position: Position) => {
       value: position?.maturity ? parseDate(position?.maturity) : '--:--:--',
     },
     {
-      title: 'Face Value',
-      tooltip: 'The redeemable value of the bond at maturity.',
+      title: 'Value At Maturity',
+      tooltip:
+        'The redeemable price of the asset at maturity as determined by the current spot price of the underlier and the amount of collateral deposited.',
       value: `$${getHumanValue(position?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {
-      title: 'Collateral Value',
-      tooltip: 'The currently discounted value of the bond.',
+      title: 'Current Value',
+      tooltip:
+        'The current value of the asset as determined by the discount rate, the spot price of the underlier and the amount of collateral deposited',
       value: `$${getHumanValue(position?.collateralValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {

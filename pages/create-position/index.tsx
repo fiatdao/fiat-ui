@@ -71,7 +71,7 @@ const CreatePosition = () => {
           value={`$${getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(2)}`}
         />
       ),
-      title: 'Face Value',
+      title: 'Price At Maturity',
     },
     {
       align: 'left',
@@ -82,7 +82,7 @@ const CreatePosition = () => {
           value={`${value ? '$' + getHumanValue(value ?? 0, WAD_DECIMALS)?.toFixed(2) : '-'}`}
         />
       ),
-      title: 'Collateral Value',
+      title: 'Current Price',
     },
     {
       align: 'left',
