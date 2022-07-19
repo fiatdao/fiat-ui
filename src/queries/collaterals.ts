@@ -23,6 +23,10 @@ export const COLLATERALS = gql`
         convergentCurvePool
         poolId
       }
+      fyData {
+        id
+        yieldSpacePool
+      }
       vault {
         id
         defaultRateId

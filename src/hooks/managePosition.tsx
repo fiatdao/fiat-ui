@@ -3,9 +3,6 @@ import { useERC155Allowance } from './useERC1155Allowance'
 import { useERC20Allowance } from './useERC20Allowance'
 import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
 import { useFIATBalance } from './useFIATBalance'
-import { useUnderlyingExchangeValue } from './useUnderlyingExchangeValue'
-import { usePTokenToUnderlier } from './usePTokenToUnderlier'
-import { useUnderlierToFCash } from './underlierToFCash'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
   EST_FIAT_TOOLTIP_TEXT,
@@ -25,6 +22,7 @@ import { parseDate } from '../utils/dateTime'
 import { getHealthFactorState } from '../utils/table'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
 import { getDecimalsFromScale } from '../constants/bondTokens'
+import { useMarketRate } from '@/src/hooks/useMarketRate'
 import { contracts } from '@/src/constants/contracts'
 import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
@@ -57,7 +55,7 @@ export type TokenInfo = {
 
 export const useManagePositionForm = (
   position: Position | undefined,
-  collateral: Collateral | undefined,
+  collateral: Collateral,
   positionFormFields: PositionManageFormFields | undefined,
   activeTabKey: FiatTabKey | CollateralTabKey,
   slippageTolerance: number,
@@ -179,30 +177,11 @@ export const useManagePositionForm = (
     [collateral],
   )
 
-  const [singleUnderlierToPToken] = useUnderlyingExchangeValue({
-    vault: collateral?.vault?.address ?? '',
-    balancerVault: collateral?.eptData?.balancerVault ?? '',
-    curvePoolId: collateral?.eptData?.poolId ?? '',
-    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+  const { marketRateDecimal, marketRateTokenScale } = useMarketRate({
+    protocol: collateral?.vault?.type ?? '',
+    collateral,
+    underlierDecimals,
   })
-
-  const [singlePTokenToUnderlier] = usePTokenToUnderlier({
-    vault: collateral?.vault?.address ?? '',
-    balancerVault: collateral?.eptData?.balancerVault ?? '',
-    curvePoolId: collateral?.eptData?.poolId ?? '',
-    pTokenAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
-  })
-
-  const [underlierToFCash] = useUnderlierToFCash({
-    tokenId: collateral?.tokenId ?? '',
-    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), // single underlier value
-  })
-
-  const marketRate = useMemo((): BigNumber => {
-    return collateral?.vault.type === 'NOTIONAL'
-      ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
-      : ONE_BIG_NUMBER.div(getHumanValue(singleUnderlierToPToken, underlierDecimals))
-  }, [collateral?.vault.type, underlierDecimals, underlierToFCash, singleUnderlierToPToken])
 
   // If user is repaying the max FIAT debt, maxWithdraw = totalCollateral. Otherwise,
   // maxWithdraw = collateral * collateralPrice - debt * collateralizationRation * maxSlippage
@@ -246,15 +225,15 @@ export const useManagePositionForm = (
       return ZERO_BIG_NUMBER
     }
     const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
-    const estimate = singlePTokenToUnderlier
+    const estimate = marketRateTokenScale
       .times(underlierWithdrawAmount)
       .unscaleBy(underlierDecimals)
     return estimate
   }, [
     collateral?.vault.type,
-    singlePTokenToUnderlier,
     positionFormFields?.underlierWithdrawAmount,
     underlierDecimals,
+    marketRateTokenScale,
   ])
 
   // maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
@@ -288,7 +267,7 @@ export const useManagePositionForm = (
     const underlierToSwap =
       getNonHumanValue(
         positionFormFields?.underlierDepositAmount?.times(
-          getHumanValue(singleUnderlierToPToken, underlierDecimals),
+          getHumanValue(marketRateTokenScale, underlierDecimals),
         ),
         WAD_DECIMALS,
       ) ?? ZERO_BIG_NUMBER
@@ -315,7 +294,7 @@ export const useManagePositionForm = (
     positionFormFields?.withdraw,
     positionFormFields?.borrow,
     positionFormFields?.repay,
-    singleUnderlierToPToken,
+    marketRateTokenScale,
     underlierDecimals,
   ])
 
@@ -514,7 +493,7 @@ export const useManagePositionForm = (
         )
         const slippageDecimal = 1 - slippageTolerance / 100
         const pTokenAmount = underlierDepositAmount.multipliedBy(
-          getHumanValue(singleUnderlierToPToken, underlierDecimals),
+          getHumanValue(marketRateTokenScale, underlierDecimals),
         )
         const minOutput = getNonHumanValue(
           pTokenAmount.multipliedBy(slippageDecimal),
@@ -567,7 +546,7 @@ export const useManagePositionForm = (
         )
         const slippageDecimal = 1 - slippageTolerance / 100
         const pTokenAmount = underlierWithdrawAmount.multipliedBy(
-          getHumanValue(singlePTokenToUnderlier, underlierDecimals),
+          getHumanValue(marketRateTokenScale, underlierDecimals),
         )
         const minOutput = getNonHumanValue(
           pTokenAmount.multipliedBy(slippageDecimal),
@@ -676,7 +655,7 @@ export const useManagePositionForm = (
 
     const underlierDepositAmount = positionFormFields?.underlierDepositAmount ?? ZERO_BIG_NUMBER
     const estimatedCollateralToDeposit = underlierDepositAmount.multipliedBy(
-      getHumanValue(singleUnderlierToPToken, underlierDecimals),
+      getHumanValue(marketRateTokenScale, underlierDecimals),
     )
     const depositUnderlierSummary = collateral
       ? [
@@ -685,7 +664,7 @@ export const useManagePositionForm = (
             value: estimatedCollateralToDeposit.toFixed(2),
           },
           ...getUnderlyingDataSummary(
-            marketRate,
+            marketRateDecimal,
             slippageTolerance,
             collateral,
             underlierDepositAmount.toNumber(),
@@ -703,7 +682,7 @@ export const useManagePositionForm = (
             value: estimatedUnderlierToReceive.toFixed(2),
           },
           ...getUnderlyingDataSummary(
-            marketRate,
+            marketRateDecimal,
             slippageTolerance,
             collateral,
             underlierWithdrawAmount.toNumber(),

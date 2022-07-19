@@ -112,7 +112,7 @@ export const getInitialProtocolFilters = memoize(
   },
 )
 
-// for parsing decimals from a string scale (for ex. collateral.scale => "1000000")
+// for parsing decimals from a string scale (for ex. on Collateral type where collateral.scale => "1000000")
 export const getDecimalsFromScale = (scale: Maybe<string>): number => {
   if (scale === null) {
     return 0

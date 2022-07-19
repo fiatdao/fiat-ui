@@ -10,24 +10,23 @@ import TokenAmount from '@/src/components/custom/token-amount'
 import { WAD_DECIMALS, ZERO_BIG_NUMBER } from '@/src/constants/misc'
 import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
-import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import { useUserActions } from '@/src/hooks/useUserActions'
 import useUserProxy from '@/src/hooks/useUserProxy'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import underlyingStepperMachine from '@/src/state/open-position-underlying-form'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
-import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
-// import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
-import { getDecimalsFromScale } from '@/src/constants/bondTokens'
+import { getMinImpliedRate } from '@/src/utils/getMinImpliedRate'
+import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
 import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
+import { useMarketRate } from '@/src/hooks/useMarketRate'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 type CreatePositionUnderlyingProps = {
   collateral: Collateral
@@ -35,7 +34,6 @@ type CreatePositionUnderlyingProps = {
   loading: boolean
   hasMinimumFIAT: boolean
   healthFactorNumber: BigNumber
-  marketRate: BigNumber
   setLoading: (newLoadingState: boolean) => void
   setMachine: (machine: any) => void
 }
@@ -48,17 +46,19 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   hasMinimumFIAT,
   healthFactorNumber,
   loading,
-  marketRate,
   setLoading,
   setMachine,
 }) => {
   const [form] = AntdForm.useForm<FormProps>()
 
-  const { address: currentUserAddress, readOnlyAppProvider } = useWeb3Connection()
+  const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
+  const { address: currentUserAddress, appChainId, readOnlyAppProvider } = useWeb3Connection()
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
-  const { buyCollateralAndModifyDebtERC20, buyCollateralAndModifyDebtERC1155 } = useUserActions(
-    collateral.vault?.type,
-  )
+  const {
+    buyCollateralAndModifyDebtERC20,
+    buyCollateralAndModifyDebtERC1155,
+    buyCollateralAndModifyDebtYield,
+  } = useUserActions(collateral.vault?.type)
 
   const erc20 = useERC20Allowance(collateral?.underlierAddress ?? '', userProxyAddress ?? '')
   const { approve, hasAllowance, loadingApprove } = erc20
@@ -101,11 +101,6 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     tokenId: collateral.tokenId ?? '0',
   })
 
-  const underlierDecimals = useMemo(
-    () => getDecimalsFromScale(collateral.underlierScale),
-    [collateral],
-  )
-
   const hasSufficientCollateral = useMemo(() => {
     return underlyingInfo?.humanValue?.gte(stateMachine.context.underlierAmount)
   }, [underlyingInfo?.humanValue, stateMachine.context.underlierAmount])
@@ -116,24 +111,18 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     )
   }, [hasAllowance, isProxyAvailable, loading, hasMinimumFIAT, hasSufficientCollateral])
 
-  const [singleUnderlierToPToken] = useUnderlyingExchangeValue({
-    vault: collateral?.vault?.address ?? '',
-    balancerVault: collateral?.eptData?.balancerVault,
-    curvePoolId: collateral?.eptData?.poolId,
-    underlierAmount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
-  })
-
-  const [underlierToFCash] = useUnderlierToFCash({
-    tokenId: collateral.tokenId ?? '',
-    amount: getNonHumanValue(new BigNumber(1), underlierDecimals), //single underlier value
+  const { marketRateDecimal, marketRateTokenScale } = useMarketRate({
+    protocol: collateral.vault?.type,
+    collateral,
+    underlierDecimals,
   })
 
   const underlierAmount = stateMachine.context.underlierAmount.toNumber()
-  const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
-  // const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
-
+  const fCashAmount = getHumanValue(marketRateTokenScale, WAD_DECIMALS).multipliedBy(
+    underlierAmount,
+  )
   const underlyingData = getUnderlyingDataSummary(
-    marketRate,
+    marketRateDecimal,
     slippageTolerance,
     collateral,
     underlierAmount,
@@ -151,6 +140,13 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
         ? getNonHumanValue(underlierAmount, WAD_DECIMALS)
         : ZERO_BIG_NUMBER
       const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
+      const minImpliedRate = await getMinImpliedRate(
+        fCashAmount,
+        slippageTolerance,
+        appChainId,
+        collateral,
+        readOnlyAppProvider,
+      )
 
       try {
         setLoading(true)
@@ -161,7 +157,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
           deltaDebt: _fiatAmount,
           virtualRate: collateral.vault.virtualRate,
           fCashAmount: getHumanValue(fCashAmount, 53), // 41 puts us at 18decimals, 53 puts us at 6 decimals
-          minImpliedRate: 100000, //minImpliedRate,
+          minImpliedRate: minImpliedRate,
           underlierAmount: _underlierAmount, //definitely correct */
         })
         setLoading(false)
@@ -172,12 +168,12 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
     },
     [
       buyCollateralAndModifyDebtERC1155,
-      collateral.address,
-      collateral.tokenId,
-      collateral.vault.address,
-      collateral.vault.virtualRate,
       fCashAmount,
       setLoading,
+      appChainId,
+      collateral,
+      readOnlyAppProvider,
+      slippageTolerance,
     ],
   )
 
@@ -189,6 +185,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
       underlierAmount: BigNumber
       fiatAmount: BigNumber
     }): Promise<void> => {
+      const activeProtocol = collateral.vault?.type
       // Underlier amount formatted with proper decimals
       const _underlierAmount = underlierAmount
         ? getNonHumanValue(underlierAmount, underlierDecimals)
@@ -196,38 +193,61 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
       // Fiat amount formatted with proper decimals
       const _fiatAmount = fiatAmount ? getNonHumanValue(fiatAmount, WAD_DECIMALS) : ZERO_BIG_NUMBER
 
+      const approve = _underlierAmount.toFixed(0, 8)
       const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
-      const pTokenAmount = underlierAmount.multipliedBy(
-        getHumanValue(singleUnderlierToPToken, underlierDecimals),
+      const tokenAmount = underlierAmount.multipliedBy(
+        getHumanValue(marketRateTokenScale, underlierDecimals),
       )
+
       const slippageDecimal = 1 - slippageTolerance / 100
       const minOutput = getNonHumanValue(
-        pTokenAmount.multipliedBy(slippageDecimal),
+        tokenAmount.multipliedBy(slippageDecimal),
         underlierDecimals,
       )
-      const approve = _underlierAmount.toFixed(0, 8)
 
-      try {
-        setLoading(true)
-        await buyCollateralAndModifyDebtERC20({
-          vault: collateral.vault.address,
-          deltaDebt: _fiatAmount,
-          virtualRate: collateral.vault.virtualRate,
-          underlierAmount: _underlierAmount,
-          swapParams: {
-            balancerVault: collateral.eptData.balancerVault,
-            poolId: collateral.eptData?.poolId ?? '',
-            assetIn: collateral.underlierAddress ?? '',
-            assetOut: collateral.address ?? '',
-            minOutput: minOutput.toFixed(0, 8),
-            deadline: deadline,
-            approve: approve,
-          },
-        })
-        setLoading(false)
-      } catch (err) {
-        setLoading(false)
-        throw err
+      if (activeProtocol === 'ELEMENT') {
+        try {
+          setLoading(true)
+          await buyCollateralAndModifyDebtERC20({
+            vault: collateral.vault.address,
+            deltaDebt: _fiatAmount,
+            virtualRate: collateral.vault.virtualRate,
+            underlierAmount: _underlierAmount,
+            swapParams: {
+              balancerVault: collateral.eptData.balancerVault,
+              poolId: collateral.eptData?.poolId ?? '',
+              assetIn: collateral.underlierAddress ?? '',
+              assetOut: collateral.address ?? '',
+              minOutput: minOutput.toFixed(0, 8),
+              deadline: deadline,
+              approve: approve,
+            },
+          })
+          setLoading(false)
+        } catch (err) {
+          setLoading(false)
+          throw err
+        }
+      } else {
+        try {
+          setLoading(true)
+          await buyCollateralAndModifyDebtYield({
+            vault: collateral.vault.address,
+            deltaDebt: _fiatAmount,
+            virtualRate: collateral.vault.virtualRate,
+            underlierAmount: _underlierAmount,
+            swapParams: {
+              minAssetOut: minOutput.toFixed(0, 8),
+              yieldSpacePool: collateral.fyData.yieldSpacePool,
+              assetIn: collateral.underlierAddress ?? '',
+              assetOut: collateral.address ?? '',
+            },
+          })
+          setLoading(false)
+        } catch (err) {
+          setLoading(false)
+          throw err
+        }
       }
     },
     [
@@ -240,9 +260,12 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
       collateral.vault.virtualRate,
       maxTransactionTime,
       setLoading,
-      singleUnderlierToPToken,
       slippageTolerance,
       underlierDecimals,
+      buyCollateralAndModifyDebtYield,
+      collateral.fyData.yieldSpacePool,
+      collateral.vault?.type,
+      marketRateTokenScale,
     ],
   )
 
@@ -359,7 +382,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
                 collateral={collateral}
                 healthFactorNumber={healthFactorNumber}
                 loading={loading}
-                marketRate={marketRate}
+                marketRate={marketRateDecimal}
                 send={send}
               />
             )}
