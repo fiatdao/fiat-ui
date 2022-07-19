@@ -122,8 +122,7 @@ export const useManagePositionForm = (
       address: position?.underlier.address ?? '',
       decimals: 8, // TODO: Fix me
     },
-    vaultType: position?.vaultType ?? '',
-    tokenId: position?.tokenId ?? '0',
+    tokenId: collateral?.tokenId ?? '0',
   })
 
   const [FIATBalance] = useFIATBalance(true) // true param requests as human value
@@ -199,13 +198,11 @@ export const useManagePositionForm = (
     amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), // single underlier value
   })
 
-  const marketRate = useMemo(
-    () =>
-      collateral?.vault.type === 'NOTIONAL'
-        ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
-        : ONE_BIG_NUMBER.div(getHumanValue(singleUnderlierToPToken, underlierDecimals)),
-    [collateral?.vault.type, underlierDecimals, underlierToFCash, singleUnderlierToPToken],
-  )
+  const marketRate = useMemo((): BigNumber => {
+    return collateral?.vault.type === 'NOTIONAL'
+      ? ONE_BIG_NUMBER.div(getHumanValue(underlierToFCash, 77)) // Why is this number 77? This is what I currently have to use based on what Im recieving from the contract call but this doesnt seem right
+      : ONE_BIG_NUMBER.div(getHumanValue(singleUnderlierToPToken, underlierDecimals))
+  }, [collateral?.vault.type, underlierDecimals, underlierToFCash, singleUnderlierToPToken])
 
   // If user is repaying the max FIAT debt, maxWithdraw = totalCollateral. Otherwise,
   // maxWithdraw = collateral * collateralPrice - debt * collateralizationRation * maxSlippage
@@ -244,13 +241,21 @@ export const useManagePositionForm = (
     ],
   )
 
-  const calculateEstimatedUnderlierToReceive = useCallback(() => {
+  const calculateEstimatedUnderlierToReceive = useCallback((): BigNumber => {
+    if (collateral?.vault.type !== VaultType.ELEMENT) {
+      return ZERO_BIG_NUMBER
+    }
     const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
     const estimate = singlePTokenToUnderlier
       .times(underlierWithdrawAmount)
       .unscaleBy(underlierDecimals)
     return estimate
-  }, [positionFormFields?.underlierWithdrawAmount, singlePTokenToUnderlier, underlierDecimals])
+  }, [
+    collateral?.vault.type,
+    singlePTokenToUnderlier,
+    positionFormFields?.underlierWithdrawAmount,
+    underlierDecimals,
+  ])
 
   // maxBorrow = collateral * collateralPrice / ( collateralizationRatio * maxSlippage ) - currentDebt
   const calculateMaxBorrowAmount = useCallback(

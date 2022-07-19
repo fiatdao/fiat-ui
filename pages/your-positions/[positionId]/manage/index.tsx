@@ -288,9 +288,9 @@ const PositionManage = () => {
     }
   }, [activeSection, activeTabKey, isMatured])
 
-  const getMaturedFCashMessage = useCallback((): string | null => {
+  const getMaturedCollateralMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
-      return 'Note: This fCash has matured; you will receive the underlying asset'
+      return 'Note: This collateral has matured; you will receive the underlying asset'
     }
     return null
   }, [position, isMatured])
@@ -491,7 +491,7 @@ const PositionManage = () => {
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
-                            description={getMaturedFCashMessage()}
+                            description={getMaturedCollateralMessage()}
                             title={'Amount to withdraw'}
                             value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
                           />
