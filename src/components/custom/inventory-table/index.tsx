@@ -84,6 +84,7 @@ const Columns: ColumnsType<Position> = [
     dataIndex: 'id', // FIXME Check on chain this
     render: (id: Position['id'], { userAddress }) => {
       const { proxyAddress } = extractFieldsFromPositionId(id)
+      // id is <protocolAddress (vault address)>-<0xhextokenid>-<ownerAddress (proxyAddress)>
       const canManage = proxyAddress.toLowerCase() !== userAddress.toLowerCase()
 
       return (
