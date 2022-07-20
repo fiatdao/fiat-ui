@@ -9,6 +9,13 @@ export const ONE_BIG_NUMBER = new BigNumber(1)
 export const TWO_BIG_NUMBER = new BigNumber(2)
 export const INFINITE_HEALTH_FACTOR_NUMBER = new BigNumber(100)
 export const MAX_UINT_256 = TWO_BIG_NUMBER.pow(256).minus(1)
+
+// time constants
+export const ONE_MINUTE_IN_SECONDS = 60
+export const ONE_HOUR_IN_SECONDS = 60 * ONE_MINUTE_IN_SECONDS
+export const ONE_DAY_IN_SECONDS = 24 * ONE_HOUR_IN_SECONDS
+export const ONE_YEAR_IN_SECONDS = 365 * ONE_DAY_IN_SECONDS
+
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export const DEFAULT_CHAIN_ID = process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 5

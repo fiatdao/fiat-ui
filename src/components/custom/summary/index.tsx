@@ -4,12 +4,14 @@ import Grid from '@/src/components/custom/grid'
 import Info from '@/src/resources/svg/info.svg'
 import cn from 'classnames'
 
-export const SummaryItem: React.FC<{
+export type SummaryItem = {
   state?: 'ok' | 'warning' | 'danger' | undefined
   title: string
   titleTooltip?: string
   value: string
-}> = ({ state, title, titleTooltip, value }) => (
+}
+
+export const SummaryItem: React.FC<SummaryItem> = ({ state, title, titleTooltip, value }) => (
   <div className={cn(s.row)}>
     <Grid align="center" flow="col" gap={4}>
       <div className={cn(s.title)}>{title}</div>

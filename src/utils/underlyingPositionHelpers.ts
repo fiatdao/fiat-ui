@@ -1,17 +1,50 @@
+import { SummaryItem } from '../components/custom/summary'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { parseDate } from '@/src/utils/dateTime'
+import { ONE_YEAR_IN_SECONDS } from '@/src/constants/misc'
 import BigNumber from 'bignumber.js'
 
+// Adapted from element's calculation of APR
+// https://github.com/element-fi/frontend-monorepo/blob/d2654490d04a6584f878c9f62febac25f6bd5a11/apps/core-frontend/src/ui/pools/hooks/usePrincipalTokenYield.ts#L37
+const calculateStablecoinBondApr = (collateral: Collateral, marketRate: BigNumber): number => {
+  const { maturity } = collateral
+  const principalPrice = marketRate.toNumber() ?? 0
+  const unlockTimestamp = maturity.getTime() / 1000 // convert ms to secs
+  const timeLeftInSeconds = unlockTimestamp - Math.round(Date.now() / 1000)
+
+  // principalPrice is the price in terms of the base asset.  Since we know the principal will be
+  // equal to base at term, (1 - principalPrice) gives us the the fixed interest for the rest of
+  // the term.  so we take that number and scale up to a year for APY:
+  //
+  // fixed apy = fixed interest * one_year / term_length
+  // const principalPrice = 0.9953283704817295
+  let fixedAPR = 0
+  if (timeLeftInSeconds > 0) {
+    fixedAPR = (((1 - principalPrice) / principalPrice) * ONE_YEAR_IN_SECONDS) / timeLeftInSeconds
+  }
+
+  return fixedAPR
+}
+
+/**
+ * Reduces a sequence of names to initials.
+ * @param  {BigNumber}  marketRate        The rough exchange rate for 1 underlier -> 1 bond token (e.g 0.9953...)
+ * @param  {number}     slippageTolerance User's chosen slippage preference
+ * @param  {Collateral} collateral        The collateral to calcualate summary data for
+ * @param  {number}     underlierAmount   How many underlier tokens we should calculate summary data for
+ * @return {Array<SummaryItem>}           Summary items to render
+ */
 export function getUnderlyingDataSummary(
   marketRate: BigNumber,
   slippageTolerance: number,
   collateral: Collateral,
   underlierAmount: number,
-) {
-  const apr = (1 - marketRate.toNumber()) * 100
-  const fixedAPR = `${apr.toFixed(2)}%`
+): Array<SummaryItem> {
+  const fixedAPR = calculateStablecoinBondApr(collateral, marketRate)
+  const fixedAPRStr = `${(fixedAPR * 100).toFixed(2)}%`
 
-  const interestEarned = underlierAmount * (apr / 100)
+  const yieldTillMaturity = (1 - marketRate.toNumber()) * 100
+  const interestEarned = underlierAmount * (yieldTillMaturity / 100)
   const interestEarnedStr = `${interestEarned.toFixed(2)} ${
     collateral ? collateral.underlierSymbol : '-'
   }`
@@ -38,7 +71,7 @@ export function getUnderlyingDataSummary(
     },
     {
       title: 'Fixed APR',
-      value: fixedAPR,
+      value: fixedAPRStr,
     },
     {
       title: 'Interest earned',

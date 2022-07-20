@@ -99,12 +99,12 @@ const FormERC20: React.FC<{
     vault: collateral?.vault?.address ?? '',
     balancerVault: collateral?.eptData?.balancerVault,
     curvePoolId: collateral?.eptData?.poolId,
-    underlierAmount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
+    underlierAmount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), // single underlier value
   })
 
   const [underlierToFCash] = useUnderlierToFCash({
     tokenId: collateral.tokenId ?? '',
-    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), //single underlier value
+    amount: getNonHumanValue(ONE_BIG_NUMBER, underlierDecimals), // single underlier value
   })
 
   const setFormLoading = (newLoadingState: boolean): void => {
