@@ -26,6 +26,7 @@ import { Collateral } from '@/src/utils/data/collaterals'
 import { Position } from '@/src/utils/data/positions'
 import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
 import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
+import StepperTitle from '@/src/components/custom/stepper-title'
 import { SettingFilled } from '@ant-design/icons'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -35,23 +36,6 @@ import Link from 'next/link'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 const LAST_STEP = 4
-
-const StepperTitle: React.FC<{
-  currentStep: number
-  description: string
-  title: string
-  totalSteps: number
-}> = ({ currentStep, description, title, totalSteps }) => (
-  <div className={cn(s.stepperWrapper)}>
-    <div className={cn(s.stepperTitleWrapper)}>
-      <h2 className={cn(s.stepperTitle)}>{title}</h2>
-      <div className={s.steps}>
-        <span className={s.currentStep}>{currentStep}</span>/{totalSteps}
-      </div>
-    </div>
-    <p className={cn(s.stepperDescription)}>{description}</p>
-  </div>
-)
 
 type Step = {
   id: number

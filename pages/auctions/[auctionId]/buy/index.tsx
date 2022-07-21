@@ -1,79 +1,81 @@
 import s from './s.module.scss'
-import { SLIPPAGE, SUCCESS_STEP } from '@/src/constants/auctions'
+import { Form } from '@/src/components/antd'
+import ButtonGradient from '@/src/components/antd/button-gradient'
+import Info from '@/src/resources/svg/info.svg'
+import { ButtonBack } from '@/src/components/custom/button-back'
+import { InfoBlock } from '@/src/components/custom/info-block'
+import StepperTitle from '@/src/components/custom/stepper-title'
+import { Summary } from '@/src/components/custom/summary'
+import TokenAmount from '@/src/components/custom/token-amount'
+import { SLIPPAGE } from '@/src/constants/auctions'
 import {
   FIAT_TICKER,
   INSUFFICIENT_BALANCE_TEXT,
   ONE_BIG_NUMBER,
   WAD_DECIMALS,
+  ZERO_ADDRESS,
   ZERO_BIG_NUMBER,
 } from '@/src/constants/misc'
-import SuccessAnimation from '@/src/resources/animations/success-animation.json'
-import { Form } from '@/src/components/antd'
-import ButtonGradient from '@/src/components/antd/button-gradient'
-import { ButtonBack } from '@/src/components/custom/button-back'
-import { InfoBlock } from '@/src/components/custom/info-block'
-import TokenAmount from '@/src/components/custom/token-amount'
 import withRequiredConnection from '@/src/hooks/RequiredConnection'
 import { useAuction } from '@/src/hooks/subgraph/useAuction'
+import { useBuyCollateralForm } from '@/src/hooks/useBuyCollateralForm'
 import { useDynamicTitle } from '@/src/hooks/useDynamicTitle'
 import { useFIATBalance } from '@/src/hooks/useFIATBalance'
-import { useBuyCollateralForm } from '@/src/hooks/useBuyCollateralForm'
 import { useQueryParam } from '@/src/hooks/useQueryParam'
-import { Summary } from '@/src/components/custom/summary'
-import Info from '@/src/resources/svg/info.svg'
-import Lottie from 'lottie-react'
-import Link from 'next/link'
+import useUserProxy from '@/src/hooks/useUserProxy'
+import SuccessAnimation from '@/src/resources/animations/success-animation.json'
+import auctionFormMachine, { AuctionStates } from '@/src/state/auction-form-machine'
+import { useMachine } from '@xstate/react'
+import { Popover } from 'antd'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import cn from 'classnames'
-import { useMemo, useState } from 'react'
-import { Popover } from 'antd'
-
-const StepperTitle: React.FC<{
-  currentStep: number
-  description: string
-  title: string
-  totalSteps: number
-}> = ({ currentStep, description, title, totalSteps }) => (
-  <div className={cn(s.stepperWrapper)}>
-    <div className={cn(s.stepperTitleWrapper)}>
-      <h2 className={cn(s.stepperTitle)}>{title}</h2>
-      <div className={s.steps}>
-        <span className={s.currentStep}>{currentStep}</span>/{totalSteps}
-      </div>
-    </div>
-    <p className={cn(s.stepperDescription)}>{description}</p>
-  </div>
-)
+import Lottie from 'lottie-react'
+import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 
 type FormProps = { amountToBuy: BigNumber }
-
-type Step = {
-  description: string
-  buttonText: string
-  prev: () => void
-  next: () => void
-  callback: () => void | Promise<void>
-}
 
 const BuyCollateral = () => {
   const auctionId = useQueryParam('auctionId')
   const { data: auctionData } = useAuction(auctionId)
   const [form] = AntdForm.useForm<FormProps>()
   const {
-    approve,
     approveMoneta,
+    approveProxyForFiat,
     buyCollateral,
-    hasAllowance,
     hasMonetaAllowance,
     loading,
     maxCredit,
     maxPrice,
+    proxyHasFiatAllowance,
   } = useBuyCollateralForm(auctionData)
   const [FIATBalance, refetchFIATBalance] = useFIATBalance(true)
   const [isPurchaseAmountValid, setIsPurchaseAmountValid] = useState(false)
   const [amountToBuy, setAmountToBuy] = useState(ZERO_BIG_NUMBER)
-  const [step, setStep] = useState(0)
+  const { isProxyAvailable, setupProxy, userProxyAddress } = useUserProxy()
+  const [state, send] = useMachine(auctionFormMachine)
+
+  const steps = useMemo(() => (state.machine ? Object.keys(state.machine.states) : []), [state])
+  // key value for current metadata is the state node's delimited full path, e.g. "machineId.stateName"
+  // https://xstate.js.org/docs/guides/ids.html#identifying-state-nodes
+  const currentMeta = useMemo(() => state.meta[`${state.machine?.id}.${state.value}`], [state])
+  const currentStateName = useMemo(() => state.value as AuctionStates, [state])
+  const curStepNumber = useMemo(
+    () => steps.indexOf(currentStateName) + 1,
+    [steps, currentStateName],
+  )
+
+  useEffect(() => {
+    // Notify machine of state changes
+    // https://xstate.js.org/docs/recipes/react.html#syncing-data-with-useeffect
+    const hasProxy = userProxyAddress != ZERO_ADDRESS && userProxyAddress !== null
+    send({ type: 'SET_HAS_PROXY', hasProxy })
+
+    send({ type: 'SET_PROXY_HAS_FIAT_ALLOWANCE', proxyHasFiatAllowance })
+
+    send({ type: 'SET_HAS_MONETA_ALLOWANCE', hasMonetaAllowance })
+  }, [hasMonetaAllowance, isProxyAvailable, proxyHasFiatAllowance, send, userProxyAddress])
 
   const fiatToPay = useMemo(() => {
     // TODO more closely est fiatToPay
@@ -139,105 +141,10 @@ const BuyCollateral = () => {
     }
   }
 
-  const steps: Step[] = [
-    {
-      description: `Select the amount of collateral to purchase`,
-      buttonText: 'Buy collateral',
-      next() {
-        if (!hasAllowance) {
-          setStep(1)
-        } else if (!hasMonetaAllowance) {
-          setStep(2)
-        } else {
-          setStep(3)
-        }
-      },
-      prev() {
-        return
-      },
-      callback() {
-        this.next()
-      },
-    },
-    {
-      description: 'Set Allowance for FIAT',
-      buttonText: 'Set Allowance for FIAT',
-      next() {
-        if (!hasMonetaAllowance) {
-          setStep(2)
-        } else {
-          setStep(3)
-        }
-      },
-      prev() {
-        setStep(0)
-      },
-      async callback() {
-        await approve()
-        this.next()
-      },
-    },
-    {
-      description: 'Enable Proxy for FIAT',
-      buttonText: 'Enable Proxy for FIAT',
-      next() {
-        setStep(3)
-      },
-      prev() {
-        if (!hasAllowance) {
-          setStep(1)
-        } else {
-          setStep(0)
-        }
-      },
-      async callback() {
-        await approveMoneta()
-        this.next()
-      },
-    },
-    {
-      description: 'Confirm the details',
-      buttonText: 'Confirm',
-      next() {
-        return
-      },
-      prev() {
-        if (!hasMonetaAllowance) {
-          setStep(2)
-        } else if (!hasAllowance) {
-          setStep(1)
-        } else {
-          setStep(0)
-        }
-      },
-      callback() {
-        form.submit()
-      },
-    },
-  ]
-
-  const getButtonTextForStep = (stepNumber: number) => {
-    if (!isPurchaseAmountValid) {
-      return (
-        <div className={cn(s.buttonTextContainer)}>
-          <p className={cn(s.buttonText)}>
-            {`Must purchase < ${maxFractionalBuy
-              ?.unscaleBy(WAD_DECIMALS)
-              .toFixed(2)} or buy all collateral`}
-          </p>
-          <Info className={cn(s.icon)} />
-        </div>
-      )
-    }
-    if (!isFiatBalanceSufficient) {
-      return INSUFFICIENT_BALANCE_TEXT
-    }
-    return steps[stepNumber].buttonText
-  }
-
   useDynamicTitle(auctionData?.protocol && `Buy ${auctionData.protocol.humanReadableName}`)
 
   const onSubmit = async () => {
+    console.log('buying')
     if (!auctionData?.currentAuctionPrice) {
       console.error('unavailable auctionData')
       return
@@ -248,6 +155,7 @@ const BuyCollateral = () => {
       .multipliedBy(SLIPPAGE.plus(1))
       .decimalPlaces(WAD_DECIMALS)
       .scaleBy(WAD_DECIMALS)
+    console.log('collat to send: ', collateralAmountToSend.toString())
 
     // TODO more closely est fiatToPay
     // maybe no slippage on collateralAmountToSend will actually get est fiatToPay closer actually
@@ -257,11 +165,11 @@ const BuyCollateral = () => {
     //  .scaleBy(WAD_DECIMALS)
 
     const receipt = await buyCollateral({ collateralAmountToSend, maxPrice })
+    console.log('receipt: ', receipt)
 
-    // tx was not successful
     if (receipt) {
       await refetchFIATBalance()
-      setStep((prev) => prev + 1)
+      send('PURCHASE_AMOUNT_SUBMITTED')
     }
   }
 
@@ -313,6 +221,71 @@ const BuyCollateral = () => {
     },
   ]
 
+  const handleClick = async () => {
+    let handler
+    // because our existing hooks have lifecycles (loading states, success states, etc)
+    // invoke them as is. once resolved their new results will be picked up
+    // by a useEffect hook to sync the machine state
+    // https://xstate.js.org/docs/recipes/react.html#syncing-data-with-useeffect
+    switch (currentStateName) {
+      case AuctionStates.createProxy:
+        handler = setupProxy
+        break
+      case AuctionStates.setFiatAllowance:
+        handler = approveProxyForFiat
+        break
+      case AuctionStates.setMonetaAllowance:
+        handler = approveMoneta
+        break
+      case AuctionStates.buyCollateral:
+        handler = form.submit
+        break
+      default:
+        console.error('Unknown state, not setting button onClick handler')
+        return
+    }
+
+    await handler()
+  }
+
+  const renderSuccessPage = () => {
+    // if on final step, return success gif & summary
+    return (
+      <div className={cn(s.form)}>
+        <div className={cn(s.lastStepAnimation)}>
+          <Lottie animationData={SuccessAnimation} autoplay loop />
+        </div>
+        <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
+        <p className={cn(s.lastStepText)}>You have successfully bought collateral tokens.</p>
+        <Summary data={summaryData} />
+        <Link href={`/auctions/`} passHref>
+          <ButtonGradient height="lg">Go to Auctions</ButtonGradient>
+        </Link>
+      </div>
+    )
+  }
+
+  const getButtonTextForStep = () => {
+    if (currentStateName === AuctionStates.buyCollateral) {
+      if (!isPurchaseAmountValid) {
+        return (
+          <div className={cn(s.buttonTextContainer)}>
+            <p className={cn(s.buttonText)}>
+              {`Must purchase < ${maxFractionalBuy
+                ?.unscaleBy(WAD_DECIMALS)
+                .toFixed(2)} or buy all collateral`}
+            </p>
+            <Info className={cn(s.icon)} />
+          </div>
+        )
+      } else if (!isFiatBalanceSufficient) {
+        return INSUFFICIENT_BALANCE_TEXT
+      }
+    }
+
+    return currentMeta.buttonText
+  }
+
   return (
     <>
       <ButtonBack href="/auctions">Back</ButtonBack>
@@ -329,113 +302,79 @@ const BuyCollateral = () => {
         </div>
 
         <div className={cn(s.formWrapper)}>
-          {step + 1 !== SUCCESS_STEP ? (
+          {state.value === AuctionStates.success ? (
+            renderSuccessPage()
+          ) : (
             <>
               <StepperTitle
-                currentStep={step + 1}
-                description={steps[step].description}
+                currentStep={curStepNumber}
+                description={currentMeta.description}
                 title={'Buy collateral'}
                 totalSteps={steps.length}
               />
               <div className={cn(s.form)}>
-                {step === 0 ? (
-                  <>
-                    <div className={cn(s.balanceWrapper)}>
-                      <h3 className={cn(s.balanceLabel)}>Purchase {auctionData?.asset}</h3>
-                      <p className={cn(s.balance)}>Balance: {FIATBalance?.toFixed(2)} FIAT</p>
-                    </div>
+                <>
+                  <div className={cn(s.balanceWrapper)}>
+                    <h3 className={cn(s.balanceLabel)}>Purchase {auctionData?.asset}</h3>
+                    <p className={cn(s.balance)}>Balance: {FIATBalance?.toFixed(2)} FIAT</p>
+                  </div>
 
-                    <Form
-                      form={form}
-                      initialValues={{ amountToBuy: 0 }}
-                      onFinish={onSubmit}
-                      onValuesChange={onValuesChange}
+                  <Form
+                    form={form}
+                    initialValues={{ amountToBuy: 0 }}
+                    onFinish={onSubmit}
+                    onValuesChange={onValuesChange}
+                  >
+                    <Form.Item name="amountToBuy" required>
+                      <TokenAmount
+                        displayDecimals={4}
+                        mainAsset={auctionData?.protocol.name ?? ''}
+                        max={maxCredit}
+                        maximumFractionDigits={6}
+                        numericInputDisabled={loading}
+                        secondaryAsset={auctionData?.underlier.symbol}
+                        slider
+                        sliderDisabled={loading}
+                      />
+                    </Form.Item>
+
+                    <Popover
+                      className={cn(s.buttonTextTooltip)}
+                      content={
+                        isExecuteButtonDisabled ? (
+                          <p style={{ maxWidth: '60ch' }}>
+                            The remaining debt after your purchase must be less than the debt floor
+                            to ensure all outstanding debt can be recovered from liquidated
+                            collateral. Learn more about auctions{' '}
+                            <a href="https://docs.fiatdao.com/protocol/fiat/collateral-auctions">
+                              here
+                            </a>
+                            .
+                          </p>
+                        ) : null
+                      }
                     >
-                      <Form.Item name="amountToBuy" required>
-                        <TokenAmount
-                          displayDecimals={4}
-                          mainAsset={auctionData?.protocol.name ?? ''}
-                          max={maxCredit}
-                          maximumFractionDigits={6}
-                          numericInputDisabled={loading}
-                          secondaryAsset={auctionData?.underlier.symbol}
-                          slider
-                          sliderDisabled={loading}
-                        />
-                      </Form.Item>
-
-                      <Popover
-                        className={cn(s.buttonTextTooltip)}
-                        content={
-                          isExecuteButtonDisabled ? (
-                            <p style={{ maxWidth: '60ch' }}>
-                              The remaining debt after your purchase must be less than the debt
-                              floor to ensure all outstanding debt can be recovered from liquidated
-                              collateral. Learn more about auctions{' '}
-                              <a href="https://docs.fiatdao.com/protocol/fiat/collateral-auctions">
-                                here
-                              </a>
-                              .
-                            </p>
-                          ) : null
-                        }
-                      >
-                        {/* hack to add tooltip to a disabled button: https://github.com/react-component/tooltip/issues/18#issuecomment-411476678 */}
-                        <span
-                          style={{ cursor: isExecuteButtonDisabled ? 'not-allowed' : 'pointer' }}
-                        >
+                      {/* hack to add tooltip to a disabled button: https://github.com/react-component/tooltip/issues/18#issuecomment-411476678 */}
+                      <span style={{ cursor: isExecuteButtonDisabled ? 'not-allowed' : 'pointer' }}>
+                        <div className={s.buttonsWrapper}>
                           <ButtonGradient
                             disabled={isExecuteButtonDisabled}
                             height="lg"
-                            onClick={steps[step].next}
+                            onClick={handleClick}
                             style={isExecuteButtonDisabled ? { pointerEvents: 'none' } : {}}
                           >
-                            {getButtonTextForStep(step)}
+                            {getButtonTextForStep()}
                           </ButtonGradient>
-                        </span>
-                      </Popover>
-
-                      <div className={cn(s.summary)}>
-                        <Summary data={summaryData} />
-                      </div>
-                    </Form>
-                  </>
-                ) : (
-                  <>
-                    {step === 3 && <Summary data={summaryData} />}
-                    <div className={s.buttonsWrapper}>
-                      <ButtonGradient
-                        disabled={loading || !isFiatBalanceSufficient}
-                        height="lg"
-                        loading={loading}
-                        onClick={steps[step].callback.bind(steps[step])}
-                      >
-                        {getButtonTextForStep(step)}
-                      </ButtonGradient>
-                      <button
-                        className={s.backButton}
-                        disabled={loading}
-                        onClick={steps[step].prev}
-                      >
-                        &#8592; Go back
-                      </button>
+                        </div>
+                      </span>
+                    </Popover>
+                    <div className={cn(s.summary)}>
+                      <Summary data={summaryData} />
                     </div>
-                  </>
-                )}
+                  </Form>
+                </>
               </div>
             </>
-          ) : (
-            <div className={cn(s.form)}>
-              <div className={cn(s.lastStepAnimation)}>
-                <Lottie animationData={SuccessAnimation} autoplay loop />
-              </div>
-              <h1 className={cn(s.lastStepTitle)}>Congrats!</h1>
-              <p className={cn(s.lastStepText)}>You have successfully bought collateral tokens.</p>
-              <Summary data={summaryData} />
-              <Link href={`/auctions/`} passHref>
-                <ButtonGradient height="lg">Go to Auctions</ButtonGradient>
-              </Link>
-            </div>
           )}
         </div>
       </div>
