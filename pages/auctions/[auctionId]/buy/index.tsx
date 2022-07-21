@@ -86,7 +86,11 @@ const BuyCollateral = () => {
 
     console.log('[machine notifier hook] has allowance? ', proxyHasFiatAllowance)
     send({ type: 'SET_PROXY_HAS_FIAT_ALLOWANCE', proxyHasFiatAllowance })
-  }, [proxyHasFiatAllowance, isProxyAvailable, userProxyAddress, send])
+
+    console.log('[machine notifier hook] has moneta allowance? ', hasMonetaAllowance)
+
+    send({ type: 'SET_HAS_MONETA_ALLOWANCE', hasMonetaAllowance })
+  }, [hasMonetaAllowance, isProxyAvailable, proxyHasFiatAllowance, send, userProxyAddress])
 
   const fiatToPay = useMemo(() => {
     // TODO more closely est fiatToPay
@@ -243,7 +247,9 @@ const BuyCollateral = () => {
       case AuctionStates.setFiatAllowance:
         handler = approveProxyForFiat
         break
-
+      case AuctionStates.setMonetaAllowance:
+        handler = approveMoneta
+        break
       default:
         console.error('Unknown state, not setting button onClick handler')
         return

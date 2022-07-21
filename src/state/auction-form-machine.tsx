@@ -1,5 +1,5 @@
 import { createMachine, assign } from 'xstate'
-import { SET_FIAT_ALLOWANCE_PROXY_TEXT } from '../constants/misc'
+import { ENABLE_PROXY_FOR_FIAT_TEXT, SET_FIAT_ALLOWANCE_PROXY_TEXT } from '../constants/misc'
 // Available variables:
 // - Machine
 // - interpret
@@ -28,6 +28,9 @@ import { SET_FIAT_ALLOWANCE_PROXY_TEXT } from '../constants/misc'
 export enum AuctionStates {
   createProxy = 'CREATE_PROXY',
   setFiatAllowance = 'SET_FIAT_ALLOWANCE',
+  setMonetaAllowance = 'SET_MONETA_ALLOWANCE',
+  buyCollateral = 'BUY_COLLATERAL',
+
   success = 'SUCCESS',
 }
 
@@ -42,6 +45,7 @@ const auctionFormMachine = createMachine({
     stepNumber: 1,
   },
   on: {
+    // Setters updated in auction detail page's useEffect
     SET_HAS_PROXY: {
       actions: [
         (context) => console.log('has proxy b4: ', context.hasProxy),
@@ -54,37 +58,37 @@ const auctionFormMachine = createMachine({
         assign<any, any>((ctx, e) => (ctx.proxyHasFiatAllowance = e.proxyHasFiatAllowance)),
       ],
     },
+    SET_HAS_MONETA_ALLOWANCE: {
+      actions: [assign<any, any>((ctx, e) => (ctx.hasMonetaAllowance = e.hasMonetaAllowance))],
+    },
   },
   states: {
     [AuctionStates.createProxy]: {
       always: [{ target: AuctionStates.setFiatAllowance, cond: (context) => context.hasProxy }],
-      /* on: { */
-      /*   PROXY_CREATED: AuctionStates.createProxy, */
-      /*   // TODO: transition to next state by using setupProxy hook & dispatching PROXY_CREATED event on success */
-      /* }, */
       meta: {
         description: 'Create a Proxy to interact with auctions',
         buttonText: 'Create Proxy',
       },
     },
     [AuctionStates.setFiatAllowance]: {
-      /* on: { */
-      /* }, */
-      always: [{ target: AuctionStates.success, cond: (context) => context.proxyHasFiatAllowance }],
-      /* on: { */
-      /* FIAT_ALLOWANCE_GIVEN: AuctionStates.success, */
-      /* FIAT_ALLOWANCE_GIVEN: 'setMonetaAllowance', */
-      /* }, */
+      always: [
+        {
+          target: AuctionStates.setMonetaAllowance,
+          cond: (context) => context.proxyHasFiatAllowance,
+        },
+      ],
       meta: {
         description: 'Set Allowance for FIAT',
         buttonText: SET_FIAT_ALLOWANCE_PROXY_TEXT,
       },
     },
-    /* setMonetaAllowance: { */
-    /*   on: { */
-    /*     MONETA_ALLOWANCE_GIVEN: 'buyCollateral', */
-    /*   }, */
-    /* }, */
+    [AuctionStates.setMonetaAllowance]: {
+      always: [{ target: AuctionStates.success, cond: (context) => context.hasMonetaAllowance }],
+      meta: {
+        description: 'Enable proxy for FIAT',
+        buttonText: ENABLE_PROXY_FOR_FIAT_TEXT,
+      },
+    },
     /* buyCollateral: { */
     /*   on: { */
     /*     PURCHASE_AMOUNT_SUBMITTED: 'confirmPurchase', */
