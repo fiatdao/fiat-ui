@@ -7,6 +7,7 @@
 .top {
   padding: var(--theme-common-card-padding) var(--theme-common-card-padding) 28px;
 }
+
 .summary {
   padding: 24px 0 0 0;
 }
@@ -56,4 +57,12 @@
   padding: 0;
 
   @include text-gradient();
+}
+
+.balanceContainer {
+  display: flex;
+}
+
+.settings {
+  margin-left: 12px;
 }

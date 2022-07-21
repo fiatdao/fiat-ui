@@ -32,18 +32,6 @@ type ModifyCollateralAndDebt = BaseModify & {
 }
 
 type BuyCollateralAndModifyDebtERC1155 = BaseModify & {
-  // TODO: regen types so it matches args on VaultFCActions Contract for buyCollateralAndModifyDebt
-  // address vault
-  // address token
-  // uint256 tokenId
-  // address position
-  // address collateralizer
-  // address creditor
-  // uint256 fCashAmount
-  // int256 deltaNormalDebt
-  // uint256 minImpliedRate
-  // uint256 underlierAmount
-
   deltaDebt: BigNumber
   virtualRate: BigNumber
   fCashAmount: BigNumber
@@ -53,9 +41,11 @@ type BuyCollateralAndModifyDebtERC1155 = BaseModify & {
 
 type BuyCollateralAndModifyDebtERC20 = {
   vault: string
-  deltaDebt: BigNumber
-  virtualRate: BigNumber
+  // position defined in implementation
+  // collateralizer defined in implementation
+  // creditor defined in implementation
   underlierAmount: BigNumber
+  deltaDebt: BigNumber
   swapParams: {
     balancerVault: string // Address of the Balancer Vault
     poolId: BytesLike // Id bytes32 of the Element Convergent Curve Pool containing the collateral token
@@ -65,11 +55,34 @@ type BuyCollateralAndModifyDebtERC20 = {
     deadline: BigNumberish // uint256 Timestamp at which swap must be confirmed by [seconds]
     approve: BigNumberish // uint256 Amount of `assetIn` to approve for `balancerVault` for swapping `assetIn` for `assetOut`
   }
+  virtualRate: BigNumber
+}
+
+type SellCollateralAndModifyDebtERC20 = {
+  vault: string
+  deltaDebt: BigNumber
+  pTokenAmount: BigNumber
+  // position defined in implementation
+  // collateralizer defined in implementation
+  // creditor defined in implementation
+  swapParams: {
+    balancerVault: string // Address of the Balancer Vault
+    poolId: BytesLike // Id bytes32 of the Element Convergent Curve Pool containing the collateral token
+    assetIn: string // Underlier token address when adding collateral and `collateral` when removing
+    assetOut: string // Collateral token address when adding collateral and `underlier` when removing
+    minOutput: BigNumberish // uint256 Min. amount of tokens we would accept to receive from the swap, whether it is collateral or underlier
+    deadline: BigNumberish // uint256 Timestamp at which swap must be confirmed by [seconds]
+    approve: BigNumberish // uint256 Amount of `assetIn` to approve for `balancerVault` for swapping `assetIn` for `assetOut`
+  }
+  virtualRate: BigNumber
 }
 
 export type UseUserActions = {
   approveFIAT: (to: string) => ReturnType<TransactionResponse['wait']>
   depositCollateral: (params: DepositCollateral) => ReturnType<TransactionResponse['wait']>
+  sellCollateralAndModifyDebtERC20: (
+    params: SellCollateralAndModifyDebtERC20,
+  ) => ReturnType<TransactionResponse['wait']>
   modifyCollateralAndDebt: (
     params: ModifyCollateralAndDebt,
   ) => ReturnType<TransactionResponse['wait']>
@@ -332,6 +345,71 @@ export const useUserActions = (type?: string): UseUserActions => {
     ],
   )
 
+  // VaultEPTActions sellCollateralAndModifyDebt
+  const sellCollateralAndModifyDebtERC20 = useCallback(
+    async (params: SellCollateralAndModifyDebtERC20) => {
+      if (!address || !userProxy || !userProxyAddress) {
+        throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
+      }
+
+      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
+        0,
+        8,
+      )
+
+      const sellCollateralAndModifyDebtEncoded = userActionEPT.interface.encodeFunctionData(
+        'sellCollateralAndModifyDebt',
+        [
+          params.vault, // address vault
+          userProxyAddress, // address position
+          address, // address collateralizer
+          address, // address creditor
+          params.pTokenAmount.toFixed(0, 8), // uint256 pTokenAmount,
+          deltaNormalDebt, // int256 deltaNormalDebt,
+          params.swapParams, // calldata swapParams
+        ],
+      )
+
+      // please sign
+      notification.requestSign()
+
+      const tx: TransactionResponse | TransactionError = await userProxy
+        .execute(activeContract.address, sellCollateralAndModifyDebtEncoded, {
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            activeContract.address,
+            sellCollateralAndModifyDebtEncoded,
+          ]),
+        })
+        .catch(notification.handleTxError)
+
+      if (tx instanceof TransactionError) {
+        throw tx
+      }
+
+      // awaiting exec
+      notification.awaitingTx(tx.hash)
+
+      const receipt = await tx.wait().catch(notification.handleTxError)
+
+      if (receipt instanceof TransactionError) {
+        throw receipt
+      }
+
+      // tx successful
+      notification.successfulTx(tx.hash)
+
+      return receipt
+    },
+    [
+      address,
+      userProxy,
+      userProxyAddress,
+      userActionEPT.interface,
+      activeContract.address,
+      notification,
+    ],
+  )
+
   // VaultEPTActions buyCollateralAndModifyDebt
   const buyCollateralAndModifyDebtERC20 = useCallback(
     async (params: BuyCollateralAndModifyDebtERC20) => {
@@ -419,6 +497,7 @@ export const useUserActions = (type?: string): UseUserActions => {
   )
 
   return {
+    sellCollateralAndModifyDebtERC20,
     approveFIAT,
     depositCollateral,
     modifyCollateralAndDebt,

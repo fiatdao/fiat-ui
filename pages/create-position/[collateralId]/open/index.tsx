@@ -29,7 +29,6 @@ import { useQueryParam } from '@/src/hooks/useQueryParam'
 import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
 import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import useUserProxy from '@/src/hooks/useUserProxy'
-import { getTokenBySymbol } from '@/src/providers/knownTokensProvider'
 import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
 import SuccessAnimation from '@/src/resources/animations/success-animation.json'
 import stepperMachine, { TITLES_BY_STEP } from '@/src/state/open-position-form'
@@ -45,6 +44,8 @@ import {
   perSecondToAPR,
 } from '@/src/web3/utils'
 import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
+import { getDecimalsFromScale } from '@/src/constants/bondTokens'
+import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
 import StepperTitle from '@/src/components/custom/stepper-title'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
@@ -73,7 +74,10 @@ const FormERC20: React.FC<{
   const erc20 = useERC20Allowance(tokenAddress, userProxyAddress ?? '')
   const erc1155 = useERC155Allowance(tokenAddress, userProxyAddress ?? '')
 
-  const underlierDecimals = getTokenBySymbol(collateral.underlierSymbol ?? '')?.decimals
+  const underlierDecimals = useMemo(
+    () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
+    [collateral],
+  )
 
   const [underlierToPToken] = useUnderlyingExchangeValue({
     vault: collateral?.vault?.address ?? '',
@@ -256,7 +260,8 @@ const FormERC20: React.FC<{
       />
       <div className={cn(s.form)}>
         {[1, 4].includes(activeMachine.context.currentStepNumber) &&
-          SHOW_UNDERLYING_FLOW && ( // Feature Flag
+          // Show underlying ui if SHOW_UNDERLYING_FLOW is true. Always show for element
+          (SHOW_UNDERLYING_FLOW || collateral.vault.type == VaultType.ELEMENT) && ( // Feature Flag
             <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
               <RadioTab
                 checked={tab === CreatePositionTab.asset}

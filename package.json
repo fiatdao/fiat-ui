@@ -79,6 +79,7 @@
     "xstate": "^4.28.1"
   },
   "devDependencies": {
+    "@curvefi/api": "^2.5.0",
     "@svgr/webpack": "^6.1.2",
     "@typechain/ethers-v5": "7.0.0",
     "@types/identicon.js": "^2.3.1",
