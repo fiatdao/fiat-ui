@@ -1,5 +1,5 @@
-import { createMachine, assign } from 'xstate'
 import { ENABLE_PROXY_FOR_FIAT_TEXT, SET_FIAT_ALLOWANCE_PROXY_TEXT } from '../constants/misc'
+import { assign, createMachine } from 'xstate'
 // Available variables:
 // - Machine
 // - interpret
@@ -30,7 +30,6 @@ export enum AuctionStates {
   setFiatAllowance = 'SET_FIAT_ALLOWANCE',
   setMonetaAllowance = 'SET_MONETA_ALLOWANCE',
   buyCollateral = 'BUY_COLLATERAL',
-
   success = 'SUCCESS',
 }
 
@@ -47,11 +46,7 @@ const auctionFormMachine = createMachine({
   on: {
     // Setters updated in auction detail page's useEffect
     SET_HAS_PROXY: {
-      actions: [
-        (context) => console.log('has proxy b4: ', context.hasProxy),
-        assign<any, any>((ctx, e) => (ctx.hasProxy = e.hasProxy)),
-        (context) => console.log('has proxy after: ', context.hasProxy),
-      ],
+      actions: [assign<any, any>((ctx, e) => (ctx.hasProxy = e.hasProxy))],
     },
     SET_PROXY_HAS_FIAT_ALLOWANCE: {
       actions: [
@@ -83,26 +78,27 @@ const auctionFormMachine = createMachine({
       },
     },
     [AuctionStates.setMonetaAllowance]: {
-      always: [{ target: AuctionStates.success, cond: (context) => context.hasMonetaAllowance }],
+      always: [
+        { target: AuctionStates.buyCollateral, cond: (context) => context.hasMonetaAllowance },
+      ],
       meta: {
         description: 'Enable proxy for FIAT',
         buttonText: ENABLE_PROXY_FOR_FIAT_TEXT,
       },
     },
-    /* buyCollateral: { */
-    /*   on: { */
-    /*     PURCHASE_AMOUNT_SUBMITTED: 'confirmPurchase', */
-    /*   }, */
-    /* }, */
-    /* confirmPurchase: { */
-    /*   on: { */
-    /*     PURCHASE_CONFIRMED: 'success', */
-    /*   }, */
-    /* }, */
-    [AuctionStates.success]: {
-      type: 'final',
+    [AuctionStates.buyCollateral]: {
+      on: {
+        PURCHASE_AMOUNT_SUBMITTED: AuctionStates.success,
+      },
       meta: {
-        description: '',
+        description: 'Select the amount of collateral to purchase',
+        buttonText: 'Buy collateral',
+      },
+    },
+    [AuctionStates.success]: {
+      // don't designate type: 'final' because that prevents anymore transitions
+      on: {
+        // TODO: back to purchase more transition
       },
     },
   },

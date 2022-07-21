@@ -45,14 +45,14 @@ const BuyCollateral = () => {
   const { data: auctionData } = useAuction(auctionId)
   const [form] = AntdForm.useForm<FormProps>()
   const {
-    approve,
     approveMoneta,
+    approveProxyForFiat,
     buyCollateral,
-    hasAllowance,
     hasMonetaAllowance,
     loading,
     maxCredit,
     maxPrice,
+    proxyHasFiatAllowance,
   } = useBuyCollateralForm(auctionData)
   const [FIATBalance, refetchFIATBalance] = useFIATBalance(true)
   const [isPurchaseAmountValid, setIsPurchaseAmountValid] = useState(false)
@@ -128,7 +128,7 @@ const BuyCollateral = () => {
       description: `Select the amount of collateral to purchase`,
       buttonText: 'Buy collateral',
       next() {
-        if (!hasAllowance) {
+        if (!proxyHasFiatAllowance) {
           setStep(1)
         } else if (!hasMonetaAllowance) {
           setStep(2)
@@ -157,7 +157,7 @@ const BuyCollateral = () => {
         setStep(0)
       },
       async callback() {
-        await approve()
+        await approveProxyForFiat()
         this.next()
       },
     },
@@ -168,7 +168,7 @@ const BuyCollateral = () => {
         setStep(3)
       },
       prev() {
-        if (!hasAllowance) {
+        if (!proxyHasFiatAllowance) {
           setStep(1)
         } else {
           setStep(0)
@@ -188,7 +188,7 @@ const BuyCollateral = () => {
       prev() {
         if (!hasMonetaAllowance) {
           setStep(2)
-        } else if (!hasAllowance) {
+        } else if (!proxyHasFiatAllowance) {
           setStep(1)
         } else {
           setStep(0)
