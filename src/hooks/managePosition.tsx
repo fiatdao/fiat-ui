@@ -245,9 +245,10 @@ export const useManagePositionForm = (
     if (collateral?.vault.type !== VaultType.ELEMENT) {
       return ZERO_BIG_NUMBER
     }
+
     const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
     const estimate = singlePTokenToUnderlier
-      .times(underlierWithdrawAmount)
+      ?.times(underlierWithdrawAmount)
       .unscaleBy(underlierDecimals)
     return estimate
   }, [
@@ -700,7 +701,7 @@ export const useManagePositionForm = (
       ? [
           {
             title: 'Estimated underlier to receive',
-            value: estimatedUnderlierToReceive.toFixed(2),
+            value: estimatedUnderlierToReceive?.toFixed(2),
           },
           ...getUnderlyingDataSummary(
             marketRate,
