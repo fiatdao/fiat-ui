@@ -69,6 +69,7 @@ export const useManagePositionForm = (
     approveFIAT,
     buyCollateralAndModifyDebtERC20,
     modifyCollateralAndDebt,
+    redeemCollateralAndModifyDebtERC20,
     sellCollateralAndModifyDebtERC20,
   } = useUserActions(position?.vaultType)
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
@@ -603,7 +604,6 @@ export const useManagePositionForm = (
             break
           }
           case VaultType.YIELD:
-            // notional should just use modifyCollateralAndDebt to redeem
             console.error('unimplemented')
             break
           case VaultType.NOTIONAL:
@@ -615,8 +615,35 @@ export const useManagePositionForm = (
             console.error('Attempted to sellCollateralAndModifyDebtERC20 for unknown vault type')
         }
       } else if (redeemAmount !== ZERO_BIG_NUMBER && redeemAmount !== undefined) {
-        // TODO:
+        if (!collateral) {
+          console.error('Attempted to withdraw underlier without valid collateral')
+          return
+        }
         console.log('redeem')
+
+        switch (position?.vaultType) {
+          case VaultType.ELEMENT: {
+            await redeemCollateralAndModifyDebtERC20({
+              vault: collateral.vault.address,
+              token: collateral.address ?? '',
+              pTokenAmount: redeemAmount,
+              deltaDebt,
+              virtualRate: collateral.vault.virtualRate,
+            })
+            await updateUnderlying()
+            break
+          }
+          case VaultType.YIELD:
+            console.error('unimplemented')
+            break
+          case VaultType.NOTIONAL:
+            // notional should never hit this, only redeemable past maturity. modifyCollateralAndDebt will work for redeem,
+            // but it's more idiomatic to implement redeemCollateralAndModifyDebt
+            console.error('unimplemented')
+            break
+          default:
+            console.error('Attempted to redeemCollateralAndModifyDebtERC20 for unknown vault type')
+        }
       } else {
         await modifyCollateralAndDebt({
           vault: position?.protocolAddress,

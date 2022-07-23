@@ -88,6 +88,18 @@ type RedeemCollateralAndModifyDebtERC20 = {
   virtualRate: BigNumber
 }
 
+type RedeemCollateralAndModifyDebtERC1155 = {
+  vault: string // Address of the Vault
+  token: string // Address of the collateral token (pToken)
+  tokenId: string // Address of the collateral token (pToken)
+  // position defined in implementation
+  // collateralizer defined in implementation
+  // creditor defined in implementation
+  fCashAmount: BigNumber
+  deltaDebt: BigNumber
+  virtualRate: BigNumber
+}
+
 export type UseUserActions = {
   approveFIAT: (to: string) => ReturnType<TransactionResponse['wait']>
   depositCollateral: (params: DepositCollateral) => ReturnType<TransactionResponse['wait']>
@@ -100,6 +112,9 @@ export type UseUserActions = {
   ) => ReturnType<TransactionResponse['wait']>
   redeemCollateralAndModifyDebtERC20: (
     params: RedeemCollateralAndModifyDebtERC20,
+  ) => ReturnType<TransactionResponse['wait']>
+  redeemCollateralAndModifyDebtERC1155: (
+    params: RedeemCollateralAndModifyDebtERC1155,
   ) => ReturnType<TransactionResponse['wait']>
   buyCollateralAndModifyDebtERC1155: (
     params: BuyCollateralAndModifyDebtERC1155,
@@ -562,6 +577,71 @@ export const useUserActions = (type?: string): UseUserActions => {
     ],
   )
 
+  const redeemCollateralAndModifyDebtERC1155 = useCallback(
+    async (params: RedeemCollateralAndModifyDebtERC1155) => {
+      if (!address || !userProxy || !userProxyAddress) {
+        throw new Error(`missing information: ${{ address, userProxy, userProxyAddress }}`)
+      }
+
+      const deltaNormalDebt = calculateNormalDebt(params.deltaDebt, params.virtualRate).toFixed(
+        0,
+        8,
+      )
+
+      const redeemCollateralAndModifyDebtEncoded = userActionFC.interface.encodeFunctionData(
+        'redeemCollateralAndModifyDebt',
+        [
+          params.vault, // address vault
+          params.token,
+          params.tokenId,
+          userProxyAddress, // address position
+          address, // address collateralizer
+          address, // address creditor
+          params.fCashAmount.toFixed(0, 8), // uint256 pTokenAmount,
+          deltaNormalDebt, // int256 deltaNormalDebt,
+        ],
+      )
+
+      // please sign
+      notification.requestSign()
+
+      const tx: TransactionResponse | TransactionError = await userProxy
+        .execute(activeContract.address, redeemCollateralAndModifyDebtEncoded, {
+          gasLimit: await estimateGasLimit(userProxy, 'execute', [
+            activeContract.address,
+            redeemCollateralAndModifyDebtEncoded,
+          ]),
+        })
+        .catch(notification.handleTxError)
+
+      if (tx instanceof TransactionError) {
+        throw tx
+      }
+
+      // awaiting exec
+      notification.awaitingTx(tx.hash)
+
+      const receipt = await tx.wait().catch(notification.handleTxError)
+
+      if (receipt instanceof TransactionError) {
+        throw receipt
+      }
+
+      // tx successful
+      notification.successfulTx(tx.hash)
+
+      return receipt
+    },
+    [
+      address,
+      userProxy,
+      userProxyAddress,
+      userActionFC.interface,
+      activeContract.address,
+      notification,
+    ],
+  )
+
   const depositCollateral = useCallback(
     (params: DepositCollateral) => {
       return modifyCollateralAndDebt({
@@ -581,5 +661,6 @@ export const useUserActions = (type?: string): UseUserActions => {
     buyCollateralAndModifyDebtERC20,
     buyCollateralAndModifyDebtERC1155,
     redeemCollateralAndModifyDebtERC20,
+    redeemCollateralAndModifyDebtERC1155,
   }
 }
