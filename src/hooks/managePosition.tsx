@@ -617,7 +617,6 @@ export const useManagePositionForm = (
       } else if (redeemAmount !== ZERO_BIG_NUMBER && redeemAmount !== undefined) {
         // TODO:
         console.log('redeem')
-        // notional should just use modifyCollateralAndDebt to redeem
       } else {
         await modifyCollateralAndDebt({
           vault: position?.protocolAddress,
