@@ -27,7 +27,7 @@ const calculateStablecoinBondApr = (collateral: Collateral, marketRate: BigNumbe
 }
 
 /**
- * Reduces a sequence of names to initials.
+ * Builds underlying data summary items for deposit and withdraw underlier actions
  * @param  {BigNumber}  marketRate        The rough exchange rate for 1 underlier -> 1 bond token (e.g 0.9953...)
  * @param  {number}     slippageTolerance User's chosen slippage preference
  * @param  {Collateral} collateral        The collateral to calcualate summary data for

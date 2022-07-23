@@ -65,13 +65,15 @@ export const isFiatTab = (key: string): key is FiatTabKey => {
   return FIAT_KEYS.includes(key as FiatTabKey)
 }
 
-const COLLATERAL_KEYS = [
-  'deposit',
-  'withdraw',
-  'underlierWithdrawAmount',
-  'underlierDepositAmount',
-] as const
+const WITHDRAW_COLLATERAL_KEYS = ['withdraw', 'underlierWithdrawAmount', 'redeem']
+export type WithdrawCollateralTabKey = typeof COLLATERAL_KEYS[number]
+
+const COLLATERAL_KEYS = ['deposit', 'underlierDepositAmount', ...WITHDRAW_COLLATERAL_KEYS] as const
 export type CollateralTabKey = typeof COLLATERAL_KEYS[number]
+
+const isWithdrawCollateralKey = (key: string): key is WithdrawCollateralTabKey => {
+  return WITHDRAW_COLLATERAL_KEYS.includes(key as WithdrawCollateralTabKey)
+}
 
 export const isCollateralTab = (key: string): key is CollateralTabKey => {
   return COLLATERAL_KEYS.includes(key as CollateralTabKey)
@@ -84,6 +86,7 @@ export type PositionManageFormFields = {
   repay: BigNumber | undefined
   withdraw: BigNumber | undefined
   underlierWithdrawAmount: BigNumber | undefined
+  redeemAmount: BigNumber | undefined
 }
 
 const defaultManageFormFields = {
@@ -93,6 +96,7 @@ const defaultManageFormFields = {
   underlierWithdrawAmount: undefined,
   deposit: undefined,
   underlierDepositAmount: undefined,
+  redeemAmount: undefined,
 }
 
 const PositionManage = () => {
@@ -276,21 +280,21 @@ const PositionManage = () => {
   }, [updateNextState])
 
   useEffect(() => {
-    // if switching to tab and no subtab is selected, select first tab in the section that makes sense that
+    // If switching to tab and no subtab is selected, select first tab in the section that makes sense that
     setActiveTabKey(activeSection === 'collateral' ? 'deposit' : 'borrow')
   }, [activeSection])
 
   useEffect(() => {
     if (activeSection === 'collateral') {
-      if (isMatured && activeTabKey !== 'withdraw' && activeTabKey !== 'underlierWithdrawAmount') {
+      if (isMatured && !isWithdrawCollateralKey(activeTabKey)) {
         setActiveTabKey('withdraw')
       }
     }
   }, [activeSection, activeTabKey, isMatured])
 
-  const getMaturedCollateralMessage = useCallback((): string | null => {
+  const getMaturedFCashMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
-      return 'Note: This collateral has matured; you will receive the underlying asset'
+      return 'Note: This fCash has matured; you will receive the underlying asset'
     }
     return null
   }, [position, isMatured])
@@ -422,22 +426,41 @@ const PositionManage = () => {
                           Withdraw
                         </Tab>
                         {shouldShowUnderlyingUi ? (
-                          <Tab
-                            isActive={'underlierWithdrawAmount' === activeTabKey}
-                            onClick={() => {
-                              form.setFieldsValue({
-                                ...defaultManageFormFields,
-                                underlierWithdrawAmount:
-                                  form.getFieldValue('underlierWithdrawAmount'),
-                                // maintain fiat tab values
-                                borrow: form.getFieldValue('borrow'),
-                                repay: form.getFieldValue('repay'),
-                              })
-                              setActiveTabKey('underlierWithdrawAmount')
-                            }}
-                          >
-                            Withdraw Underlier
-                          </Tab>
+                          <>
+                            <Tab
+                              isActive={'underlierWithdrawAmount' === activeTabKey}
+                              onClick={() => {
+                                form.setFieldsValue({
+                                  ...defaultManageFormFields,
+                                  underlierWithdrawAmount:
+                                    form.getFieldValue('underlierWithdrawAmount'),
+                                  // maintain fiat tab values
+                                  borrow: form.getFieldValue('borrow'),
+                                  repay: form.getFieldValue('repay'),
+                                })
+                                setActiveTabKey('underlierWithdrawAmount')
+                              }}
+                            >
+                              Withdraw Underlier
+                            </Tab>
+                            {isMatured && (
+                              <Tab
+                                isActive={'redeem' === activeTabKey}
+                                onClick={() => {
+                                  form.setFieldsValue({
+                                    ...defaultManageFormFields,
+                                    redeemAmount: form.getFieldValue('redeemAmount'),
+                                    // maintain fiat tab values
+                                    borrow: form.getFieldValue('borrow'),
+                                    repay: form.getFieldValue('repay'),
+                                  })
+                                  setActiveTabKey('redeem')
+                                }}
+                              >
+                                Redeem Underlier
+                              </Tab>
+                            )}
+                          </>
                         ) : null}
                       </Tabs>
                       {'deposit' === activeTabKey && position && (
@@ -491,7 +514,6 @@ const PositionManage = () => {
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
-                            description={getMaturedCollateralMessage()}
                             title={'Amount to withdraw'}
                             value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
                           />
@@ -514,6 +536,7 @@ const PositionManage = () => {
                         <>
                           <div className={cn(s.balanceContainer)}>
                             <Balance
+                              description={getMaturedFCashMessage()}
                               title="Amount to withdraw and swap for underlier"
                               value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
                             />
@@ -523,6 +546,33 @@ const PositionManage = () => {
                             />
                           </div>
                           <Form.Item name="underlierWithdrawAmount" required>
+                            <TokenAmount
+                              displayDecimals={4}
+                              healthFactorValue={healthFactor}
+                              mainAsset={position.vaultName}
+                              max={maxWithdrawAmount}
+                              maximumFractionDigits={4}
+                              numericInputDisabled={formDisabled}
+                              secondaryAsset={position.underlier.symbol}
+                              slider={'healthFactorVariant'}
+                              sliderDisabled={formDisabled}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
+                      {'redeem' === activeTabKey && position && (
+                        <>
+                          <div className={cn(s.balanceContainer)}>
+                            <Balance
+                              title="Amount to redeem"
+                              value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
+                            />
+                            <SettingFilled
+                              className={cn(s.settings)}
+                              onClick={() => setSwapSettingsOpen(!swapSettingsOpen)}
+                            />
+                          </div>
+                          <Form.Item name="redeemAmount" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
