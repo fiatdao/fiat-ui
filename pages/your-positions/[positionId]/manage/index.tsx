@@ -25,6 +25,7 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { Position } from '@/src/utils/data/positions'
 import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
+import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
 import { SettingFilled } from '@ant-design/icons'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -64,13 +65,15 @@ export const isFiatTab = (key: string): key is FiatTabKey => {
   return FIAT_KEYS.includes(key as FiatTabKey)
 }
 
-const COLLATERAL_KEYS = [
-  'deposit',
-  'withdraw',
-  'underlierWithdrawAmount',
-  'underlierDepositAmount',
-] as const
+const WITHDRAW_COLLATERAL_KEYS = ['withdraw', 'underlierWithdrawAmount', 'redeem']
+export type WithdrawCollateralTabKey = typeof COLLATERAL_KEYS[number]
+
+const COLLATERAL_KEYS = ['deposit', 'underlierDepositAmount', ...WITHDRAW_COLLATERAL_KEYS] as const
 export type CollateralTabKey = typeof COLLATERAL_KEYS[number]
+
+const isWithdrawCollateralKey = (key: string): key is WithdrawCollateralTabKey => {
+  return WITHDRAW_COLLATERAL_KEYS.includes(key as WithdrawCollateralTabKey)
+}
 
 export const isCollateralTab = (key: string): key is CollateralTabKey => {
   return COLLATERAL_KEYS.includes(key as CollateralTabKey)
@@ -83,6 +86,7 @@ export type PositionManageFormFields = {
   repay: BigNumber | undefined
   withdraw: BigNumber | undefined
   underlierWithdrawAmount: BigNumber | undefined
+  redeemAmount: BigNumber | undefined
 }
 
 const defaultManageFormFields = {
@@ -92,6 +96,7 @@ const defaultManageFormFields = {
   underlierWithdrawAmount: undefined,
   deposit: undefined,
   underlierDepositAmount: undefined,
+  redeemAmount: undefined,
 }
 
 const PositionManage = () => {
@@ -275,21 +280,26 @@ const PositionManage = () => {
   }, [updateNextState])
 
   useEffect(() => {
-    // if switching to tab and no subtab is selected, select first tab in the section that makes sense that
+    // If switching to tab and no subtab is selected, select first tab in the section that makes sense that
     setActiveTabKey(activeSection === 'collateral' ? 'deposit' : 'borrow')
   }, [activeSection])
 
   useEffect(() => {
     if (activeSection === 'collateral') {
-      if (isMatured && activeTabKey !== 'withdraw' && activeTabKey !== 'underlierWithdrawAmount') {
-        setActiveTabKey('withdraw')
+      if (isMatured) {
+        if (collateral?.vault.type === VaultType.NOTIONAL) {
+          // expired notional should only show redeem tab, can't be transferred past maturity
+          setActiveTabKey('redeem')
+        } else if (!isWithdrawCollateralKey(activeTabKey)) {
+          setActiveTabKey('withdraw')
+        }
       }
     }
-  }, [activeSection, activeTabKey, isMatured])
+  }, [activeSection, activeTabKey, collateral?.vault.type, isMatured])
 
-  const getMaturedCollateralMessage = useCallback((): string | null => {
+  const getMaturedFCashMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
-      return 'Note: This collateral has matured; you will receive the underlying asset'
+      return 'Note: This fCash has matured; you will receive the underlying asset'
     }
     return null
   }, [position, isMatured])
@@ -340,6 +350,111 @@ const PositionManage = () => {
     </div>
   )
 
+  const renderCollateralTabs = useCallback(() => {
+    const depositTab = (
+      <Tab
+        isActive={'deposit' === activeTabKey}
+        onClick={() => {
+          form.setFieldsValue({
+            ...defaultManageFormFields,
+            deposit: form.getFieldValue('deposit'),
+            // maintain fiat tab values
+            borrow: form.getFieldValue('borrow'),
+            repay: form.getFieldValue('repay'),
+          })
+          setActiveTabKey('deposit')
+        }}
+      >
+        Deposit
+      </Tab>
+    )
+
+    const depositUnderlierTab = (
+      <Tab
+        isActive={'underlierDepositAmount' === activeTabKey}
+        onClick={() => {
+          form.setFieldsValue({
+            ...defaultManageFormFields,
+            underlierDepositAmount: form.getFieldValue('underlierDepositAmount'),
+            // maintain fiat tab values
+            borrow: form.getFieldValue('borrow'),
+            repay: form.getFieldValue('repay'),
+          })
+          setActiveTabKey('underlierDepositAmount')
+        }}
+      >
+        Deposit Underlier
+      </Tab>
+    )
+
+    const withdrawTab = (
+      <Tab
+        isActive={'withdraw' === activeTabKey}
+        onClick={() => {
+          form.setFieldsValue({
+            ...defaultManageFormFields,
+            withdraw: form.getFieldValue('withdraw'),
+            // maintain fiat tab values
+            borrow: form.getFieldValue('borrow'),
+            repay: form.getFieldValue('repay'),
+          })
+          setActiveTabKey('withdraw')
+        }}
+      >
+        Withdraw
+      </Tab>
+    )
+
+    const withdrawUnderlierTab = (
+      <Tab
+        isActive={'underlierWithdrawAmount' === activeTabKey}
+        onClick={() => {
+          form.setFieldsValue({
+            ...defaultManageFormFields,
+            underlierWithdrawAmount: form.getFieldValue('underlierWithdrawAmount'),
+            // maintain fiat tab values
+            borrow: form.getFieldValue('borrow'),
+            repay: form.getFieldValue('repay'),
+          })
+          setActiveTabKey('underlierWithdrawAmount')
+        }}
+      >
+        Withdraw Underlier
+      </Tab>
+    )
+
+    const redeemTab = (
+      <Tab
+        isActive={'redeem' === activeTabKey}
+        onClick={() => {
+          form.setFieldsValue({
+            ...defaultManageFormFields,
+            redeemAmount: form.getFieldValue('redeemAmount'),
+            // maintain fiat tab values
+            borrow: form.getFieldValue('borrow'),
+            repay: form.getFieldValue('repay'),
+          })
+          setActiveTabKey('redeem')
+        }}
+      >
+        Redeem
+      </Tab>
+    )
+
+    if (isMatured && collateral?.vault.type === VaultType.NOTIONAL) {
+      // If collateral is matured fcash, show only redeem tab
+      return redeemTab
+    } else if (isMatured) {
+      // If matured and not fcash, show all withdraw tabs
+      return shouldShowUnderlyingUi ? [withdrawTab, withdrawUnderlierTab, redeemTab] : [withdrawTab]
+    } else {
+      // If not matured, show all collateral tabs except redeem tabs
+      return shouldShowUnderlyingUi
+        ? [depositTab, depositUnderlierTab, withdrawTab, withdrawUnderlierTab]
+        : [depositTab, withdrawTab]
+    }
+  }, [activeTabKey, collateral?.vault.type, form, isMatured, shouldShowUnderlyingUi])
+
   return (
     <>
       <SwapSettingsModal
@@ -367,82 +482,11 @@ const PositionManage = () => {
                 <div className={cn(s.component)}>
                   {shouldRenderCollateralTabs ? (
                     <>
-                      <Tabs className={cn(s.tabs)}>
-                        {!isMatured && (
-                          <>
-                            <Tab
-                              isActive={'deposit' === activeTabKey}
-                              onClick={() => {
-                                form.setFieldsValue({
-                                  ...defaultManageFormFields,
-                                  deposit: form.getFieldValue('deposit'),
-                                  // maintain fiat tab values
-                                  borrow: form.getFieldValue('borrow'),
-                                  repay: form.getFieldValue('repay'),
-                                })
-                                setActiveTabKey('deposit')
-                              }}
-                            >
-                              Deposit
-                            </Tab>
-                            {shouldShowUnderlyingUi ? (
-                              <Tab
-                                isActive={'underlierDepositAmount' === activeTabKey}
-                                onClick={() => {
-                                  form.setFieldsValue({
-                                    ...defaultManageFormFields,
-                                    underlierDepositAmount:
-                                      form.getFieldValue('underlierDepositAmount'),
-                                    // maintain fiat tab values
-                                    borrow: form.getFieldValue('borrow'),
-                                    repay: form.getFieldValue('repay'),
-                                  })
-                                  setActiveTabKey('underlierDepositAmount')
-                                }}
-                              >
-                                Deposit Underlier
-                              </Tab>
-                            ) : null}
-                          </>
-                        )}
-                        <Tab
-                          isActive={'withdraw' === activeTabKey}
-                          onClick={() => {
-                            form.setFieldsValue({
-                              ...defaultManageFormFields,
-                              withdraw: form.getFieldValue('withdraw'),
-                              // maintain fiat tab values
-                              borrow: form.getFieldValue('borrow'),
-                              repay: form.getFieldValue('repay'),
-                            })
-                            setActiveTabKey('withdraw')
-                          }}
-                        >
-                          Withdraw
-                        </Tab>
-                        {shouldShowUnderlyingUi ? (
-                          <Tab
-                            isActive={'underlierWithdrawAmount' === activeTabKey}
-                            onClick={() => {
-                              form.setFieldsValue({
-                                ...defaultManageFormFields,
-                                underlierWithdrawAmount:
-                                  form.getFieldValue('underlierWithdrawAmount'),
-                                // maintain fiat tab values
-                                borrow: form.getFieldValue('borrow'),
-                                repay: form.getFieldValue('repay'),
-                              })
-                              setActiveTabKey('underlierWithdrawAmount')
-                            }}
-                          >
-                            Withdraw Underlier
-                          </Tab>
-                        ) : null}
-                      </Tabs>
+                      <Tabs className={cn(s.tabs)}>{renderCollateralTabs()}</Tabs>
                       {'deposit' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Amount to deposit"
+                            title="Amount of collateral to deposit"
                             value={`Available: ${availableDepositAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="deposit" required>
@@ -490,8 +534,7 @@ const PositionManage = () => {
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
-                            description={getMaturedCollateralMessage()}
-                            title={'Amount to withdraw'}
+                            title={'Amount of collateral to withdraw'}
                             value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="withdraw" required>
@@ -536,6 +579,34 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
+                      {'redeem' === activeTabKey && position && (
+                        <>
+                          <div className={cn(s.balanceContainer)}>
+                            <Balance
+                              description={getMaturedFCashMessage()}
+                              title="Amount of collateral to redeem"
+                              value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
+                            />
+                            <SettingFilled
+                              className={cn(s.settings)}
+                              onClick={() => setSwapSettingsOpen(!swapSettingsOpen)}
+                            />
+                          </div>
+                          <Form.Item name="redeemAmount" required>
+                            <TokenAmount
+                              displayDecimals={4}
+                              healthFactorValue={healthFactor}
+                              mainAsset={position.vaultName}
+                              max={maxWithdrawAmount}
+                              maximumFractionDigits={4}
+                              numericInputDisabled={formDisabled}
+                              secondaryAsset={position.underlier.symbol}
+                              slider={'healthFactorVariant'}
+                              sliderDisabled={formDisabled}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
                     </>
                   ) : (
                     <>
@@ -544,7 +615,7 @@ const PositionManage = () => {
                           isActive={'borrow' === activeTabKey}
                           onClick={() => {
                             form.setFieldsValue({
-                              // leave collateral tabs untouched, reset other fiat subtab
+                              // leave collateral tab fields untouched, reset other fiat subtab
                               repay: undefined,
                             })
                             setActiveTabKey('borrow')
@@ -556,7 +627,7 @@ const PositionManage = () => {
                           isActive={'repay' === activeTabKey}
                           onClick={() => {
                             form.setFieldsValue({
-                              // leave collateral tabs untouched, reset other fiat subtab
+                              // leave collateral tab fields untouched, reset other fiat subtab
                               borrow: undefined,
                             })
                             setActiveTabKey('repay')
