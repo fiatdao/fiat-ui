@@ -70,6 +70,7 @@ export const useManagePositionForm = (
     buyCollateralAndModifyDebtERC20,
     modifyCollateralAndDebt,
     redeemCollateralAndModifyDebtERC20,
+    redeemCollateralAndModifyDebtERC1155,
     sellCollateralAndModifyDebtERC20,
   } = useUserActions(position?.vaultType)
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
@@ -607,8 +608,6 @@ export const useManagePositionForm = (
             console.error('unimplemented')
             break
           case VaultType.NOTIONAL:
-            // notional should never hit this, only redeemable past maturity. modifyCollateralAndDebt will work for redeem,
-            // but it's more idiomatic to implement redeemCollateralAndModifyDebt
             console.error('unimplemented')
             break
           default:
@@ -616,17 +615,17 @@ export const useManagePositionForm = (
         }
       } else if (redeemAmount !== ZERO_BIG_NUMBER && redeemAmount !== undefined) {
         if (!collateral) {
-          console.error('Attempted to withdraw underlier without valid collateral')
+          console.error('Attempted to redeem underlier without valid collateral')
           return
         }
-        console.log('redeem')
 
+        const redeemAmountFixedPoint = getNonHumanValue(redeemAmount, underlierDecimals)
         switch (position?.vaultType) {
           case VaultType.ELEMENT: {
             await redeemCollateralAndModifyDebtERC20({
               vault: collateral.vault.address,
               token: collateral.address ?? '',
-              pTokenAmount: redeemAmount,
+              pTokenAmount: redeemAmountFixedPoint,
               deltaDebt,
               virtualRate: collateral.vault.virtualRate,
             })
@@ -637,9 +636,18 @@ export const useManagePositionForm = (
             console.error('unimplemented')
             break
           case VaultType.NOTIONAL:
-            // notional should never hit this, only redeemable past maturity. modifyCollateralAndDebt will work for redeem,
-            // but it's more idiomatic to implement redeemCollateralAndModifyDebt
-            console.error('unimplemented')
+            // fun fact, modifyCollateralAndDebt will redeem for notional,
+            // but it's more idiomatic to call redeemCollateralAndModifyDebt
+            console.log('redeem amount: ', redeemAmountFixedPoint.toString())
+            await redeemCollateralAndModifyDebtERC1155({
+              vault: collateral.vault.address,
+              token: collateral.address ?? '',
+              tokenId: collateral.tokenId ?? '',
+              fCashAmount: redeemAmountFixedPoint,
+              deltaDebt,
+              virtualRate: collateral.vault.virtualRate,
+            })
+            await updateUnderlying()
             break
           default:
             console.error('Attempted to redeemCollateralAndModifyDebtERC20 for unknown vault type')

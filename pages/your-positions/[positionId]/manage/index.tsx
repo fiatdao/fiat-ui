@@ -25,6 +25,7 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { Position } from '@/src/utils/data/positions'
 import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
+import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
 import { SettingFilled } from '@ant-design/icons'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -431,20 +432,25 @@ const PositionManage = () => {
           setActiveTabKey('redeem')
         }}
       >
-        Redeem Underlier
+        Redeem
       </Tab>
     )
 
-    if (isMatured) {
-      // If collateral is matured, show redeem tab
+    if (isMatured && collateral?.vault.type === VaultType.NOTIONAL) {
+      // If collateral is matured fcash, show only redeem tab
       return redeemTab
+    } else if (isMatured) {
+      // If matured and not fcash, show all withdraw tabs
+      return shouldShowUnderlyingUi
+        ? [withdrawTab, withdrawUnderlierTab, redeemTab]
+        : [withdrawTab, redeemTab]
     } else {
       // If not matured, show all collateral tabs except redeem tabs
-      // TODO
+      return shouldShowUnderlyingUi
+        ? [depositTab, depositUnderlierTab, withdrawTab, withdrawUnderlierTab]
+        : [depositTab, withdrawTab]
     }
-
-    // If is matured and not fcash collateral, show withdraw tabs & redeem tab
-  }, [activeTabKey, form, isMatured])
+  }, [activeTabKey, collateral?.vault.type, form, isMatured, shouldShowUnderlyingUi])
 
   return (
     <>
@@ -477,7 +483,7 @@ const PositionManage = () => {
                       {'deposit' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Amount to deposit"
+                            title="Amount of collateral to deposit"
                             value={`Available: ${availableDepositAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="deposit" required>
@@ -525,7 +531,7 @@ const PositionManage = () => {
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
-                            title={'Amount to withdraw'}
+                            title={'Amount of collateral to withdraw'}
                             value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="withdraw" required>
@@ -547,7 +553,6 @@ const PositionManage = () => {
                         <>
                           <div className={cn(s.balanceContainer)}>
                             <Balance
-                              description={getMaturedFCashMessage()}
                               title="Amount to withdraw and swap for underlier"
                               value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
                             />
@@ -575,7 +580,8 @@ const PositionManage = () => {
                         <>
                           <div className={cn(s.balanceContainer)}>
                             <Balance
-                              title="Amount to redeem"
+                              description={getMaturedFCashMessage()}
+                              title="Amount of collateral to redeem"
                               value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
                             />
                             <SettingFilled
