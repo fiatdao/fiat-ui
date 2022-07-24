@@ -286,11 +286,16 @@ const PositionManage = () => {
 
   useEffect(() => {
     if (activeSection === 'collateral') {
-      if (isMatured && !isWithdrawCollateralKey(activeTabKey)) {
-        setActiveTabKey('withdraw')
+      if (isMatured) {
+        if (collateral?.vault.type === VaultType.NOTIONAL) {
+          // expired notional should only show redeem tab, can't be transferred past maturity
+          setActiveTabKey('redeem')
+        } else if (!isWithdrawCollateralKey(activeTabKey)) {
+          setActiveTabKey('withdraw')
+        }
       }
     }
-  }, [activeSection, activeTabKey, isMatured])
+  }, [activeSection, activeTabKey, collateral?.vault.type, isMatured])
 
   const getMaturedFCashMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
