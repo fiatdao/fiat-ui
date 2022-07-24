@@ -441,9 +441,7 @@ const PositionManage = () => {
       return redeemTab
     } else if (isMatured) {
       // If matured and not fcash, show all withdraw tabs
-      return shouldShowUnderlyingUi
-        ? [withdrawTab, withdrawUnderlierTab, redeemTab]
-        : [withdrawTab, redeemTab]
+      return shouldShowUnderlyingUi ? [withdrawTab, withdrawUnderlierTab, redeemTab] : [withdrawTab]
     } else {
       // If not matured, show all collateral tabs except redeem tabs
       return shouldShowUnderlyingUi
