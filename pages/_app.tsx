@@ -97,7 +97,7 @@ function App({ Component, pageProps }: AppProps) {
                 </Layout>
                 <CookieBanner
                   buttonMessage={'Accept All'}
-                  message={`We use cookies to analyze our traffic. By clicking "Accept All" you consent to our use of cookies.`}
+                  message={`We use cookies to debug site errors and analyze our traffic. By clicking "Accept All", you consent to our use of cookies.`}
                   styles={{
                     banner: {
                       backgroundImage:

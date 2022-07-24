@@ -25,7 +25,6 @@ import FiatIcon from '@/src/resources/svg/fiat-icon.svg'
 import { Collateral } from '@/src/utils/data/collaterals'
 import { Position } from '@/src/utils/data/positions'
 import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
-import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
 import { SettingFilled } from '@ant-design/icons'
 import AntdForm from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -271,8 +270,8 @@ const PositionManage = () => {
 
   const shouldShowUnderlyingUi = useMemo(() => {
     // Show underlying ui if SHOW_UNDERLYING_FLOW is true. Always show for element
-    return SHOW_UNDERLYING_FLOW || collateral?.vault.type === VaultType.ELEMENT
-  }, [collateral?.vault.type])
+    return SHOW_UNDERLYING_FLOW
+  }, [])
 
   useEffect(() => {
     // initialize step to 0
