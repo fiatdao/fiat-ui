@@ -69,6 +69,8 @@ export const useManagePositionForm = (
     approveFIAT,
     buyCollateralAndModifyDebtERC20,
     modifyCollateralAndDebt,
+    redeemCollateralAndModifyDebtERC20,
+    redeemCollateralAndModifyDebtERC1155,
     sellCollateralAndModifyDebtERC20,
   } = useUserActions(position?.vaultType)
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
@@ -245,9 +247,10 @@ export const useManagePositionForm = (
     if (collateral?.vault.type !== VaultType.ELEMENT) {
       return ZERO_BIG_NUMBER
     }
+
     const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
     const estimate = singlePTokenToUnderlier
-      .times(underlierWithdrawAmount)
+      ?.times(underlierWithdrawAmount)
       .unscaleBy(underlierDecimals)
     return estimate
   }, [
@@ -285,6 +288,7 @@ export const useManagePositionForm = (
 
   const getDeltasFromForm = useCallback(() => {
     const toDeposit = getNonHumanValue(positionFormFields?.deposit, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    // estimate deposited collateral from underlier to deposit
     const underlierToSwap =
       getNonHumanValue(
         positionFormFields?.underlierDepositAmount?.times(
@@ -297,11 +301,14 @@ export const useManagePositionForm = (
       getNonHumanValue(positionFormFields?.withdraw, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
     const underlierWithdrawAmount =
       getNonHumanValue(positionFormFields?.underlierWithdrawAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const redeemAmount =
+      getNonHumanValue(positionFormFields?.redeemAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
 
     const deltaCollateral = toDeposit
       .plus(underlierToSwap)
       .minus(toWithdraw)
       .minus(underlierWithdrawAmount)
+      .minus(redeemAmount)
 
     const toMint = getNonHumanValue(positionFormFields?.borrow, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
     const toRepay = getNonHumanValue(positionFormFields?.repay, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
@@ -315,6 +322,7 @@ export const useManagePositionForm = (
     positionFormFields?.withdraw,
     positionFormFields?.borrow,
     positionFormFields?.repay,
+    positionFormFields?.redeemAmount,
     singleUnderlierToPToken,
     underlierDecimals,
   ])
@@ -483,6 +491,7 @@ export const useManagePositionForm = (
   const handleManage = async ({
     borrow,
     deposit,
+    redeemAmount,
     repay,
     underlierDepositAmount,
     underlierWithdrawAmount,
@@ -596,11 +605,52 @@ export const useManagePositionForm = (
             break
           }
           case VaultType.YIELD:
+            console.error('unimplemented')
+            break
           case VaultType.NOTIONAL:
             console.error('unimplemented')
             break
           default:
             console.error('Attempted to sellCollateralAndModifyDebtERC20 for unknown vault type')
+        }
+      } else if (redeemAmount !== ZERO_BIG_NUMBER && redeemAmount !== undefined) {
+        if (!collateral) {
+          console.error('Attempted to redeem underlier without valid collateral')
+          return
+        }
+
+        const redeemAmountFixedPoint = getNonHumanValue(redeemAmount, underlierDecimals)
+        switch (position?.vaultType) {
+          case VaultType.ELEMENT: {
+            await redeemCollateralAndModifyDebtERC20({
+              vault: collateral.vault.address,
+              token: collateral.address ?? '',
+              pTokenAmount: redeemAmountFixedPoint,
+              deltaDebt,
+              virtualRate: collateral.vault.virtualRate,
+            })
+            await updateUnderlying()
+            break
+          }
+          case VaultType.YIELD:
+            console.error('unimplemented')
+            break
+          case VaultType.NOTIONAL:
+            // fun fact, modifyCollateralAndDebt will redeem for notional,
+            // but it's more idiomatic to call redeemCollateralAndModifyDebt
+            await modifyCollateralAndDebt({
+              vault: position?.protocolAddress,
+              token: position?.collateral.address,
+              tokenId: Number(position.tokenId),
+              deltaCollateral,
+              deltaDebt,
+              wait: 3,
+              virtualRate: position.virtualRate,
+            })
+            await updateUnderlying()
+            break
+          default:
+            console.error('Attempted to redeemCollateralAndModifyDebtERC20 for unknown vault type')
         }
       } else {
         await modifyCollateralAndDebt({
@@ -700,7 +750,11 @@ export const useManagePositionForm = (
       ? [
           {
             title: 'Estimated underlier to receive',
-            value: estimatedUnderlierToReceive.toFixed(2),
+            value: estimatedUnderlierToReceive?.toFixed(2),
+          },
+          {
+            title: 'Current collateral deposited',
+            value: getHumanValue(position?.totalCollateral, WAD_DECIMALS).toFixed(2),
           },
           ...getUnderlyingDataSummary(
             marketRate,
@@ -713,6 +767,22 @@ export const useManagePositionForm = (
         ]
       : []
 
+    const underlierRedeemAmount = positionFormFields?.redeemAmount ?? ZERO_BIG_NUMBER
+    const redeemSummary = collateral
+      ? [
+          {
+            title: 'Estimated underlier to receive',
+            value: underlierRedeemAmount?.toFixed(2),
+          },
+          {
+            title: 'Current collateral deposited',
+            value: getHumanValue(position?.totalCollateral, WAD_DECIMALS).toFixed(2),
+          },
+          ...fiatDebtSummarySections,
+          ...healthFactorSummarySections,
+        ]
+      : []
+
     if (activeTabKey === 'underlierDepositAmount' || underlierDepositAmount !== ZERO_BIG_NUMBER) {
       return depositUnderlierSummary
     } else if (
@@ -720,6 +790,8 @@ export const useManagePositionForm = (
       underlierWithdrawAmount !== ZERO_BIG_NUMBER
     ) {
       return withdrawUnderlierSummary
+    } else if (activeTabKey === 'redeem') {
+      return redeemSummary
     } else {
       return bondSummary
     }
