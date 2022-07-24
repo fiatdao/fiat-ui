@@ -638,14 +638,14 @@ export const useManagePositionForm = (
           case VaultType.NOTIONAL:
             // fun fact, modifyCollateralAndDebt will redeem for notional,
             // but it's more idiomatic to call redeemCollateralAndModifyDebt
-            console.log('redeem amount: ', redeemAmountFixedPoint.toString())
-            await redeemCollateralAndModifyDebtERC1155({
-              vault: collateral.vault.address,
-              token: collateral.address ?? '',
-              tokenId: collateral.tokenId ?? '',
-              fCashAmount: redeemAmountFixedPoint,
+            await modifyCollateralAndDebt({
+              vault: position?.protocolAddress,
+              token: position?.collateral.address,
+              tokenId: Number(position.tokenId),
+              deltaCollateral,
               deltaDebt,
-              virtualRate: collateral.vault.virtualRate,
+              wait: 3,
+              virtualRate: position.virtualRate,
             })
             await updateUnderlying()
             break
