@@ -102,6 +102,50 @@ export const useManagePositionForm = (
   const tokenAddress = position?.collateral.address
 
   const [isRepayingFIAT, setIsRepayingFIAT] = useState<boolean>(false)
+  useEffect(() => {
+    // use form values to assume user's intended fiat actions
+    const repay = positionFormFields?.repay
+    const borrow = positionFormFields?.borrow
+    if (repay && repay.gt(ZERO_BIG_NUMBER)) {
+      setIsRepayingFIAT(true)
+    } else if (borrow && borrow.gt(ZERO_BIG_NUMBER)) {
+      setIsRepayingFIAT(false)
+    } else {
+      if (activeTabKey === 'repay') {
+        // if all fields are undefined, assume user's action based on activetab
+        setIsRepayingFIAT(true)
+      } else if (activeTabKey === 'borrow') {
+        // if all fields are undefined, assume user's action based on activetab
+        setIsRepayingFIAT(false)
+      }
+    }
+  }, [activeTabKey, positionFormFields?.borrow, positionFormFields?.repay])
+
+  const [isDepositingCollateral, setIsDepositingCollateral] = useState<boolean>(false)
+  const [isWithdrawingCollateral, setIsWithdrawingCollateral] = useState<boolean>(false)
+  useEffect(() => {
+    // use form values to assume user's intended fiat actions
+    const depositAmount = positionFormFields?.depositAmount
+    const withdrawAmount = positionFormFields?.withdrawAmount
+    if (depositAmount && depositAmount.gt(ZERO_BIG_NUMBER)) {
+      setIsDepositingCollateral(true)
+      setIsWithdrawingCollateral(false)
+    } else if (withdrawAmount && withdrawAmount.gt(ZERO_BIG_NUMBER)) {
+      setIsWithdrawingCollateral(true)
+      setIsDepositingCollateral(false)
+    } else {
+      if (activeTabKey === 'deposit') {
+        // if all fields are undefined, assume user's action based on activetab
+        setIsDepositingCollateral(true)
+        setIsWithdrawingCollateral(false)
+      } else if (activeTabKey === 'withdraw') {
+        // if all fields are undefined, assume user's action based on activetab
+        setIsWithdrawingCollateral(true)
+        setIsDepositingCollateral(false)
+      }
+    }
+  }, [activeTabKey, positionFormFields?.depositAmount, positionFormFields?.withdrawAmount])
+
   const [loadingMonetaAllowanceApprove, setLoadingMonetaAllowanceApprove] = useState<boolean>(false)
 
   const { tokenInfo, updateToken } = useTokenDecimalsAndBalance({
@@ -288,7 +332,8 @@ export const useManagePositionForm = (
   }, [approveFIAT, appChainId])
 
   const getDeltasFromForm = useCallback(() => {
-    const toDeposit = getNonHumanValue(positionFormFields?.deposit, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+    const toDeposit =
+      getNonHumanValue(positionFormFields?.depositAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
     // estimate deposited collateral from underlier to deposit
     const underlierToSwap =
       getNonHumanValue(
@@ -299,7 +344,7 @@ export const useManagePositionForm = (
       ) ?? ZERO_BIG_NUMBER
 
     const toWithdraw =
-      getNonHumanValue(positionFormFields?.withdraw, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      getNonHumanValue(positionFormFields?.withdrawAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
     const underlierWithdrawAmount =
       getNonHumanValue(positionFormFields?.underlierWithdrawAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
     const redeemAmount =
@@ -319,8 +364,8 @@ export const useManagePositionForm = (
   }, [
     positionFormFields?.underlierDepositAmount,
     positionFormFields?.underlierWithdrawAmount,
-    positionFormFields?.deposit,
-    positionFormFields?.withdraw,
+    positionFormFields?.depositAmount,
+    positionFormFields?.withdrawAmount,
     positionFormFields?.borrow,
     positionFormFields?.repay,
     positionFormFields?.redeemAmount,
@@ -366,14 +411,14 @@ export const useManagePositionForm = (
   }, [positionFormFields?.borrow, maxBorrowAmount])
 
   const isDepositingMoreThanMaxDeposit = useMemo(() => {
-    const depositAmount = positionFormFields?.deposit ?? ZERO_BIG_NUMBER
+    const depositAmount = positionFormFields?.depositAmount ?? ZERO_BIG_NUMBER
     return depositAmount.gt(maxDepositAmount.plus(MIN_EPSILON_OFFSET))
-  }, [positionFormFields?.deposit, maxDepositAmount])
+  }, [positionFormFields?.depositAmount, maxDepositAmount])
 
   const isWithdrawingMoreThanMaxWithdraw = useMemo(() => {
-    const withdrawAmount = positionFormFields?.withdraw ?? ZERO_BIG_NUMBER
+    const withdrawAmount = positionFormFields?.withdrawAmount ?? ZERO_BIG_NUMBER
     return withdrawAmount.gt(maxWithdrawAmount.plus(MIN_EPSILON_OFFSET))
-  }, [positionFormFields?.withdraw, maxWithdrawAmount])
+  }, [positionFormFields?.withdrawAmount, maxWithdrawAmount])
 
   const isDisabledCreatePosition = useMemo(() => {
     return (
@@ -422,8 +467,6 @@ export const useManagePositionForm = (
     setHealthFactor(newHealthFactor)
 
     if (deltaDebt.isNegative()) {
-      setIsRepayingFIAT(true)
-
       let text = EXECUTE_TEXT
       if (!hasFiatAllowance && activeTabKey === 'repay') {
         text = SET_FIAT_ALLOWANCE_PROXY_TEXT
@@ -438,8 +481,6 @@ export const useManagePositionForm = (
       }
       setButtonText(text)
     } else {
-      setIsRepayingFIAT(false)
-
       let text = EXECUTE_TEXT
       if (!hasFiatAllowance && activeTabKey === 'repay') {
         text = SET_FIAT_ALLOWANCE_PROXY_TEXT
@@ -491,18 +532,18 @@ export const useManagePositionForm = (
 
   const handleManage = async ({
     borrow,
-    deposit,
+    depositAmount,
     redeemAmount,
     repay,
     underlierDepositAmount,
     underlierWithdrawAmount,
-    withdraw,
+    withdrawAmount,
   }: PositionManageFormFields): Promise<void> => {
     try {
       if (!position || !position.protocolAddress || !position.collateral.address) return
 
-      const toDeposit = getNonHumanValue(deposit, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
-      const toWithdraw = getNonHumanValue(withdraw, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const toDeposit = getNonHumanValue(depositAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
+      const toWithdraw = getNonHumanValue(withdrawAmount, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
       const toMint = getNonHumanValue(borrow, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
       const toRepay = getNonHumanValue(repay, WAD_DECIMALS) ?? ZERO_BIG_NUMBER
 
@@ -833,6 +874,8 @@ export const useManagePositionForm = (
     approveMonetaAllowance,
     loadingMonetaAllowanceApprove,
     isRepayingFIAT,
+    isDepositingCollateral,
+    isWithdrawingCollateral,
   }
 }
 

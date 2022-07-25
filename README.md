@@ -6,7 +6,6 @@ Get leverage and access secondary liquidity for your favorite DeFi fixed income 
     ```sh
     git clone git@github.com:fiatdao/fiat-ui.git
     ```
-
 1. Create a `.env.local` file:
     ```sh
     cp .env.example .env.local
@@ -44,6 +43,10 @@ Get leverage and access secondary liquidity for your favorite DeFi fixed income 
 
 1. You're done! You can now open positions via underlier and buidl!
 
+## Debugging tips
+* [Revoke.cash](https://revoke.cash) is helpful for testing various approval states
+* [Impersonator](https://www.impersonator.xyz) can help you more easily replicate production issues
+
 ## How to Contribute
 To contribute, start by grabbing one of the open issues on the repo, and assigning it to yourself. Once the task has been completed, open a PR against the `main` branch.
 
@@ -51,4 +54,5 @@ To contribute, start by grabbing one of the open issues on the repo, and assigni
 - Goerli USDC Faucet: https://goerli.etherscan.io/address/0x08034634bbd210485c9c8f798afdc5432782fd18#writeContract
 - Element.fi: https://testnet.element.fi/mint
 - Notional.finance: https://goerli.notional.finance/lend/DAI
+
 

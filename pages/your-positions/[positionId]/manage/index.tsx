@@ -65,10 +65,10 @@ export const isFiatTab = (key: string): key is FiatTabKey => {
   return FIAT_KEYS.includes(key as FiatTabKey)
 }
 
-const WITHDRAW_COLLATERAL_KEYS = ['withdraw', 'underlierWithdrawAmount', 'redeem']
+const WITHDRAW_COLLATERAL_KEYS = ['withdraw', 'withdrawUnderlier', 'redeem']
 export type WithdrawCollateralTabKey = typeof COLLATERAL_KEYS[number]
 
-const COLLATERAL_KEYS = ['deposit', 'underlierDepositAmount', ...WITHDRAW_COLLATERAL_KEYS] as const
+const COLLATERAL_KEYS = ['deposit', 'depositUnderlier', ...WITHDRAW_COLLATERAL_KEYS] as const
 export type CollateralTabKey = typeof COLLATERAL_KEYS[number]
 
 const isWithdrawCollateralKey = (key: string): key is WithdrawCollateralTabKey => {
@@ -81,10 +81,10 @@ export const isCollateralTab = (key: string): key is CollateralTabKey => {
 
 export type PositionManageFormFields = {
   borrow: BigNumber | undefined
-  deposit: BigNumber | undefined
+  depositAmount: BigNumber | undefined
   underlierDepositAmount: BigNumber | undefined
   repay: BigNumber | undefined
-  withdraw: BigNumber | undefined
+  withdrawAmount: BigNumber | undefined
   underlierWithdrawAmount: BigNumber | undefined
   redeemAmount: BigNumber | undefined
 }
@@ -92,9 +92,9 @@ export type PositionManageFormFields = {
 const defaultManageFormFields = {
   repay: undefined,
   borrow: undefined,
-  withdraw: undefined,
+  withdrawAmount: undefined,
   underlierWithdrawAmount: undefined,
-  deposit: undefined,
+  depositAmount: undefined,
   underlierDepositAmount: undefined,
   redeemAmount: undefined,
 }
@@ -137,10 +137,12 @@ const PositionManage = () => {
     hasMonetaAllowance,
     hasTokenAllowance,
     healthFactor,
+    isDepositingCollateral,
     isDisabledCreatePosition,
     isLoading,
     isProxyAvailable,
     isRepayingFIAT,
+    isWithdrawingCollateral,
     loadingFiatAllowanceApprove,
     loadingMonetaAllowanceApprove,
     loadingProxy,
@@ -357,7 +359,7 @@ const PositionManage = () => {
         onClick={() => {
           form.setFieldsValue({
             ...defaultManageFormFields,
-            deposit: form.getFieldValue('deposit'),
+            depositAmount: form.getFieldValue('depositAmount'),
             // maintain fiat tab values
             borrow: form.getFieldValue('borrow'),
             repay: form.getFieldValue('repay'),
@@ -371,7 +373,7 @@ const PositionManage = () => {
 
     const depositUnderlierTab = (
       <Tab
-        isActive={'underlierDepositAmount' === activeTabKey}
+        isActive={'depositUnderlier' === activeTabKey}
         onClick={() => {
           form.setFieldsValue({
             ...defaultManageFormFields,
@@ -380,7 +382,7 @@ const PositionManage = () => {
             borrow: form.getFieldValue('borrow'),
             repay: form.getFieldValue('repay'),
           })
-          setActiveTabKey('underlierDepositAmount')
+          setActiveTabKey('depositUnderlier')
         }}
       >
         Deposit Underlier
@@ -393,7 +395,7 @@ const PositionManage = () => {
         onClick={() => {
           form.setFieldsValue({
             ...defaultManageFormFields,
-            withdraw: form.getFieldValue('withdraw'),
+            withdrawAmount: form.getFieldValue('withdrawAmount'),
             // maintain fiat tab values
             borrow: form.getFieldValue('borrow'),
             repay: form.getFieldValue('repay'),
@@ -407,7 +409,7 @@ const PositionManage = () => {
 
     const withdrawUnderlierTab = (
       <Tab
-        isActive={'underlierWithdrawAmount' === activeTabKey}
+        isActive={'withdrawUnderlier' === activeTabKey}
         onClick={() => {
           form.setFieldsValue({
             ...defaultManageFormFields,
@@ -416,7 +418,7 @@ const PositionManage = () => {
             borrow: form.getFieldValue('borrow'),
             repay: form.getFieldValue('repay'),
           })
-          setActiveTabKey('underlierWithdrawAmount')
+          setActiveTabKey('withdrawUnderlier')
         }}
       >
         Withdraw Underlier
@@ -481,9 +483,9 @@ const PositionManage = () => {
             Setup Proxy
           </ButtonGradient>
         )
-      } else if (!hasTokenAllowance) {
-        // TODO: help user avoid unnecessary approvals when they just want to withdraw
-        // TODO: handle case where user creates bond position, doesn't have underlier allowance
+      } else if (!hasTokenAllowance && isDepositingCollateral) {
+        // make user approve before depositing collateral if no allowance
+        // TODO: this handles collateral allowance case. need to handle the case where user doesn't have *underlier* allowance
         return (
           <ButtonGradient
             disabled={loadingTokenAllowanceApprove}
@@ -492,6 +494,19 @@ const PositionManage = () => {
           >
             Set {tokenSymbol} Allowance
           </ButtonGradient>
+        )
+      } else if (!hasTokenAllowance && isWithdrawingCollateral) {
+        // if no allowance, let user skip approval to withdraw collateral
+        return (
+          <ButtonsWrapper>
+            <ButtonGradient
+              disabled={isLoading || isDisabledCreatePosition}
+              height="lg"
+              onClick={onHandleManage}
+            >
+              {buttonText}
+            </ButtonGradient>
+          </ButtonsWrapper>
         )
       } else if (!hasFiatAllowance && isRepayingFIAT) {
         return (
@@ -524,10 +539,12 @@ const PositionManage = () => {
     hasFiatAllowance,
     hasMonetaAllowance,
     hasTokenAllowance,
+    isDepositingCollateral,
     isDisabledCreatePosition,
     isLoading,
     isProxyAvailable,
     isRepayingFIAT,
+    isWithdrawingCollateral,
     loadingFiatAllowanceApprove,
     loadingMonetaAllowanceApprove,
     loadingProxy,
@@ -575,7 +592,7 @@ const PositionManage = () => {
                             title="Amount of collateral to deposit"
                             value={`Available: ${availableDepositAmount?.toFixed(2)}`}
                           />
-                          <Form.Item name="deposit" required>
+                          <Form.Item name="depositAmount" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
@@ -590,7 +607,7 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
-                      {'underlierDepositAmount' === activeTabKey && position && (
+                      {'depositUnderlier' === activeTabKey && position && (
                         <>
                           <div className={cn(s.balanceContainer)}>
                             <Balance
@@ -623,7 +640,7 @@ const PositionManage = () => {
                             title={'Amount of collateral to withdraw'}
                             value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
                           />
-                          <Form.Item name="withdraw" required>
+                          <Form.Item name="withdrawAmount" required>
                             <TokenAmount
                               displayDecimals={4}
                               healthFactorValue={healthFactor}
@@ -638,7 +655,7 @@ const PositionManage = () => {
                           </Form.Item>
                         </>
                       )}
-                      {'underlierWithdrawAmount' === activeTabKey && position && (
+                      {'withdrawUnderlier' === activeTabKey && position && (
                         <>
                           <div className={cn(s.balanceContainer)}>
                             <Balance
