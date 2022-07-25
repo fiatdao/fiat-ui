@@ -455,6 +455,96 @@ const PositionManage = () => {
     }
   }, [activeTabKey, collateral?.vault.type, form, isMatured, shouldShowUnderlyingUi])
 
+  const renderActionButton = useCallback(() => {
+    if (step === LAST_STEP) {
+      return (
+        <ButtonsWrapper>
+          <ButtonGradient
+            disabled={isLoading || isDisabledCreatePosition}
+            height="lg"
+            onClick={onHandleManage}
+          >
+            {buttonText}
+          </ButtonGradient>
+        </ButtonsWrapper>
+      )
+    } else {
+      if (!enableButtons) {
+        // TODO: wtf is this for kek do we need it?
+        return null
+      }
+
+      let button = null
+      if (!isProxyAvailable) {
+        button = (
+          <ButtonGradient disabled={loadingProxy} height="lg" onClick={onSetupProxy}>
+            Setup Proxy
+          </ButtonGradient>
+        )
+      } else if (!hasTokenAllowance) {
+        return (
+          <ButtonGradient
+            disabled={
+              (availableDepositAmount && availableDepositAmount.lte(0)) ||
+              loadingTokenAllowanceApprove
+            }
+            height="lg"
+            onClick={onApproveTokenAllowance}
+          >
+            {availableDepositAmount?.gt(0)
+              ? 'Set Allowance'
+              : `Insufficient Balance for ${tokenSymbol}`}
+          </ButtonGradient>
+        )
+      } else if (!hasFiatAllowance && isRepayingFIAT) {
+        return (
+          <ButtonGradient
+            disabled={loadingFiatAllowanceApprove}
+            height="lg"
+            onClick={onApproveFiatAllowance}
+          >
+            {SET_FIAT_ALLOWANCE_PROXY_TEXT}
+          </ButtonGradient>
+        )
+      } else if (hasFiatAllowance && !hasMonetaAllowance && isRepayingFIAT) {
+        return (
+          <ButtonGradient
+            disabled={loadingMonetaAllowanceApprove}
+            height="lg"
+            onClick={onApproveMonetaAllowance}
+          >
+            Enable Proxy for FIAT
+          </ButtonGradient>
+        )
+      } else {
+        console.error('Unknown button to render')
+      }
+      return <ButtonsWrapper>{button}</ButtonsWrapper>
+    }
+  }, [
+    availableDepositAmount,
+    buttonText,
+    enableButtons,
+    hasFiatAllowance,
+    hasMonetaAllowance,
+    hasTokenAllowance,
+    isDisabledCreatePosition,
+    isLoading,
+    isProxyAvailable,
+    isRepayingFIAT,
+    loadingFiatAllowanceApprove,
+    loadingMonetaAllowanceApprove,
+    loadingProxy,
+    loadingTokenAllowanceApprove,
+    onApproveFiatAllowance,
+    onApproveMonetaAllowance,
+    onApproveTokenAllowance,
+    onHandleManage,
+    onSetupProxy,
+    step,
+    tokenSymbol,
+  ])
+
   return (
     <>
       <SwapSettingsModal
@@ -678,58 +768,7 @@ const PositionManage = () => {
                       )}
                     </>
                   )}
-                  {enableButtons && (
-                    <ButtonsWrapper>
-                      {!isProxyAvailable && (
-                        <ButtonGradient disabled={loadingProxy} height="lg" onClick={onSetupProxy}>
-                          Setup Proxy
-                        </ButtonGradient>
-                      )}
-                      {!hasTokenAllowance && (
-                        <ButtonGradient
-                          disabled={
-                            (availableDepositAmount && availableDepositAmount.lte(0)) ||
-                            loadingTokenAllowanceApprove
-                          }
-                          height="lg"
-                          onClick={onApproveTokenAllowance}
-                        >
-                          {availableDepositAmount?.gt(0)
-                            ? 'Set Allowance'
-                            : `Insufficient Balance for ${tokenSymbol}`}
-                        </ButtonGradient>
-                      )}
-                      {!hasFiatAllowance && isRepayingFIAT && (
-                        <ButtonGradient
-                          disabled={loadingFiatAllowanceApprove}
-                          height="lg"
-                          onClick={onApproveFiatAllowance}
-                        >
-                          {SET_FIAT_ALLOWANCE_PROXY_TEXT}
-                        </ButtonGradient>
-                      )}
-                      {hasFiatAllowance && !hasMonetaAllowance && isRepayingFIAT && (
-                        <ButtonGradient
-                          disabled={loadingMonetaAllowanceApprove}
-                          height="lg"
-                          onClick={onApproveMonetaAllowance}
-                        >
-                          Enable Proxy for FIAT
-                        </ButtonGradient>
-                      )}
-                    </ButtonsWrapper>
-                  )}
-                  {step === LAST_STEP && (
-                    <ButtonsWrapper>
-                      <ButtonGradient
-                        disabled={isLoading || isDisabledCreatePosition}
-                        height="lg"
-                        onClick={onHandleManage}
-                      >
-                        {buttonText}
-                      </ButtonGradient>
-                    </ButtonsWrapper>
-                  )}
+                  {renderActionButton()}
                   <div className={cn(s.summary)}>
                     <Summary data={summaryData} />
                   </div>
