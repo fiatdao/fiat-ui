@@ -280,7 +280,7 @@ const PositionManage = () => {
   }, [updateNextState])
 
   useEffect(() => {
-    // If switching to tab and no subtab is selected, select first tab in the section that makes sense that
+    // If switching to tab and no subtab is selected, select first tab in the section that makes sense
     setActiveTabKey(activeSection === 'collateral' ? 'deposit' : 'borrow')
   }, [activeSection])
 
@@ -482,18 +482,15 @@ const PositionManage = () => {
           </ButtonGradient>
         )
       } else if (!hasTokenAllowance) {
+        // TODO: help user avoid unnecessary approvals when they just want to withdraw
+        // TODO: handle case where user creates bond position, doesn't have underlier allowance
         return (
           <ButtonGradient
-            disabled={
-              (availableDepositAmount && availableDepositAmount.lte(0)) ||
-              loadingTokenAllowanceApprove
-            }
+            disabled={loadingTokenAllowanceApprove}
             height="lg"
             onClick={onApproveTokenAllowance}
           >
-            {availableDepositAmount?.gt(0)
-              ? 'Set Allowance'
-              : `Insufficient Balance for ${tokenSymbol}`}
+            Set {tokenSymbol} Allowance
           </ButtonGradient>
         )
       } else if (!hasFiatAllowance && isRepayingFIAT) {
@@ -522,7 +519,6 @@ const PositionManage = () => {
       return <ButtonsWrapper>{button}</ButtonsWrapper>
     }
   }, [
-    availableDepositAmount,
     buttonText,
     enableButtons,
     hasFiatAllowance,

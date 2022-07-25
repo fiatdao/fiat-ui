@@ -132,7 +132,6 @@ export const useManagePositionForm = (
   const erc20 = useERC20Allowance(tokenAddress ?? '', userProxyAddress ?? '')
   const erc1155 = useERC155Allowance(tokenAddress ?? '', userProxyAddress ?? '')
 
-  // TODO: allow user to approve if no approval on collateral token
   // TODO: change activeToken to underlier token if underlier tab is active
   const activeToken = position?.vaultType === 'NOTIONAL' ? erc1155 : erc20
   const {
