@@ -81,8 +81,8 @@ export const useERC20Allowance = (tokenAddress: string, spender: string) => {
     allowance,
     approve,
     loadingApprove,
-    // TODO: allowance.gt(0) may lead to false positives
-    //  we need to compare it against the amount to use at least
+    // TODO: allowance.gt(0) for hasAllowance may lead to false positives
+    // should have something like hasSufficientAllowance, compare user's desired tx amount to their balance
     hasAllowance: allowance.gt('0'),
   }
 }
