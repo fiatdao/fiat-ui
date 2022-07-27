@@ -26,6 +26,7 @@ export type Collateral = {
   protocol: string
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
+  scale: Maybe<string>
   underlierScale: Maybe<string>
   maturity: Date
   eptData: {
