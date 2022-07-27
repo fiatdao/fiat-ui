@@ -21,10 +21,11 @@ export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 export const DEFAULT_CHAIN_ID = process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 5
 export const SUBGRAPH_GOERLI = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_GOERLI || ''
 export const SUBGRAPH_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_MAINNET || ''
+export const SUBGRAPH_FORKING = 'http://localhost:8000/subgraphs/name/fiatdao/fiat-subgraph'
 
 export const RPC_URL_GOERLI = process.env.NEXT_PUBLIC_REACT_APP_RPC_URL_GOERLI || ''
 export const RPC_URL_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_RPC_URL_MAINNET || ''
-export const RPC_URL_LOCALHOST = 'http://localhost:8545' || ''
+export const RPC_URL_LOCALHOST = 'http://localhost:8545'
 
 export const WAD_DECIMALS = 18
 
