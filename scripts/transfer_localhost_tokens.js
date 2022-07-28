@@ -17,10 +17,12 @@ const fs = require('fs')
     const tokenSymbol = await tokenContract.symbol()
     console.log(`Transferring ${tokenSymbol} tokens to address: `, toAddress)
     const connectedTokContract = await tokenContract.connect(whaleSigner)
+    console.log('Connected to contract!')
 
     const tokenDecimals = await connectedTokContract.decimals()
     const exp = ethers.BigNumber.from(10).pow(tokenDecimals)
     const bnAmount = ethers.BigNumber.from(amount).mul(exp)
+    console.log('Transferring...')
     await connectedTokContract.transfer(toAddress, bnAmount)
 
     console.log(
