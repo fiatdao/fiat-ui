@@ -42,17 +42,19 @@ This is the recommended flow for local testing. It allows you to create position
     ```sh
     docker-compose -f docker-compose-forking.yml up -d
     ```
+    > make sure you have Docker version 20 or great if you're on Linux for internal host support
 
 1. Deploy the FIAT subgraph to your local node. First we give the `deploy.sh` script permissions to execute, then run it by doing
     ```sh
     sudo chmod +x deploy.sh
-    CONFIG=mainnet.json NETWORK=mainnet TARGET=local IPFS_NODE=ipfs:5001 GRAPH_NODE=http://localhost:8030 yarn deploy
+    CONFIG=mainnet.json NETWORK=mainnet TARGET=local IPFS_NODE=ipfs:5001 GRAPH_NODE=http://localhost:8030 yarn build
+    CONFIG=mainnet.json NETWORK=mainnet TARGET=local IPFS_NODE=ipfs:5001 GRAPH_NODE=http://localhost:8030 yarn build
     ```
     When prompted with an input like
     `? Version Label (e.g. v0.0.1) ‣  _ `
     hit enter to deploy the subgraph.
 
-1. Now open the dapp on [localhost:3000](localhost:3000). You should be able to create and manage positions.
+1. Now open the dapp on [localhost:3000](localhost:3000) and connect to the Localhost Mainnet network. You should be able to create and manage positions.
 
 1. When you're done, run `docker-compose down -v` to tear the containers down. To run again, just run `docker-compose -f docker-compose-forking.yml up -d` again. Your chain will pick up where you left off.
 
@@ -64,7 +66,7 @@ This is the recommended flow for local testing. It allows you to create position
     
     ```
 
-TODO:  finish this. need to disable sentry (or figure out headers), etc.
+TODO:  finish this. need to disable sentry on ui for local graph queries (or figure out headers), etc.
 
 #### Running with Forked Mainnet chain
 1. After setting up your `.env.local` file & installing dependencies, run a local testnet with
