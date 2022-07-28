@@ -6,9 +6,8 @@ if [ -f .env.local ]; then
 fi
 
 yarn run ganache \
-	# --fork.url=https://eth-mainnet.alchemyapi.io/v2/$ALCHEMY_API_KEY \
-  # uncomment line below to fork from a specific block number (helpful for local subgraph)
-	--fork.url=https://eth-mainnet.alchemyapi.io/v2/$ALCHEMY_API_KEY@14515000 \
+  -h="0.0.0.0" \
+	--fork.url="https://eth-mainnet.alchemyapi.io/v2/$ALCHEMY_API_KEY" \
 	--miner.defaultGasPrice 50000000000 \
   --unlock="0xCFFAd3200574698b78f32232aa9D63eABD290703" \
   --unlock="0x16b34ce9a6a6f7fc2dd25ba59bf7308e7b38e186" \
