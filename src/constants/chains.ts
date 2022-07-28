@@ -3,8 +3,8 @@ import {
   RPC_URL_GOERLI,
   RPC_URL_LOCALHOST,
   RPC_URL_MAINNET,
-  // SUBGRAPH_FORKING,
   SUBGRAPH_GOERLI,
+  SUBGRAPH_LOCALHOST,
   SUBGRAPH_MAINNET,
 } from '@/src/constants/misc'
 import EthLogo from '@/src/resources/svg/ethereum.svg'
@@ -49,8 +49,7 @@ export const chainsConfig: Record<ChainsValues, ChainConfig> = {
     blockExplorerUrls: ['https://etherscan.io/'],
     iconUrls: [],
     svg: EthLogo,
-    subgraphApi: SUBGRAPH_MAINNET,
-    // subgraphApi: SUBGRAPH_FORKING,
+    subgraphApi: SUBGRAPH_LOCALHOST,
     contractsDeployed: true,
     isDev: true,
   },

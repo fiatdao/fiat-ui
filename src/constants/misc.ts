@@ -21,7 +21,10 @@ export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 export const DEFAULT_CHAIN_ID = process.env.NEXT_PUBLIC_REACT_APP_DEFAULT_CHAIN_ID || 5
 export const SUBGRAPH_GOERLI = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_GOERLI || ''
 export const SUBGRAPH_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_MAINNET || ''
-export const SUBGRAPH_FORKING = 'http://localhost:8000/subgraphs/name/fiatdao/fiat-subgraph'
+// localhost can re-use mainnet subgraph by default
+export const SUBGRAPH_LOCALHOST = process.env.NEXT_PUBLIC_REACT_APP_SUBGRAPH_MAINNET || ''
+// uncomment this to run with local subgraph node (see readme for instructions)
+// export const SUBGRAPH_LOCALHOST = 'http://localhost:8000/subgraphs/name/fiatdao/fiat-subgraph'
 
 export const RPC_URL_GOERLI = process.env.NEXT_PUBLIC_REACT_APP_RPC_URL_GOERLI || ''
 export const RPC_URL_MAINNET = process.env.NEXT_PUBLIC_REACT_APP_RPC_URL_MAINNET || ''
