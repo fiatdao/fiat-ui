@@ -56,7 +56,9 @@ This is the recommended flow for local testing. It allows you to create position
 
 1. Run the graph node with `cargo run -p graph-node --release -- --postgres-url postgresql://graph-node:let-me-in@localhost:5432/graph-node --ethereum-rpc mainnet:http://localhost:8545 --ipfs 127.0.0.1:5001 --fork-base https://api.thegraph.com/subgraphs/id/`.
 
-1. Change the deploy script before running to deploy a fork. Comment out L46, uncomment L52 to run the subgraph fork.
+1. Change the deploy script before running to deploy a fork. Comment out L46, uncomment L52 to deploy a subgraph fork.
+
+1. Change the `startBlock` in `config/mainnet.json` to the current block number to reduce the amount of blocks your local node has to index. See recently mined blocks [here on etherscan](https://etherscan.io/blocks)
 
 1. Deploy the FIAT subgraph to your local graph node. First we give the `deploy.sh` script permissions to execute, then run it by doing
     ```sh
