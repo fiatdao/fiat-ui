@@ -6,7 +6,10 @@ import BigNumber from 'bignumber.js'
 
 // Adapted from element's calculation of APR
 // https://github.com/element-fi/frontend-monorepo/blob/d2654490d04a6584f878c9f62febac25f6bd5a11/apps/core-frontend/src/ui/pools/hooks/usePrincipalTokenYield.ts#L37
-const calculateStablecoinBondApr = (collateral: Collateral, marketRate: BigNumber): number => {
+export const calculateStablecoinBondApr = (
+  collateral: Collateral,
+  marketRate: BigNumber,
+): number => {
   const { maturity } = collateral
   const principalPrice = marketRate.toNumber() ?? 0
   const unlockTimestamp = maturity.getTime() / 1000 // convert ms to secs

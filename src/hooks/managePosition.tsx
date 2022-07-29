@@ -25,6 +25,7 @@ import { parseDate } from '../utils/dateTime'
 import { getHealthFactorState } from '../utils/table'
 import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
 import { getDecimalsFromScale } from '../constants/bondTokens'
+import { SummaryBuilder } from '../utils/summaryBuilder'
 import { contracts } from '@/src/constants/contracts'
 import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
 import useContractCall from '@/src/hooks/contracts/useContractCall'
@@ -802,25 +803,30 @@ export const useManagePositionForm = (
       ...healthFactorSummarySections,
     ]
 
-    const underlierDepositAmount = positionFormFields?.underlierDepositAmount ?? ZERO_BIG_NUMBER
-    const estimatedCollateralToDeposit = underlierDepositAmount.multipliedBy(
-      getHumanValue(singleUnderlierToPToken, underlierDecimals),
-    )
+    /* const underlierDepositAmount = positionFormFields?.underlierDepositAmount ?? ZERO_BIG_NUMBER */
+    /* const estimatedCollateralToDeposit = underlierDepositAmount.multipliedBy( */
+    /*   getHumanValue(singleUnderlierToPToken, underlierDecimals), */
+    /* ) */
+    /* const depositUnderlierSummary = collateral */
+    /*   ? [ */
+    /*       { */
+    /*         title: 'Estimated collateral to deposit', */
+    /*         value: estimatedCollateralToDeposit.toFixed(2), */
+    /*       }, */
+    /*       ...getUnderlyingDataSummary( */
+    /*         marketRate, */
+    /*         slippageTolerance, */
+    /*         collateral, */
+    /*         underlierDepositAmount.toNumber(), */
+    /*       ), */
+    /*       ...fiatDebtSummarySections, */
+    /*       ...healthFactorSummarySections, */
+    /*     ] */
+    /*   : [] */
+
+    const summaryDeposit = new SummaryBuilder()
     const depositUnderlierSummary = collateral
-      ? [
-          {
-            title: 'Estimated collateral to deposit',
-            value: estimatedCollateralToDeposit.toFixed(2),
-          },
-          ...getUnderlyingDataSummary(
-            marketRate,
-            slippageTolerance,
-            collateral,
-            underlierDepositAmount.toNumber(),
-          ),
-          ...fiatDebtSummarySections,
-          ...healthFactorSummarySections,
-        ]
+      ? summaryDeposit.buildFixedAPR(collateral, marketRate).getSummary()
       : []
 
     const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
