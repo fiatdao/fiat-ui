@@ -128,7 +128,7 @@ export const useManagePositionForm = (
   const [isWithdrawingCollateral, setIsWithdrawingCollateral] = useState<boolean>(false)
   const [isWithdrawingUnderlier, setIsWithdrawingUnderlier] = useState<boolean>(false)
   useEffect(() => {
-    // use form values to assume user's intended fiat actions
+    // use form values to assume user's intended collateral action
     const depositAmount = positionFormFields?.depositAmount
     const underlierDepositAmount = positionFormFields?.underlierDepositAmount
     const withdrawAmount = positionFormFields?.withdrawAmount
@@ -596,7 +596,7 @@ export const useManagePositionForm = (
 
       setIsLoading(true)
 
-      if (underlierDepositAmount !== ZERO_BIG_NUMBER && underlierDepositAmount !== undefined) {
+      if (underlierDepositAmount && isDepositingUnderlier) {
         // If depositing underlier, call respective deposit underlier action
         if (!collateral) {
           console.error('Attempted to deposit underlier without valid collateral')
@@ -646,34 +646,25 @@ export const useManagePositionForm = (
             console.error('Attempted to buyCollateralAndModifyDebt for unknown vault type')
           }
         }
-      } else if (
-        underlierWithdrawAmount !== ZERO_BIG_NUMBER &&
-        underlierWithdrawAmount !== undefined
-      ) {
+      } else if (underlierWithdrawAmount && isWithdrawingUnderlier) {
+        // If withdrawing underlier, call respective withdraw underlier action
         if (!collateral) {
           console.error('Attempted to withdraw underlier without valid collateral')
           return
         }
 
-        // If withdrawing underlier, call respective withdraw underlier action
-        const pTokensToSwapForUnderlier = getNonHumanValue(
-          underlierWithdrawAmount,
-          underlierDecimals,
-        )
+        const pTokensToSwapForUnderlier = getNonHumanValue(underlierWithdrawAmount, pTokenDecimals)
         const slippageDecimal = 1 - slippageTolerance / 100
+        // TODO: show pToken to withdraw, only show estimated underlier in form (#655 https://github.com/fiatdao/fiat-ui/issues/655)
         const pTokenAmount = underlierWithdrawAmount.multipliedBy(
-          getHumanValue(singlePTokenToUnderlier, underlierDecimals),
+          getHumanValue(singlePTokenToUnderlier, pTokenDecimals),
         )
         const minOutput = getNonHumanValue(
           pTokenAmount.multipliedBy(slippageDecimal),
-          underlierDecimals,
+          pTokenDecimals,
         )
         const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
         const approve = pTokensToSwapForUnderlier.toFixed(0, 8)
-        // TODO: does this work? or do i need pTokenScale?
-        console.log('withdrawing underlier')
-        console.log('pTokendeci: ', pTokenDecimals)
-        console.log('underlierdeci: ', underlierDecimals)
         switch (position?.vaultType) {
           case VaultType.ELEMENT: {
             await sellCollateralAndModifyDebtERC20({
@@ -726,8 +717,6 @@ export const useManagePositionForm = (
             console.error('unimplemented')
             break
           case VaultType.NOTIONAL:
-            // fun fact, modifyCollateralAndDebt will redeem for notional,
-            // but it's more idiomatic to call redeemCollateralAndModifyDebt
             await redeemCollateralAndModifyDebtERC1155({
               vault: collateral.vault.address,
               token: collateral.address ?? '',
