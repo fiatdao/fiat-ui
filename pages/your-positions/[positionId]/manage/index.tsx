@@ -291,17 +291,22 @@ const PositionManage = () => {
   }, [activeSection])
 
   useEffect(() => {
+    // @dev NOTE: If you change this, make sure to check the renderCollateralTabs() function
     if (activeSection === 'collateral') {
       if (isMatured) {
         if (collateral?.vault.type === VaultType.NOTIONAL) {
           // expired notional should only show redeem tab, can't be transferred past maturity
+          setActiveTabKey('redeem')
+        } else if (!shouldShowUnderlyingUi) {
+          setActiveTabKey('withdraw')
+        } else if (shouldShowUnderlyingUi) {
           setActiveTabKey('redeem')
         } else if (!isWithdrawCollateralKey(activeTabKey)) {
           setActiveTabKey('withdraw')
         }
       }
     }
-  }, [activeSection, activeTabKey, collateral?.vault.type, isMatured])
+  }, [activeSection, activeTabKey, collateral?.vault.type, isMatured, shouldShowUnderlyingUi])
 
   const getMaturedFCashMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
@@ -448,13 +453,14 @@ const PositionManage = () => {
     )
 
     if (isMatured) {
+      // @dev NOTE: If you change this, make sure to check the useEffect in this file for setting active section
       if (collateral?.vault.type === VaultType.NOTIONAL) {
         // If collateral is notional post-maturity, show only redeem tab
         return redeemTab
-      } else if (isMatured && shouldShowUnderlyingUi) {
+      } else if (!shouldShowUnderlyingUi) {
         // If non-notional & post maturity, and underlier flow off, show withdraw.
         return withdrawTab
-      } else if (isMatured && !shouldShowUnderlyingUi) {
+      } else if (shouldShowUnderlyingUi) {
         // If non-notional & post maturity, and underlier flow ON, only shouw redeem.
         return redeemTab
       }
