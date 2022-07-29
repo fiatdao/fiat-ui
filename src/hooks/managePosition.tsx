@@ -803,7 +803,8 @@ export const useManagePositionForm = (
       ...healthFactorSummarySections,
     ]
 
-    /* const underlierDepositAmount = positionFormFields?.underlierDepositAmount ?? ZERO_BIG_NUMBER */
+    const underlierDepositAmount = positionFormFields?.underlierDepositAmount ?? ZERO_BIG_NUMBER
+
     /* const estimatedCollateralToDeposit = underlierDepositAmount.multipliedBy( */
     /*   getHumanValue(singleUnderlierToPToken, underlierDecimals), */
     /* ) */
@@ -824,9 +825,25 @@ export const useManagePositionForm = (
     /*     ] */
     /*   : [] */
 
-    const summaryDeposit = new SummaryBuilder()
+    const depositUnderlierSummaryBuilder = new SummaryBuilder()
+    // implement this, it's the same order as before
     const depositUnderlierSummary = collateral
-      ? summaryDeposit.buildFixedAPR(collateral, marketRate).getSummary()
+      ? depositUnderlierSummaryBuilder
+          .buildEstimatedCollateralToDeposit(
+            underlierDepositAmount,
+            singleUnderlierToPToken,
+            underlierDecimals,
+          )
+          /* .buildMarketRate */
+          /* .buildSlippageTolerance */
+          /* .buildFixedAPR(collateral, marketRate) */
+          /* .buildInterestEarned */
+          /* .buildRedeemableAtMaturity */
+          /* .buildCurrentFiatDebt */
+          /* .buildEstimatedFiatDebt */
+          /* .buildCurrentHealthFactor */
+          /* .buildEstimatedNewHealthFactor */
+          .getSummary()
       : []
 
     const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER

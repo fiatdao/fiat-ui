@@ -1,6 +1,7 @@
 import { Collateral } from './data/collaterals'
 import { calculateStablecoinBondApr } from './underlyingPositionHelpers'
 import { SummaryItem } from '../components/custom/summary'
+import { getHumanValue } from '../web3/utils'
 import { parseDate } from '@/src/utils/dateTime'
 import BigNumber from 'bignumber.js'
 
@@ -20,7 +21,11 @@ interface ISummaryBuilder {
   // buildEstimatedNewHealthFactor(): this
   // buildCurrentCollateralDeposited(): this
   // buildNewCollateralDeposited(): this
-  // buildEstimatedCollateralToDeposit(): this
+  buildEstimatedCollateralToDeposit(
+    underlierDepositAmount: BigNumber,
+    singleUnderlierToPToken: BigNumber,
+    underlierDecimals: number,
+  ): this
   // buildEstimatedUnderlierToReceiveDeposit(): this
 
   getSummary(): Array<SummaryItem>
@@ -98,9 +103,23 @@ export class SummaryBuilder implements ISummaryBuilder {
     return this
   }
 
+  buildEstimatedCollateralToDeposit(
+    underlierDepositAmount: BigNumber,
+    singleUnderlierToPToken: BigNumber,
+    underlierDecimals: number,
+  ) {
+    const estimatedCollateralToDeposit = underlierDepositAmount.multipliedBy(
+      getHumanValue(singleUnderlierToPToken, underlierDecimals),
+    )
+    this.summary.push({
+      title: 'Estimated collateral to deposit',
+      value: estimatedCollateralToDeposit.toFixed(2),
+    })
+
+    return this
+  }
+
   getSummary() {
     return this.summary
   }
 }
-
-// TODO: implement Director for deposit underlier summary, withdraw underlier summary, etc.

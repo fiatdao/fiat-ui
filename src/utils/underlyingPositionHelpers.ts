@@ -29,6 +29,14 @@ export const calculateStablecoinBondApr = (
   return fixedAPR
 }
 
+// TODO: helper for interestEarned to dry up calculations
+// export const interestEarned = () => {
+//   const interestEarned = underlierAmount * (yieldTillMaturity / 100)
+//   const interestEarnedStr = `${interestEarned.toFixed(2)} ${
+//     collateral ? collateral.underlierSymbol : '-'
+//   }`
+// }
+
 /**
  * Builds underlying data summary items for deposit and withdraw underlier actions
  * @param  {BigNumber}  marketRate        The rough exchange rate for 1 underlier -> 1 bond token (e.g 0.9953...)
