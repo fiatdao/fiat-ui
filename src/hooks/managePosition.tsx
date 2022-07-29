@@ -101,6 +101,7 @@ export const useManagePositionForm = (
   const [buttonText, setButtonText] = useState<string>('Execute')
   const tokenAddress = position?.collateral.address
 
+  // Managing fiat tab active section state
   const [isRepayingFIAT, setIsRepayingFIAT] = useState<boolean>(false)
   useEffect(() => {
     // use form values to assume user's intended fiat actions
@@ -121,30 +122,68 @@ export const useManagePositionForm = (
     }
   }, [activeTabKey, positionFormFields?.borrow, positionFormFields?.repay])
 
+  // Managing collateral tab active section state
   const [isDepositingCollateral, setIsDepositingCollateral] = useState<boolean>(false)
+  const [isDepositingUnderlier, setIsDepositingUnderlier] = useState<boolean>(false)
   const [isWithdrawingCollateral, setIsWithdrawingCollateral] = useState<boolean>(false)
+  const [isWithdrawingUnderlier, setIsWithdrawingUnderlier] = useState<boolean>(false)
   useEffect(() => {
     // use form values to assume user's intended fiat actions
     const depositAmount = positionFormFields?.depositAmount
+    const underlierDepositAmount = positionFormFields?.underlierDepositAmount
     const withdrawAmount = positionFormFields?.withdrawAmount
+    const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount
     if (depositAmount && depositAmount.gt(ZERO_BIG_NUMBER)) {
       setIsDepositingCollateral(true)
+      setIsDepositingUnderlier(false)
       setIsWithdrawingCollateral(false)
-    } else if (withdrawAmount && withdrawAmount.gt(ZERO_BIG_NUMBER)) {
-      setIsWithdrawingCollateral(true)
+      setIsWithdrawingUnderlier(false)
+    } else if (underlierDepositAmount && underlierDepositAmount.gt(ZERO_BIG_NUMBER)) {
       setIsDepositingCollateral(false)
+      setIsDepositingUnderlier(true)
+      setIsWithdrawingCollateral(false)
+      setIsWithdrawingUnderlier(false)
+    } else if (withdrawAmount && withdrawAmount.gt(ZERO_BIG_NUMBER)) {
+      setIsDepositingCollateral(false)
+      setIsDepositingUnderlier(false)
+      setIsWithdrawingCollateral(true)
+      setIsWithdrawingUnderlier(false)
+    } else if (underlierWithdrawAmount && underlierWithdrawAmount.gt(ZERO_BIG_NUMBER)) {
+      setIsDepositingCollateral(false)
+      setIsDepositingUnderlier(false)
+      setIsWithdrawingCollateral(false)
+      setIsWithdrawingUnderlier(true)
     } else {
+      // if all fields are undefined, assume user's action based on activetab
       if (activeTabKey === 'deposit') {
-        // if all fields are undefined, assume user's action based on activetab
         setIsDepositingCollateral(true)
+        setIsDepositingUnderlier(false)
         setIsWithdrawingCollateral(false)
-      } else if (activeTabKey === 'withdraw') {
-        // if all fields are undefined, assume user's action based on activetab
-        setIsWithdrawingCollateral(true)
+        setIsWithdrawingUnderlier(false)
+      } else if (activeTabKey === 'depositUnderlier') {
         setIsDepositingCollateral(false)
+        setIsDepositingUnderlier(true)
+        setIsWithdrawingCollateral(false)
+        setIsWithdrawingUnderlier(false)
+      } else if (activeTabKey === 'withdraw') {
+        setIsDepositingCollateral(false)
+        setIsDepositingUnderlier(false)
+        setIsWithdrawingCollateral(true)
+        setIsWithdrawingUnderlier(false)
+      } else if (activeTabKey === 'withdrawUnderlier') {
+        setIsDepositingCollateral(false)
+        setIsDepositingUnderlier(false)
+        setIsWithdrawingCollateral(false)
+        setIsWithdrawingUnderlier(true)
       }
     }
-  }, [activeTabKey, positionFormFields?.depositAmount, positionFormFields?.withdrawAmount])
+  }, [
+    activeTabKey,
+    positionFormFields?.depositAmount,
+    positionFormFields?.underlierDepositAmount,
+    positionFormFields?.withdrawAmount,
+    positionFormFields?.underlierWithdrawAmount,
+  ])
 
   const [loadingMonetaAllowanceApprove, setLoadingMonetaAllowanceApprove] = useState<boolean>(false)
 
@@ -833,12 +872,9 @@ export const useManagePositionForm = (
         ]
       : []
 
-    if (activeTabKey === 'underlierDepositAmount' || underlierDepositAmount !== ZERO_BIG_NUMBER) {
+    if (isDepositingUnderlier) {
       return depositUnderlierSummary
-    } else if (
-      activeTabKey === 'underlierWithdrawAmount' ||
-      underlierWithdrawAmount !== ZERO_BIG_NUMBER
-    ) {
+    } else if (isWithdrawingUnderlier) {
       return withdrawUnderlierSummary
     } else if (activeTabKey === 'redeem') {
       return redeemSummary
@@ -883,7 +919,9 @@ export const useManagePositionForm = (
     loadingMonetaAllowanceApprove,
     isRepayingFIAT,
     isDepositingCollateral,
+    isDepositingUnderlier,
     isWithdrawingCollateral,
+    isWithdrawingUnderlier,
   }
 }
 

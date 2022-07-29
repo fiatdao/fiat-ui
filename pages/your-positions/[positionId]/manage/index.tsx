@@ -138,11 +138,15 @@ const PositionManage = () => {
     hasTokenAllowance,
     healthFactor,
     isDepositingCollateral,
+    // TODO: use these
+    /* isDepositingUnderlier, */
     isDisabledCreatePosition,
     isLoading,
     isProxyAvailable,
     isRepayingFIAT,
     isWithdrawingCollateral,
+    // TODO: use these
+    /* isWithdrawingUnderlier, */
     loadingFiatAllowanceApprove,
     loadingMonetaAllowanceApprove,
     loadingProxy,
