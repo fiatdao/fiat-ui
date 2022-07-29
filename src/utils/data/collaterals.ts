@@ -24,6 +24,7 @@ export type Collateral = {
   symbol: string
   asset: string
   protocol: string
+  scale: Maybe<string>
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
   underlierScale: Maybe<string>

@@ -70,7 +70,7 @@ export const useManagePositionForm = (
     buyCollateralAndModifyDebtERC20,
     modifyCollateralAndDebt,
     redeemCollateralAndModifyDebtERC20,
-    /* redeemCollateralAndModifyDebtERC1155, */
+    redeemCollateralAndModifyDebtERC1155,
     sellCollateralAndModifyDebtERC20,
   } = useUserActions(position?.vaultType)
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
@@ -101,6 +101,7 @@ export const useManagePositionForm = (
   const [buttonText, setButtonText] = useState<string>('Execute')
   const tokenAddress = position?.collateral.address
 
+  // Managing fiat tab active section state
   const [isRepayingFIAT, setIsRepayingFIAT] = useState<boolean>(false)
   useEffect(() => {
     // use form values to assume user's intended fiat actions
@@ -121,30 +122,68 @@ export const useManagePositionForm = (
     }
   }, [activeTabKey, positionFormFields?.borrow, positionFormFields?.repay])
 
+  // Managing collateral tab active section state
   const [isDepositingCollateral, setIsDepositingCollateral] = useState<boolean>(false)
+  const [isDepositingUnderlier, setIsDepositingUnderlier] = useState<boolean>(false)
   const [isWithdrawingCollateral, setIsWithdrawingCollateral] = useState<boolean>(false)
+  const [isWithdrawingUnderlier, setIsWithdrawingUnderlier] = useState<boolean>(false)
   useEffect(() => {
-    // use form values to assume user's intended fiat actions
+    // use form values to assume user's intended collateral action
     const depositAmount = positionFormFields?.depositAmount
+    const underlierDepositAmount = positionFormFields?.underlierDepositAmount
     const withdrawAmount = positionFormFields?.withdrawAmount
+    const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount
     if (depositAmount && depositAmount.gt(ZERO_BIG_NUMBER)) {
       setIsDepositingCollateral(true)
+      setIsDepositingUnderlier(false)
       setIsWithdrawingCollateral(false)
-    } else if (withdrawAmount && withdrawAmount.gt(ZERO_BIG_NUMBER)) {
-      setIsWithdrawingCollateral(true)
+      setIsWithdrawingUnderlier(false)
+    } else if (underlierDepositAmount && underlierDepositAmount.gt(ZERO_BIG_NUMBER)) {
       setIsDepositingCollateral(false)
+      setIsDepositingUnderlier(true)
+      setIsWithdrawingCollateral(false)
+      setIsWithdrawingUnderlier(false)
+    } else if (withdrawAmount && withdrawAmount.gt(ZERO_BIG_NUMBER)) {
+      setIsDepositingCollateral(false)
+      setIsDepositingUnderlier(false)
+      setIsWithdrawingCollateral(true)
+      setIsWithdrawingUnderlier(false)
+    } else if (underlierWithdrawAmount && underlierWithdrawAmount.gt(ZERO_BIG_NUMBER)) {
+      setIsDepositingCollateral(false)
+      setIsDepositingUnderlier(false)
+      setIsWithdrawingCollateral(false)
+      setIsWithdrawingUnderlier(true)
     } else {
+      // if all fields are undefined, assume user's action based on activetab
       if (activeTabKey === 'deposit') {
-        // if all fields are undefined, assume user's action based on activetab
         setIsDepositingCollateral(true)
+        setIsDepositingUnderlier(false)
         setIsWithdrawingCollateral(false)
-      } else if (activeTabKey === 'withdraw') {
-        // if all fields are undefined, assume user's action based on activetab
-        setIsWithdrawingCollateral(true)
+        setIsWithdrawingUnderlier(false)
+      } else if (activeTabKey === 'depositUnderlier') {
         setIsDepositingCollateral(false)
+        setIsDepositingUnderlier(true)
+        setIsWithdrawingCollateral(false)
+        setIsWithdrawingUnderlier(false)
+      } else if (activeTabKey === 'withdraw') {
+        setIsDepositingCollateral(false)
+        setIsDepositingUnderlier(false)
+        setIsWithdrawingCollateral(true)
+        setIsWithdrawingUnderlier(false)
+      } else if (activeTabKey === 'withdrawUnderlier') {
+        setIsDepositingCollateral(false)
+        setIsDepositingUnderlier(false)
+        setIsWithdrawingCollateral(false)
+        setIsWithdrawingUnderlier(true)
       }
     }
-  }, [activeTabKey, positionFormFields?.depositAmount, positionFormFields?.withdrawAmount])
+  }, [
+    activeTabKey,
+    positionFormFields?.depositAmount,
+    positionFormFields?.underlierDepositAmount,
+    positionFormFields?.withdrawAmount,
+    positionFormFields?.underlierWithdrawAmount,
+  ])
 
   const [loadingMonetaAllowanceApprove, setLoadingMonetaAllowanceApprove] = useState<boolean>(false)
 
@@ -223,6 +262,11 @@ export const useManagePositionForm = (
 
   const underlierDecimals = useMemo(
     () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
+    [collateral],
+  )
+
+  const pTokenDecimals = useMemo(
+    () => (collateral ? getDecimalsFromScale(collateral.scale) : 0),
     [collateral],
   )
 
@@ -552,7 +596,7 @@ export const useManagePositionForm = (
 
       setIsLoading(true)
 
-      if (underlierDepositAmount !== ZERO_BIG_NUMBER && underlierDepositAmount !== undefined) {
+      if (underlierDepositAmount && isDepositingUnderlier) {
         // If depositing underlier, call respective deposit underlier action
         if (!collateral) {
           console.error('Attempted to deposit underlier without valid collateral')
@@ -602,37 +646,32 @@ export const useManagePositionForm = (
             console.error('Attempted to buyCollateralAndModifyDebt for unknown vault type')
           }
         }
-      } else if (
-        underlierWithdrawAmount !== ZERO_BIG_NUMBER &&
-        underlierWithdrawAmount !== undefined
-      ) {
+      } else if (underlierWithdrawAmount && isWithdrawingUnderlier) {
+        // If withdrawing underlier, call respective withdraw underlier action
         if (!collateral) {
           console.error('Attempted to withdraw underlier without valid collateral')
           return
         }
 
-        // If withdrawing underlier, call respective withdraw underlier action
-        const underlierWithdrawAmountFixedPoint = getNonHumanValue(
-          underlierWithdrawAmount,
-          underlierDecimals,
-        )
+        const pTokensToSwapForUnderlier = getNonHumanValue(underlierWithdrawAmount, pTokenDecimals)
         const slippageDecimal = 1 - slippageTolerance / 100
+        // TODO: show pToken to withdraw, only show estimated underlier in form (#655 https://github.com/fiatdao/fiat-ui/issues/655)
         const pTokenAmount = underlierWithdrawAmount.multipliedBy(
-          getHumanValue(singlePTokenToUnderlier, underlierDecimals),
+          getHumanValue(singlePTokenToUnderlier, pTokenDecimals),
         )
         const minOutput = getNonHumanValue(
           pTokenAmount.multipliedBy(slippageDecimal),
-          underlierDecimals,
+          pTokenDecimals,
         )
         const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
-        const approve = underlierWithdrawAmountFixedPoint.toFixed(0, 8)
+        const approve = pTokensToSwapForUnderlier.toFixed(0, 8)
         switch (position?.vaultType) {
           case VaultType.ELEMENT: {
             await sellCollateralAndModifyDebtERC20({
               vault: collateral.vault.address,
               deltaDebt,
               virtualRate: collateral.vault.virtualRate,
-              pTokenAmount: underlierWithdrawAmountFixedPoint,
+              pTokenAmount: pTokensToSwapForUnderlier,
               swapParams: {
                 balancerVault: collateral.eptData.balancerVault,
                 poolId: collateral.eptData?.poolId ?? '',
@@ -661,7 +700,7 @@ export const useManagePositionForm = (
           return
         }
 
-        const redeemAmountFixedPoint = getNonHumanValue(redeemAmount, underlierDecimals)
+        const redeemAmountFixedPoint = getNonHumanValue(redeemAmount, pTokenDecimals)
         switch (position?.vaultType) {
           case VaultType.ELEMENT: {
             await redeemCollateralAndModifyDebtERC20({
@@ -678,16 +717,13 @@ export const useManagePositionForm = (
             console.error('unimplemented')
             break
           case VaultType.NOTIONAL:
-            // fun fact, modifyCollateralAndDebt will redeem for notional,
-            // but it's more idiomatic to call redeemCollateralAndModifyDebt
-            await modifyCollateralAndDebt({
-              vault: position?.protocolAddress,
-              token: position?.collateral.address,
-              tokenId: Number(position.tokenId),
-              deltaCollateral,
+            await redeemCollateralAndModifyDebtERC1155({
+              vault: collateral.vault.address,
+              token: collateral.address ?? '',
+              tokenId: collateral?.tokenId ?? '',
+              fCashAmount: redeemAmountFixedPoint,
               deltaDebt,
-              wait: 3,
-              virtualRate: position.virtualRate,
+              virtualRate: collateral.vault.virtualRate,
             })
             await updateUnderlying()
             break
@@ -825,12 +861,9 @@ export const useManagePositionForm = (
         ]
       : []
 
-    if (activeTabKey === 'underlierDepositAmount' || underlierDepositAmount !== ZERO_BIG_NUMBER) {
+    if (isDepositingUnderlier) {
       return depositUnderlierSummary
-    } else if (
-      activeTabKey === 'underlierWithdrawAmount' ||
-      underlierWithdrawAmount !== ZERO_BIG_NUMBER
-    ) {
+    } else if (isWithdrawingUnderlier) {
       return withdrawUnderlierSummary
     } else if (activeTabKey === 'redeem') {
       return redeemSummary
@@ -875,7 +908,9 @@ export const useManagePositionForm = (
     loadingMonetaAllowanceApprove,
     isRepayingFIAT,
     isDepositingCollateral,
+    isDepositingUnderlier,
     isWithdrawingCollateral,
+    isWithdrawingUnderlier,
   }
 }
 

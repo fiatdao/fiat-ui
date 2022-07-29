@@ -138,11 +138,15 @@ const PositionManage = () => {
     hasTokenAllowance,
     healthFactor,
     isDepositingCollateral,
+    // TODO: use these
+    /* isDepositingUnderlier, */
     isDisabledCreatePosition,
     isLoading,
     isProxyAvailable,
     isRepayingFIAT,
     isWithdrawingCollateral,
+    // TODO: use these
+    /* isWithdrawingUnderlier, */
     loadingFiatAllowanceApprove,
     loadingMonetaAllowanceApprove,
     loadingProxy,
@@ -287,17 +291,22 @@ const PositionManage = () => {
   }, [activeSection])
 
   useEffect(() => {
+    // @dev NOTE: If you change this, make sure to check the renderCollateralTabs() function
     if (activeSection === 'collateral') {
       if (isMatured) {
         if (collateral?.vault.type === VaultType.NOTIONAL) {
           // expired notional should only show redeem tab, can't be transferred past maturity
+          setActiveTabKey('redeem')
+        } else if (!shouldShowUnderlyingUi) {
+          setActiveTabKey('withdraw')
+        } else if (shouldShowUnderlyingUi) {
           setActiveTabKey('redeem')
         } else if (!isWithdrawCollateralKey(activeTabKey)) {
           setActiveTabKey('withdraw')
         }
       }
     }
-  }, [activeSection, activeTabKey, collateral?.vault.type, isMatured])
+  }, [activeSection, activeTabKey, collateral?.vault.type, isMatured, shouldShowUnderlyingUi])
 
   const getMaturedFCashMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
@@ -443,14 +452,20 @@ const PositionManage = () => {
       </Tab>
     )
 
-    if (isMatured && collateral?.vault.type === VaultType.NOTIONAL) {
-      // If collateral is matured fcash, show only redeem tab
-      return redeemTab
-    } else if (isMatured) {
-      // If matured and not fcash, show all withdraw tabs
-      return shouldShowUnderlyingUi ? [withdrawTab, withdrawUnderlierTab, redeemTab] : [withdrawTab]
+    if (isMatured) {
+      // @dev NOTE: If you change this, make sure to check the useEffect in this file for setting active section
+      if (collateral?.vault.type === VaultType.NOTIONAL) {
+        // If collateral is notional post-maturity, show only redeem tab
+        return redeemTab
+      } else if (!shouldShowUnderlyingUi) {
+        // If non-notional & post maturity, and underlier flow off, show withdraw.
+        return withdrawTab
+      } else if (shouldShowUnderlyingUi) {
+        // If non-notional & post maturity, and underlier flow ON, only shouw redeem.
+        return redeemTab
+      }
     } else {
-      // If not matured, show all collateral tabs except redeem tabs
+      // If bond is active (pre-maturity), show all collateral tabs except redeem
       return shouldShowUnderlyingUi
         ? [depositTab, depositUnderlierTab, withdrawTab, withdrawUnderlierTab]
         : [depositTab, withdrawTab]
