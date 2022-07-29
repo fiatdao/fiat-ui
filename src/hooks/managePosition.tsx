@@ -70,7 +70,7 @@ export const useManagePositionForm = (
     buyCollateralAndModifyDebtERC20,
     modifyCollateralAndDebt,
     redeemCollateralAndModifyDebtERC20,
-    /* redeemCollateralAndModifyDebtERC1155, */
+    redeemCollateralAndModifyDebtERC1155,
     sellCollateralAndModifyDebtERC20,
   } = useUserActions(position?.vaultType)
   const { isProxyAvailable, loadingProxy, setupProxy, userProxyAddress } = useUserProxy()
@@ -223,6 +223,11 @@ export const useManagePositionForm = (
 
   const underlierDecimals = useMemo(
     () => (collateral ? getDecimalsFromScale(collateral.underlierScale) : 0),
+    [collateral],
+  )
+
+  const pTokenDecimals = useMemo(
+    () => (collateral ? getDecimalsFromScale(collateral.scale) : 0),
     [collateral],
   )
 
@@ -612,7 +617,7 @@ export const useManagePositionForm = (
         }
 
         // If withdrawing underlier, call respective withdraw underlier action
-        const underlierWithdrawAmountFixedPoint = getNonHumanValue(
+        const pTokensToSwapForUnderlier = getNonHumanValue(
           underlierWithdrawAmount,
           underlierDecimals,
         )
@@ -625,14 +630,18 @@ export const useManagePositionForm = (
           underlierDecimals,
         )
         const deadline = Number((Date.now() / 1000).toFixed(0)) + maxTransactionTime * 60
-        const approve = underlierWithdrawAmountFixedPoint.toFixed(0, 8)
+        const approve = pTokensToSwapForUnderlier.toFixed(0, 8)
+        // TODO: does this work? or do i need pTokenScale?
+        console.log('withdrawing underlier')
+        console.log('pTokendeci: ', pTokenDecimals)
+        console.log('underlierdeci: ', underlierDecimals)
         switch (position?.vaultType) {
           case VaultType.ELEMENT: {
             await sellCollateralAndModifyDebtERC20({
               vault: collateral.vault.address,
               deltaDebt,
               virtualRate: collateral.vault.virtualRate,
-              pTokenAmount: underlierWithdrawAmountFixedPoint,
+              pTokenAmount: pTokensToSwapForUnderlier,
               swapParams: {
                 balancerVault: collateral.eptData.balancerVault,
                 poolId: collateral.eptData?.poolId ?? '',
@@ -661,7 +670,7 @@ export const useManagePositionForm = (
           return
         }
 
-        const redeemAmountFixedPoint = getNonHumanValue(redeemAmount, underlierDecimals)
+        const redeemAmountFixedPoint = getNonHumanValue(redeemAmount, pTokenDecimals)
         switch (position?.vaultType) {
           case VaultType.ELEMENT: {
             await redeemCollateralAndModifyDebtERC20({
@@ -680,14 +689,13 @@ export const useManagePositionForm = (
           case VaultType.NOTIONAL:
             // fun fact, modifyCollateralAndDebt will redeem for notional,
             // but it's more idiomatic to call redeemCollateralAndModifyDebt
-            await modifyCollateralAndDebt({
-              vault: position?.protocolAddress,
-              token: position?.collateral.address,
-              tokenId: Number(position.tokenId),
-              deltaCollateral,
+            await redeemCollateralAndModifyDebtERC1155({
+              vault: collateral.vault.address,
+              token: collateral.address ?? '',
+              tokenId: collateral?.tokenId ?? '',
+              fCashAmount: redeemAmountFixedPoint,
               deltaDebt,
-              wait: 3,
-              virtualRate: position.virtualRate,
+              virtualRate: collateral.vault.virtualRate,
             })
             await updateUnderlying()
             break
