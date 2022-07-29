@@ -447,14 +447,19 @@ const PositionManage = () => {
       </Tab>
     )
 
-    if (isMatured && collateral?.vault.type === VaultType.NOTIONAL) {
-      // If collateral is matured fcash, show only redeem tab
-      return redeemTab
-    } else if (isMatured) {
-      // If matured and not fcash, show all withdraw tabs
-      return shouldShowUnderlyingUi ? [withdrawTab, withdrawUnderlierTab, redeemTab] : [withdrawTab]
+    if (isMatured) {
+      if (collateral?.vault.type === VaultType.NOTIONAL) {
+        // If collateral is notional post-maturity, show only redeem tab
+        return redeemTab
+      } else if (isMatured && shouldShowUnderlyingUi) {
+        // If non-notional & post maturity, and underlier flow off, show withdraw.
+        return withdrawTab
+      } else if (isMatured && !shouldShowUnderlyingUi) {
+        // If non-notional & post maturity, and underlier flow ON, only shouw redeem.
+        return redeemTab
+      }
     } else {
-      // If not matured, show all collateral tabs except redeem tabs
+      // If bond is active (pre-maturity), show all collateral tabs except redeem
       return shouldShowUnderlyingUi
         ? [depositTab, depositUnderlierTab, withdrawTab, withdrawUnderlierTab]
         : [depositTab, withdrawTab]
