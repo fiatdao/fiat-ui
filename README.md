@@ -24,12 +24,6 @@ Get leverage and access secondary liquidity for your favorite DeFi fixed income 
 
 This is the recommended flow for local testing. It allows you to create positions, manage them (thanks to the local subgraph indexing your created positions), and test with expired collaterals by fast forwarding through blocks on your local chain.
 
-1. In this repo, disable Sentry by replacing the last line of `next.config.js` with
-    ```js
-    module.exports = moduleExports
-    ```
-    (if you don't do this you'll get CORS errors when querying your local subgraph)
-
 1. In constants/misc.ts, change the `SUBGRAPH_LOCALHOST` to point to `'http://localhost:8000/subgraphs/name/fiatdao/fiat-subgraph'` by uncommenting line 27
 
 1. Next, clone the `fiat-subgraph` repository
@@ -88,12 +82,6 @@ This is the recommended flow for local testing. It allows you to create position
 > NOTE: i haven't gotten this working, got out of memory error with ganache. try the above first
 
 1. After setting up your `.env.local` file & installing dependencies, run the frontend with `yarn dev`
-
-1. Disable Sentry by replacing the last line of `next.config.js` with
-    ```js
-    module.exports = moduleExports
-    ```
-    (if you don't do this you'll get CORS errors when querying your local subgraph)
 
 1. Next, clone the `fiat-subgraph` repository
     ```sh
