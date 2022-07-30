@@ -265,6 +265,7 @@ const BuyCollateral = () => {
     }
   }
 
+  // TODO: use SummaryBuilder to build this summary data
   const blocksData = [
     {
       title: 'Auctioned Collateral',
@@ -289,6 +290,7 @@ const BuyCollateral = () => {
     },
   ]
 
+  // TODO: use SummaryBuilder to build this summary data
   const summaryData = [
     {
       title: 'Estimated FIAT to pay',

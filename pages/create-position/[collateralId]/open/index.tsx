@@ -200,6 +200,7 @@ const FormERC20: React.FC<{
     deltaDebt,
   )
 
+  // TODO: use SummaryBuilder to build this summary data
   const summaryData = [
     {
       title: 'In your wallet',
