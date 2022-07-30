@@ -75,4 +75,13 @@ const sentryWebpackPluginOptions = {
 
 // Make sure adding Sentry options is the last code to run before exporting, to
 // ensure that your source maps include changes from all other Webpack plugins
-module.exports = moduleExports
+function isDev() {
+  return (
+    process.env.NEXT_PUBLIC_VERCEL_ENV === 'development' ||
+    process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview'
+  )
+}
+
+// If dev environment (local or staging), don't initialize sentry
+// Necessary for local env because local graph requests will error because of added sentry headers
+module.exports = isDev() ? moduleExports : withSentryConfig(moduleExports, sentryWebpackPluginOptions);
