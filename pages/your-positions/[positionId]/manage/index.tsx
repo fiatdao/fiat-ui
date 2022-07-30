@@ -167,7 +167,10 @@ const PositionManage = () => {
   )
 
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
-  const tokenSymbol = position?.symbol ?? ''
+  const shouldUseUnderlierToken = isDepositingUnderlier || isWithdrawingUnderlier
+  const tokenSymbol = shouldUseUnderlierToken
+    ? collateral?.underlierAddress
+    : position?.symbol ?? ''
 
   const reset = async () => {
     setFinished(false)
