@@ -99,7 +99,6 @@ export const useManagePositionForm = (
 
   const [healthFactor, setHealthFactor] = useState<BigNumber | undefined>(ZERO_BIG_NUMBER)
   const [buttonText, setButtonText] = useState<string>('Execute')
-  const tokenAddress = position?.collateral.address
 
   // Managing fiat tab active section state
   const [isRepayingFIAT, setIsRepayingFIAT] = useState<boolean>(false)
@@ -212,11 +211,16 @@ export const useManagePositionForm = (
 
   const [FIATBalance] = useFIATBalance(true) // true param requests as human value
 
+  const shouldUseUnderlierToken = isDepositingUnderlier || isWithdrawingUnderlier
+  const tokenAddress = shouldUseUnderlierToken
+    ? collateral?.underlierAddress
+    : position?.collateral.address
   const erc20 = useERC20Allowance(tokenAddress ?? '', userProxyAddress ?? '')
   const erc1155 = useERC155Allowance(tokenAddress ?? '', userProxyAddress ?? '')
 
   // TODO: change activeToken to underlier token if underlier tab is active
-  const activeToken = position?.vaultType === 'NOTIONAL' ? erc1155 : erc20
+  const activeToken =
+    position?.vaultType === 'NOTIONAL' && !shouldUseUnderlierToken ? erc1155 : erc20
   const {
     approve: approveTokenAllowance,
     hasAllowance: hasTokenAllowance,

@@ -127,7 +127,7 @@ const PositionManage = () => {
     availableDepositAmount,
     availableUnderlierDepositAmount,
     availableUnderlierWithdrawAmount,
-    availableWithdrawAmount,
+    // availableWithdrawAmount,
     buttonText,
     finished,
     getFormSummaryData,
@@ -138,15 +138,13 @@ const PositionManage = () => {
     hasTokenAllowance,
     healthFactor,
     isDepositingCollateral,
-    // TODO: use these
-    /* isDepositingUnderlier, */
+    isDepositingUnderlier,
     isDisabledCreatePosition,
     isLoading,
     isProxyAvailable,
     isRepayingFIAT,
     isWithdrawingCollateral,
-    // TODO: use these
-    /* isWithdrawingUnderlier, */
+    isWithdrawingUnderlier,
     loadingFiatAllowanceApprove,
     loadingMonetaAllowanceApprove,
     loadingProxy,
@@ -543,6 +541,26 @@ const PositionManage = () => {
             Enable Proxy for FIAT
           </ButtonGradient>
         )
+      } else if (isDepositingUnderlier && !hasTokenAllowance) {
+        return (
+          <ButtonGradient
+            disabled={loadingTokenAllowanceApprove}
+            height="lg"
+            onClick={onApproveTokenAllowance}
+          >
+            Set {tokenSymbol} Allowance
+          </ButtonGradient>
+        )
+      } else if (isDepositingUnderlier || isWithdrawingUnderlier) {
+        return (
+          <ButtonGradient
+            disabled={loadingFiatAllowanceApprove}
+            height="lg"
+            onClick={onHandleManage}
+          >
+            {buttonText}
+          </ButtonGradient>
+        )
       } else {
         console.error('Unknown button to render')
       }
@@ -571,6 +589,8 @@ const PositionManage = () => {
     onSetupProxy,
     step,
     tokenSymbol,
+    isDepositingUnderlier,
+    isWithdrawingUnderlier,
   ])
 
   return (
@@ -653,7 +673,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title={'Amount of collateral to withdraw'}
-                            value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
+                            value={`Available: ${maxWithdrawAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="withdrawAmount" required>
                             <TokenAmount
@@ -675,7 +695,7 @@ const PositionManage = () => {
                           <div className={cn(s.balanceContainer)}>
                             <Balance
                               title="Amount to withdraw and swap for underlier"
-                              value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
+                              value={`Available: ${maxWithdrawAmount?.toFixed(2)}`}
                             />
                             <SettingFilled
                               className={cn(s.settings)}
@@ -758,7 +778,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Amount to borrow"
-                            value={`Available: ${fiatBalance?.toFixed(2)}`}
+                            value={`Available: ${maxBorrowAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="borrow" required>
                             <TokenAmount
