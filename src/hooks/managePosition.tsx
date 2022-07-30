@@ -1,15 +1,21 @@
-import { usePosition } from './subgraph/usePosition'
-import { useERC155Allowance } from './useERC1155Allowance'
-import { useERC20Allowance } from './useERC20Allowance'
-import { useTokenDecimalsAndBalance } from './useTokenDecimalsAndBalance'
-import { useFIATBalance } from './useFIATBalance'
-import { useUnderlyingExchangeValue } from './useUnderlyingExchangeValue'
-import { usePTokenToUnderlier } from './usePTokenToUnderlier'
-import { useUnderlierToFCash } from './underlierToFCash'
+import {
+  CollateralTabKey,
+  FiatTabKey,
+  PositionManageFormFields,
+} from '@/pages/your-positions/[positionId]/manage'
+import { contracts } from '@/src/constants/contracts'
+import useContractCall from '@/src/hooks/contracts/useContractCall'
+import { useQueryParam } from '@/src/hooks/useQueryParam'
+import { useUserActions } from '@/src/hooks/useUserActions'
+import useUserProxy from '@/src/hooks/useUserProxy'
+import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
+import { Collateral } from '@/src/utils/data/collaterals'
+import { Position, calculateHealthFactor, calculateMaxBorrow } from '@/src/utils/data/positions'
+import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
+import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
+import { getDecimalsFromScale } from '@/src/constants/bondTokens'
 import {
   ENABLE_PROXY_FOR_FIAT_TEXT,
-  EST_FIAT_TOOLTIP_TEXT,
-  EST_HEALTH_FACTOR_TOOLTIP_TEXT,
   EXECUTE_TEXT,
   INFINITE_BIG_NUMBER,
   INSUFFICIENT_BALANCE_TEXT,
@@ -20,36 +26,20 @@ import {
   WAD_DECIMALS,
   ZERO_BIG_NUMBER,
   getBorrowAmountBelowDebtFloorText,
-} from '../constants/misc'
-import { parseDate } from '../utils/dateTime'
-import { getHealthFactorState } from '../utils/table'
-import { getEtherscanAddressUrl, shortenAddr } from '../web3/utils'
-import { getDecimalsFromScale } from '../constants/bondTokens'
-import { SummaryBuilder } from '../utils/summaryBuilder'
-import { contracts } from '@/src/constants/contracts'
-import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
-import useContractCall from '@/src/hooks/contracts/useContractCall'
-import { useQueryParam } from '@/src/hooks/useQueryParam'
-import { useUserActions } from '@/src/hooks/useUserActions'
-import useUserProxy from '@/src/hooks/useUserProxy'
-import { useWeb3Connection } from '@/src/providers/web3ConnectionProvider'
-import {
-  Position,
-  calculateHealthFactor,
-  calculateMaxBorrow,
-  isValidHealthFactor,
-} from '@/src/utils/data/positions'
-import { getHumanValue, getNonHumanValue, perSecondToAPR } from '@/src/web3/utils'
-import {
-  CollateralTabKey,
-  FiatTabKey,
-  PositionManageFormFields,
-} from '@/pages/your-positions/[positionId]/manage'
-import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
-import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
-import { Collateral } from '@/src/utils/data/collaterals'
-import BigNumber from 'bignumber.js'
+} from '@/src/constants/misc'
+import { parseDate } from '@/src/utils/dateTime'
+import { SummaryBuilder } from '@/src/utils/summaryBuilder'
+import { getEtherscanAddressUrl, shortenAddr } from '@/src/web3/utils'
+import { usePosition } from '@/src/hooks/subgraph/usePosition'
+import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
+import { useERC155Allowance } from '@/src/hooks/useERC1155Allowance'
+import { useERC20Allowance } from '@/src/hooks/useERC20Allowance'
+import { useFIATBalance } from '@/src/hooks/useFIATBalance'
+import { usePTokenToUnderlier } from '@/src/hooks/usePTokenToUnderlier'
+import { useTokenDecimalsAndBalance } from '@/src/hooks/useTokenDecimalsAndBalance'
+import { useUnderlyingExchangeValue } from '@/src/hooks/useUnderlyingExchangeValue'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import BigNumber from 'bignumber.js'
 
 export type TokenInfo = {
   decimals?: number
@@ -761,136 +751,69 @@ export const useManagePositionForm = (
     const newDebt = position?.totalDebt.plus(deltaDebt)
 
     const newCollateral = position?.totalCollateral.plus(deltaCollateral)
-
-    const fiatDebtSummarySections = [
-      {
-        title: 'Current FIAT debt',
-        value: getHumanValue(position?.totalDebt, WAD_DECIMALS).toFixed(2),
-      },
-      {
-        title: 'Estimated new FIAT debt',
-        titleTooltip: EST_FIAT_TOOLTIP_TEXT,
-        value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(2),
-      },
-    ]
-
-    const healthFactorSummarySections = [
-      {
-        title: 'Current Health Factor',
-        state: getHealthFactorState(position?.healthFactor ?? ZERO_BIG_NUMBER),
-        value: isValidHealthFactor(position?.healthFactor)
-          ? position?.healthFactor?.toFixed(2)
-          : DEFAULT_HEALTH_FACTOR,
-      },
-      {
-        title: 'Estimated new Health Factor',
-        titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
-        state: getHealthFactorState(healthFactor ?? ZERO_BIG_NUMBER),
-        value: isValidHealthFactor(healthFactor) ? healthFactor?.toFixed(2) : DEFAULT_HEALTH_FACTOR,
-      },
-    ]
-
-    const bondSummary = [
-      {
-        title: 'Current collateral deposited',
-        value: getHumanValue(position?.totalCollateral, WAD_DECIMALS).toFixed(2),
-      },
-      {
-        title: 'New collateral deposited',
-        value: getHumanValue(newCollateral, WAD_DECIMALS).toFixed(2),
-      },
-      ...fiatDebtSummarySections,
-      ...healthFactorSummarySections,
-    ]
-
     const underlierDepositAmount = positionFormFields?.underlierDepositAmount ?? ZERO_BIG_NUMBER
 
-    /* const estimatedCollateralToDeposit = underlierDepositAmount.multipliedBy( */
-    /*   getHumanValue(singleUnderlierToPToken, underlierDecimals), */
-    /* ) */
-    /* const depositUnderlierSummary = collateral */
-    /*   ? [ */
-    /*       { */
-    /*         title: 'Estimated collateral to deposit', */
-    /*         value: estimatedCollateralToDeposit.toFixed(2), */
-    /*       }, */
-    /*       ...getUnderlyingDataSummary( */
-    /*         marketRate, */
-    /*         slippageTolerance, */
-    /*         collateral, */
-    /*         underlierDepositAmount.toNumber(), */
-    /*       ), */
-    /*       ...fiatDebtSummarySections, */
-    /*       ...healthFactorSummarySections, */
-    /*     ] */
-    /*   : [] */
-
-    const depositUnderlierSummaryBuilder = new SummaryBuilder()
-    // implement this, it's the same order as before
-    const depositUnderlierSummary = collateral
-      ? depositUnderlierSummaryBuilder
-          .buildEstimatedCollateralToDeposit(
-            underlierDepositAmount,
-            singleUnderlierToPToken,
-            underlierDecimals,
-          )
-          .buildMarketRate(marketRate, collateral)
-          .buildSlippageTolerance(slippageTolerance)
-          .buildFixedAPR(collateral, marketRate)
-          .buildInterestEarned(collateral, underlierDepositAmount.toNumber(), marketRate)
-          .buildRedeemableAtMaturity(collateral, underlierDepositAmount.toNumber(), marketRate)
-          .buildCurrentFiatDebt(position?.totalDebt ?? ZERO_BIG_NUMBER)
-          .buildEstimatedFiatDebt(newDebt ?? ZERO_BIG_NUMBER)
-          .buildCurrentHealthFactor(position?.healthFactor ?? ZERO_BIG_NUMBER)
-          .buildEstimatedNewHealthFactor(healthFactor ?? ZERO_BIG_NUMBER)
-          .getSummary()
-      : []
-
-    const underlierWithdrawAmount = positionFormFields?.underlierWithdrawAmount ?? ZERO_BIG_NUMBER
-    const withdrawUnderlierSummary = collateral
-      ? [
-          {
-            title: 'Estimated underlier to receive',
-            value: estimatedUnderlierToReceive?.toFixed(2),
-          },
-          {
-            title: 'Current collateral deposited',
-            value: getHumanValue(position?.totalCollateral, WAD_DECIMALS).toFixed(2),
-          },
-          ...getUnderlyingDataSummary(
-            marketRate,
-            slippageTolerance,
-            collateral,
-            underlierWithdrawAmount.toNumber(),
-          ),
-          ...fiatDebtSummarySections,
-          ...healthFactorSummarySections,
-        ]
-      : []
-
-    const underlierRedeemAmount = positionFormFields?.redeemAmount ?? ZERO_BIG_NUMBER
-    const redeemSummary = collateral
-      ? [
-          {
-            title: 'Estimated underlier to receive',
-            value: underlierRedeemAmount?.toFixed(2),
-          },
-          {
-            title: 'Current collateral deposited',
-            value: getHumanValue(position?.totalCollateral, WAD_DECIMALS).toFixed(2),
-          },
-          ...fiatDebtSummarySections,
-          ...healthFactorSummarySections,
-        ]
-      : []
-
     if (isDepositingUnderlier) {
+      const depositUnderlierSummaryBuilder = new SummaryBuilder()
+      // implement this, it's the same order as before
+      const depositUnderlierSummary = collateral
+        ? depositUnderlierSummaryBuilder
+            .buildEstimatedCollateralToDeposit(
+              underlierDepositAmount,
+              singleUnderlierToPToken,
+              underlierDecimals,
+            )
+            .buildMarketRate(marketRate, collateral)
+            .buildSlippageTolerance(slippageTolerance)
+            .buildFixedAPR(collateral, marketRate)
+            .buildInterestEarned(collateral, underlierDepositAmount.toNumber(), marketRate)
+            .buildRedeemableAtMaturity(collateral, underlierDepositAmount.toNumber(), marketRate)
+            .buildCurrentFiatDebt(position?.totalDebt ?? ZERO_BIG_NUMBER)
+            .buildEstimatedFiatDebt(newDebt ?? ZERO_BIG_NUMBER)
+            .buildCurrentHealthFactor(position?.healthFactor ?? ZERO_BIG_NUMBER)
+            .buildEstimatedNewHealthFactor(healthFactor ?? ZERO_BIG_NUMBER)
+            .getSummary()
+        : []
       return depositUnderlierSummary
     } else if (isWithdrawingUnderlier) {
+      const withdrawUnderlierSummaryBuilder = new SummaryBuilder()
+      const withdrawUnderlierSummary = collateral
+        ? withdrawUnderlierSummaryBuilder
+            .buildMarketRate(marketRate, collateral)
+            .buildEstimatedUnderlierToReceive(estimatedUnderlierToReceive)
+            .buildSlippageTolerance(slippageTolerance)
+            .buildCurrentCollateralDeposited(position?.totalCollateral ?? ZERO_BIG_NUMBER)
+            .buildNewCollateralDeposited(newCollateral ?? ZERO_BIG_NUMBER)
+            .buildCurrentFiatDebt(position?.totalDebt ?? ZERO_BIG_NUMBER)
+            .buildEstimatedFiatDebt(newDebt ?? ZERO_BIG_NUMBER)
+            .buildCurrentHealthFactor(position?.healthFactor ?? ZERO_BIG_NUMBER)
+            .buildEstimatedNewHealthFactor(healthFactor ?? ZERO_BIG_NUMBER)
+            .getSummary()
+        : []
       return withdrawUnderlierSummary
     } else if (activeTabKey === 'redeem') {
+      const redeemSummaryBuilder = new SummaryBuilder()
+      const redeemSummary = collateral
+        ? redeemSummaryBuilder
+            .buildEstimatedUnderlierToReceive(positionFormFields?.redeemAmount ?? ZERO_BIG_NUMBER)
+            .buildCurrentCollateralDeposited(position?.totalCollateral ?? ZERO_BIG_NUMBER)
+            .buildCurrentFiatDebt(position?.totalDebt ?? ZERO_BIG_NUMBER)
+            .buildEstimatedFiatDebt(newDebt ?? ZERO_BIG_NUMBER)
+            .buildCurrentHealthFactor(position?.healthFactor ?? ZERO_BIG_NUMBER)
+            .buildEstimatedNewHealthFactor(healthFactor ?? ZERO_BIG_NUMBER)
+            .getSummary()
+        : []
       return redeemSummary
     } else {
+      const bondSummaryBuilder = new SummaryBuilder()
+      const bondSummary = bondSummaryBuilder
+        .buildCurrentCollateralDeposited(position?.totalCollateral ?? ZERO_BIG_NUMBER)
+        .buildNewCollateralDeposited(newCollateral ?? ZERO_BIG_NUMBER)
+        .buildCurrentFiatDebt(position?.totalDebt ?? ZERO_BIG_NUMBER)
+        .buildEstimatedFiatDebt(newDebt ?? ZERO_BIG_NUMBER)
+        .buildCurrentHealthFactor(position?.healthFactor ?? ZERO_BIG_NUMBER)
+        .buildEstimatedNewHealthFactor(healthFactor ?? ZERO_BIG_NUMBER)
+        .getSummary()
       return bondSummary
     }
   }

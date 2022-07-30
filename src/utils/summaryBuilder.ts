@@ -21,6 +21,8 @@ interface ISummaryBuilder {
   ): this
   buildMarketRate(marketRate: BigNumber, collateral: Collateral): this
   buildSlippageTolerance(slippageTolerance: number): this
+  buildEstimatedUnderlierToReceive(estimatedUnderlierToReceive: BigNumber): this
+  buildCurrentCollateralDeposited(totalCollateral: BigNumber): this
   buildFixedAPR(collateral: Collateral, marketRate: BigNumber): this
   buildInterestEarned(collateral: Collateral, underlierAmount: number, marketRate: BigNumber): this
   buildRedeemableAtMaturity(
@@ -28,9 +30,7 @@ interface ISummaryBuilder {
     underlierAmount: number,
     marketRate: BigNumber,
   ): this
-  // buildCurrentCollateralDeposited(): this
-  // buildNewCollateralDeposited(): this
-  // buildEstimatedUnderlierToReceiveDeposit(): this
+  buildNewCollateralDeposited(totalCollateral: BigNumber): this
   buildCurrentFiatDebt(totalDebt: BigNumber): this
   buildEstimatedFiatDebt(newDebt: BigNumber): this
   buildCurrentHealthFactor(currentHealthFactor: BigNumber): this
@@ -76,6 +76,30 @@ export class SummaryBuilder implements ISummaryBuilder {
     this.summary.push({
       title: 'Slippage tolerance',
       value: `${slippageTolerance.toFixed(2)}%`,
+    })
+    return this
+  }
+
+  buildEstimatedUnderlierToReceive(estimatedUnderlierToReceive: BigNumber) {
+    this.summary.push({
+      title: 'Estimated underlier to receive',
+      value: estimatedUnderlierToReceive?.toFixed(2),
+    })
+    return this
+  }
+
+  buildCurrentCollateralDeposited(totalCollateral: BigNumber) {
+    this.summary.push({
+      title: 'Current collateral deposited',
+      value: getHumanValue(totalCollateral, WAD_DECIMALS).toFixed(2),
+    })
+    return this
+  }
+
+  buildNewCollateralDeposited(newCollateral: BigNumber) {
+    this.summary.push({
+      title: 'Current collateral deposited',
+      value: getHumanValue(newCollateral, WAD_DECIMALS).toFixed(2),
     })
     return this
   }
