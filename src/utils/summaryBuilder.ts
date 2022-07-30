@@ -31,6 +31,7 @@ interface ISummaryBuilder {
     marketRate: BigNumber,
   ): this
   buildNewCollateralDeposited(totalCollateral: BigNumber): this
+  buildFiatToBeMinted(fiatToBeMinted: BigNumber): this
   buildCurrentFiatDebt(totalDebt: BigNumber): this
   buildEstimatedFiatDebt(newDebt: BigNumber): this
   buildCurrentHealthFactor(currentHealthFactor: BigNumber): this
@@ -100,6 +101,14 @@ export class SummaryBuilder implements ISummaryBuilder {
     this.summary.push({
       title: 'Current collateral deposited',
       value: getHumanValue(newCollateral, WAD_DECIMALS).toFixed(2),
+    })
+    return this
+  }
+
+  buildFiatToBeMinted(fiatToBeMinted: BigNumber): this {
+    this.summary.push({
+      title: 'FIAT to be minted',
+      value: `${fiatToBeMinted.toFixed(4)}`,
     })
     return this
   }

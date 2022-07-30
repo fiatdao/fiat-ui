@@ -20,8 +20,8 @@ import { getHumanValue, getNonHumanValue } from '@/src/web3/utils'
 import { useUnderlierToFCash } from '@/src/hooks/underlierToFCash'
 // import { useMinImpliedRate } from '@/src/hooks/useMinImpliedRate'
 import { getDecimalsFromScale } from '@/src/constants/bondTokens'
-import { getUnderlyingDataSummary } from '@/src/utils/underlyingPositionHelpers'
 import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
+import { SummaryBuilder } from '@/src/utils/summaryBuilder'
 import { SettingFilled } from '@ant-design/icons'
 import { useMachine } from '@xstate/react'
 import AntdForm from 'antd/lib/form'
@@ -132,12 +132,23 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
   const fCashAmount = getHumanValue(underlierToFCash, WAD_DECIMALS).multipliedBy(underlierAmount)
   // const [minImpliedRate] = useMinImpliedRate(fCashAmount, slippageTolerance)
 
-  const underlyingData = getUnderlyingDataSummary(
-    marketRate,
-    slippageTolerance,
-    collateral,
-    underlierAmount,
-  )
+  const depositUnderlierSummaryBuilder = new SummaryBuilder()
+  const depositUnderlierSummary = collateral
+    ? depositUnderlierSummaryBuilder
+        .buildEstimatedCollateralToDeposit(
+          BigNumber.from(underlierAmount),
+          singleUnderlierToPToken,
+          underlierDecimals,
+        )
+        .buildMarketRate(marketRate, collateral)
+        .buildSlippageTolerance(slippageTolerance)
+        .buildFixedAPR(collateral, marketRate)
+        .buildInterestEarned(collateral, underlierAmount, marketRate)
+        .buildRedeemableAtMaturity(collateral, underlierAmount, marketRate)
+        .buildFiatToBeMinted(stateMachine.context.fiatAmount)
+        .buildEstimatedNewHealthFactor(healthFactorNumber)
+        .getSummary()
+    : []
 
   const createUnderlyingPositionERC1155 = useCallback(
     async ({
@@ -381,7 +392,7 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
       {stateMachine.context.currentStepNumber !== 2 &&
         stateMachine.context.currentStepNumber !== 3 && (
           <div className={cn(s.summary)}>
-            <Summary data={underlyingData} />
+            <Summary data={depositUnderlierSummary} />
           </div>
         )}
     </Form>

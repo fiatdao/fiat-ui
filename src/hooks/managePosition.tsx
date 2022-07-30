@@ -755,7 +755,6 @@ export const useManagePositionForm = (
 
     if (isDepositingUnderlier) {
       const depositUnderlierSummaryBuilder = new SummaryBuilder()
-      // implement this, it's the same order as before
       const depositUnderlierSummary = collateral
         ? depositUnderlierSummaryBuilder
             .buildEstimatedCollateralToDeposit(
