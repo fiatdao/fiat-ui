@@ -1,11 +1,24 @@
 import { Collateral } from './data/collaterals'
 import { calculateStablecoinBondApr } from './underlyingPositionHelpers'
+import { getHealthFactorState } from './table'
+import { isValidHealthFactor } from './data/positions'
 import { SummaryItem } from '../components/custom/summary'
 import { getHumanValue } from '../web3/utils'
+import {
+  EST_FIAT_TOOLTIP_TEXT,
+  EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+  WAD_DECIMALS,
+} from '../constants/misc'
+import { DEFAULT_HEALTH_FACTOR } from '../constants/healthFactor'
 import { parseDate } from '@/src/utils/dateTime'
 import BigNumber from 'bignumber.js'
 
 interface ISummaryBuilder {
+  buildEstimatedCollateralToDeposit(
+    underlierDepositAmount: BigNumber,
+    singleUnderlierToPToken: BigNumber,
+    underlierDecimals: number,
+  ): this
   buildMarketRate(marketRate: BigNumber, collateral: Collateral): this
   buildSlippageTolerance(slippageTolerance: number): this
   buildFixedAPR(collateral: Collateral, marketRate: BigNumber): this
@@ -15,18 +28,13 @@ interface ISummaryBuilder {
     underlierAmount: number,
     marketRate: BigNumber,
   ): this
-  // buildCurrentFiatDebt(): this
-  // buildEstimatedFiatDebt(): this
-  // buildCurrentHealthFactor(): this
-  // buildEstimatedNewHealthFactor(): this
   // buildCurrentCollateralDeposited(): this
   // buildNewCollateralDeposited(): this
-  buildEstimatedCollateralToDeposit(
-    underlierDepositAmount: BigNumber,
-    singleUnderlierToPToken: BigNumber,
-    underlierDecimals: number,
-  ): this
   // buildEstimatedUnderlierToReceiveDeposit(): this
+  buildCurrentFiatDebt(totalDebt: BigNumber): this
+  buildEstimatedFiatDebt(newDebt: BigNumber): this
+  buildCurrentHealthFactor(currentHealthFactor: BigNumber): this
+  buildEstimatedNewHealthFactor(newHealthFactor: BigNumber): this
 
   getSummary(): Array<SummaryItem>
 }
@@ -36,6 +44,22 @@ export class SummaryBuilder implements ISummaryBuilder {
 
   constructor() {
     this.summary = []
+  }
+
+  buildEstimatedCollateralToDeposit(
+    underlierDepositAmount: BigNumber,
+    singleUnderlierToPToken: BigNumber,
+    underlierDecimals: number,
+  ) {
+    const estimatedCollateralToDeposit = underlierDepositAmount.multipliedBy(
+      getHumanValue(singleUnderlierToPToken, underlierDecimals),
+    )
+    this.summary.push({
+      title: 'Estimated collateral to deposit',
+      value: estimatedCollateralToDeposit.toFixed(2),
+    })
+
+    return this
   }
 
   buildMarketRate(marketRate: BigNumber, collateral: Collateral) {
@@ -103,19 +127,43 @@ export class SummaryBuilder implements ISummaryBuilder {
     return this
   }
 
-  buildEstimatedCollateralToDeposit(
-    underlierDepositAmount: BigNumber,
-    singleUnderlierToPToken: BigNumber,
-    underlierDecimals: number,
-  ) {
-    const estimatedCollateralToDeposit = underlierDepositAmount.multipliedBy(
-      getHumanValue(singleUnderlierToPToken, underlierDecimals),
-    )
+  buildCurrentFiatDebt(totalDebt: BigNumber) {
     this.summary.push({
-      title: 'Estimated collateral to deposit',
-      value: estimatedCollateralToDeposit.toFixed(2),
+      title: 'Current FIAT debt',
+      value: getHumanValue(totalDebt, WAD_DECIMALS).toFixed(2),
     })
+    return this
+  }
 
+  buildEstimatedFiatDebt(newDebt: BigNumber) {
+    this.summary.push({
+      title: 'Estimated new FIAT debt',
+      titleTooltip: EST_FIAT_TOOLTIP_TEXT,
+      value: getHumanValue(newDebt, WAD_DECIMALS).toFixed(2),
+    })
+    return this
+  }
+
+  buildCurrentHealthFactor(currentHealthFactor: BigNumber) {
+    this.summary.push({
+      title: 'Current Health Factor',
+      state: getHealthFactorState(currentHealthFactor),
+      value: isValidHealthFactor(currentHealthFactor)
+        ? currentHealthFactor.toFixed(2)
+        : DEFAULT_HEALTH_FACTOR,
+    })
+    return this
+  }
+
+  buildEstimatedNewHealthFactor(newHealthFactor: BigNumber) {
+    this.summary.push({
+      title: 'Estimated new Health Factor',
+      titleTooltip: EST_HEALTH_FACTOR_TOOLTIP_TEXT,
+      state: getHealthFactorState(newHealthFactor),
+      value: isValidHealthFactor(newHealthFactor)
+        ? newHealthFactor.toFixed(2)
+        : DEFAULT_HEALTH_FACTOR,
+    })
     return this
   }
 

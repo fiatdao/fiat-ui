@@ -834,15 +834,15 @@ export const useManagePositionForm = (
             singleUnderlierToPToken,
             underlierDecimals,
           )
-          /* .buildMarketRate */
-          /* .buildSlippageTolerance */
-          /* .buildFixedAPR(collateral, marketRate) */
-          /* .buildInterestEarned */
-          /* .buildRedeemableAtMaturity */
-          /* .buildCurrentFiatDebt */
-          /* .buildEstimatedFiatDebt */
-          /* .buildCurrentHealthFactor */
-          /* .buildEstimatedNewHealthFactor */
+          .buildMarketRate(marketRate, collateral)
+          .buildSlippageTolerance(slippageTolerance)
+          .buildFixedAPR(collateral, marketRate)
+          .buildInterestEarned(collateral, underlierDepositAmount.toNumber(), marketRate)
+          .buildRedeemableAtMaturity(collateral, underlierDepositAmount.toNumber(), marketRate)
+          .buildCurrentFiatDebt(position?.totalDebt ?? ZERO_BIG_NUMBER)
+          .buildEstimatedFiatDebt(newDebt ?? ZERO_BIG_NUMBER)
+          .buildCurrentHealthFactor(position?.healthFactor ?? ZERO_BIG_NUMBER)
+          .buildEstimatedNewHealthFactor(healthFactor ?? ZERO_BIG_NUMBER)
           .getSummary()
       : []
 
