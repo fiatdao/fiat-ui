@@ -127,7 +127,7 @@ const PositionManage = () => {
     availableDepositAmount,
     availableUnderlierDepositAmount,
     availableUnderlierWithdrawAmount,
-    availableWithdrawAmount,
+    // availableWithdrawAmount,
     buttonText,
     finished,
     getFormSummaryData,
@@ -138,11 +138,13 @@ const PositionManage = () => {
     hasTokenAllowance,
     healthFactor,
     isDepositingCollateral,
+    isDepositingUnderlier,
     isDisabledCreatePosition,
     isLoading,
     isProxyAvailable,
     isRepayingFIAT,
     isWithdrawingCollateral,
+    isWithdrawingUnderlier,
     loadingFiatAllowanceApprove,
     loadingMonetaAllowanceApprove,
     loadingProxy,
@@ -165,7 +167,8 @@ const PositionManage = () => {
   )
 
   const maxRepay = BigNumber.min(maxRepayAmount ?? ZERO_BIG_NUMBER, fiatBalance)
-  const tokenSymbol = position?.symbol ?? ''
+  const shouldUseUnderlierToken = isDepositingUnderlier || isWithdrawingUnderlier
+  const tokenSymbol = shouldUseUnderlierToken ? collateral?.underlierSymbol : position?.symbol ?? ''
 
   const reset = async () => {
     setFinished(false)
@@ -273,8 +276,8 @@ const PositionManage = () => {
 
   const shouldShowUnderlyingUi = useMemo(() => {
     // Show underlying ui if SHOW_UNDERLYING_FLOW is true. Always show for element
-    return SHOW_UNDERLYING_FLOW
-  }, [])
+    return SHOW_UNDERLYING_FLOW || collateral?.vault.type === VaultType.ELEMENT
+  }, [collateral?.vault.type])
 
   useEffect(() => {
     // initialize step to 0
@@ -287,17 +290,22 @@ const PositionManage = () => {
   }, [activeSection])
 
   useEffect(() => {
+    // @dev NOTE: If you change this, make sure to check the renderCollateralTabs() function
     if (activeSection === 'collateral') {
       if (isMatured) {
         if (collateral?.vault.type === VaultType.NOTIONAL) {
           // expired notional should only show redeem tab, can't be transferred past maturity
+          setActiveTabKey('redeem')
+        } else if (!shouldShowUnderlyingUi) {
+          setActiveTabKey('withdraw')
+        } else if (shouldShowUnderlyingUi) {
           setActiveTabKey('redeem')
         } else if (!isWithdrawCollateralKey(activeTabKey)) {
           setActiveTabKey('withdraw')
         }
       }
     }
-  }, [activeSection, activeTabKey, collateral?.vault.type, isMatured])
+  }, [activeSection, activeTabKey, collateral?.vault.type, isMatured, shouldShowUnderlyingUi])
 
   const getMaturedFCashMessage = useCallback((): string | null => {
     if (position?.protocol === 'Notional Finance' && isMatured) {
@@ -443,14 +451,20 @@ const PositionManage = () => {
       </Tab>
     )
 
-    if (isMatured && collateral?.vault.type === VaultType.NOTIONAL) {
-      // If collateral is matured fcash, show only redeem tab
-      return redeemTab
-    } else if (isMatured) {
-      // If matured and not fcash, show all withdraw tabs
-      return shouldShowUnderlyingUi ? [withdrawTab, withdrawUnderlierTab, redeemTab] : [withdrawTab]
+    if (isMatured) {
+      // @dev NOTE: If you change this, make sure to check the useEffect in this file for setting active section
+      if (collateral?.vault.type === VaultType.NOTIONAL) {
+        // If collateral is notional post-maturity, show only redeem tab
+        return redeemTab
+      } else if (!shouldShowUnderlyingUi) {
+        // If non-notional & post maturity, and underlier flow off, show withdraw.
+        return withdrawTab
+      } else if (shouldShowUnderlyingUi) {
+        // If non-notional & post maturity, and underlier flow ON, only shouw redeem.
+        return redeemTab
+      }
     } else {
-      // If not matured, show all collateral tabs except redeem tabs
+      // If bond is active (pre-maturity), show all collateral tabs except redeem
       return shouldShowUnderlyingUi
         ? [depositTab, depositUnderlierTab, withdrawTab, withdrawUnderlierTab]
         : [depositTab, withdrawTab]
@@ -528,6 +542,26 @@ const PositionManage = () => {
             Enable Proxy for FIAT
           </ButtonGradient>
         )
+      } else if (isDepositingUnderlier && !hasTokenAllowance) {
+        return (
+          <ButtonGradient
+            disabled={loadingTokenAllowanceApprove}
+            height="lg"
+            onClick={onApproveTokenAllowance}
+          >
+            Set {tokenSymbol} Allowance
+          </ButtonGradient>
+        )
+      } else if (isDepositingUnderlier || isWithdrawingUnderlier) {
+        return (
+          <ButtonGradient
+            disabled={loadingFiatAllowanceApprove}
+            height="lg"
+            onClick={onHandleManage}
+          >
+            {buttonText}
+          </ButtonGradient>
+        )
       } else {
         console.error('Unknown button to render')
       }
@@ -556,6 +590,8 @@ const PositionManage = () => {
     onSetupProxy,
     step,
     tokenSymbol,
+    isDepositingUnderlier,
+    isWithdrawingUnderlier,
   ])
 
   return (
@@ -638,7 +674,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title={'Amount of collateral to withdraw'}
-                            value={`Available: ${availableWithdrawAmount?.toFixed(2)}`}
+                            value={`Available: ${maxWithdrawAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="withdrawAmount" required>
                             <TokenAmount
@@ -660,7 +696,7 @@ const PositionManage = () => {
                           <div className={cn(s.balanceContainer)}>
                             <Balance
                               title="Amount to withdraw and swap for underlier"
-                              value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
+                              value={`Available: ${maxWithdrawAmount?.toFixed(2)}`}
                             />
                             <SettingFilled
                               className={cn(s.settings)}
@@ -743,7 +779,7 @@ const PositionManage = () => {
                         <>
                           <Balance
                             title="Amount to borrow"
-                            value={`Available: ${fiatBalance?.toFixed(2)}`}
+                            value={`Available: ${maxBorrowAmount?.toFixed(2)}`}
                           />
                           <Form.Item name="borrow" required>
                             <TokenAmount

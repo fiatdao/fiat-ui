@@ -15,8 +15,8 @@ import { Collybus } from '@/types/typechain/Collybus'
 import { getHumanValue } from '@/src/web3/utils'
 import { getCollateralMetadata } from '@/src/constants/bondTokens'
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
-import { BigNumber } from 'bignumber.js'
 import { hexToAscii } from 'web3-utils'
+import { BigNumber } from 'bignumber.js'
 
 export type Collateral = {
   id: string
@@ -24,6 +24,7 @@ export type Collateral = {
   symbol: string
   asset: string
   protocol: string
+  scale: Maybe<string>
   underlierSymbol: Maybe<string>
   underlierAddress: Maybe<string>
   underlierScale: Maybe<string>
@@ -63,11 +64,12 @@ const wrangleCollateral = async (
     address: { [appChainId]: collybusAddress },
   } = contracts.COLLYBUS
 
-  const virtualRate = await getVirtualRate(
-    appChainId,
-    provider,
-    collateral.vault?.address ?? undefined,
-  )
+  let virtualRate
+  try {
+    virtualRate = await getVirtualRate(appChainId, provider, collateral.vault?.address ?? undefined)
+  } catch (e) {
+    console.warn('Error with VirtualRate: ' + e)
+  }
 
   let currentValue = null
   if (spotPrice && collateral.faceValue && collateral.maturity && discountRate) {

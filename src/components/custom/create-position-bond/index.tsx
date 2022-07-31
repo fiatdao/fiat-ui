@@ -109,6 +109,7 @@ export const CreatePositionBond: React.FC<CreatePositionBondProps> = ({
   )
   const healthFactorNumber = hf?.toFixed(3)
 
+  // TODO: use SummaryBuilder to build this summary data
   const summaryData = [
     {
       title: 'In your wallet',
