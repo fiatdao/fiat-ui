@@ -276,8 +276,8 @@ const PositionManage = () => {
 
   const shouldShowUnderlyingUi = useMemo(() => {
     // Show underlying ui if SHOW_UNDERLYING_FLOW is true. Always show for element
-    return SHOW_UNDERLYING_FLOW
-  }, [])
+    return SHOW_UNDERLYING_FLOW || collateral?.vault.type === VaultType.ELEMENT
+  }, [collateral?.vault.type])
 
   useEffect(() => {
     // initialize step to 0

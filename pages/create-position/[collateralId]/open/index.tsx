@@ -45,6 +45,7 @@ import {
 } from '@/src/web3/utils'
 import { SHOW_UNDERLYING_FLOW } from '@/src/utils/featureFlags'
 import { getDecimalsFromScale } from '@/src/constants/bondTokens'
+import { VaultType } from '@/types/subgraph/__generated__/globalTypes'
 import { useMachine } from '@xstate/react'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
@@ -277,7 +278,7 @@ const FormERC20: React.FC<{
       <div className={cn(s.form)}>
         {[1, 4].includes(activeMachine.context.currentStepNumber) &&
           // Show underlying ui if SHOW_UNDERLYING_FLOW is true. Always show for element
-          SHOW_UNDERLYING_FLOW && ( // Feature Flag
+          (SHOW_UNDERLYING_FLOW || collateral?.vault.type === VaultType.ELEMENT) && ( // Feature Flag
             <RadioTabsWrapper className={cn(s.radioTabsWrapper)}>
               <RadioTab
                 checked={tab === CreatePositionTab.asset}
