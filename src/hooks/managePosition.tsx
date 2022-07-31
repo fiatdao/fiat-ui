@@ -97,6 +97,7 @@ export const useManagePositionForm = (
     // use form values to assume user's intended fiat actions
     const repay = positionFormFields?.repay
     const borrow = positionFormFields?.borrow
+    // TODO: ensure repay doesn't ask for allowance when no 0 value (no default activate state based on tab for this)
     if (repay && repay.gt(ZERO_BIG_NUMBER)) {
       setIsRepayingFIAT(true)
     } else if (borrow && borrow.gt(ZERO_BIG_NUMBER)) {
