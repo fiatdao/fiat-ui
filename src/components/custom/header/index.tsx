@@ -29,7 +29,7 @@ export const Header: FC = ({ ...restProps }) => {
   const { title: pageTitle } = useGeneral()
   const { address, isWalletConnected } = useWeb3Connection()
   const router = useRouter()
-  const title: string = pageTitle ?? routesConfig[router.route]?.title ?? '-'
+  const title: string = pageTitle ?? routesConfig[router.route]?.title
   const [drawerVisible, setDrawerVisible] = useState(false)
   const isConnected = isWalletConnected && address
 
@@ -40,7 +40,7 @@ export const Header: FC = ({ ...restProps }) => {
           drawerVisible={drawerVisible}
           onClick={() => setDrawerVisible((prev) => !prev)}
         />
-        <h1 className={cn(s.title)}>{title}</h1>
+        <h1 className={cn(s.title)}>{pageTitle}</h1>
         <Logo className={cn(s.logoWrapper)} />
         <div className={cn(s.endWrapper)}>
           {!isConnected && <ConnectButton />}

@@ -11,7 +11,6 @@ export const Logo: React.FC<Props> = ({ className, ...restProps }: Props) => {
     <Link href="/" passHref>
       <a className={cn(className, s.logoWrapper)} {...restProps}>
         <span className={cn(s.logo)} />
-        <span className={cn(s.logoText)}>App</span>
       </a>
     </Link>
   )
