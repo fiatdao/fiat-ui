@@ -30,6 +30,7 @@ export type TokenAmountProps = {
   onChange?: (value?: BigNumber) => void
   slider?: boolean | 'healthFactorVariant' | 'healthFactorVariantReverse'
   tokenIcon?: TokenIconNames | React.ReactNode
+  underlier?: boolean
   value?: number | BigNumber
   mainAsset?: string
   secondaryAsset?: string
@@ -58,6 +59,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     slider = false,
     tokenIcon,
     value,
+    underlier,
   } = props
 
   const GREEN_COLOR = 'var(--theme-ok-color)'
@@ -115,6 +117,11 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
     onChange?.(inputValue)
   }
 
+  const iconFromMetadata = () => {
+    const icons = getPTokenIconFromMetadata(appChainId, mainAsset)
+    return underlier ? icons?.underlier : icons?.asset
+  }
+
   return (
     <>
       <NumericInput
@@ -130,10 +137,7 @@ const TokenAmount: React.FC<TokenAmountProps> = (props) => {
             {tokenIcon ? (
               tokenIcon
             ) : (
-              <AssetIcons
-                dimensions={'36px'}
-                mainAsset={getPTokenIconFromMetadata(appChainId, mainAsset)?.asset}
-              />
+              <AssetIcons dimensions={'36px'} mainAsset={iconFromMetadata()} />
             )}
           </div>
         }

@@ -354,14 +354,15 @@ export const CreatePositionUnderlying: React.FC<CreatePositionUnderlyingProps> =
             <Form.Item name="underlierAmount" required>
               <TokenAmount
                 displayDecimals={underlyingInfo?.decimals}
-                mainAsset={collateral?.vault?.name} //only being used to fetch icon from metadata
-                max={underlyingInfo?.humanValue}
+                mainAsset={collateral?.vault?.name}
+                max={underlyingInfo?.humanValue} //only being used to fetch icon from metadata
                 maximumFractionDigits={underlyingInfo?.decimals}
                 onChange={(val) =>
                   val && send({ type: 'SET_UNDERLIER_AMOUNT', underlierAmount: val })
                 }
                 slider
                 sliderDisabled={loading || underlyingInfo?.humanValue?.eq(0)}
+                underlier={true}
               />
             </Form.Item>
             {mintFiat && (

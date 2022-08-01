@@ -69,7 +69,7 @@ export const getCollateralMetadata = (
 export const getPTokenIconFromMetadata = (
   appChainId: ChainsValues,
   protocolName?: string,
-): { protocol: string; asset: string } | undefined => {
+): { protocol: string; asset: string; underlier: string } | undefined => {
   if (!metadataByNetwork || !protocolName) {
     return
   }
