@@ -349,13 +349,15 @@ const OpenPosition = () => {
       value: collateral?.maturity ? parseDate(collateral?.maturity) : '--:--:--',
     },
     {
-      title: 'Face Value',
-      tooltip: 'The redeemable value of the bond at maturity.',
+      title: 'Value at Maturity',
+      tooltip:
+        'The redeemable price of the asset at maturity as determined by the current spot price of the underlier and the amount of collateral deposited.',
       value: `$${getHumanValue(collateral?.faceValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {
-      title: 'Price',
-      tooltip: 'The currently discounted value of the bond.',
+      title: 'Current Value',
+      tooltip:
+        'The current value of the asset as determined by the discount rate, the spot price of the underlier and the amount of collateral deposited.',
       value: `$${getHumanValue(collateral?.currentValue ?? 0, WAD_DECIMALS)?.toFixed(2)}`,
     },
     {

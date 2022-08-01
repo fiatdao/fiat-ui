@@ -277,8 +277,9 @@ const BuyCollateral = () => {
       value: `${auctionData?.currentAuctionPrice?.toFixed(4)} ${FIAT_TICKER}`,
     },
     {
-      title: 'Face Value',
-      tooltip: 'The amount of underlying tokens available for redemption at maturity.',
+      title: 'Price At Maturity',
+      tooltip:
+        'The redeemable price of the asset at maturity as determined by the current spot price of the underlier',
       value: `$${auctionData?.faceValue?.toFixed(4)}`,
     },
     {
