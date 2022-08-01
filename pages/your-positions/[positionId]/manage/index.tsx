@@ -285,9 +285,16 @@ const PositionManage = () => {
   }, [updateNextState])
 
   useEffect(() => {
+    // Active Section switch handler
+
+    // Reset form fields to default when switching sections
+    form.setFieldsValue({
+      ...defaultManageFormFields,
+    })
+
     // If switching to tab and no subtab is selected, select first tab in the section that makes sense
     setActiveTabKey(activeSection === 'collateral' ? 'deposit' : 'borrow')
-  }, [activeSection])
+  }, [form, activeSection])
 
   useEffect(() => {
     // @dev NOTE: If you change this, make sure to check the renderCollateralTabs() function
