@@ -368,9 +368,6 @@ const PositionManage = () => {
           form.setFieldsValue({
             ...defaultManageFormFields,
             depositAmount: form.getFieldValue('depositAmount'),
-            // maintain fiat tab values
-            borrow: form.getFieldValue('borrow'),
-            repay: form.getFieldValue('repay'),
           })
           setActiveTabKey('deposit')
         }}
@@ -386,9 +383,6 @@ const PositionManage = () => {
           form.setFieldsValue({
             ...defaultManageFormFields,
             underlierDepositAmount: form.getFieldValue('underlierDepositAmount'),
-            // maintain fiat tab values
-            borrow: form.getFieldValue('borrow'),
-            repay: form.getFieldValue('repay'),
           })
           setActiveTabKey('depositUnderlier')
         }}
@@ -404,9 +398,6 @@ const PositionManage = () => {
           form.setFieldsValue({
             ...defaultManageFormFields,
             withdrawAmount: form.getFieldValue('withdrawAmount'),
-            // maintain fiat tab values
-            borrow: form.getFieldValue('borrow'),
-            repay: form.getFieldValue('repay'),
           })
           setActiveTabKey('withdraw')
         }}
@@ -422,9 +413,6 @@ const PositionManage = () => {
           form.setFieldsValue({
             ...defaultManageFormFields,
             underlierWithdrawAmount: form.getFieldValue('underlierWithdrawAmount'),
-            // maintain fiat tab values
-            borrow: form.getFieldValue('borrow'),
-            repay: form.getFieldValue('repay'),
           })
           setActiveTabKey('withdrawUnderlier')
         }}
@@ -440,9 +428,6 @@ const PositionManage = () => {
           form.setFieldsValue({
             ...defaultManageFormFields,
             redeemAmount: form.getFieldValue('redeemAmount'),
-            // maintain fiat tab values
-            borrow: form.getFieldValue('borrow'),
-            repay: form.getFieldValue('repay'),
           })
           setActiveTabKey('redeem')
         }}
@@ -754,7 +739,7 @@ const PositionManage = () => {
                           isActive={'borrow' === activeTabKey}
                           onClick={() => {
                             form.setFieldsValue({
-                              // leave collateral tab fields untouched, reset other fiat subtab
+                              ...defaultManageFormFields,
                               repay: undefined,
                             })
                             setActiveTabKey('borrow')
@@ -766,7 +751,7 @@ const PositionManage = () => {
                           isActive={'repay' === activeTabKey}
                           onClick={() => {
                             form.setFieldsValue({
-                              // leave collateral tab fields untouched, reset other fiat subtab
+                              ...defaultManageFormFields,
                               borrow: undefined,
                             })
                             setActiveTabKey('repay')
