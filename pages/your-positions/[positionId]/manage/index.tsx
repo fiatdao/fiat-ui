@@ -658,6 +658,7 @@ const PositionManage = () => {
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariantReverse'}
                               sliderDisabled={formDisabled}
+                              underlier={true}
                             />
                           </Form.Item>
                         </>
@@ -706,6 +707,7 @@ const PositionManage = () => {
                               secondaryAsset={position.underlier.symbol}
                               slider={'healthFactorVariant'}
                               sliderDisabled={formDisabled}
+                              underlier={true}
                             />
                           </Form.Item>
                         </>
