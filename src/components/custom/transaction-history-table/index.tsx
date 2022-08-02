@@ -14,6 +14,7 @@ import { ColumnsType } from 'antd/lib/table/interface'
 import { useEffect, useState } from 'react'
 import { SelectValue } from 'antd/lib/select'
 import { uniqBy } from 'lodash'
+import { Empty } from 'antd'
 
 const Columns: ColumnsType<Transaction> = [
   {
@@ -158,6 +159,11 @@ const TransactionHistoryTable = () => {
           columns={Columns}
           dataSource={filteredTransactions}
           loading={loading}
+          locale={{
+            emptyText: (
+              <Empty description={'No transactions'} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            ),
+          }}
           pagination={tablePagination(filteredTransactions?.length ?? 0)}
           rowKey="address"
           scroll={{

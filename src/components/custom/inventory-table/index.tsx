@@ -13,6 +13,7 @@ import { getHumanValue } from '@/src/web3/utils'
 import { DEFAULT_HEALTH_FACTOR } from '@/src/constants/healthFactor'
 import { ColumnsType } from 'antd/lib/table/interface'
 import Link from 'next/link'
+import { Empty } from 'antd'
 
 const Columns: ColumnsType<Position> = [
   {
@@ -134,6 +135,11 @@ const InventoryTable = ({ inventory }: InventoryProps) => {
           columns={Columns}
           dataSource={healthyPositions}
           loading={false}
+          locale={{
+            emptyText: (
+              <Empty description={'No active positions'} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            ),
+          }}
           pagination={tablePagination(healthyPositions?.length ?? 0)}
           rowKey="name"
           scroll={{
