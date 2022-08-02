@@ -99,7 +99,7 @@ export class SummaryBuilder implements ISummaryBuilder {
 
   buildNewCollateralDeposited(newCollateral: BigNumber) {
     this.summary.push({
-      title: 'Current collateral deposited',
+      title: 'New collateral deposited',
       value: getHumanValue(newCollateral, WAD_DECIMALS).toFixed(2),
     })
     return this
