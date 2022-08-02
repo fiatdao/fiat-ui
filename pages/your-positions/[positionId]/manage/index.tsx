@@ -285,16 +285,9 @@ const PositionManage = () => {
   }, [updateNextState])
 
   useEffect(() => {
-    // Active Section switch handler
-
-    // Reset form fields to default when switching sections
-    form.setFieldsValue({
-      ...defaultManageFormFields,
-    })
-
     // If switching to tab and no subtab is selected, select first tab in the section that makes sense
     setActiveTabKey(activeSection === 'collateral' ? 'deposit' : 'borrow')
-  }, [form, activeSection])
+  }, [activeSection])
 
   useEffect(() => {
     // @dev NOTE: If you change this, make sure to check the renderCollateralTabs() function
@@ -375,6 +368,9 @@ const PositionManage = () => {
           form.setFieldsValue({
             ...defaultManageFormFields,
             depositAmount: form.getFieldValue('depositAmount'),
+            // maintain fiat tab values
+            borrow: form.getFieldValue('borrow'),
+            repay: form.getFieldValue('repay'),
           })
           setActiveTabKey('deposit')
         }}
@@ -390,6 +386,9 @@ const PositionManage = () => {
           form.setFieldsValue({
             ...defaultManageFormFields,
             underlierDepositAmount: form.getFieldValue('underlierDepositAmount'),
+            // maintain fiat tab values
+            borrow: form.getFieldValue('borrow'),
+            repay: form.getFieldValue('repay'),
           })
           setActiveTabKey('depositUnderlier')
         }}
@@ -405,6 +404,9 @@ const PositionManage = () => {
           form.setFieldsValue({
             ...defaultManageFormFields,
             withdrawAmount: form.getFieldValue('withdrawAmount'),
+            // maintain fiat tab values
+            borrow: form.getFieldValue('borrow'),
+            repay: form.getFieldValue('repay'),
           })
           setActiveTabKey('withdraw')
         }}
@@ -420,6 +422,9 @@ const PositionManage = () => {
           form.setFieldsValue({
             ...defaultManageFormFields,
             underlierWithdrawAmount: form.getFieldValue('underlierWithdrawAmount'),
+            // maintain fiat tab values
+            borrow: form.getFieldValue('borrow'),
+            repay: form.getFieldValue('repay'),
           })
           setActiveTabKey('withdrawUnderlier')
         }}
@@ -435,6 +440,9 @@ const PositionManage = () => {
           form.setFieldsValue({
             ...defaultManageFormFields,
             redeemAmount: form.getFieldValue('redeemAmount'),
+            // maintain fiat tab values
+            borrow: form.getFieldValue('borrow'),
+            repay: form.getFieldValue('repay'),
           })
           setActiveTabKey('redeem')
         }}
@@ -748,7 +756,7 @@ const PositionManage = () => {
                           isActive={'borrow' === activeTabKey}
                           onClick={() => {
                             form.setFieldsValue({
-                              ...defaultManageFormFields,
+                              // leave collateral tab fields untouched, reset other fiat subtab
                               repay: undefined,
                             })
                             setActiveTabKey('borrow')
@@ -760,7 +768,7 @@ const PositionManage = () => {
                           isActive={'repay' === activeTabKey}
                           onClick={() => {
                             form.setFieldsValue({
-                              ...defaultManageFormFields,
+                              // leave collateral tab fields untouched, reset other fiat subtab
                               borrow: undefined,
                             })
                             setActiveTabKey('repay')
