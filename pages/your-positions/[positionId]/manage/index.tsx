@@ -173,6 +173,19 @@ const PositionManage = () => {
   const reset = async () => {
     setFinished(false)
   }
+  const step5Description = () => {
+    if (activeTabKey === 'repay') {
+      return `Confirm amount of FIAT to repay`
+    } else if (activeTabKey === 'borrow') {
+      return `Confirm amount of FIAT to borrow`
+    } else if (isWithdrawingCollateral || isWithdrawingUnderlier) {
+      return `Confirm amount of ${tokenSymbol} to withdraw`
+    } else if (isDepositingCollateral || isDepositingUnderlier) {
+      return `Confirm amount of ${tokenSymbol} to deposit`
+    } else {
+      return `Confirm the details`
+    }
+  }
   const [step, setStep] = useState(0)
   const steps: Step[] = [
     {
@@ -181,7 +194,7 @@ const PositionManage = () => {
     },
     {
       id: 2,
-      description: 'Set Collateral Allowance',
+      description: `Set ${shouldUseUnderlierToken ? 'Underlier' : 'Collateral'} Allowance`,
     },
     {
       id: 3,
@@ -193,7 +206,7 @@ const PositionManage = () => {
     },
     {
       id: 5,
-      description: 'Confirm the Details',
+      description: step5Description(),
     },
   ]
 
@@ -602,7 +615,7 @@ const PositionManage = () => {
         ) : (
           <>
             <StepperTitle
-              currentStep={step + 1}
+              currentStep={step + 1} // This is so fucked
               description={steps[step].description}
               title={'Manage your position'}
               totalSteps={steps.length}
@@ -617,8 +630,10 @@ const PositionManage = () => {
                       {'deposit' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Amount of collateral to deposit"
-                            value={`Available: ${availableDepositAmount?.toFixed(2)}`}
+                            title="Collateral to deposit"
+                            value={`Available: ${availableDepositAmount?.toFixed(2)} ${
+                              collateral?.symbol
+                            }`}
                           />
                           <Form.Item name="depositAmount" required>
                             <TokenAmount
@@ -639,8 +654,10 @@ const PositionManage = () => {
                         <>
                           <div className={cn(s.balanceContainer)}>
                             <Balance
-                              title="Amount to swap for collateral and deposit"
-                              value={`Available: ${availableUnderlierDepositAmount?.toFixed(2)}`}
+                              title={`${collateral?.underlierSymbol} to swap for collateral and deposit`}
+                              value={`Available: ${availableUnderlierDepositAmount?.toFixed(2)} ${
+                                collateral?.underlierSymbol
+                              }`}
                             />
                             <SettingFilled
                               className={cn(s.settings)}
@@ -665,8 +682,10 @@ const PositionManage = () => {
                       {'withdraw' === activeTabKey && position && (
                         <>
                           <Balance
-                            title={'Amount of collateral to withdraw'}
-                            value={`Available: ${maxWithdrawAmount?.toFixed(2)}`}
+                            title={'Collateral to withdraw'}
+                            value={`Available: ${maxWithdrawAmount?.toFixed(2)} ${
+                              collateral?.symbol
+                            }`}
                           />
                           <Form.Item name="withdrawAmount" required>
                             <TokenAmount
@@ -687,8 +706,10 @@ const PositionManage = () => {
                         <>
                           <div className={cn(s.balanceContainer)}>
                             <Balance
-                              title="Amount to withdraw and swap for underlier"
-                              value={`Available: ${maxWithdrawAmount?.toFixed(2)}`}
+                              title={`Collateral to withdraw and swap for ${collateral?.underlierSymbol}`}
+                              value={`Available: ${maxWithdrawAmount?.toFixed(2)} ${
+                                collateral?.underlierSymbol
+                              }`}
                             />
                             <SettingFilled
                               className={cn(s.settings)}
@@ -715,8 +736,10 @@ const PositionManage = () => {
                           <div className={cn(s.balanceContainer)}>
                             <Balance
                               description={getMaturedFCashMessage()}
-                              title="Amount of collateral to redeem"
-                              value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)}`}
+                              title="Amount of collateral to redeem for underlying"
+                              value={`Available: ${availableUnderlierWithdrawAmount?.toFixed(2)} ${
+                                collateral?.underlierSymbol
+                              }`}
                             />
                             <SettingFilled
                               className={cn(s.settings)}
@@ -770,8 +793,8 @@ const PositionManage = () => {
                       {'borrow' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Amount to borrow"
-                            value={`Available: ${maxBorrowAmount?.toFixed(2)}`}
+                            title="FIAT to borrow"
+                            value={`Available: ${maxBorrowAmount?.toFixed(2)} FIAT`}
                           />
                           <Form.Item name="borrow" required>
                             <TokenAmount
@@ -790,8 +813,8 @@ const PositionManage = () => {
                       {'repay' === activeTabKey && position && (
                         <>
                           <Balance
-                            title="Amount to repay"
-                            value={`Available: ${fiatBalance?.toFixed(2)}`}
+                            title="FIAT to repay"
+                            value={`Available: ${fiatBalance?.toFixed(2)} FIAT`}
                           />
                           <Form.Item name="repay" required>
                             <TokenAmount
